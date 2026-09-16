@@ -8,7 +8,7 @@ Attendance summaries over a date range, per student and per class, with CSV expo
 
 ## Decisions
 
-- **Attendance rate** = (`present` + `late`) / total records × 100. `excused` is shown as its own count and does not count against the rate. (If the school's official definition differs, change the formula here before building.)
+- **Attendance rate** = (`present` + `late`) / total records × 100. `sick and leave` is shown as its own count and does not count against the rate. (If the school's official definition differs, change the formula here before building.)
 - Date ranges are capped at 366 days; defaults to the current month.
 - Access follows spec 01 scoping: admin → all classes, teacher → own class, parent/student → own records.
 

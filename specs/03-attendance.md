@@ -41,7 +41,7 @@ The core engine: Students independently log their attendance via Hardware Scanne
 - `id`
 - `student_id`
 - `date` (date, compound unique w/ student_id)
-- `status` (enum: present, absent, late, excused)
+- `status` (enum: present, absent, late, sick, leave)
 - `check_in_time` (timestamp, nullable)
 - `check_out_time` (timestamp, nullable)
 - `scan_method` (string/enum, nullable) — Values: `rfid`, `dynamic_qr`, `manual_override`. (Ensures analytics on method adoption).
