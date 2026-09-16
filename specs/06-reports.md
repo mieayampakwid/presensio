@@ -1,6 +1,6 @@
 # 06 — Reports & Exports
 
-Status: draft v1 (2026-09-15)
+Status: draft v1.1 (2026-09-16)
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Attendance summaries over a date range, per student and per class, with CSV expo
 
 ## Requirements
 
-1. **Student report**: pick student + range → per-status counts, attendance rate, and the day-by-day list of records.
+1. **Student report**: pick student (search by `full_name` or `student_number`) + range → per-status counts, attendance rate, and the day-by-day list of records.
 2. **Class report**: pick class + range → per-status counts and rate per student, plus a students × dates grid showing each day's status.
 3. Both reports export to CSV matching what the screen shows (grid and summary).
 4. Weekends appear greyed/no-cell in the grid; days without a record show as blank (not counted in rates).
