@@ -1,16 +1,17 @@
 # 06 — Reports & Exports
 
-Status: draft v1.2 (2026-09-18)
+Status: draft v1.3 (2026-09-18)
 
 ## Purpose
 
-Attendance summaries over a date range, per student and per class, with CSV export.
+Attendance summaries over a date range, per student and per class, with CSV export — plus a live presence board for the current day.
 
 ## Decisions
 
 - **Attendance rate** = (`present` + `late`) / total records × 100. `sick and leave` is shown as its own count and does not count against the rate. (If the school's official definition differs, change the formula here before building.)
 - Date ranges are capped at 366 days; defaults to the current month.
 - Access follows spec 01 scoping: admin → all classes, teacher → own class, parent/student → own records.
+- **Live Presence Board**: the school's shop-window screen (piket room / headmaster) showing the current day as it happens — built for management decisions in minutes, not month-end. Plain polling (30–60s auto-refresh), no websockets; it is a view over scan-engine data (Spec 03), so near-zero build cost. Its "in-building" count doubles as the evacuation headcount.
 
 ## Requirements
 
@@ -19,9 +20,13 @@ Attendance summaries over a date range, per student and per class, with CSV expo
 3. Both reports export to CSV matching what the screen shows (grid and summary).
 4. Weekends and non-school days (Spec 03 calendar) appear greyed/no-cell in the grid; days without a record show as blank (not counted in rates).
 5. Reports are read-only views; no caching layer in v1 — plain queries are fine at single-school scale.
+6. **Live Presence Board (today)**:
+   - Auto-refreshes every 30–60s over today's records: per class, counts of checked-in / not-yet-checked-in / checked-out, with school-wide totals for admins.
+   - Drill-down per class lists students not yet checked in (with today's status, including `sick`/`leave`); *in-building* = checked-in minus checked-out — the evacuation headcount.
+   - Read-only; triggers no notifications. Access: admin → all classes, teacher → own class(es).
 
 ## Out of scope
 
 - PDF export, printable letters
 - Custom report builder, saved reports
-- School-wide aggregated dashboard/analytics
+- Trend/analytics dashboards (charts, absence-pattern mining — beyond per-range reports and the live board)
