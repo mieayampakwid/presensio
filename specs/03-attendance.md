@@ -1,6 +1,6 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: draft v2.1 (2026-09-18)
+Status: draft v2.2 (2026-09-18)
 
 ## Purpose
 
@@ -20,7 +20,9 @@ The core engine: Students independently log their attendance via Hardware Scanne
   - `auto_absent_cron_time` (Sweep time)
   - `scan_debounce_minutes` (Double-tap shield)
 - **Automatic Absent Generation (Cron)**: A background scheduler sweeps for students missing a record and generates `absent` statuses automatically. This triggers Spec 05 Absence Notifications reliably.
+- **Non-School Day Calendar**: The sweep must never fire on a holiday. A `non_school_days` table is the single source of truth, combining auto-synced national holidays + cuti bersama (from a holiday feed — e.g., Google Calendar's public Indonesian holiday calendar or a public holidays API) with admin-managed school dates (semester breaks, exams, school events). Sync is one-way, scheduled, idempotent (upsert by date), imports only future dates, and never touches manual rows; admins may delete an imported day (e.g., school holds a session on a national holiday).
 - **Manual Override as Safety Net**: Teachers and admins can correct any day (IoT outage, damaged card); every edit is attributable and never re-sends notifications (Spec 05).
+- **Raw Scan Event Log (Append-Only)**: Every scan attempt is recorded with its outcome. The mutable `attendances` record stays the projection; the immutable event log is the history — for dispute resolution ("I did tap"), fraud analytics (a tap by a `sick`/`leave` student signals a lent card), and hardware debugging. Recorded from day one: event history cannot be retrofitted.
 
 ## Requirements
 
@@ -39,7 +41,7 @@ The core engine: Students independently log their attendance via Hardware Scanne
 2. **Student Portal — Dynamic QR Generator**:
    - A student-only authenticated endpoint returns the short-lived signed token; the UI renders it as a QR and auto-refreshes (~25s), bound to the requester's `student_id`.
 3. **Auto Sweep (Cron Task)**:
-   - At `auto_absent_cron_time`, creates a record with status `absent` for every student in master data with no record today (weekends skipped). Approved excuses need no special case — Spec 04 pre-creates their `sick`/`leave` records, which already count as "having a record". Sweep-created records carry `scan_method = null`.
+   - At `auto_absent_cron_time`, creates a record with status `absent` for every student in master data with no record today (weekends and `non_school_days` skipped). Approved excuses need no special case — Spec 04 pre-creates their `sick`/`leave` records, which already count as "having a record". Sweep-created records carry `scan_method = null`.
 4. **Teacher & Admin Exception Dashboard**:
    - Teachers may correct records for their own class(es) on any date; admins anywhere. An edit sets the status and optionally `check_in_time`/`check_out_time` (e.g., reconstructing a day the scanner was offline).
    - Every manual edit stamps `override_by_user_id` and `scan_method = manual_override`, with an optional `notes` context (e.g., "Card damaged"). Edits never trigger notifications (Spec 05).
@@ -47,6 +49,12 @@ The core engine: Students independently log their attendance via Hardware Scanne
    - A teacher picks a class + date and marks all students *still without a record* as `present` in one action (scanner-outage day). Existing records — including `sick`/`leave` — are never overwritten. Bulk-created records count as manual overrides; since only `absent` creations notify (Spec 05), this sends no notifications.
 6. **Data Overlap Shield (Spec 04 Synergy)**:
    - An approved Excuse pre-creates `sick`/`leave` records; the Scanner API treats taps by those students as no-ops (see Tap Resolution), so overlapping tap anomalies never corrupt an approved excuse.
+7. **Holiday Calendar & Sync**:
+   - A scheduled one-way sync from the configured holiday feed auto-applies national holidays and cuti bersama (dates ≥ today only) into `non_school_days` with `source = sync` and the holiday name. Idempotent upsert by date; manual rows are never overwritten or deleted by the sync. No write-back to the feed.
+   - Admin CRUD adds school-specific dates (`source = manual`) and may delete synced rows.
+8. **Scan Event Logging**:
+   - The scan endpoint persists one `scan_events` row per attempt, regardless of outcome: resolved `student_id` (null on unknown credential), `scan_method`, the raw `rfid_number` for RFID attempts (QR tokens are never stored — they expire by design), device `scanned_at`, and the outcome (`check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `error_expired_token`, `error_unknown_credential`).
+   - The log is append-only; the Exception Dashboard edits attendance records, never events.
 
 ## Schema Expected (attendances)
 
@@ -60,9 +68,26 @@ The core engine: Students independently log their attendance via Hardware Scanne
 - `override_by_user_id` (foreign, nullable)
 - `notes` (string, nullable)
 
+## Schema Expected (scan_events)
+
+- `id`
+- `student_id` (foreign, nullable — null when the credential resolves to nobody)
+- `scan_method` (enum: `rfid`, `dynamic_qr`)
+- `identifier` (string, nullable) — Raw `rfid_number` on RFID attempts; empty for QR (tokens expire by design, never stored).
+- `scanned_at` (timestamp — device clock when available)
+- `outcome` (string) — What the tap did, or why it was ignored/rejected.
+
+## Schema Expected (non_school_days)
+
+- `id`
+- `date` (date, unique)
+- `name` (string) — e.g., "Idul Fitri", "Cuti Bersama", "Libur Semester Ganjil".
+- `source` (enum: `sync`, `manual`)
+
 ## Out of scope
 
 - Per-period attendance (mapel-level entry).
-- Timetables or Dynamic holiday calendars (handled centrally in v2).
+- Timetables; per-class/per-level calendar overrides (one school-wide calendar in v1).
+- Two-way calendar sync (writing school dates back to the holiday feed).
 - Per-device scanner keys / device registry.
 - Offline scanner buffering (store-and-forward) — manual override is the v1 mitigation for outages.
