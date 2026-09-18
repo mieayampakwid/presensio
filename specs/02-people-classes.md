@@ -1,6 +1,6 @@
 # 02 — People & Classes (Admin CRUD)
 
-Status: draft v1.3 (2026-09-18)
+Status: draft v1.4 (2026-09-18)
 
 ## Purpose
 
@@ -77,6 +77,7 @@ The master data entities everything else depends on: students, teachers, guardia
    - Class column values map to existing `classes`, with an option to auto-create missing classes (file naming rarely matches the system's).
    - Identifier and date columns are parsed defensively: always as strings (preserving leading zeros and 16-digit numbers like NIK), with Indonesian date formats (`dd/mm/yyyy`, `dd-mm-yyyy`, Excel serial dates) normalized.
    - Optional guardian columns (name + phone number) create and link a guardian profile, deduplicated by `phone_number` (siblings must not duplicate a guardian).
+9. **Guardian Contact Self-Completion**: A logged-in guardian may edit their own profile's contact fields (`phone_number`, `address`, `work`) — the fields they are the source of truth for and where admin retyping is error-prone (one mistyped digit sends a child's absence notification to a stranger). `name` and guardian–student relations stay admin-managed (exception carved in spec 01, req 6).
 
 ## Out of scope
 
