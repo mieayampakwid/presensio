@@ -1,6 +1,6 @@
 # 02 — People & Classes (Admin CRUD)
 
-Status: draft v1.2 (2026-09-18)
+Status: draft v1.3 (2026-09-18)
 
 ## Purpose
 
@@ -12,6 +12,7 @@ The master data entities everything else depends on: students, teachers, guardia
 - **Configurability over Hardcoding**: Business rules (like strict 1:1 teacher-to-class ratios) must be driven by application configurations rather than hardcoded logic or strict database constraints. This ensures the system remains scalable.
 - **Classes**: A **class** has a name and a homeroom teacher (linked to `teachers`, not `users`). 
 - **Enrollment**: A student is enrolled in **exactly one class** at a time (`class_id` on the student record). No academic-year history entity is tracked in v1 (one active roster).
+- **Bulk Import via Column Mapping, Not Rigid Templates**: Schools will not retype existing data into our template. The importer reads any CSV/XLSX, auto-guesses the column mapping (seeded Indonesian school aliases + fuzzy matching), and lets the admin confirm or adjust once — meeting the school's file where it is.
 
 ## Schema & Data Models
 
@@ -69,9 +70,16 @@ The master data entities everything else depends on: students, teachers, guardia
    - Admin cannot delete a class if it still has students enrolled or historical attendance activity tied to it.
 6. **RFID Card Management**: Admin registers cards and assigns/revokes card ownership to students. Spec 03's scanner resolves an `rfid_number` to its currently assigned `student_id`.
 7. UI List screens support robust search across the dedicated tables, and pagination. (e.g. search students by `full_name` or `nickname`).
+8. **Bulk Import (Students, CSV/XLSX)**:
+   - Admin uploads a file; headers are detected and auto-mapped to target fields via a seeded Indonesian school alias dictionary (normalized + fuzzy matching: "TGL LHR " → `dob`). The mapping screen lets the admin override any guess via dropdown; required fields (`full_name`, `class`) must be mapped, unmapped optional columns are simply ignored.
+   - The last successful mapping is remembered — a file with identical structure skips the mapping screen next time.
+   - A dry-run validation previews the first rows and reports per-row errors (missing name, duplicate `student_number`, unparseable date) before anything commits. Valid rows import; erroneous rows are reported for correction — not all-or-nothing.
+   - Class column values map to existing `classes`, with an option to auto-create missing classes (file naming rarely matches the system's).
+   - Identifier and date columns are parsed defensively: always as strings (preserving leading zeros and 16-digit numbers like NIK), with Indonesian date formats (`dd/mm/yyyy`, `dd-mm-yyyy`, Excel serial dates) normalized.
+   - Optional guardian columns (name + phone number) create and link a guardian profile, deduplicated by `phone_number` (siblings must not duplicate a guardian).
 
 ## Out of scope
 
 - Academic years, subjects, timetables, room assignments
-- Bulk import (CSV) of master data — candidate for v1.x
+- Bulk import for teachers / standalone guardians (students-first importer)
 - RFID card event history (loss/reissue audit log)
