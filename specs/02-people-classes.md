@@ -1,6 +1,6 @@
 # 02 — People & Classes (Admin CRUD)
 
-Status: draft v1.1 (2026-09-16)
+Status: draft v1.2 (2026-09-18)
 
 ## Purpose
 
@@ -54,6 +54,11 @@ The master data entities everything else depends on: students, teachers, guardia
 - `guardian_id` (foreign -> guardians)
 - `student_id` (foreign -> students)
 
+### 7. `rfid_cards` Table (Scanner Credentials)
+- `id` (primary)
+- `rfid_number` (string, unique) — The physical card identifier read by hardware scanners (Spec 03).
+- `student_id` (foreign, nullable) — Current owner; `null` = unassigned (spare/returned). Multiple cards may point to one student (e.g., a replacement while the original is lost).
+
 ## Requirements
 
 1. Admin-only CRUD screens for Teachers, Guardians, Students, and Classes.
@@ -62,9 +67,11 @@ The master data entities everything else depends on: students, teachers, guardia
 4. **Validation via Config**: Assigning a homeroom teacher checks a global application configuration. If the rule `allow_multiple_homerooms` is set to false, the application rejects the assignment of a teacher who already has one.
 5. **Deletion Constraints**: 
    - Admin cannot delete a class if it still has students enrolled or historical attendance activity tied to it.
-6. UI List screens support robust search across the dedicated tables, and pagination. (e.g. search students by `full_name` or `nickname`).
+6. **RFID Card Management**: Admin registers cards and assigns/revokes card ownership to students. Spec 03's scanner resolves an `rfid_number` to its currently assigned `student_id`.
+7. UI List screens support robust search across the dedicated tables, and pagination. (e.g. search students by `full_name` or `nickname`).
 
 ## Out of scope
 
 - Academic years, subjects, timetables, room assignments
 - Bulk import (CSV) of master data — candidate for v1.x
+- RFID card event history (loss/reissue audit log)
