@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -15,7 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Memoizes the settings row per process (spec 03).
+        $this->app->singleton(SchoolSettings::class);
     }
 
     /**
@@ -36,6 +41,12 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+
+        // Scanner tap endpoint (spec 03) — the framework `api` group ships
+        // no default throttle, so the named limiter is load-bearing.
+        RateLimiter::for('scanner', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
 
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)
