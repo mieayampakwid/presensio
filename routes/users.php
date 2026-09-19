@@ -14,6 +14,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->missing(fn () => to_route('users.index'))
         ->name('users.update');
     Route::put('users/{user}/password', [UserController::class, 'updatePassword'])
+        ->middleware('throttle:6,1')
         ->missing(fn () => to_route('users.index'))
         ->name('users.password.update');
 });

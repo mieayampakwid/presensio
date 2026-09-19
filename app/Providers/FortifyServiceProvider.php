@@ -43,11 +43,20 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::authenticateUsing(function (Request $request): ?User {
             $user = User::where('username', $request->string('username')->toString())->first();
+            $password = $request->string('password')->toString();
 
             // Password first: the deactivation message must only be visible
             // to someone who holds valid credentials, not to anyone probing
             // usernames.
-            if ($user === null || ! Hash::check($request->string('password')->toString(), $user->password)) {
+            //
+            // Unknown usernames hash a throwaway value so every attempt runs
+            // the same bcrypt round — response latency must not reveal
+            // whether an account exists.
+            if (! Hash::check($password, $user->password ?? Hash::make($password))) {
+                return null;
+            }
+
+            if ($user === null) {
                 return null;
             }
 

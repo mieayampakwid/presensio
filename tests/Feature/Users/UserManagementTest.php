@@ -135,6 +135,28 @@ class UserManagementTest extends TestCase
         $this->assertTrue(Hash::check('N3w-p4ss!', $user->fresh()->password));
     }
 
+    public function test_password_reset_is_throttled(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+
+        foreach (range(1, 6) as $i) {
+            $this->actingAs($admin)
+                ->put(route('users.password.update', $user), [
+                    'password' => 'N3w-p4ss!',
+                    'password_confirmation' => 'N3w-p4ss!',
+                ]);
+        }
+
+        // 7th request within the window hits throttle:6,1
+        $this->actingAs($admin)
+            ->put(route('users.password.update', $user), [
+                'password' => 'N3w-p4ss!',
+                'password_confirmation' => 'N3w-p4ss!',
+            ])
+            ->assertTooManyRequests();
+    }
+
     public static function nonAdminRoles(): array
     {
         return [
