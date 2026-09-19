@@ -55,6 +55,23 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_deactivated_account_status_is_not_revealed_with_a_wrong_password(): void
+    {
+        $user = User::factory()->inactive()->create();
+
+        // A wrong password gets the generic credentials error — the
+        // deactivation message is only visible with valid credentials,
+        // so account status cannot be probed without them.
+        $this->post(route('login.store'), [
+            'username' => $user->username,
+            'password' => 'wrong-password',
+        ])->assertSessionHasErrors([
+            'username' => 'These credentials do not match our records.',
+        ]);
+
+        $this->assertGuest();
+    }
+
     public function test_deactivated_user_is_logged_out_on_next_request(): void
     {
         $user = User::factory()->create();

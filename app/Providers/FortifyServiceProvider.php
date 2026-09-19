@@ -44,7 +44,10 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (Request $request): ?User {
             $user = User::where('username', $request->string('username')->toString())->first();
 
-            if ($user === null) {
+            // Password first: the deactivation message must only be visible
+            // to someone who holds valid credentials, not to anyone probing
+            // usernames.
+            if ($user === null || ! Hash::check($request->string('password')->toString(), $user->password)) {
                 return null;
             }
 
@@ -54,7 +57,7 @@ class FortifyServiceProvider extends ServiceProvider
                 ]);
             }
 
-            return Hash::check($request->string('password')->toString(), $user->password) ? $user : null;
+            return $user;
         });
     }
 
