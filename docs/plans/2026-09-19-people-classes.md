@@ -2,7 +2,7 @@
 
 ## Context
 
-Spec 01 (auth + admin user CRUD) shipped 2026-09-19 from `docs/plans/2026-09-18-auth.md`; 58 tests green. Spec 02 (`specs/02-people-classes.md`) is next in the build order (MOC: 01→02→03…): master data for teachers, guardians, students, classes + enrollment, RFID cards, guardian contact self-service, the user↔profile linkage deferred from spec 01, and the column-mapping bulk student importer.
+Spec 01 (auth + admin user CRUD) shipped 2026-09-19 from `docs/plans/2026-09-18-auth.md`; 58 tests green. Spec 02 (`docs/specs/02-people-classes.md`) is next in the build order (MOC: 01→02→03…): master data for teachers, guardians, students, classes + enrollment, RFID cards, guardian contact self-service, the user↔profile linkage deferred from spec 01, and the column-mapping bulk student importer.
 
 User decisions locked during planning:
 - **openspout** composer package approved → importer reads CSV **and** XLSX (spec: "reads any CSV/XLSX").
