@@ -1,6 +1,6 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: draft v2.3 (2026-09-18)
+Status: draft v2.4 (2026-09-19)
 
 ## Purpose
 
@@ -57,6 +57,10 @@ The core engine: Students independently log their attendance via Hardware Scanne
 8. **Scan Event Logging**:
    - The scan endpoint persists one `scan_events` row per attempt, regardless of outcome: resolved `student_id` (null on unknown credential), `scan_method`, the raw `rfid_number` for RFID attempts (QR tokens are never stored — they expire by design), device `scanned_at`, and the outcome (`check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `error_expired_token`, `error_unknown_credential`).
    - The log is append-only; the Exception Dashboard edits attendance records, never events.
+9. **Student Portal — My Attendance Page**:
+   - A student-only, read-only view of their own records: today's record highlighted in a card (status + check-in/out times), followed by paginated history (15/page, newest first; today excluded — it lives in the today card). Times render in the school timezone. A student without a linked profile sees an empty state, mirroring the QR page.
+   - Privacy carve-out: `notes` and `override_by_user_id` are teacher-facing and never exposed to students — override rationale may contain internal commentary. Rows expose date, status, times, and scan method only.
+   - This page is the student's self-serve feedback loop ("did my scan register?") — in v1 nobody notifies the *student* of an absence (Spec 05 notifies guardians only), and the scanner display is the only other feedback surface.
 
 ## Schema Expected (attendances)
 
