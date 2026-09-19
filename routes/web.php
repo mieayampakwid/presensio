@@ -31,3 +31,4 @@ require __DIR__.'/guardians.php';
 require __DIR__.'/students.php';
 require __DIR__.'/rfid-cards.php';
 require __DIR__.'/attendance.php';
+require __DIR__.'/non-school-days.php';

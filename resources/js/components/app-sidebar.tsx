@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     CalendarCheck,
+    CalendarOff,
     FolderGit2,
     GraduationCap,
     IdCard,
@@ -12,6 +13,7 @@ import {
     Users,
 } from 'lucide-react';
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
+import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
@@ -83,6 +85,11 @@ export function AppSidebar() {
                       title: 'RFID Cards',
                       href: RfidCardController.index().url,
                       icon: IdCard,
+                  },
+                  {
+                      title: 'Non-School Days',
+                      href: NonSchoolDayController.index().url,
+                      icon: CalendarOff,
                   },
               ]
             : []),
