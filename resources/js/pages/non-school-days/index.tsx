@@ -111,9 +111,9 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                                     Remove {day.date} — "
                                                     {day.name}"? Note: a synced
                                                     date deleted while the
-                                                    national feed still lists
-                                                    it will re-import at the
-                                                    next weekly sync.
+                                                    national feed still lists it
+                                                    will re-import at the next
+                                                    weekly sync.
                                                 </DialogDescription>
                                                 <DialogFooter className="gap-2">
                                                     <DialogClose asChild>

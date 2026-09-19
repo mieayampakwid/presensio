@@ -43,9 +43,7 @@ export default function MyQr({ qr }: Props) {
     const secondsLeft = qr
         ? Math.max(
               0,
-              Math.floor(
-                  (new Date(qr.expires_at).getTime() - now) / 1000,
-              ),
+              Math.floor((new Date(qr.expires_at).getTime() - now) / 1000),
           )
         : 0;
 
@@ -93,15 +91,17 @@ export default function MyQr({ qr }: Props) {
                                 />
                             </div>
                             <Badge
-                                variant={secondsLeft > 0 ? 'default' : 'secondary'}
+                                variant={
+                                    secondsLeft > 0 ? 'default' : 'secondary'
+                                }
                             >
                                 {secondsLeft > 0
                                     ? `Expires in ${secondsLeft}s`
                                     : 'Refreshing…'}
                             </Badge>
                             <p className="text-muted-foreground text-center text-sm">
-                                The code renews itself automatically — just
-                                keep this page open.
+                                The code renews itself automatically — just keep
+                                this page open.
                             </p>
                         </CardContent>
                     </Card>
@@ -113,9 +113,8 @@ export default function MyQr({ qr }: Props) {
                                 No student profile linked
                             </p>
                             <p className="text-sm">
-                                Your account is not linked to a student
-                                profile yet. Ask the school office to connect
-                                it.
+                                Your account is not linked to a student profile
+                                yet. Ask the school office to connect it.
                             </p>
                         </CardContent>
                     </Card>

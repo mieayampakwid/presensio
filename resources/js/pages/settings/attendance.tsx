@@ -69,9 +69,7 @@ export default function AttendanceSettings({ settings }: Props) {
                                         </option>
                                     ))}
                                 </select>
-                                <InputError
-                                    message={errors.school_timezone}
-                                />
+                                <InputError message={errors.school_timezone} />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">
@@ -128,9 +126,7 @@ export default function AttendanceSettings({ settings }: Props) {
                                 <Label htmlFor="require_checkout">
                                     Require check-out tap
                                 </Label>
-                                <InputError
-                                    message={errors.require_checkout}
-                                />
+                                <InputError message={errors.require_checkout} />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">

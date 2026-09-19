@@ -112,8 +112,10 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Reasons the class cannot be deleted, in display order. Spec 03 appends
-     * its attendance-history check here.
+     * Reasons the class cannot be deleted, in display order. Attendance rows
+     * carry no class_id (spec 03 schema) and hang off students, so deleting
+     * a class never orphans attendance history — no extra blocker is needed
+     * here. Do not invent an attendances.class_id column to add one.
      *
      * @return list<string>
      */

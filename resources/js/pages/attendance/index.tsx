@@ -80,13 +80,7 @@ const METHOD_LABELS: Record<string, string> = {
     manual_override: 'Manual override',
 };
 
-function EditRecordDialog({
-    row,
-    date,
-}: {
-    row: Row;
-    date: string;
-}) {
+function EditRecordDialog({ row, date }: { row: Row; date: string }) {
     const [open, setOpen] = useState(false);
     const record = row.attendance;
 
@@ -248,7 +242,11 @@ function BulkPresentDialog({
                 >
                     {({ processing }) => (
                         <>
-                            <input type="hidden" name="class_id" value={classId ?? ''} />
+                            <input
+                                type="hidden"
+                                name="class_id"
+                                value={classId ?? ''}
+                            />
                             <input type="hidden" name="date" value={date} />
 
                             <DialogFooter className="gap-2">
@@ -378,7 +376,8 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                             >
                                                 {STATUS_BADGES[
                                                     row.attendance.status
-                                                ]?.label ?? row.attendance.status}
+                                                ]?.label ??
+                                                    row.attendance.status}
                                             </Badge>
                                         ) : (
                                             <span className="text-muted-foreground">

@@ -153,6 +153,10 @@ class StudentController extends Controller
             $blockers[] = 'Cannot delete: linked to a user account. Unlink it first.';
         }
 
+        if ($student->attendances()->exists()) {
+            $blockers[] = 'Cannot delete: student has attendance history.';
+        }
+
         return $blockers;
     }
 }
