@@ -5,6 +5,7 @@ import {
     GraduationCap,
     IdCard,
     LayoutGrid,
+    QrCode,
     School,
     UserRound,
     Users,
@@ -28,6 +29,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { myQr } from '@/routes/attendance';
 import type { Auth, NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
@@ -79,6 +81,15 @@ export function AppSidebar() {
                       title: 'RFID Cards',
                       href: RfidCardController.index().url,
                       icon: IdCard,
+                  },
+              ]
+            : []),
+        ...(auth.user.role === 'student'
+            ? [
+                  {
+                      title: 'My QR',
+                      href: myQr().url,
+                      icon: QrCode,
                   },
               ]
             : []),
