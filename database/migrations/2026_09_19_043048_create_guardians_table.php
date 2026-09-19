@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->unique();
+            $table->foreignId('user_id')->nullable()->unique()->constrained()->nullOnDelete();
             $table->string('name');
             // The guardian identity: import dedupe key, sibling coalescing.
             $table->string('phone_number', 32)->unique();

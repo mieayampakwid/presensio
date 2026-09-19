@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->index();
+            // RESTRICT (no cascade): the DB-level mirror of the application
+            // deletion guard — attendance history is never wiped.
+            $table->foreignId('student_id')->index()->constrained();
             $table->date('date');
             // present | absent | late | sick | leave (spec 03 §Schema).
             $table->string('status');
@@ -22,7 +24,7 @@ return new class extends Migration
             // rfid | dynamic_qr | manual_override; null = system-generated
             // (cron sweep, excuse injection).
             $table->string('scan_method')->nullable();
-            $table->foreignId('override_by_user_id')->nullable();
+            $table->foreignId('override_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('notes')->nullable();
             $table->timestamps();
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             // Duplicates allowed on purpose; the 1:1 homeroom rule lives in
             // config validation (spec 02 §4), not the schema.
-            $table->foreignId('teacher_id')->nullable()->index();
+            $table->foreignId('teacher_id')->nullable()->index()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

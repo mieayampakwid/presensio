@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->unique();
+            $table->foreignId('user_id')->nullable()->unique()->constrained()->nullOnDelete();
             $table->string('full_name');
             $table->string('nickname')->nullable();
             $table->date('dob');
             $table->string('student_number')->nullable()->unique();
             // Current active enrollment; replacing the value replaces the
             // enrollment (spec 02 §3). No history table in v1.
-            $table->foreignId('class_id')->nullable()->index();
+            $table->foreignId('class_id')->nullable()->index()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

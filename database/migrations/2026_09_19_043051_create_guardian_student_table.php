@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('guardian_student', function (Blueprint $table) {
-            $table->foreignId('guardian_id')->index();
-            $table->foreignId('student_id')->index();
+            // Pivot rows are meaningless without both ends.
+            $table->foreignId('guardian_id')->index()->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->index()->constrained()->cascadeOnDelete();
             $table->primary(['guardian_id', 'student_id']);
         });
     }
