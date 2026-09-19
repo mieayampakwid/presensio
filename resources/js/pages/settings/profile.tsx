@@ -1,28 +1,30 @@
 import { Form, Head, usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import GuardianContactController from '@/actions/App/Http/Controllers/Settings/GuardianContactController';
 import { edit } from '@/routes/profile';
 import type { Auth } from '@/types';
-import { send } from '@/routes/verification';
+
+type Guardian = {
+    id: number;
+    name: string;
+    phone_number: string;
+    work: string | null;
+    address: string | null;
+};
 
 type PageProps = {
     auth: Auth;
+    guardian: Guardian | null;
 };
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
-    mustVerifyEmail: boolean;
-    status?: string;
-}) {
-    const { auth } = usePage<PageProps>().props;
+export default function Profile() {
+    const { auth, guardian } = usePage<PageProps>().props;
 
     return (
         <>
@@ -33,98 +35,105 @@ export default function Profile({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title="Account"
+                    description="Your account details. Username and role are managed by the school administrator."
                 />
 
-                <Form
-                    {...ProfileController.update.form()}
-                    options={{
-                        preserveScroll: true,
-                    }}
-                    className="space-y-6"
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                <div className="grid gap-4">
+                    <div className="grid gap-2">
+                        <p className="text-sm leading-none font-medium">Username</p>
+                        <p className="text-muted-foreground text-sm">
+                            {auth.user.username}
+                        </p>
+                    </div>
 
-                                <Input
-                                    id="name"
-                                    className="mt-1 block w-full"
-                                    defaultValue={auth.user.name}
-                                    name="name"
-                                    required
-                                    autoComplete="name"
-                                    placeholder="Full name"
-                                />
+                    <div className="grid gap-2">
+                        <p className="text-sm leading-none font-medium">Email</p>
+                        <p className="text-muted-foreground text-sm">
+                            {auth.user.email ?? '—'}
+                        </p>
+                    </div>
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.name}
-                                />
-                            </div>
+                    <div className="grid gap-2">
+                        <p className="text-sm leading-none font-medium">Role</p>
+                        <div>
+                            <Badge variant="outline" className="capitalize">
+                                {auth.user.role}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                {guardian && <GuardianContactSection guardian={guardian} />}
 
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    className="mt-1 block w-full"
-                                    defaultValue={auth.user.email}
-                                    name="email"
-                                    required
-                                    autoComplete="username"
-                                    placeholder="Email address"
-                                />
-
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.email}
-                                />
-                            </div>
-
-                            {mustVerifyEmail &&
-                                auth.user.email_verified_at === null && (
-                                    <div>
-                                        <p className="text-muted-foreground -mt-4 text-sm">
-                                            Your email address is unverified.{' '}
-                                            <Link
-                                                href={send()}
-                                                as="button"
-                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                            >
-                                                Click here to re-send the
-                                                verification email.
-                                            </Link>
-                                        </p>
-
-                                        {status ===
-                                            'verification-link-sent' && (
-                                            <div className="mt-2 text-sm font-medium text-green-600">
-                                                A new verification link has been
-                                                sent to your email address.
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-profile-button"
-                                >
-                                    Save
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                <p className="text-muted-foreground text-sm">
+                    Change your password from the{' '}
+                    <span className="text-foreground font-medium">Security</span>{' '}
+                    tab.
+                </p>
             </div>
-
-            <DeleteUser />
         </>
+    );
+}
+
+function GuardianContactSection({ guardian }: { guardian: Guardian }) {
+    return (
+        <Form
+            {...GuardianContactController.update.form()}
+            className="space-y-6"
+        >
+            {({ processing, errors }) => (
+                <div className="space-y-6">
+                    <Heading
+                        variant="small"
+                        title="Contact details"
+                        description={`Absence notifications for your children go to these details. Your name (${guardian.name}) is managed by the school.`}
+                    />
+
+                    <div className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="phone_number">Phone number</Label>
+                            <Input
+                                id="phone_number"
+                                name="phone_number"
+                                defaultValue={guardian.phone_number}
+                                required
+                                autoComplete="tel"
+                            />
+                            <InputError message={errors.phone_number} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="work">Occupation (optional)</Label>
+                            <Input
+                                id="work"
+                                name="work"
+                                defaultValue={guardian.work ?? ''}
+                                autoComplete="off"
+                            />
+                            <InputError message={errors.work} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="address">Address (optional)</Label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                defaultValue={guardian.address ?? ''}
+                                rows={3}
+                                className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            />
+                            <InputError message={errors.address} />
+                        </div>
+                    </div>
+
+                    <Button type="submit" disabled={processing}>
+                        {processing && <Spinner />}
+                        Save contact details
+                    </Button>
+                </div>
+            )}
+        </Form>
     );
 }
 

@@ -1,9 +1,12 @@
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
+
 export type User = {
     id: number;
-    name: string;
-    email: string;
+    username: string;
+    email: string | null;
+    role: UserRole;
     avatar?: string;
-    email_verified_at: string | null;
+    is_active?: boolean;
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;

@@ -7,20 +7,22 @@ function getInitial(name: string): string {
 }
 
 export function useInitials(): GetInitialsFn {
-    return useCallback((fullName: string): string => {
-        const names = fullName.trim().split(/\s+/u).filter(Boolean);
+    return useCallback((identifier: string): string => {
+        // Usernames are identity numbers (NIS/NIP/NIK), not names — take the
+        // first two characters rather than splitting on spaces.
+        const trimmed = identifier.trim();
 
-        if (names.length === 0) {
+        if (trimmed.length === 0) {
             return '';
         }
 
-        if (names.length === 1) {
-            return getInitial(names[0]).toUpperCase();
+        if (Array.from(trimmed).length === 1) {
+            return getInitial(trimmed).toUpperCase();
         }
 
-        const firstInitial = getInitial(names[0]);
-        const lastInitial = getInitial(names[names.length - 1]);
-
-        return `${firstInitial}${lastInitial}`.toUpperCase();
+        return Array.from(trimmed)
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
     }, []);
 }

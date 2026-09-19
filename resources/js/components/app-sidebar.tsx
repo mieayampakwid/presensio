@@ -1,5 +1,19 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    FolderGit2,
+    GraduationCap,
+    IdCard,
+    LayoutGrid,
+    School,
+    UserRound,
+    Users,
+} from 'lucide-react';
+import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
+import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
+import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
+import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,15 +28,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+import type { Auth, NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
     {
@@ -38,6 +44,46 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        ...(auth.user.role === 'admin'
+            ? [
+                  { title: 'Users', href: '/users', icon: Users },
+                  {
+                      title: 'Teachers',
+                      href: TeacherController.index().url,
+                      icon: UserRound,
+                  },
+                  {
+                      title: 'Guardians',
+                      href: GuardianController.index().url,
+                      icon: Users,
+                  },
+                  {
+                      title: 'Students',
+                      href: StudentController.index().url,
+                      icon: GraduationCap,
+                  },
+                  {
+                      title: 'Classes',
+                      href: SchoolClassController.index().url,
+                      icon: School,
+                  },
+                  {
+                      title: 'RFID Cards',
+                      href: RfidCardController.index().url,
+                      icon: IdCard,
+                  },
+              ]
+            : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

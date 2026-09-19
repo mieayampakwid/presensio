@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -17,9 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        $middleware->alias([
+            'role' => EnsureUserHasRole::class,
+        ]);
+
+        // No 'auth' middleware group exists in Laravel; appending there would
+        // shadow the framework's `auth` route alias. Run in `web` instead —
+        // it no-ops for guests and covers every authenticated route.
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            EnsureUserIsActive::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })
