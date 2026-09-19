@@ -19,6 +19,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
 
 type ClassOption = {
     id: number;
@@ -59,26 +60,6 @@ const STATUS_OPTIONS = [
     { value: 'sick', label: 'Sick' },
     { value: 'leave', label: 'Leave' },
 ];
-
-const STATUS_BADGES: Record<
-    string,
-    {
-        label: string;
-        variant: 'default' | 'secondary' | 'destructive' | 'outline';
-    }
-> = {
-    present: { label: 'Present', variant: 'default' },
-    late: { label: 'Late', variant: 'outline' },
-    absent: { label: 'Absent', variant: 'destructive' },
-    sick: { label: 'Sick', variant: 'secondary' },
-    leave: { label: 'Leave', variant: 'secondary' },
-};
-
-const METHOD_LABELS: Record<string, string> = {
-    rfid: 'RFID',
-    dynamic_qr: 'QR',
-    manual_override: 'Manual override',
-};
 
 function EditRecordDialog({ row, date }: { row: Row; date: string }) {
     const [open, setOpen] = useState(false);

@@ -33,7 +33,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { myQr } from '@/routes/attendance';
+import { myAttendance, myQr } from '@/routes/attendance';
 import type { Auth, NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
@@ -99,6 +99,11 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+                  {
+                      title: 'My Attendance',
+                      href: myAttendance().url,
+                      icon: CalendarCheck,
                   },
               ]
             : []),
