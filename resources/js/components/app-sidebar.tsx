@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarCheck,
     FolderGit2,
     GraduationCap,
     IdCard,
@@ -10,6 +11,7 @@ import {
     UserRound,
     Users,
 } from 'lucide-react';
+import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
@@ -90,6 +92,15 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+              ]
+            : []),
+        ...(auth.user.role === 'teacher' || auth.user.role === 'admin'
+            ? [
+                  {
+                      title: 'Attendance',
+                      href: AttendanceController.index().url,
+                      icon: CalendarCheck,
                   },
               ]
             : []),
