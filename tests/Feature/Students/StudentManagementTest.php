@@ -3,6 +3,7 @@
 namespace Tests\Feature\Students;
 
 use App\Models\Attendance;
+use App\Models\Excuse;
 use App\Models\Guardian;
 use App\Models\RfidCard;
 use App\Models\SchoolClass;
@@ -197,6 +198,20 @@ class StudentManagementTest extends TestCase
         $admin = User::factory()->admin()->create();
         $student = Student::factory()->create();
         Attendance::factory()->create(['student_id' => $student->id]);
+
+        $this->actingAs($admin)
+            ->from(route('students.index'))
+            ->delete(route('students.destroy', $student))
+            ->assertRedirect(route('students.index'));
+
+        $this->assertDatabaseHas('students', ['id' => $student->id]);
+    }
+
+    public function test_student_deletion_is_blocked_with_excuse_history(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $student = Student::factory()->create();
+        Excuse::factory()->rejected()->create(['student_id' => $student->id]);
 
         $this->actingAs($admin)
             ->from(route('students.index'))

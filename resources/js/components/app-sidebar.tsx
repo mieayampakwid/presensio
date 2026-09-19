@@ -3,6 +3,7 @@ import {
     BookOpen,
     CalendarCheck,
     CalendarOff,
+    FileText,
     FolderGit2,
     GraduationCap,
     IdCard,
@@ -13,6 +14,7 @@ import {
     Users,
 } from 'lucide-react';
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
+import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
@@ -34,6 +36,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { myAttendance, myQr } from '@/routes/attendance';
+import { my } from '@/routes/excuses';
 import type { Auth, NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
@@ -113,6 +116,20 @@ export function AppSidebar() {
                       title: 'Attendance',
                       href: AttendanceController.index().url,
                       icon: CalendarCheck,
+                  },
+                  {
+                      title: 'Excuses',
+                      href: ExcuseReviewController.index().url,
+                      icon: FileText,
+                  },
+              ]
+            : []),
+        ...(auth.user.role === 'parent'
+            ? [
+                  {
+                      title: 'My Excuses',
+                      href: my().url,
+                      icon: FileText,
                   },
               ]
             : []),

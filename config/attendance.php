@@ -47,4 +47,20 @@ return [
         'country_code' => 'ID',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Excuse attachments
+    |--------------------------------------------------------------------------
+    |
+    | Proof uploads on guardian excuse submissions (spec 04 §Requirements 1):
+    | photos or PDFs such as a doctor's note. Stored on the private local
+    | disk under excuses/ and served through an authorized download route.
+    |
+    */
+
+    'excuses' => [
+        'attachment_mimes' => env('EXCUSE_ATTACHMENT_MIMES', 'jpg,jpeg,png,pdf'),
+        'attachment_max_kb' => (int) env('EXCUSE_ATTACHMENT_MAX_KB', 5120),
+    ],
+
 ];

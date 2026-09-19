@@ -79,6 +79,16 @@ class Student extends Model
     }
 
     /**
+     * Guardian-submitted absence excuses covering this student (spec 04).
+     *
+     * @return HasMany<Excuse, $this>
+     */
+    public function excuses(): HasMany
+    {
+        return $this->hasMany(Excuse::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

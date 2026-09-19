@@ -157,6 +157,12 @@ class StudentController extends Controller
             $blockers[] = 'Cannot delete: student has attendance history.';
         }
 
+        // Spec 04: excuse history survives too (the RESTRICT foreign key
+        // would otherwise turn the delete into a 500).
+        if ($student->excuses()->exists()) {
+            $blockers[] = 'Cannot delete: student has absence excuses.';
+        }
+
         return $blockers;
     }
 }
