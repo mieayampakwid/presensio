@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\AttendanceSettingsController;
 use App\Http\Controllers\Settings\GuardianContactController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -24,6 +25,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('guardian-contact.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('settings/attendance', [AttendanceSettingsController::class, 'edit'])
+        ->name('attendance-settings.edit');
+
+    Route::put('settings/attendance', [AttendanceSettingsController::class, 'update'])
+        ->name('attendance-settings.update');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {
