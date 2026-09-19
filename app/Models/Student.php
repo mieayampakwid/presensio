@@ -69,6 +69,16 @@ class Student extends Model
     }
 
     /**
+     * Attendance records, one per day (spec 03).
+     *
+     * @return HasMany<Attendance, $this>
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
