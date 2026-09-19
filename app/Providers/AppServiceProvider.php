@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+
+        // Surface hidden N+1 queries as loud failures in dev/test instead
+        // of silent extra queries in production.
+        Model::preventLazyLoading(! app()->isProduction());
 
         // Scanner tap endpoint (spec 03) — the framework `api` group ships
         // no default throttle, so the named limiter is load-bearing.

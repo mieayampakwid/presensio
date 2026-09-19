@@ -18,6 +18,11 @@ class StoreUserRequest extends FormRequest
 {
     use PasswordValidationRules;
 
+    public function __construct(private readonly UserProfileLinker $linker)
+    {
+        parent::__construct();
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -51,7 +56,7 @@ class StoreUserRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                app(UserProfileLinker::class)->validateSelection(
+                $this->linker->validateSelection(
                     $validator,
                     $this->string('role')->toString(),
                     $this->filled('profile_id') ? (int) $this->input('profile_id') : null,

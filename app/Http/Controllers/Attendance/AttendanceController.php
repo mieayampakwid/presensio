@@ -14,6 +14,7 @@ use App\Services\Attendance\ClassAccess;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -121,14 +122,22 @@ class AttendanceController extends Controller
                 ->get(['id']);
 
             foreach ($students as $student) {
-                Attendance::create([
-                    'student_id' => $student->id,
-                    'date' => $validated['date'],
-                    'status' => AttendanceStatus::Present,
-                    'scan_method' => ScanMethod::ManualOverride,
-                    'override_by_user_id' => auth()->id(),
-                    'notes' => 'Bulk marked present',
-                ]);
+                // A student tapping a scanner between the gap query and this
+                // create loses the (student_id, date) unique insert — the
+                // scanner's record wins and this loop skips them (same
+                // create-once rule as the scan service).
+                try {
+                    Attendance::create([
+                        'student_id' => $student->id,
+                        'date' => $validated['date'],
+                        'status' => AttendanceStatus::Present,
+                        'scan_method' => ScanMethod::ManualOverride,
+                        'override_by_user_id' => auth()->id(),
+                        'notes' => 'Bulk marked present',
+                    ]);
+                } catch (UniqueConstraintViolationException) {
+                    continue;
+                }
             }
 
             return $students->count();

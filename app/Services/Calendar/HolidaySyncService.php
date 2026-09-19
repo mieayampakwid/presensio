@@ -9,6 +9,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * One-way, idempotent sync from the Nager.Date feed (spec 03 §Requirements 7).
@@ -35,6 +36,15 @@ class HolidaySyncService
         try {
             foreach ([$year, $year + 1] as $holidayYear) {
                 $response = Http::baseUrl((string) config('attendance.holiday_feed.base_url'))
+                    // Explicit timeouts keep a hung feed from stalling the
+                    // scheduler; the GET is idempotent so a transient failure
+                    // retries once before the fail-soft path.
+                    ->connectTimeout(5)
+                    ->timeout(15)
+                    ->retry(1, 1000, function (Throwable $exception): bool {
+                        return $exception instanceof ConnectionException
+                            || ($exception instanceof RequestException && $exception->response->serverError());
+                    })
                     ->get("/PublicHolidays/{$holidayYear}/".config('attendance.holiday_feed.country_code'))
                     ->throw();
 
