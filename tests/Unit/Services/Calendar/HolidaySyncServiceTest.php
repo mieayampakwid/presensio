@@ -121,4 +121,18 @@ class HolidaySyncServiceTest extends TestCase
         $this->assertArrayHasKey('failed', $result);
         $this->assertSame(0, NonSchoolDay::count());
     }
+
+    public function test_a_transient_server_error_retries_before_failing_soft(): void
+    {
+        // 2026 feed throws once, then serves; the retry must absorb it.
+        Http::fakeSequence()
+            ->push(['oops'], 500)
+            ->push([['date' => '2026-12-25', 'localName' => 'Natal', 'name' => 'Christmas Day', 'global' => true]])
+            ->push([['date' => '2027-01-01', 'localName' => 'Tahun Baru', 'name' => "New Year's Day", 'global' => true]]);
+
+        $result = (app(HolidaySyncService::class))->sync();
+
+        $this->assertSame(['imported' => 2, 'updated' => 0], $result);
+        Http::assertSentCount(3);
+    }
 }

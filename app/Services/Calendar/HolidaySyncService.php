@@ -38,10 +38,11 @@ class HolidaySyncService
                 $response = Http::baseUrl((string) config('attendance.holiday_feed.base_url'))
                     // Explicit timeouts keep a hung feed from stalling the
                     // scheduler; the GET is idempotent so a transient failure
-                    // retries once before the fail-soft path.
+                    // retries once before the fail-soft path. NB: retry($times)
+                    // counts TOTAL attempts, not retries.
                     ->connectTimeout(5)
                     ->timeout(15)
-                    ->retry(1, 1000, function (Throwable $exception): bool {
+                    ->retry(2, 1000, function (Throwable $exception): bool {
                         return $exception instanceof ConnectionException
                             || ($exception instanceof RequestException && $exception->response->serverError());
                     })
