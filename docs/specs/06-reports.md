@@ -1,6 +1,6 @@
 # 06 — Reports & Exports
 
-Status: draft v1.4 (2026-09-20)
+Status: draft v1.5 (2026-09-21) — v1.5 adds the academic-year dimension to the class report (spec 08); attribution is date-effective via enrollments (spec 02 v2.0).
 
 ## Purpose
 
@@ -16,7 +16,7 @@ Attendance summaries over a date range, per student and per class, with CSV expo
 ## Requirements
 
 1. **Student report**: pick student (search by `full_name` or `student_number`) + range → per-status counts, attendance rate, and the day-by-day list of records.
-2. **Class report**: pick class + range → per-status counts and rate per student, plus a students × dates grid showing each day's status.
+2. **Class report**: pick academic year + class + range (the class list is per selected year, spec 08; attribution is date-effective via enrollments) → per-status counts and rate per student, plus a students × dates grid showing each day's status.
 3. Both reports export to CSV matching what the screen shows (grid and summary).
 4. Weekends and non-school days (Spec 03 calendar) appear greyed/no-cell in the grid; days without a record show as blank (not counted in rates).
 5. Reports are read-only views; no caching layer in v1 — plain queries are fine at single-school scale.
