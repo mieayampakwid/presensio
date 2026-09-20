@@ -19,8 +19,11 @@ use Illuminate\Support\Facades\Hash;
  * guardians (including a phone-less one and a dual-guardian family) and
  * a couple of RFID cards. Run with `php artisan migrate:fresh --seed`.
  *
- * Every account uses the password "password". Never runs in production —
- * production admins come from `php artisan app:create-admin`.
+ * Login usernames are memorable first names (budi, ayu, slamet, …) for
+ * dev convenience; the NIP/NIS identity numbers still live on the
+ * teacher_number/student_number profile columns where spec 01 puts
+ * them. Every account uses the password "password". Never runs in
+ * production — production admins come from `php artisan app:create-admin`.
  */
 class DatabaseSeeder extends Seeder
 {
@@ -48,8 +51,8 @@ class DatabaseSeeder extends Seeder
         // --- Teachers + homeroom classes ----------------------------------
         $budi = Teacher::create(['name' => 'Budi Santoso', 'teacher_number' => '198505052010011001', 'phone_number' => '+628111002001']);
         $siti = Teacher::create(['name' => 'Siti Aminah', 'teacher_number' => '198703102011012002', 'phone_number' => '+628111002002']);
-        $budiUser = User::create(['username' => $budi->teacher_number, 'email' => 'budi@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
-        $sitiUser = User::create(['username' => $siti->teacher_number, 'email' => 'siti@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
+        $budiUser = User::create(['username' => 'budi', 'email' => 'budi@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
+        $sitiUser = User::create(['username' => 'siti', 'email' => 'siti@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
         $budi->update(['user_id' => $budiUser->id]);
         $siti->update(['user_id' => $sitiUser->id]);
 
@@ -83,8 +86,8 @@ class DatabaseSeeder extends Seeder
 
             if ($index < 2) {
                 $studentUser = User::create([
-                    'username' => $nis,
-                    'email' => strtolower(str_replace(' ', '.', $nickname)).'.siswa@presensio.test',
+                    'username' => strtolower($nickname),
+                    'email' => strtolower($nickname).'.siswa@presensio.test',
                     'password' => $password,
                     'role' => UserRole::Student,
                     'is_active' => true,
@@ -106,7 +109,7 @@ class DatabaseSeeder extends Seeder
             'work' => 'Merchant',
             'address' => 'Jl. Kenanga 9, Jakarta',
         ]);
-        $slametUser = User::create(['username' => '3204015501800001', 'email' => 'slamet@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
+        $slametUser = User::create(['username' => 'slamet', 'email' => 'slamet@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
         $slamet->update(['user_id' => $slametUser->id]);
 
         $dewi = Guardian::create([
@@ -116,7 +119,7 @@ class DatabaseSeeder extends Seeder
             'work' => 'Teacher',
             'address' => 'Jl. Kenanga 9, Jakarta',
         ]);
-        $dewiUser = User::create(['username' => '3174020503820002', 'email' => 'dewi@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
+        $dewiUser = User::create(['username' => 'dewi', 'email' => 'dewi@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
         $dewi->update(['user_id' => $dewiUser->id]);
 
         $sitiRahayu = Guardian::create([
@@ -148,13 +151,13 @@ class DatabaseSeeder extends Seeder
                 ['Admin', $admin->username, 'password'],
                 ['Teacher (Kelas 5A)', $budiUser->username, 'password'],
                 ['Teacher (Kelas 5B)', $sitiUser->username, 'password'],
-                ['Student (Ahmad)', '2410001', 'password'],
-                ['Student (Ayu)', '2410002', 'password'],
+                ['Student (Ahmad)', 'ahmad', 'password'],
+                ['Student (Ayu)', 'ayu', 'password'],
                 ['Parent (Slamet)', $slametUser->username, 'password'],
                 ['Parent (Dewi)', $dewiUser->username, 'password'],
             ],
         );
 
-        $this->command->info('Students 2410003–2410008 and guardians Siti Rahayu / Bambang Sutrisno have no user account — exercise the users-page profile linker on them.');
+        $this->command->info('Students Bagas–Gita and guardians Siti Rahayu / Bambang Sutrisno have no user account — exercise the users-page profile linker on them.');
     }
 }
