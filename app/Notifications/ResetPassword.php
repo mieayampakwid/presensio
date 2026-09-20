@@ -22,9 +22,10 @@ class ResetPassword extends Notification
     }
 
     /**
-     * Email-only for now. Users without an email on file are silently skipped —
-     * the WhatsApp channel (guardian/teacher phone from the master profile)
-     * plugs in here when spec 05 lands.
+     * Email-only. Users without an email on file are silently skipped.
+     * Spec 05's WhatsApp channel covers absence alerts only — password
+     * reset over WhatsApp remains out of scope (a reset link must never
+     * surface on a shared/family phone).
      *
      * @param  User  $notifiable
      * @return array<int, string>

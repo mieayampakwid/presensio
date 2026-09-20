@@ -18,7 +18,7 @@ class MarkAbsencesCommand extends Command
     /**
      * Auto-absent sweep (spec 03 §Requirements 3). Creates records with a
      * null scan_method — the system-generated marker. Attendance::created
-     * is spec 05's future notification trigger point; nothing fires today.
+     * dispatches the spec 05 guardian notifications via the observer.
      */
     public function handle(SchoolSettings $settings): int
     {

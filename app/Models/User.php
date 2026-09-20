@@ -80,8 +80,9 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
-     * Send the password reset notification (custom: username-based URL,
-     * email-only delivery until the WhatsApp gateway lands in spec 05).
+     * Send the password reset notification (custom: username-based URL).
+     * Email-only — reset-over-WhatsApp stayed out of scope in spec 05,
+     * which delivered the WhatsApp channel for absence alerts instead.
      */
     public function sendPasswordResetNotification($token): void
     {

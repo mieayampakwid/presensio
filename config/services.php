@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    /*
+    |----------------------------------------------------------------
+    | WAHA — self-hosted WhatsApp HTTP API (spec 05 §Decisions)
+    |----------------------------------------------------------------
+    |
+    | The absence-alert WhatsApp channel. Point WAHA_BASE_URL at the
+    | WAHA container (e.g. http://waha:3000); set WAHA_API_KEY only if
+    | the WAHA server itself enforces one (its WAHA_API_KEY). An empty
+    | base URL makes the client throw — a loud misconfiguration that
+    | surfaces as failed jobs, never a silently skipped notification.
+    |
+    */
+
+    'waha' => [
+        'base_url' => env('WAHA_BASE_URL'),
+        'api_key' => env('WAHA_API_KEY'),
+        'session' => env('WAHA_SESSION', 'default'),
+    ],
+
 ];

@@ -25,7 +25,7 @@ use Inertia\Response;
 /**
  * Teacher/admin exception dashboard (spec 03 §Requirements 4–5). Manual
  * edits never notify anyone (spec 05); creating an absent record here is
- * that notification system's future trigger point, not today's job.
+ * the notification system's creation-time trigger (via the observer).
  */
 class AttendanceController extends Controller
 {
