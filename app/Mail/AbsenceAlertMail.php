@@ -21,6 +21,7 @@ class AbsenceAlertMail extends Mailable
         public readonly string $guardianName,
         public readonly string $studentName,
         public readonly ?string $className,
+        public readonly string $statusLabel,
         public readonly string $dateText,
         public readonly string $dateShort,
     ) {}
@@ -28,7 +29,7 @@ class AbsenceAlertMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Absensi: {$this->studentName} tidak hadir {$this->dateShort}",
+            subject: "Absensi: {$this->studentName} {$this->statusLabel} {$this->dateShort}",
         );
     }
 

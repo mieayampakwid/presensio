@@ -24,11 +24,11 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Sends the absence alert for one freshly created absent attendance
- * record to every linked guardian (spec 05): WhatsApp via WAHA first,
- * email when the guardian has no phone on file. A send failure after the
- * queue retries is escalated to failed(), which delivers the strict
- * email fallback for WhatsApp rows.
+ * Sends the guardian alert for one freshly created attendance record
+ * whose status is enabled in config (default: absent only — spec 05):
+ * WhatsApp via WAHA first, email when the guardian has no phone on file.
+ * A send failure after the queue retries is escalated to failed(), which
+ * delivers the strict email fallback for WhatsApp rows.
  */
 class SendAbsenceNotifications implements ShouldQueue
 {
@@ -48,7 +48,7 @@ class SendAbsenceNotifications implements ShouldQueue
         // suppresses the alert (spec 05: no retraction, no stale sends).
         $attendance = Attendance::query()->findOrFail($this->attendance->id);
 
-        if ($attendance->status !== AttendanceStatus::Absent) {
+        if (! in_array($attendance->status->value, $this->statuses(), true)) {
             return;
         }
 
@@ -60,7 +60,7 @@ class SendAbsenceNotifications implements ShouldQueue
             return;
         }
 
-        $text = $this->message($attendance->date->toDateString(), $student);
+        $text = $this->message($attendance, $student);
         $failed = false;
 
         foreach ($student->guardians as $guardian) {
@@ -86,6 +86,7 @@ class SendAbsenceNotifications implements ShouldQueue
                         guardianName: $guardian->name,
                         studentName: $student->full_name,
                         className: $student->schoolClass?->name,
+                        statusLabel: $this->statusLabel($attendance->status),
                         dateText: $this->dateText($attendance->date->toDateString()),
                         dateShort: $attendance->date->toDateString(),
                     ));
@@ -133,7 +134,7 @@ class SendAbsenceNotifications implements ShouldQueue
         }
 
         $attendance->load('student.schoolClass');
-        $text = $this->message($attendance->date->toDateString(), $attendance->student);
+        $text = $this->message($attendance, $attendance->student);
 
         foreach ($rows as $row) {
             $email = $row->guardian->user?->email;
@@ -147,6 +148,7 @@ class SendAbsenceNotifications implements ShouldQueue
                     guardianName: $row->guardian->name,
                     studentName: $attendance->student->full_name,
                     className: $attendance->student->schoolClass?->name,
+                    statusLabel: $this->statusLabel($attendance->status),
                     dateText: $this->dateText($attendance->date->toDateString()),
                     dateShort: $attendance->date->toDateString(),
                 ));
@@ -217,20 +219,48 @@ class SendAbsenceNotifications implements ShouldQueue
     }
 
     /**
-     * The Indonesian alert body (spec 05 §Decisions content).
+     * The Indonesian alert body (spec 05 §Decisions content), worded for
+     * the record's status — the school may notify on more than absences.
      */
-    private function message(string $date, Student $student): string
+    private function message(Attendance $attendance, Student $student): string
     {
         $class = $student->schoolClass?->name;
 
         return sprintf(
-            '[%s] Anak Anda, %s%s, tercatat TIDAK HADIR pada %s. Silakan hubungi wali kelas atau masuk ke %s untuk melihat catatan kehadiran.',
+            '[%s] Anak Anda, %s%s, tercatat %s pada %s. Silakan hubungi wali kelas atau masuk ke %s untuk melihat catatan kehadiran.',
             (string) config('app.name'),
             $student->full_name,
             $class !== null ? " ({$class})" : '',
-            $this->dateText($date),
+            $this->statusPhrase($attendance->status),
+            $this->dateText($attendance->date->toDateString()),
             rtrim((string) config('app.url'), '/'),
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function statuses(): array
+    {
+        $statuses = config('attendance.notifications.statuses');
+
+        return is_array($statuses) ? array_values($statuses) : [];
+    }
+
+    private function statusPhrase(AttendanceStatus $status): string
+    {
+        return match ($status) {
+            AttendanceStatus::Present => 'HADIR',
+            AttendanceStatus::Late => 'TERLAMBAT',
+            AttendanceStatus::Absent => 'TIDAK HADIR',
+            AttendanceStatus::Sick => 'SAKIT',
+            AttendanceStatus::Leave => 'IZIN',
+        };
+    }
+
+    private function statusLabel(AttendanceStatus $status): string
+    {
+        return mb_strtolower($this->statusPhrase($status));
     }
 
     /**

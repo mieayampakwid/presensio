@@ -63,4 +63,26 @@ return [
         'attachment_max_kb' => (int) env('EXCUSE_ATTACHMENT_MAX_KB', 5120),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Guardian absence notifications (spec 05)
+    |--------------------------------------------------------------------------
+    |
+    | Attendance statuses that notify every linked guardian when a record
+    | is CREATED. Default: absences only — a rare, high-signal safety
+    | alert. Schools may add present/late/sick/leave (comma-separated), but
+    | be aware of the cost before doing so: message volume grows from a
+    | handful per day to one per student per status per day, which on the
+    | WAHA (unofficial WhatsApp protocol) gateway is a phone-number ban
+    | risk, and on paid gateways (Fonnte/Twilio) a per-message bill. Also
+    | note the fatigue trade-off: guardians who receive a message every
+    | morning tend to mute the number — and with it the absence alert
+    | that exists to protect their child.
+    |
+    */
+
+    'notifications' => [
+        'statuses' => array_values(array_filter(explode(',', (string) env('ATTENDANCE_NOTIFICATION_STATUSES', 'absent')))),
+    ],
+
 ];

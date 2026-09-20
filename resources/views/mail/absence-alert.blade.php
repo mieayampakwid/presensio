@@ -1,7 +1,7 @@
 @component('mail::message')
 Yth. {{ $guardianName }},
 
-Anak Anda, **{{ $studentName }}**{{ $className ? " ({$className})" : '' }}, tercatat **TIDAK HADIR** pada {{ $dateText }}.
+Anak Anda, **{{ $studentName }}**{{ $className ? " ({$className})" : '' }}, tercatat **{{ strtoupper($statusLabel) }}** pada {{ $dateText }}.
 
 Silakan hubungi wali kelas, atau masuk ke aplikasi untuk melihat catatan kehadiran.
 

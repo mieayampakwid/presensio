@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Notifications;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\NotificationChannel;
 use App\Enums\NotificationDeliveryStatus;
 use App\Jobs\SendAbsenceNotifications;
@@ -66,6 +67,51 @@ class AbsenceNotificationTest extends TestCase
             'student_id' => $student->id,
             'date' => '2026-09-21',
         ]);
+    }
+
+    public function test_schools_can_enable_more_statuses_via_config(): void
+    {
+        [$user, $student] = $this->teacherUser();
+        config(['attendance.notifications.statuses' => ['absent', 'present', 'late']]);
+        Queue::fake();
+
+        $this->actingAs($user)
+            ->put(route('attendance.record.update'), [
+                'student_id' => $student->id,
+                'date' => '2026-09-21',
+                'status' => 'present',
+            ])
+            ->assertRedirect();
+
+        Queue::assertPushed(SendAbsenceNotifications::class);
+    }
+
+    public function test_the_message_wording_follows_the_record_status(): void
+    {
+        [, $student] = $this->teacherUser();
+        config(['attendance.notifications.statuses' => ['present']]);
+
+        $guardianUser = User::factory()->parent()->create();
+        $guardian = Guardian::factory()->create(['phone_number' => '', 'user_id' => $guardianUser->id]);
+        $guardian->students()->attach($student->id);
+
+        $attendance = Attendance::factory()->create([
+            'student_id' => $student->id,
+            'date' => '2026-09-21',
+            'status' => AttendanceStatus::Present,
+        ]);
+
+        Mail::fake();
+        Http::fake();
+
+        (new SendAbsenceNotifications($attendance))->handle(new WhatsAppClient);
+
+        Mail::assertSent(AbsenceAlertMail::class, function (AbsenceAlertMail $mail) use ($guardianUser, $student): bool {
+            return $mail->hasTo($guardianUser->email)
+                && $mail->statusLabel === 'hadir'
+                && $mail->envelope()->subject === "Absensi: {$student->full_name} hadir 2026-09-21";
+        });
+        Http::assertNothingSent();
     }
 
     public function test_the_absence_sweep_dispatches_notifications(): void
