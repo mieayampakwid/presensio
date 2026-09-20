@@ -44,7 +44,7 @@ The master data entities everything else depends on: academic years, classes, en
 - `nickname` (string, nullable) — Nama panggilan sehari-hari.
 - `dob` (date)
 - `student_number` (string, unique, nullable) — NIS/NISN.
-- *No class column* — current class is a derived relation from `enrollments` (`currentEnrollment()`, `classOn(date)` are the only sanctioned access paths; spec 08).
+- *No class column* — current class is a derived relation from `enrollments` (`currentEnrollment()`, `classOn(date)` are the only sanctioned access paths; spec 07).
 
 ### 5. `academic_years` Table
 - `id` (primary)
@@ -78,7 +78,7 @@ The master data entities everything else depends on: academic years, classes, en
 
 1. Admin CRUD screens for Teachers, Guardians, Students, Classes, and **Academic Years** (create/edit name and date bounds; set exactly one active year; a year with classes or enrollments cannot be deleted).
 2. Creating/editing a student assigns their class **in the active year** — the write creates (or replaces) the open enrollment — and allows linking guardian profiles.
-3. Moving a student mid-year ends the open enrollment and opens a new one **atomically** (single transaction); past attendance records stay intact and keep attributing to the class that was active on their dates (spec 08).
+3. Moving a student mid-year ends the open enrollment and opens a new one **atomically** (single transaction); past attendance records stay intact and keep attributing to the class that was active on their dates (spec 07).
 4. **Validation via Config**: Assigning a homeroom teacher checks a global application configuration. If the rule `allow_multiple_homerooms` is set to false, the application rejects the assignment of a teacher who already has one **in that academic year**.
 5. **Deletion Constraints**:
    - A class cannot be deleted while any enrollment references it (ever).
@@ -97,7 +97,7 @@ The master data entities everything else depends on: academic years, classes, en
 ## Out of scope
 
 - Semester entities within a year; subjects; timetables; room assignments
-- Roll-over/promotion, alumni semantics, and historical attribution rules — spec 08
+- Roll-over/promotion, alumni semantics, and historical attribution rules — spec 07
 - Direct editing of historical enrollment rows
 - Bulk import for teachers / standalone guardians (students-first importer)
 - RFID card event history (loss/reissue audit log)

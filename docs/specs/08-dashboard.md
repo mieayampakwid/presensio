@@ -1,4 +1,4 @@
-# 07 — Dashboard (Role Landing)
+# 08 — Dashboard (Role Landing)
 
 Status: draft v1 (2026-09-21)
 
@@ -53,7 +53,7 @@ Every signed-in user lands on `dashboard` after login, but the page is still the
 - Single-school scale; plain eager-loaded queries, no caching layer (same stance as spec 06).
 - Route name `dashboard` and the post-login redirect stay unchanged.
 - The welcome page (`/`) is untouched.
-- **Sequenced after spec 08** — per-class counts read the enrollment model (open enrollments, active year), not the removed `students.class_id`.
+- **Sequenced after spec 07** — per-class counts read the enrollment model (open enrollments, active year), not the removed `students.class_id`.
 - Implementation plans follow the repo convention (`docs/plans/YYYY-MM-DD-*.md`); after this spec the roadmap shifts to deploy/pilot work, not more features.
 
 ## Out of scope

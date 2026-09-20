@@ -1,4 +1,4 @@
-# 08 — Academic Roll-over & Historical Attribution
+# 07 — Academic Roll-over & Historical Attribution
 
 Status: draft v1.1 (2026-09-21) — consolidated: the foundation schema (academic_years, year-scoped classes, enrollments, removal of `students.class_id`) now lives in spec 02 v2.0; this spec owns the annual lifecycle and how the rest of the system reads it.
 
@@ -11,7 +11,7 @@ The academic year is the heartbeat of a school: rosters form each July, whole co
 - **Enrollment is the source of truth** (user-locked 2026-09-21, Clean Architecture rationale — chosen over write-time class stamping for single-source-of-truth cleanliness): a student's class on any date is *derived* from their enrollment history via `classOn(date)`. No denormalized `class_id` on `attendances`; attribution is a domain query, not stored state.
 - **Roll-over is a use case, not a bulk UPDATE**: one admin screen — create the new year, map each existing class to a target class in the new year (created on the fly with homeroom teacher; default = same name), review, apply transactionally. Students left unmapped end their enrollment with no successor (alumni/left) but keep all history. Re-applying an already-promoted year is a no-op.
 - **Today-surfaces only see enrolled students**: the auto-absent sweep, presence board, attendance dashboard, and every active picker operate on open enrollments (active year). Alumni stop appearing everywhere "today", yet remain fully visible in the years they attended.
-- **Build order**: spec 07 (Dashboard, drafted) implements **after** this spec — its per-class counts read the enrollment model.
+- **Build order**: spec 08 (Dashboard, drafted) implements **after** this spec — its per-class counts read the enrollment model.
 
 ## Requirements
 

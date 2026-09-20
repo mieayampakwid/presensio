@@ -1,6 +1,6 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: draft v2.5 (2026-09-21) — v2.5 amends the sweep's target population to enrollment-active students (spec 02 v2.0 / spec 08).
+Status: draft v2.5 (2026-09-21) — v2.5 amends the sweep's target population to enrollment-active students (spec 02 v2.0 / spec 07).
 
 ## Purpose
 
@@ -43,7 +43,7 @@ The core engine: Students independently log their attendance via Hardware Scanne
 2. **Student Portal — Dynamic QR Generator**:
    - A student-only authenticated endpoint returns the short-lived signed token; the UI renders it as a QR and auto-refreshes (~25s), bound to the requester's `student_id`.
 3. **Auto Sweep (Cron Task)**:
-   - At `auto_absent_cron_time`, creates a record with status `absent` for every student **with an enrollment active on that date** (open enrollment, spec 02 v2.0 — alumni/left students are never swept, spec 08) and no record today (weekends and `non_school_days` skipped). Approved excuses need no special case — Spec 04 pre-creates their `sick`/`leave` records, which already count as "having a record". Sweep-created records carry `scan_method = null`.
+   - At `auto_absent_cron_time`, creates a record with status `absent` for every student **with an enrollment active on that date** (open enrollment, spec 02 v2.0 — alumni/left students are never swept, spec 07) and no record today (weekends and `non_school_days` skipped). Approved excuses need no special case — Spec 04 pre-creates their `sick`/`leave` records, which already count as "having a record". Sweep-created records carry `scan_method = null`.
 4. **Teacher & Admin Exception Dashboard**:
    - Teachers may correct records for their own class(es) on any date; admins anywhere. An edit sets the status and optionally `checked_in_at`/`checked_out_at` (e.g., reconstructing a day the scanner was offline).
    - Every manual edit stamps `override_by_user_id` and `scan_method = manual_override`, with an optional `notes` context (e.g., "Card damaged"). Edits never trigger notifications (Spec 05).
