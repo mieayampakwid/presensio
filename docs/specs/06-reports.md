@@ -1,6 +1,6 @@
 # 06 — Reports & Exports
 
-Status: draft v1.3 (2026-09-18)
+Status: draft v1.4 (2026-09-20)
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Attendance summaries over a date range, per student and per class, with CSV expo
 
 ## Decisions
 
-- **Attendance rate** = (`present` + `late`) / total records × 100. `sick and leave` is shown as its own count and does not count against the rate. (If the school's official definition differs, change the formula here before building.)
+- **Attendance rate** = (`present` + `late`) / (`present` + `late` + `absent`) × 100 — sick/leave are excluded from the denominator by default (locked 2026-09-20: "does not count against the rate" wins over the literal "total records"; rate shows `—` when the denominator is 0). Reports carry an **include-excused switch** (default off): when on, sick + leave enter the denominator. Counts always show regardless; CSV mirrors the switch state.
 - Date ranges are capped at 366 days; defaults to the current month.
 - Access follows spec 01 scoping: admin → all classes, teacher → own class, parent/student → own records.
 - **Live Presence Board**: the school's shop-window screen (piket room / headmaster) showing the current day as it happens — built for management decisions in minutes, not month-end. Plain polling (30–60s auto-refresh), no websockets; it is a view over scan-engine data (Spec 03), so near-zero build cost. Its "in-building" count doubles as the evacuation headcount.

@@ -2,22 +2,31 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AttendanceStatus;
+use App\Enums\ScanMethod;
 use App\Enums\UserRole;
+use App\Models\Attendance;
 use App\Models\Guardian;
+use App\Models\NonSchoolDay;
 use App\Models\RfidCard;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\SchoolSettings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
+use InvalidArgumentException;
 
 /**
  * Development seeder: a deterministic school with every persona wired
  * up — admin, two homeroom teachers with classes, eight students, four
  * guardians (including a phone-less one and a dual-guardian family) and
- * a couple of RFID cards. Run with `php artisan migrate:fresh --seed`.
+ * a couple of RFID cards. Plus a month of demo attendance ending in a
+ * partial "live morning" so the reports and presence board have data.
+ * Run with `php artisan migrate:fresh --seed`.
  *
  * Login usernames are numbered handles (teacher1, student1, parent1, …)
  * for dev convenience — the numbers are persona indexes, NOT relation
@@ -137,15 +146,91 @@ class DatabaseSeeder extends Seeder
             'phone_number' => '',
         ]);
 
-        $slamet->students()->attach([$students['Ahmad Fauzi']->id, $students['Dimas Saputra']->id]);
-        $dewi->students()->attach([$students['Ahmad Fauzi']->id, $students['Ayu Lestari']->id]);
-        $sitiRahayu->students()->attach($students['Eka Putri']->id);
-        $bambang->students()->attach($students['Fajar Nugroho']->id);
+        // Loud on typos — a demo-data name miss must fail the seed, not
+        // silently attach nothing.
+        $studentByName = function (string $fullName) use ($students): Student {
+            return $students[$fullName] ?? throw new InvalidArgumentException("Unknown demo student: {$fullName}");
+        };
+
+        $slamet->students()->attach([$studentByName('Ahmad Fauzi')->id, $studentByName('Dimas Saputra')->id]);
+        $dewi->students()->attach([$studentByName('Ahmad Fauzi')->id, $studentByName('Ayu Lestari')->id]);
+        $sitiRahayu->students()->attach($studentByName('Eka Putri')->id);
+        $bambang->students()->attach($studentByName('Fajar Nugroho')->id);
 
         // --- RFID cards -----------------------------------------------------
-        RfidCard::create(['rfid_number' => 'CARD-001', 'student_id' => $students['Ahmad Fauzi']->id]);
-        RfidCard::create(['rfid_number' => 'CARD-002', 'student_id' => $students['Ayu Lestari']->id]);
+        RfidCard::create(['rfid_number' => 'CARD-001', 'student_id' => $studentByName('Ahmad Fauzi')->id]);
+        RfidCard::create(['rfid_number' => 'CARD-002', 'student_id' => $studentByName('Ayu Lestari')->id]);
         RfidCard::create(['rfid_number' => 'CARD-SPARE', 'student_id' => null]);
+
+        // --- Demo attendance (current month → a partial live morning) -------
+        // Deterministic mix of present/late/absent plus short sick spells;
+        // today stays a partial morning so the presence board has a live
+        // state. Runs under WithoutModelEvents — no notifications can fire.
+        $settings = app(SchoolSettings::class);
+        $tz = $settings->timezone();
+        $today = $settings->now()->startOfDay();
+        $isSchoolDay = fn (string $date) => ! Date::parse($date, $tz)->isWeekend()
+            && ! NonSchoolDay::query()->whereDate('date', $date)->exists();
+
+        $record = function (Student $student, string $date, AttendanceStatus $status, ?string $in = null, ?string $out = null) use ($tz): void {
+            $scanned = in_array($status, [AttendanceStatus::Present, AttendanceStatus::Late], true);
+
+            Attendance::create([
+                'student_id' => $student->id,
+                'date' => $date,
+                'status' => $status,
+                'checked_in_at' => $in === null ? null : Date::parse("{$date} {$in}", $tz)->tz('UTC'),
+                'checked_out_at' => $out === null ? null : Date::parse("{$date} {$out}", $tz)->tz('UTC'),
+                'scan_method' => $scanned ? ScanMethod::Rfid : null,
+            ]);
+        };
+
+        $dayNumber = 0;
+
+        for ($day = $today->copy()->startOfMonth(); $day->lessThan($today); $day = $day->addDay()) {
+            if ($day->isWeekend() || ! $isSchoolDay($day->toDateString())) {
+                continue;
+            }
+
+            $dayNumber++;
+            $date = $day->toDateString();
+
+            foreach (array_values($students) as $index => $student) {
+                // Short sick spells for two students mid-month (excuse-style
+                // records: no times, no scan method).
+                if (in_array($index, [1, 5], true) && in_array($dayNumber, [8, 9, 17, 18], true)) {
+                    $record($student, $date, AttendanceStatus::Sick);
+
+                    continue;
+                }
+
+                $roll = ($index * 7 + $dayNumber * 3) % 11;
+
+                match (true) {
+                    $roll === 0 => $record($student, $date, AttendanceStatus::Absent),
+                    $roll === 1 => $record($student, $date, AttendanceStatus::Late, sprintf('07:%02d', 33 + ($index * 4) % 20)),
+                    in_array($roll, [2, 3], true) => $record($student, $date, AttendanceStatus::Present, sprintf('06:%02d', 50 + $index % 9), '13:30'),
+                    default => $record($student, $date, AttendanceStatus::Present, sprintf('07:%02d', 2 + ($index * 3) % 25)),
+                };
+            }
+        }
+
+        if ($isSchoolDay($today->toDateString())) {
+            $morning = [
+                ['Ahmad Fauzi', AttendanceStatus::Present, '07:05', null],
+                ['Ayu Lestari', AttendanceStatus::Late, '07:48', null],
+                ['Bagas Pratama', AttendanceStatus::Present, '07:15', '13:00'],
+                ['Citra Kirana', AttendanceStatus::Sick, null, null],
+                ['Dimas Saputra', AttendanceStatus::Present, '07:10', null],
+                ['Eka Putri', AttendanceStatus::Present, '07:12', null],
+                // Fajar Nugroho deliberately left with no record yet.
+                ['Gita Hapsari', AttendanceStatus::Present, '06:58', '12:45'],
+            ];
+
+            foreach ($morning as [$fullName, $status, $in, $out]) {
+                $record($studentByName($fullName), $today->toDateString(), $status, $in, $out);
+            }
+        }
 
         $this->command->table(
             ['Role', 'Username', 'Password', 'Profile'],

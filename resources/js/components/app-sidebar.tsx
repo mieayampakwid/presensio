@@ -3,13 +3,17 @@ import {
     BookOpen,
     CalendarCheck,
     CalendarOff,
+    ClipboardList,
+    FileSpreadsheet,
     FileText,
     FolderGit2,
     GraduationCap,
     IdCard,
     LayoutGrid,
+    Monitor,
     QrCode,
     School,
+    Table2,
     UserRound,
     Users,
 } from 'lucide-react';
@@ -17,9 +21,12 @@ import AttendanceController from '@/actions/App/Http/Controllers/Attendance/Atte
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
+import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
+import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -108,6 +115,11 @@ export function AppSidebar() {
                       href: myAttendance().url,
                       icon: CalendarCheck,
                   },
+                  {
+                      title: 'My Report',
+                      href: StudentReportController.index().url,
+                      icon: ClipboardList,
+                  },
               ]
             : []),
         ...(auth.user.role === 'teacher' || auth.user.role === 'admin'
@@ -122,6 +134,21 @@ export function AppSidebar() {
                       href: ExcuseReviewController.index().url,
                       icon: FileText,
                   },
+                  {
+                      title: 'Student Report',
+                      href: StudentReportController.index().url,
+                      icon: FileSpreadsheet,
+                  },
+                  {
+                      title: 'Class Report',
+                      href: ClassReportController.index().url,
+                      icon: Table2,
+                  },
+                  {
+                      title: 'Presence Board',
+                      href: PresenceBoardController.index().url,
+                      icon: Monitor,
+                  },
               ]
             : []),
         ...(auth.user.role === 'parent'
@@ -130,6 +157,11 @@ export function AppSidebar() {
                       title: 'My Excuses',
                       href: my().url,
                       icon: FileText,
+                  },
+                  {
+                      title: 'Child Report',
+                      href: StudentReportController.index().url,
+                      icon: ClipboardList,
                   },
               ]
             : []),
