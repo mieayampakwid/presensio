@@ -134,21 +134,6 @@ export function AppSidebar() {
                       href: ExcuseReviewController.index().url,
                       icon: FileText,
                   },
-                  {
-                      title: 'Student Report',
-                      href: StudentReportController.index().url,
-                      icon: FileSpreadsheet,
-                  },
-                  {
-                      title: 'Class Report',
-                      href: ClassReportController.index().url,
-                      icon: Table2,
-                  },
-                  {
-                      title: 'Presence Board',
-                      href: PresenceBoardController.index().url,
-                      icon: Monitor,
-                  },
               ]
             : []),
         ...(auth.user.role === 'parent'
@@ -167,6 +152,29 @@ export function AppSidebar() {
             : []),
     ];
 
+    // Teacher/admin only — the three report screens grouped under their
+    // own sidebar section.
+    const reportNavItems: NavItem[] =
+        auth.user.role === 'teacher' || auth.user.role === 'admin'
+            ? [
+                  {
+                      title: 'Student Report',
+                      href: StudentReportController.index().url,
+                      icon: FileSpreadsheet,
+                  },
+                  {
+                      title: 'Class Report',
+                      href: ClassReportController.index().url,
+                      icon: Table2,
+                  },
+                  {
+                      title: 'Presence Board',
+                      href: PresenceBoardController.index().url,
+                      icon: Monitor,
+                  },
+              ]
+            : [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -183,6 +191,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavMain label="Reports" items={reportNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
