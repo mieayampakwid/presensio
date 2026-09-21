@@ -22,16 +22,14 @@ Single-school attendance system. Each numbered spec is a decision record: the cu
 | # | Spec | Status |
 |---|---|---|
 | 01 | [Authentication & Roles](01-auth.md) | Implemented 2026-09-19 |
-| 02 | [People, Classes & Enrollment](02-people-classes.md) | v1.4 implemented 2026-09-19; **v2.0 (enrollment model) pending — ships with spec 07** |
-| 03 | [Attendance Recording](03-attendance.md) | Implemented 2026-09-19; v2.5 amendment (sweep population) pending via spec 07 |
+| 02 | [People, Classes & Enrollment](02-people-classes.md) | Implemented 2026-09-19; **v2.0 (enrollment model) implemented 2026-09-21** |
+| 03 | [Attendance Recording](03-attendance.md) | Implemented 2026-09-19; v2.5 amendment (sweep population) implemented 2026-09-21 |
 | 04 | [Absence Excuses](04-excuses.md) | Implemented 2026-09-20 |
 | 05 | [Absence Notifications](05-notifications.md) | Implemented 2026-09-20 |
-| 06 | [Reports & Exports](06-reports.md) | Implemented 2026-09-20; v1.5 amendment (year picker) pending via spec 07 |
-| 07 | [Academic Roll-over & Historical Attribution](07-academic-years.md) | Draft v1.1 — next up |
-| 08 | [Dashboard (Role Landing)](08-dashboard.md) | Draft — awaiting review; **sequenced after spec 07** |
+| 06 | [Reports & Exports](06-reports.md) | Implemented 2026-09-20; v1.5 amendment (year picker) implemented 2026-09-21 |
+| 07 | [Academic Roll-over & Historical Attribution](07-academic-years.md) | Implemented 2026-09-21 |
+| 08 | [Dashboard (Role Landing)](08-dashboard.md) | Draft — awaiting review; **next up** |
 
 ## Build order
 
-`01 → 02 → 03 → 04 → 05 → 06` shipped · next: `07 → 08 → deploy/pilot`
-
-Spec 07 must ship **before go-live**: the enrollment model can be adopted cheaply only while no real attendance data exists.
+`01 → 02 → 03 → 04 → 05 → 06 → 07` shipped · next: `08 (dashboard) → deploy/pilot`
