@@ -5,6 +5,7 @@ namespace Tests\Feature\Settings;
 use App\Models\Guardian;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class GuardianContactTest extends TestCase
@@ -66,8 +67,9 @@ class GuardianContactTest extends TestCase
         $this->actingAs($user)
             ->get(route('profile.edit'))
             ->assertOk()
-            ->assertSee('Contact details')
-            ->assertSee('Slamet Riyadi');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('settings/profile')
+                ->where('guardian.name', 'Slamet Riyadi'));
     }
 
     public function test_other_roles_are_forbidden_from_the_contact_update(): void

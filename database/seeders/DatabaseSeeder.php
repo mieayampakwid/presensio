@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AttendanceStatus;
 use App\Enums\ScanMethod;
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Guardian;
 use App\Models\NonSchoolDay;
@@ -13,6 +14,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\EnrollmentService;
 use App\Services\SchoolSettings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -39,6 +41,8 @@ use InvalidArgumentException;
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
+
+    public function __construct(private readonly EnrollmentService $enrollments) {}
 
     public function run(): void
     {
@@ -67,8 +71,8 @@ class DatabaseSeeder extends Seeder
         $budi->update(['user_id' => $budiUser->id]);
         $siti->update(['user_id' => $sitiUser->id]);
 
-        $class5a = SchoolClass::create(['name' => 'Kelas 5A', 'teacher_id' => $budi->id]);
-        $class5b = SchoolClass::create(['name' => 'Kelas 5B', 'teacher_id' => $siti->id]);
+        $class5a = SchoolClass::create(['academic_year_id' => AcademicYear::active()->id, 'name' => 'Kelas 5A', 'teacher_id' => $budi->id]);
+        $class5b = SchoolClass::create(['academic_year_id' => AcademicYear::active()->id, 'name' => 'Kelas 5B', 'teacher_id' => $siti->id]);
 
         // --- Students (first two get portal logins) ------------------------
         $roster = [
@@ -92,7 +96,6 @@ class DatabaseSeeder extends Seeder
                 'nickname' => $nickname,
                 'dob' => sprintf('201%d-0%d-1%d', $index % 3, ($index % 9) + 1, ($index % 8) + 1),
                 'student_number' => $nis,
-                'class_id' => $class->id,
             ]);
 
             if ($index < 2) {
@@ -105,6 +108,10 @@ class DatabaseSeeder extends Seeder
                 ]);
                 $student->update(['user_id' => $studentUser->id]);
             }
+
+            // Enrollment history (spec 07) — dated from the active year's
+            // first day so every demo record date attributes correctly.
+            $this->enrollments->assign($student, $class, AcademicYear::active()->starts_at->toDateString());
 
             $students[$fullName] = $student;
         }

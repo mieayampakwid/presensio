@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\Excuse;
 use App\Models\Guardian;
 use App\Models\NonSchoolDay;
+use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -214,7 +215,7 @@ class ExcuseApprovalTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $excusedStudent = Student::factory()->create();
-        $bareStudent = Student::factory()->create();
+        $bareStudent = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
 
         Excuse::factory()->create([
             'student_id' => $excusedStudent->id,

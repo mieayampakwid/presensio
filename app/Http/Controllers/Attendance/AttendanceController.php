@@ -48,7 +48,12 @@ class AttendanceController extends Controller
         $date = $this->resolveDate($request);
 
         $students = Student::query()
-            ->where('class_id', $classId)
+            // Roster as of the dashboard's date (spec 07) — a student who
+            // moved classes mid-year appears under the right class per day.
+            ->whereHas('enrollments', fn (Builder $query) => $query
+                ->where('class_id', $classId)
+                ->where('started_on', '<=', $date)
+                ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $date)))
             ->with(['attendances' => fn (Builder $query) => $query->whereDate('date', $date)])
             ->orderBy('full_name')
             ->get(['id', 'full_name', 'student_number']);
@@ -117,7 +122,10 @@ class AttendanceController extends Controller
 
         $count = DB::transaction(function () use ($validated) {
             $students = Student::query()
-                ->where('class_id', $validated['class_id'])
+                ->whereHas('enrollments', fn (Builder $query) => $query
+                    ->where('class_id', $validated['class_id'])
+                    ->where('started_on', '<=', $validated['date'])
+                    ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $validated['date'])))
                 ->whereDoesntHave('attendances', fn (Builder $query) => $query->whereDate('date', $validated['date']))
                 ->get(['id']);
 

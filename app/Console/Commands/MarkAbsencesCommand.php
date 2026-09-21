@@ -31,6 +31,11 @@ class MarkAbsencesCommand extends Command
         }
 
         $students = Student::query()
+            // Only students enrolled on the swept date (spec 07) — alumni
+            // and future enrollments never get auto-absent records.
+            ->whereHas('enrollments', fn (Builder $query) => $query
+                ->where('started_on', '<=', $today)
+                ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $today)))
             ->whereDoesntHave('attendances', fn (Builder $query) => $query->whereDate('date', $today))
             ->get(['id']);
 

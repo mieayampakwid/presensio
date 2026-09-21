@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -11,22 +12,16 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SchoolClassFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
+            // The bootstrap migration guarantees an active year exists.
+            'academic_year_id' => fn () => AcademicYear::active()->id,
             'name' => 'Kelas '.fake()->unique()->numerify('#'),
             'teacher_id' => null,
         ];
     }
 
-    /**
-     * Assign the given homeroom teacher.
-     */
     public function withTeacher(Teacher $teacher): static
     {
         return $this->state(fn () => ['teacher_id' => $teacher->id]);

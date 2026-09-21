@@ -4,7 +4,9 @@ namespace Tests\Feature\Console;
 
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
+use App\Models\Enrollment;
 use App\Models\NonSchoolDay;
+use App\Models\SchoolClass;
 use App\Models\Student;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
@@ -26,10 +28,11 @@ class MarkAbsencesCommandTest extends TestCase
         // Monday 2026-09-21, 09:00 Jakarta.
         Date::setTestNow('2026-09-21 02:00:00', 'UTC');
 
-        $swept = Student::factory()->create();
-        $present = Student::factory()->create();
-        $sick = Student::factory()->create();
-        $alreadyAbsent = Student::factory()->create();
+        $class = SchoolClass::factory()->create();
+        $swept = Student::factory()->enrolledIn($class)->create();
+        $present = Student::factory()->enrolledIn($class)->create();
+        $sick = Student::factory()->enrolledIn($class)->create();
+        $alreadyAbsent = Student::factory()->enrolledIn($class)->create();
 
         Attendance::factory()->create(['student_id' => $present->id, 'date' => '2026-09-21']);
         Attendance::factory()->create(['student_id' => $sick->id, 'date' => '2026-09-21', 'status' => 'sick']);
@@ -48,11 +51,30 @@ class MarkAbsencesCommandTest extends TestCase
         $this->assertSame(1, $alreadyAbsent->refresh()->attendances->count());
     }
 
+    public function test_sweep_skips_alumni_without_an_open_enrollment(): void
+    {
+        // Monday 2026-09-21, 09:00 Jakarta.
+        Date::setTestNow('2026-09-21 02:00:00', 'UTC');
+
+        $class = SchoolClass::factory()->create();
+        $alumni = Student::factory()->create();
+        Enrollment::factory()->create([
+            'student_id' => $alumni->id,
+            'class_id' => $class->id,
+            'started_on' => '2026-07-01',
+            'ended_on' => '2026-09-20', // left before today
+        ]);
+
+        $this->artisan('attendance:mark-absences')->assertSuccessful();
+
+        $this->assertSame(0, Attendance::count());
+    }
+
     public function test_sweep_skips_weekends(): void
     {
         // Saturday 2026-09-19.
         Date::setTestNow('2026-09-19 03:00:00', 'UTC');
-        Student::factory()->create();
+        Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
 
         $this->artisan('attendance:mark-absences')
             ->assertSuccessful()
@@ -66,7 +88,7 @@ class MarkAbsencesCommandTest extends TestCase
         // Monday 2026-09-21 declared a holiday.
         Date::setTestNow('2026-09-21 02:00:00', 'UTC');
         NonSchoolDay::factory()->create(['date' => '2026-09-21', 'name' => 'Cuti Bersama']);
-        Student::factory()->create();
+        Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
 
         $this->artisan('attendance:mark-absences')->assertSuccessful();
 
@@ -77,7 +99,7 @@ class MarkAbsencesCommandTest extends TestCase
     {
         // 17:00 UTC on the 20th is already Monday the 21st in Jakarta.
         Date::setTestNow('2026-09-20 17:00:00', 'UTC');
-        Student::factory()->create();
+        Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
 
         $this->artisan('attendance:mark-absences')->assertSuccessful();
 

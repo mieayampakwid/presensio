@@ -2,13 +2,15 @@
 
 namespace App\Services\StudentImport;
 
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 
 /**
  * Shared in-run state for validating rows: student numbers seen in this
  * file, guardians staged by phone, and the class-name => id map (existing
- * classes preloaded; auto-created classes appended by the run).
+ * classes of the ACTIVE year preloaded; auto-created classes appended by
+ * the run — imports never touch past years, spec 02 v2.0).
  */
 class ImportContext
 {
@@ -24,9 +26,9 @@ class ImportContext
     /** @var array<string, int> class name => id */
     public array $classes = [];
 
-    public function __construct()
+    public function __construct(public readonly AcademicYear $activeYear)
     {
-        foreach (SchoolClass::query()->pluck('id', 'name') as $name => $id) {
+        foreach (SchoolClass::query()->where('academic_year_id', $activeYear->id)->pluck('id', 'name') as $name => $id) {
             $this->classes[$name] = $id;
         }
     }

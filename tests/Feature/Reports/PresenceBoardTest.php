@@ -65,22 +65,22 @@ class PresenceBoardTest extends TestCase
         $classA = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
         $classB = SchoolClass::factory()->create(['name' => 'Kelas 5B']);
 
-        $this->todayRecord(Student::factory()->create([
-            'class_id' => $classA->id, 'full_name' => 'Alpha One',
+        $this->todayRecord(Student::factory()->enrolledIn($classA)->create([
+            'full_name' => 'Alpha One',
         ]));
-        $this->todayRecord(Student::factory()->create([
-            'class_id' => $classA->id, 'full_name' => 'Bravo Two',
+        $this->todayRecord(Student::factory()->enrolledIn($classA)->create([
+            'full_name' => 'Bravo Two',
         ]), 'late');
-        $this->todayRecord(Student::factory()->create([
-            'class_id' => $classA->id, 'full_name' => 'Charlie Three',
+        $this->todayRecord(Student::factory()->enrolledIn($classA)->create([
+            'full_name' => 'Charlie Three',
         ]), 'checkedOut');
-        $this->todayRecord(Student::factory()->create([
-            'class_id' => $classA->id, 'full_name' => 'Delta Four',
+        $this->todayRecord(Student::factory()->enrolledIn($classA)->create([
+            'full_name' => 'Delta Four',
         ]), 'sick');
 
-        Student::factory()->create(['class_id' => $classB->id, 'full_name' => 'Echo Five']);
-        $this->todayRecord(Student::factory()->create([
-            'class_id' => $classB->id, 'full_name' => 'Foxtrot Six',
+        Student::factory()->enrolledIn($classB)->create(['full_name' => 'Echo Five']);
+        $this->todayRecord(Student::factory()->enrolledIn($classB)->create([
+            'full_name' => 'Foxtrot Six',
         ]), 'absent');
     }
 
@@ -103,7 +103,7 @@ class PresenceBoardTest extends TestCase
     public function test_a_teacher_sees_only_their_class_and_no_totals(): void
     {
         $user = $this->teacherUser();
-        SchoolClass::factory()->create(['name' => 'Kelas 5A', 'teacher_id' => $user->teacher->id]);
+        SchoolClass::factory()->create(['name' => 'Kelas 4A', 'teacher_id' => $user->teacher->id]);
         $this->seedBoard();
 
         $this->actingAs($user)
@@ -112,7 +112,7 @@ class PresenceBoardTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('reports/presence-board')
                 ->has('board.classes', 1)
-                ->where('board.classes.0.name', 'Kelas 5A')
+                ->where('board.classes.0.name', 'Kelas 4A')
                 ->where('board.totals', null));
     }
 
@@ -146,7 +146,7 @@ class PresenceBoardTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $class = SchoolClass::factory()->create();
-        $student = Student::factory()->create(['class_id' => $class->id]);
+        $student = Student::factory()->enrolledIn($class)->create();
         Attendance::factory()->checkedOut()->create([
             'student_id' => $student->id,
             'date' => '2026-09-18', // last Friday, not today

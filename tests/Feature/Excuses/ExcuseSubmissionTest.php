@@ -45,9 +45,10 @@ class ExcuseSubmissionTest extends TestCase
         return [$user, $guardian];
     }
 
-    private function childFor(Guardian $guardian, array $attributes = []): Student
+    private function childFor(Guardian $guardian, array $attributes = [], ?SchoolClass $class = null): Student
     {
-        $student = Student::factory()->create($attributes);
+        $factory = $class !== null ? Student::factory()->enrolledIn($class) : Student::factory();
+        $student = $factory->create($attributes);
         $guardian->students()->attach($student->id);
 
         return $student;
@@ -242,7 +243,7 @@ class ExcuseSubmissionTest extends TestCase
     {
         [$user, $guardian] = $this->parentUser();
         $class = SchoolClass::factory()->create(['name' => 'Kelas 4B']);
-        $child = $this->childFor($guardian, ['full_name' => 'Ayu Lestari', 'class_id' => $class->id]);
+        $child = $this->childFor($guardian, ['full_name' => 'Ayu Lestari'], $class);
         $otherChild = $this->childFor($guardian, ['full_name' => 'Budi Santoso']);
 
         $reviewed = Excuse::factory()->rejected()->create([

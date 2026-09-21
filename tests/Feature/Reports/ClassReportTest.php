@@ -47,12 +47,11 @@ class ClassReportTest extends TestCase
     private function classWithRecords(): SchoolClass
     {
         $class = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
-        $busy = Student::factory()->create([
-            'class_id' => $class->id,
+        $busy = Student::factory()->enrolledIn($class)->create([
             'full_name' => 'Ahmad Fauzi',
             'student_number' => '2410001',
         ]);
-        Student::factory()->create(['class_id' => $class->id, 'full_name' => 'Ayu Lestari']);
+        Student::factory()->enrolledIn($class)->create(['full_name' => 'Ayu Lestari']);
 
         $plan = [
             ['present', 1], ['present', 2], ['present', 3], ['present', 4],

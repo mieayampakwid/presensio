@@ -34,3 +34,4 @@ require __DIR__.'/attendance.php';
 require __DIR__.'/non-school-days.php';
 require __DIR__.'/excuses.php';
 require __DIR__.'/reports.php';
+require __DIR__.'/academic-years.php';

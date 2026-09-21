@@ -56,7 +56,7 @@ class AbsenceNotificationTest extends TestCase
         $user = User::factory()->teacher()->create();
         $teacher = Teacher::factory()->create(['user_id' => $user->id]);
         $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
-        $student = Student::factory()->create(['class_id' => $class->id]);
+        $student = Student::factory()->enrolledIn($class)->create();
 
         return [$user, $student];
     }
@@ -116,7 +116,7 @@ class AbsenceNotificationTest extends TestCase
 
     public function test_the_absence_sweep_dispatches_notifications(): void
     {
-        Student::factory()->create();
+        Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         Queue::fake();
 
         $this->artisan('attendance:mark-absences')->assertSuccessful();

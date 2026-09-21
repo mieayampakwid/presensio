@@ -39,14 +39,14 @@ class GuardianExcuseController extends Controller
         }
 
         $children = $guardian->students()
-            ->with('schoolClass:id,name')
+            ->with('currentEnrollment.schoolClass:id,name')
             ->orderBy('full_name')
             ->get();
 
         /** @var LengthAwarePaginator<int, Excuse> $excuses */
         $excuses = Excuse::query()
             ->whereIn('student_id', $children->modelKeys())
-            ->with('student.schoolClass:id,name')
+            ->with('student.currentEnrollment.schoolClass:id,name')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15)
@@ -56,7 +56,7 @@ class GuardianExcuseController extends Controller
             'children' => $children->map(fn ($student): array => [
                 'id' => $student->id,
                 'full_name' => $student->full_name,
-                'class_name' => $student->schoolClass?->name,
+                'class_name' => $student->currentEnrollment?->schoolClass?->name,
             ]),
             'excuses' => $excuses->through(fn (Excuse $excuse) => $this->row($excuse)),
         ]);
@@ -107,7 +107,7 @@ class GuardianExcuseController extends Controller
         return [
             'id' => $excuse->id,
             'child_name' => $excuse->student->full_name,
-            'class_name' => $excuse->student->schoolClass?->name,
+            'class_name' => $excuse->student->currentEnrollment?->schoolClass?->name,
             'type' => $excuse->type->value,
             'start_date' => $excuse->start_date->toDateString(),
             'end_date' => $excuse->end_date->toDateString(),

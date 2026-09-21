@@ -12,6 +12,12 @@ type ClassOption = {
     name: string;
 };
 
+type YearOption = {
+    id: number;
+    name: string;
+    is_active: boolean;
+};
+
 type Counts = {
     present: number;
     late: number;
@@ -36,8 +42,10 @@ type Report = {
 } | null;
 
 type Props = {
+    years: YearOption[];
     classes: ClassOption[];
     filters: {
+        year_id: number | null;
         class_id: number | null;
         from: string;
         to: string;
@@ -69,7 +77,7 @@ const SUMMARY_COLUMNS: { key: keyof Counts; label: string }[] = [
     { key: 'leave', label: 'Leave' },
 ];
 
-export default function ClassReport({ classes, filters, report }: Props) {
+export default function ClassReport({ years, classes, filters, report }: Props) {
     const submitFilters = (
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
@@ -116,6 +124,24 @@ export default function ClassReport({ classes, filters, report }: Props) {
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="year_id">Academic year</Label>
+                        <select
+                            id="year_id"
+                            name="year_id"
+                            defaultValue={filters.year_id ?? ''}
+                            className={`${SELECT_CLASS} w-56`}
+                            onChange={submitFilters}
+                        >
+                            {years.map((year) => (
+                                <option key={year.id} value={year.id}>
+                                    {year.name}
+                                    {year.is_active ? ' — active' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="class_id">Class</Label>
                         <select

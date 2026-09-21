@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Classes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Classes\StoreSchoolClassRequest;
 use App\Http\Requests\Classes\UpdateSchoolClassRequest;
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -17,13 +18,18 @@ use Inertia\Response;
 class SchoolClassController extends Controller
 {
     /**
-     * Display a listing of the classes.
+     * Display a listing of the classes, per academic year (default: the
+     * active one — spec 07).
      */
     public function index(Request $request): Response
     {
         $search = $request->string('search')->toString();
+        $years = AcademicYear::query()->orderByDesc('starts_at')->get(['id', 'name', 'is_active']);
+
+        $yearId = $this->resolveYearId($request, $years);
 
         $classes = SchoolClass::query()
+            ->where('academic_year_id', $yearId)
             ->with('teacher:id,name')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
@@ -33,15 +39,16 @@ class SchoolClassController extends Controller
                         });
                 });
             })
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('classes/index', [
             'classes' => $classes,
+            'years' => $years,
             'filters' => [
                 'search' => $search,
+                'year_id' => $yearId,
             ],
         ]);
     }
@@ -57,11 +64,15 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Store a newly created class.
+     * Store a newly created class, in the active year (spec 07 — past
+     * years are immutable history; new classes arrive via roll-over).
      */
     public function store(StoreSchoolClassRequest $request): RedirectResponse
     {
-        SchoolClass::create($request->validated());
+        SchoolClass::create([
+            ...$request->validated(),
+            'academic_year_id' => AcademicYear::active()?->id,
+        ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Class created.']);
 
@@ -112,10 +123,10 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Reasons the class cannot be deleted, in display order. Attendance rows
-     * carry no class_id (spec 03 schema) and hang off students, so deleting
-     * a class never orphans attendance history — no extra blocker is needed
-     * here. Do not invent an attendances.class_id column to add one.
+     * Reasons the class cannot be deleted, in display order. Enrollment
+     * history is the class's permanent record (spec 02 v2.0) — any
+     * enrollment ever referencing it blocks deletion, whether or not
+     * students are still enrolled today.
      *
      * @return list<string>
      */
@@ -123,8 +134,8 @@ class SchoolClassController extends Controller
     {
         $blockers = [];
 
-        if ($schoolClass->students()->exists()) {
-            $blockers[] = 'Cannot delete: students are still enrolled in this class.';
+        if ($schoolClass->enrollments()->exists()) {
+            $blockers[] = 'Cannot delete: students have enrollment history in this class.';
         }
 
         return $blockers;
@@ -141,5 +152,22 @@ class SchoolClassController extends Controller
         return Teacher::query()
             ->orderBy('name')
             ->get(['id', 'name']);
+    }
+
+    /**
+     * The selected year, defaulting to the active one; an unknown year
+     * falls back to it too.
+     *
+     * @param  Collection<int, AcademicYear>  $years
+     */
+    private function resolveYearId(Request $request, Collection $years): ?int
+    {
+        $requested = $request->integer('year_id');
+
+        if ($requested !== 0 && $years->contains('id', $requested)) {
+            return $requested;
+        }
+
+        return $years->firstWhere('is_active', true)?->id;
     }
 }

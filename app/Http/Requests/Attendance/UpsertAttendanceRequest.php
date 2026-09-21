@@ -8,11 +8,13 @@ use App\Models\Student;
 use App\Services\Attendance\ClassAccess;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
 
 /**
  * Manual record edit / day reconstruction on the exception dashboard.
- * Teachers may only touch students whose current class they homeroom.
+ * Teachers may only touch students whose class on the record's date they
+ * homeroom (spec 07 — date-effective attribution).
  */
 class UpsertAttendanceRequest extends FormRequest
 {
@@ -30,9 +32,18 @@ class UpsertAttendanceRequest extends FormRequest
 
         $student = Student::query()->find($this->integer('student_id'));
 
-        return $student !== null
-            && $student->class_id !== null
-            && ClassAccess::canAccess($user, $student->class_id);
+        if ($student === null) {
+            return false;
+        }
+
+        // authorize() runs before validation — an unparseable date falls
+        // back to the current enrollment's class instead of a 500.
+        $date = $this->string('date')->toString();
+        $class = Date::hasFormat($date, 'Y-m-d')
+            ? $student->classOn(Date::parse($date)->toDateString())
+            : $student->currentEnrollment?->schoolClass;
+
+        return $class !== null && ClassAccess::canAccess($user, $class->id);
     }
 
     /**

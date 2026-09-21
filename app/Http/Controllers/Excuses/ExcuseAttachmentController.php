@@ -44,8 +44,13 @@ class ExcuseAttachmentController extends Controller
             return $user->guardian?->students()->whereKey($excuse->student_id)->exists() ?? false;
         }
 
-        if ($user->role === UserRole::Teacher && $excuse->student->class_id !== null) {
-            return ClassAccess::canAccess($user, $excuse->student->class_id);
+        if ($user->role === UserRole::Teacher) {
+            // The class the student was enrolled in when the excuse started
+            // (spec 07 — date-effective, so a mid-year move keeps the old
+            // homeroom's teacher able to see the old excuse).
+            $class = $excuse->student->classOn($excuse->start_date->toDateString());
+
+            return $class !== null && ClassAccess::canAccess($user, $class->id);
         }
 
         return false;

@@ -2,10 +2,12 @@
 
 namespace App\Services\StudentImport;
 
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentImportMapping;
+use App\Services\EnrollmentService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 class StudentImportService
 {
     private const PREVIEW_ROW_LIMIT = 25;
+
+    public function __construct(private readonly EnrollmentService $enrollments) {}
 
     /**
      * Dry-run: reports which rows would import, writing nothing.
@@ -70,7 +74,9 @@ class StudentImportService
     private function process(RowReader $reader, array $mapping, ImportOptions $options, bool $commit): ImportResult
     {
         $indexes = $this->columnIndexes($reader, $mapping);
-        $context = new ImportContext;
+        // The bootstrap migration guarantees an active year; a missing one
+        // is a loud misconfiguration, not an empty import.
+        $context = new ImportContext(AcademicYear::query()->where('is_active', true)->firstOrFail());
         $validator = new RowValidator($context, $options);
 
         $valid = [];
@@ -109,17 +115,20 @@ class StudentImportService
      */
     private function commitRow(array $data, ImportContext $context): void
     {
-        $classId = null;
+        $class = null;
 
         if ($data['class'] !== null) {
             $className = $data['class'];
 
             if (! $context->isKnownClass($className)) {
-                $class = SchoolClass::query()->create(['name' => $className]);
+                $class = SchoolClass::query()->create([
+                    'academic_year_id' => $context->activeYear->id,
+                    'name' => $className,
+                ]);
                 $context->stageClass($className, $class->id);
+            } else {
+                $class = SchoolClass::query()->findOrFail($context->classes[$className]);
             }
-
-            $classId = $context->classes[$className];
         }
 
         $guardian = null;
@@ -146,8 +155,11 @@ class StudentImportService
             'nickname' => $data['nickname'],
             'dob' => $data['dob'],
             'student_number' => $data['student_number'],
-            'class_id' => $classId,
         ]);
+
+        if ($class !== null) {
+            $this->enrollments->assign($student, $class);
+        }
 
         if ($guardian !== null) {
             $student->guardians()->syncWithoutDetaching([$guardian->id]);

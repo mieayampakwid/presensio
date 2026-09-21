@@ -193,8 +193,8 @@ class StudentReportTest extends TestCase
         $user = $this->teacherUser();
         $own = SchoolClass::factory()->create(['teacher_id' => $user->teacher->id]);
         $other = SchoolClass::factory()->create();
-        $ownStudent = Student::factory()->create(['class_id' => $own->id]);
-        $otherStudent = Student::factory()->create(['class_id' => $other->id]);
+        $ownStudent = Student::factory()->enrolledIn($own)->create();
+        $otherStudent = Student::factory()->enrolledIn($other)->create();
         $unclassed = Student::factory()->create();
 
         $this->actingAs($user)

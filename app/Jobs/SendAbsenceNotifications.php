@@ -52,7 +52,7 @@ class SendAbsenceNotifications implements ShouldQueue
             return;
         }
 
-        $attendance->load('student.schoolClass', 'student.guardians');
+        $attendance->load('student.currentEnrollment.schoolClass', 'student.guardians');
         $student = $attendance->student;
 
         // No guardians → nothing to send, no error (spec 05 §Requirements 5).
@@ -85,7 +85,7 @@ class SendAbsenceNotifications implements ShouldQueue
                     Mail::to($recipient)->send(new AbsenceAlertMail(
                         guardianName: $guardian->name,
                         studentName: $student->full_name,
-                        className: $student->schoolClass?->name,
+                        className: $student->currentEnrollment?->schoolClass?->name,
                         statusLabel: $this->statusLabel($attendance->status),
                         dateText: $this->dateText($attendance->date->toDateString()),
                         dateShort: $attendance->date->toDateString(),
@@ -133,7 +133,7 @@ class SendAbsenceNotifications implements ShouldQueue
             return;
         }
 
-        $attendance->load('student.schoolClass');
+        $attendance->load('student.currentEnrollment.schoolClass');
         $text = $this->message($attendance, $attendance->student);
 
         foreach ($rows as $row) {
@@ -147,7 +147,7 @@ class SendAbsenceNotifications implements ShouldQueue
                 Mail::to($email)->send(new AbsenceAlertMail(
                     guardianName: $row->guardian->name,
                     studentName: $attendance->student->full_name,
-                    className: $attendance->student->schoolClass?->name,
+                    className: $attendance->student->currentEnrollment?->schoolClass?->name,
                     statusLabel: $this->statusLabel($attendance->status),
                     dateText: $this->dateText($attendance->date->toDateString()),
                     dateShort: $attendance->date->toDateString(),
@@ -224,7 +224,7 @@ class SendAbsenceNotifications implements ShouldQueue
      */
     private function message(Attendance $attendance, Student $student): string
     {
-        $class = $student->schoolClass?->name;
+        $class = $student->currentEnrollment?->schoolClass?->name;
 
         return sprintf(
             '[%s] Anak Anda, %s%s, tercatat %s pada %s. Silakan hubungi wali kelas atau masuk ke %s untuk melihat catatan kehadiran.',

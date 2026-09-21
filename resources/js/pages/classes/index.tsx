@@ -1,9 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { type ChangeEvent } from 'react';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogClose,
@@ -20,6 +22,12 @@ type ClassRow = {
     teacher?: { id: number; name: string } | null;
 };
 
+type YearOption = {
+    id: number;
+    name: string;
+    is_active: boolean;
+};
+
 type Paginator = {
     data: ClassRow[];
     prev_page_url: string | null;
@@ -30,15 +38,22 @@ type Paginator = {
 
 type Props = {
     classes: Paginator;
-    filters: { search: string };
+    years: YearOption[];
+    filters: { search: string; year_id: number | null };
 };
 
-export default function ClassesIndex({ classes, filters }: Props) {
+export default function ClassesIndex({ classes, years, filters }: Props) {
     const destroy = (schoolClass: ClassRow) => {
         router.delete(
             SchoolClassController.destroy({ school_class: schoolClass.id }).url,
             { preserveScroll: true },
         );
+    };
+
+    const submitFilters = (
+        event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    ) => {
+        event.currentTarget.form?.requestSubmit();
     };
 
     return (
@@ -49,7 +64,7 @@ export default function ClassesIndex({ classes, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <Heading
                         title="Classes"
-                        description="One active roster per student; homeroom teachers link to master data."
+                        description="Year-scoped class instances; homeroom teachers link to master data."
                     />
 
                     <Button asChild>
@@ -59,12 +74,35 @@ export default function ClassesIndex({ classes, filters }: Props) {
                     </Button>
                 </div>
 
-                <form className="max-w-sm">
-                    <Input
-                        name="search"
-                        defaultValue={filters.search}
-                        placeholder="Search by class or teacher name…"
-                    />
+                <form className="flex flex-wrap items-end gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="year_id">Academic year</Label>
+                        <select
+                            id="year_id"
+                            name="year_id"
+                            defaultValue={filters.year_id ?? ''}
+                            className="border-input dark:bg-input/30 flex h-9 w-64 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none md:text-sm"
+                            onChange={submitFilters}
+                        >
+                            {years.map((year) => (
+                                <option key={year.id} value={year.id}>
+                                    {year.name}
+                                    {year.is_active ? ' — active' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="search">Search</Label>
+                        <Input
+                            id="search"
+                            name="search"
+                            defaultValue={filters.search}
+                            placeholder="Search by class or teacher name…"
+                            onChange={submitFilters}
+                        />
+                    </div>
                 </form>
 
                 <div className="overflow-x-auto rounded-lg border">

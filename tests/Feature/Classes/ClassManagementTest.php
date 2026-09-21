@@ -158,7 +158,7 @@ class ClassManagementTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $class = SchoolClass::factory()->create();
-        Student::factory()->create(['class_id' => $class->id]);
+        Student::factory()->enrolledIn($class)->create();
 
         $this->actingAs($admin)
             ->from(route('classes.index'))
@@ -180,16 +180,18 @@ class ClassManagementTest extends TestCase
         $this->assertDatabaseMissing('classes', ['id' => $class->id]);
     }
 
-    public function test_duplicate_class_names_are_allowed(): void
+    public function test_duplicate_class_names_in_the_active_year_are_rejected(): void
     {
+        // Classes are year-scoped (spec 02 v2.0): the same name may exist
+        // in a different year, never twice in the same one.
         $admin = User::factory()->admin()->create();
         SchoolClass::factory()->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
             ->post(route('classes.store'), ['name' => 'Kelas 1A'])
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasErrors('name');
 
-        $this->assertSame(2, SchoolClass::where('name', 'Kelas 1A')->count());
+        $this->assertSame(1, SchoolClass::where('name', 'Kelas 1A')->count());
     }
 
     public static function nonAdminRoles(): array

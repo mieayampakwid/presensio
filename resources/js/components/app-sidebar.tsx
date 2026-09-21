@@ -3,6 +3,7 @@ import {
     BookOpen,
     CalendarCheck,
     CalendarOff,
+    CalendarRange,
     ClipboardList,
     FileSpreadsheet,
     FileText,
@@ -20,6 +21,7 @@ import {
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
+import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
@@ -90,6 +92,11 @@ export function AppSidebar() {
                       title: 'Classes',
                       href: SchoolClassController.index().url,
                       icon: School,
+                  },
+                  {
+                      title: 'Academic Years',
+                      href: AcademicYearController.index().url,
+                      icon: CalendarRange,
                   },
                   {
                       title: 'RFID Cards',

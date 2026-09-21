@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Students;
 
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -31,20 +32,33 @@ class StoreStudentRequest extends FormRequest
             'nickname' => ['nullable', 'string', 'max:255'],
             'dob' => ['required', 'date', 'before:today'],
             'student_number' => ['nullable', 'string', 'max:255', Rule::unique(Student::class)],
-            'class_id' => ['nullable', Rule::exists(SchoolClass::class, 'id')],
+            // Classes are year-scoped — the form assigns inside the
+            // active year only (spec 02 v2.0).
+            'class_id' => ['nullable', Rule::exists(SchoolClass::class, 'id')->where('academic_year_id', AcademicYear::active()?->id)],
             'guardian_ids' => ['nullable', 'array'],
             'guardian_ids.*' => [Rule::exists(Guardian::class, 'id')],
         ];
     }
 
     /**
-     * The student attributes, excluding the guardian pivot input.
+     * The student attributes, excluding the guardian pivot and the class
+     * assignment (the latter goes through the enrollment writer).
      *
      * @return array<string, mixed>
      */
     public function studentAttributes(): array
     {
-        return collect($this->safe()->except(['guardian_ids']))->all();
+        return collect($this->safe()->except(['guardian_ids', 'class_id']))->all();
+    }
+
+    /**
+     * The chosen class id, or null when no class was selected.
+     */
+    public function classId(): ?int
+    {
+        $classId = $this->integer('class_id');
+
+        return $classId === 0 ? null : $classId;
     }
 
     /**

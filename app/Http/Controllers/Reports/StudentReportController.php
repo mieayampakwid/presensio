@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Reports;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\Attendance\ClassAccess;
 use App\Services\Reports\AttendanceReportService;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -110,7 +112,11 @@ class StudentReportController extends Controller
         return match ($user->role) {
             UserRole::Admin => Student::query()->orderBy('full_name')->get($columns),
             UserRole::Teacher => Student::query()
-                ->whereIn('class_id', ClassAccess::classIds($user))
+                // Students currently in the teacher's homeroom classes of
+                // the active year (spec 07).
+                ->whereHas('enrollments', fn (Builder $query) => $query
+                    ->whereNull('ended_on')
+                    ->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)))
                 ->orderBy('full_name')
                 ->get($columns),
             UserRole::Parent => $user->guardian

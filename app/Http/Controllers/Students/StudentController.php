@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Students;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Students\StoreStudentRequest;
 use App\Http\Requests\Students\UpdateStudentRequest;
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\RfidCard;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\EnrollmentService;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,8 @@ use Inertia\Response;
 
 class StudentController extends Controller
 {
+    public function __construct(private readonly EnrollmentService $enrollments) {}
+
     /**
      * Display a listing of the students.
      */
@@ -26,7 +30,7 @@ class StudentController extends Controller
         $search = $request->string('search')->toString();
 
         $students = Student::query()
-            ->with('schoolClass:id,name')
+            ->with('currentEnrollment.schoolClass:id,name')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('full_name', 'like', "%{$search}%")
@@ -66,6 +70,7 @@ class StudentController extends Controller
         $student = DB::transaction(function () use ($request): Student {
             $student = Student::create($request->studentAttributes());
             $student->guardians()->sync($request->guardianIds());
+            $this->assignClass($request, $student);
 
             return $student;
         });
@@ -95,6 +100,7 @@ class StudentController extends Controller
         DB::transaction(function () use ($request, $student): void {
             $student->update($request->studentAttributes());
             $student->guardians()->sync($request->guardianIds());
+            $this->assignClass($request, $student);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Student updated.']);
@@ -127,14 +133,32 @@ class StudentController extends Controller
     }
 
     /**
-     * Options for the create/edit forms: classes and guardians.
+     * Route the chosen class through the enrollment writer. Leaving the
+     * select empty never un-enrolls — alumni happen via roll-over, not a
+     * stray form save (spec 07).
+     */
+    private function assignClass(StoreStudentRequest|UpdateStudentRequest $request, Student $student): void
+    {
+        $classId = $request->classId();
+
+        if ($classId !== null) {
+            $this->enrollments->assign($student, SchoolClass::query()->findOrFail($classId));
+        }
+    }
+
+    /**
+     * Options for the create/edit forms: classes and guardians. Classes
+     * come from the active year only.
      *
      * @return array<string, mixed>
      */
     private function formOptions(): array
     {
         return [
-            'classes' => SchoolClass::orderBy('name')->get(['id', 'name']),
+            'classes' => SchoolClass::query()
+                ->where('academic_year_id', AcademicYear::active()?->id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'guardians' => Guardian::orderBy('name')->get(['id', 'name', 'phone_number']),
         ];
     }

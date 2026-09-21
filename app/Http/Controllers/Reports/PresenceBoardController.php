@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Services\Attendance\ClassAccess;
 use App\Services\Reports\AttendanceReportService;
 use App\Services\SchoolSettings;
@@ -24,7 +25,11 @@ class PresenceBoardController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('reports/presence-board', [
-            'board' => $this->reports->board(ClassAccess::classIds($request->user()), $request->user()),
+            // The board is a today-surface — active-year classes only.
+            'board' => $this->reports->board(
+                ClassAccess::classIds($request->user(), AcademicYear::active()?->id),
+                $request->user(),
+            ),
             // Per-day flag — changes only at school midnight, so it stays
             // outside the polled `board` prop.
             'is_school_day' => $this->settings->isSchoolDay($this->settings->todayDate()),

@@ -49,7 +49,7 @@ class ExceptionDashboardTest extends TestCase
         $teacher = $user->teacher;
         $own = SchoolClass::factory()->create(['name' => 'Kelas 5A', 'teacher_id' => $teacher->id]);
         SchoolClass::factory()->create(['name' => 'Kelas 5B']);
-        Student::factory()->create(['full_name' => 'Own Student', 'class_id' => $own->id]);
+        Student::factory()->enrolledIn($own)->create(['full_name' => 'Own Student']);
         Student::factory()->create(['full_name' => 'Other Student']);
 
         $this->actingAs($user)
@@ -68,7 +68,7 @@ class ExceptionDashboardTest extends TestCase
         $admin = User::factory()->admin()->create();
         $first = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
         SchoolClass::factory()->create(['name' => 'Kelas 5B']);
-        Student::factory()->count(2)->create(['class_id' => $first->id]);
+        Student::factory()->count(2)->enrolledIn($first)->create();
 
         $this->actingAs($admin)
             ->get(route('attendance.index'))
@@ -106,7 +106,7 @@ class ExceptionDashboardTest extends TestCase
         $user = $this->teacherUser();
         $teacher = $user->teacher;
         $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
-        $student = Student::factory()->create(['class_id' => $class->id]);
+        $student = Student::factory()->enrolledIn($class)->create();
 
         $this->actingAs($user)
             ->put(route('attendance.record.update'), [
@@ -150,7 +150,7 @@ class ExceptionDashboardTest extends TestCase
         $user = $this->teacherUser();
         $teacher = $user->teacher;
         $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
-        $student = Student::factory()->create(['class_id' => $class->id]);
+        $student = Student::factory()->enrolledIn($class)->create();
 
         $this->actingAs($user)
             ->put(route('attendance.record.update'), [
@@ -170,9 +170,9 @@ class ExceptionDashboardTest extends TestCase
         $user = $this->teacherUser();
         $teacher = $user->teacher;
         $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
-        $absent = Student::factory()->create(['class_id' => $class->id]);
-        $sick = Student::factory()->create(['class_id' => $class->id]);
-        $gap = Student::factory()->create(['class_id' => $class->id]);
+        $absent = Student::factory()->enrolledIn($class)->create();
+        $sick = Student::factory()->enrolledIn($class)->create();
+        $gap = Student::factory()->enrolledIn($class)->create();
 
         $absentRecord = Attendance::factory()->absent()->create([
             'student_id' => $absent->id,

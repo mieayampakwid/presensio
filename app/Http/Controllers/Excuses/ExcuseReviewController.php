@@ -6,6 +6,7 @@ use App\Enums\ExcuseStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Excuses\ReviewExcuseRequest;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Excuse;
 use App\Services\Attendance\ClassAccess;
@@ -46,12 +47,13 @@ class ExcuseReviewController extends Controller
 
         /** @var LengthAwarePaginator<int, Excuse> $excuses */
         $excuses = Excuse::query()
-            ->with('student.schoolClass:id,name')
-            // Admins review everywhere (even a student temporarily without
-            // a class); teachers see their homeroom classes only.
+            ->with('student.currentEnrollment.schoolClass:id,name')
+            // Admins review everywhere (even a student with no enrollment
+            // at all); teachers see students currently in their homeroom
+            // classes only.
             ->when($user->role !== UserRole::Admin, fn ($query) => $query->whereHas(
-                'student',
-                fn ($query) => $query->whereIn('class_id', ClassAccess::classIds($user)),
+                'student.enrollments',
+                fn ($query) => $query->whereNull('ended_on')->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)),
             ))
             ->orderByRaw('case when status = ? then 0 else 1 end', [ExcuseStatus::Pending->value])
             ->orderByDesc('created_at')
@@ -132,7 +134,7 @@ class ExcuseReviewController extends Controller
         return [
             'id' => $excuse->id,
             'student_name' => $excuse->student->full_name,
-            'class_name' => $excuse->student->schoolClass?->name,
+            'class_name' => $excuse->student->currentEnrollment?->schoolClass?->name,
             'type' => $excuse->type->value,
             'start_date' => $excuse->start_date->toDateString(),
             'end_date' => $excuse->end_date->toDateString(),

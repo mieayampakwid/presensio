@@ -70,7 +70,7 @@ class ExcuseReviewPageTest extends TestCase
     public function test_teacher_sees_only_their_homeroom_classes(): void
     {
         [$user, $class] = $this->homeroomTeacher();
-        $ownStudent = Student::factory()->create(['class_id' => $class->id]);
+        $ownStudent = Student::factory()->enrolledIn($class)->create();
         $own = Excuse::factory()->create(['student_id' => $ownStudent->id]);
         Excuse::factory()->create(); // default student, no homeroom match
 

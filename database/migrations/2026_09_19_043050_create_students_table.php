@@ -18,9 +18,8 @@ return new class extends Migration
             $table->string('nickname')->nullable();
             $table->date('dob');
             $table->string('student_number')->nullable()->unique();
-            // Current active enrollment; replacing the value replaces the
-            // enrollment (spec 02 §3). No history table in v1.
-            $table->foreignId('class_id')->nullable()->index()->constrained()->nullOnDelete();
+            // Class membership lives in the enrollments history table
+            // (spec 02 v2.0) — no class column on the student.
             $table->timestamps();
         });
     }

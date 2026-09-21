@@ -2,26 +2,27 @@
 
 namespace Tests\Unit\Models;
 
+use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\RfidCard;
-use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Tests\TestCase;
 
 class StudentTest extends TestCase
 {
-    public function test_school_class_relation_resolves_the_enrollment(): void
+    public function test_enrollment_relations_resolve_class_membership(): void
     {
         $student = Student::factory()->make();
 
-        $this->assertInstanceOf(BelongsTo::class, $student->schoolClass());
-        $this->assertInstanceOf(SchoolClass::class, $student->schoolClass()->getRelated());
-        $this->assertSame('class_id', $student->schoolClass()->getForeignKeyName());
+        $this->assertInstanceOf(HasMany::class, $student->enrollments());
+        $this->assertInstanceOf(Enrollment::class, $student->enrollments()->getRelated());
+        $this->assertInstanceOf(HasOne::class, $student->currentEnrollment());
     }
 
     public function test_guardians_relation_resolves_linked_guardians(): void

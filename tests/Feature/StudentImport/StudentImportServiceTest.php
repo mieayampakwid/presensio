@@ -22,7 +22,7 @@ class StudentImportServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->service = new StudentImportService;
+        $this->service = app(StudentImportService::class);
     }
 
     public function test_preview_writes_nothing(): void
@@ -125,7 +125,7 @@ class StudentImportServiceTest extends TestCase
         $this->assertSame(1, SchoolClass::where('name', '1Z')->count());
         $this->assertSame(
             2,
-            Student::whereHas('schoolClass', fn ($query) => $query->where('name', '1Z'))->count(),
+            Student::whereHas('enrollments.schoolClass', fn ($query) => $query->where('classes.name', '1Z'))->count(),
         );
     }
 

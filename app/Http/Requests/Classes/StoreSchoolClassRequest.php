@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Classes;
 
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -28,7 +29,12 @@ class StoreSchoolClassRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            // Unique within the active year; other years may reuse the name
+            // (year-scoped class instances, spec 02 v2.0).
+            'name' => ['required', 'string', 'max:255', Rule::unique('classes', 'name')->where(
+                'academic_year_id',
+                AcademicYear::active()?->id,
+            )],
             'teacher_id' => ['nullable', Rule::exists(Teacher::class, 'id')],
         ];
     }
@@ -54,6 +60,9 @@ class StoreSchoolClassRequest extends FormRequest
 
                 $alreadyHomerooms = SchoolClass::query()
                     ->where('teacher_id', $teacherId)
+                    // Per academic year (spec 02 v2.0) — a teacher may
+                    // homeroom 5A this year and 6A after roll-over.
+                    ->where('academic_year_id', AcademicYear::active()?->id)
                     ->exists();
 
                 if ($alreadyHomerooms) {

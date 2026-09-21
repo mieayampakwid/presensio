@@ -74,7 +74,7 @@ class ExcuseAttachmentTest extends TestCase
         $user = User::factory()->teacher()->create();
         $teacher = Teacher::factory()->create(['user_id' => $user->id]);
         $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
-        $student = Student::factory()->create(['class_id' => $class->id]);
+        $student = Student::factory()->enrolledIn($class)->create();
 
         $excuse = $this->excuseWithFile(['student_id' => $student->id]);
 

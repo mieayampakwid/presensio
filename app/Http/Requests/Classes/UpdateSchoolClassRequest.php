@@ -58,6 +58,8 @@ class UpdateSchoolClassRequest extends FormRequest
 
                 $alreadyHomerooms = SchoolClass::query()
                     ->where('teacher_id', $teacherId)
+                    // Per academic year (spec 02 v2.0).
+                    ->when($target !== null, fn ($query) => $query->where('academic_year_id', $target->academic_year_id))
                     ->when($target !== null, fn ($query) => $query->whereKeyNot($target->id))
                     ->exists();
 

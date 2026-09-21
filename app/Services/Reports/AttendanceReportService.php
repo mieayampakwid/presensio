@@ -4,6 +4,7 @@ namespace App\Services\Reports;
 
 use App\Enums\UserRole;
 use App\Models\Attendance;
+use App\Models\Enrollment;
 use App\Models\NonSchoolDay;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
@@ -158,6 +160,12 @@ class AttendanceReportService
      * Students × dates grid data for one class. Only days with a record
      * appear in `statuses` — blanks are implicit and never counted.
      *
+     * Attribution is date-effective (spec 07): the roster is every
+     * student enrolled in this class at some point in the range, and a
+     * record enters the grid only if the student's enrollment active on
+     * the record's date was THIS class — so mid-year moves and past-year
+     * reports attribute correctly.
+     *
      * @return array{dates: list<string>, non_school_dates: list<string>, rows: array<int, array{id: int, student_number: string|null, full_name: string, counts: array<string, int>, rate: float|null, statuses: array<string, string>}>}
      */
     public function classReport(SchoolClass $class, CarbonInterface $from, CarbonInterface $to, bool $includeExcused): array
@@ -165,7 +173,19 @@ class AttendanceReportService
         $fromDate = $from->toDateString();
         $toDate = $to->toDateString();
 
-        $students = $class->students()->orderBy('full_name')->get(['id', 'full_name', 'student_number']);
+        $students = Student::query()
+            ->whereHas('enrollments', fn (Builder $query) => $query
+                ->where('class_id', $class->id)
+                ->where('started_on', '<=', $toDate)
+                ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $fromDate)))
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'student_number']);
+
+        $enrollmentsByStudent = Enrollment::query()
+            ->whereIn('student_id', $students->pluck('id'))
+            ->orderBy('started_on')
+            ->get(['student_id', 'class_id', 'started_on', 'ended_on'])
+            ->groupBy('student_id');
 
         $recordsByStudent = [];
 
@@ -173,7 +193,11 @@ class AttendanceReportService
             ->whereIn('student_id', $students->pluck('id'))
             ->whereBetween('date', [$fromDate, $toDate])
             ->get(['student_id', 'date', 'status']) as $record) {
-            $recordsByStudent[$record->student_id][] = $record;
+            $date = $record->date->toDateString();
+
+            if ($this->classIdOn($enrollmentsByStudent, $record->student_id, $date) === $class->id) {
+                $recordsByStudent[$record->student_id][] = $record;
+            }
         }
 
         $dates = [];
@@ -200,6 +224,24 @@ class AttendanceReportService
             'non_school_dates' => array_values(array_unique($nonSchoolDates)),
             'rows' => $rows,
         ];
+    }
+
+    /**
+     * The class id of the student's enrollment active on the date, from a
+     * pre-fetched enrollment map (no per-record queries).
+     *
+     * @param  Collection<int, EloquentCollection<int, Enrollment>>  $enrollmentsByStudent
+     */
+    private function classIdOn(Collection $enrollmentsByStudent, int $studentId, string $date): ?int
+    {
+        foreach ($enrollmentsByStudent->get($studentId, collect()) as $enrollment) {
+            if ($enrollment->started_on->toDateString() <= $date
+                && ($enrollment->ended_on === null || $enrollment->ended_on->toDateString() >= $date)) {
+                return $enrollment->class_id;
+            }
+        }
+
+        return null;
     }
 
     /**
