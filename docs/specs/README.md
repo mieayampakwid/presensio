@@ -28,8 +28,8 @@ Single-school attendance system. Each numbered spec is a decision record: the cu
 | 05 | [Absence Notifications](05-notifications.md) | Implemented 2026-09-20 |
 | 06 | [Reports & Exports](06-reports.md) | Implemented 2026-09-20; v1.5 amendment (year picker) implemented 2026-09-21 |
 | 07 | [Academic Roll-over & Historical Attribution](07-academic-years.md) | Implemented 2026-09-21 |
-| 08 | [Dashboard (Role Landing)](08-dashboard.md) | Draft — awaiting review; **next up** |
+| 08 | [Dashboard (Role Landing)](08-dashboard.md) | Implemented 2026-09-21 |
 
 ## Build order
 
-`01 → 02 → 03 → 04 → 05 → 06 → 07` shipped · next: `08 (dashboard) → deploy/pilot`
+`01 → 02 → 03 → 04 → 05 → 06 → 07 → 08` shipped · next: `deploy/pilot`
