@@ -1,0 +1,125 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: presensio-app:production
+        restart: unless-stopped
+        command: ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=8000"]
+        ports:
+            - "${APP_PORT:-80}:8000"
+        environment: &app-environment
+            APP_NAME: "${APP_NAME:-Presensio}"
+            APP_ENV: "${APP_ENV:-production}"
+            APP_DEBUG: "${APP_DEBUG:-false}"
+            APP_KEY: "${APP_KEY}"
+            APP_URL: "${APP_URL:-http://localhost}"
+            OCTANE_SERVER: frankenphp
+            LARAVEL_OCTANE: 1
+            DB_CONNECTION: pgsql
+            DB_HOST: pgsql
+            DB_PORT: 5432
+            DB_DATABASE: "${DB_DATABASE:-presensio}"
+            DB_USERNAME: "${DB_USERNAME:-presensio}"
+            DB_PASSWORD: "${DB_PASSWORD:-secret}"
+            SESSION_DRIVER: database
+            QUEUE_CONNECTION: database
+            CACHE_STORE: database
+            FILESYSTEM_DISK: local
+            LOG_CHANNEL: stack
+            LOG_STACK: single
+            LOG_LEVEL: "${LOG_LEVEL:-info}"
+            WAHA_BASE_URL: "${WAHA_BASE_URL:-http://waha:3000}"
+            WAHA_API_KEY: "${WAHA_API_KEY:-}"
+            WAHA_SESSION: "${WAHA_SESSION:-default}"
+        volumes:
+            - app-storage:/app/storage/app
+        networks:
+            - presensio
+        depends_on:
+            pgsql:
+                condition: service_healthy
+            waha:
+                condition: service_started
+
+    queue:
+        image: presensio-app:production
+        restart: unless-stopped
+        command: ["php", "artisan", "queue:work", "--timeout=90", "--tries=3"]
+        environment: *app-environment
+        volumes:
+            - app-storage:/app/storage/app
+        networks:
+            - presensio
+        depends_on:
+            pgsql:
+                condition: service_healthy
+            app:
+                condition: service_started
+        healthcheck:
+            disable: true
+
+    cron:
+        image: presensio-app:production
+        restart: unless-stopped
+        command: ["php", "artisan", "schedule:work"]
+        environment: *app-environment
+        volumes:
+            - app-storage:/app/storage/app
+        networks:
+            - presensio
+        depends_on:
+            pgsql:
+                condition: service_healthy
+            app:
+                condition: service_started
+        healthcheck:
+            disable: true
+    pgsql:
+        image: postgres:18-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: "${DB_DATABASE:-presensio}"
+            POSTGRES_USER: "${DB_USERNAME:-presensio}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+        ports:
+            - "${FORWARD_DB_PORT:-5432}:5432"
+        volumes:
+            - pgsql-data:/var/lib/postgresql/data
+        networks:
+            - presensio
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -q -d $${POSTGRES_DB:-presensio} -U $${POSTGRES_USER:-presensio}"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    waha:
+        image: devlikeapro/waha:latest
+        platform: linux/amd64
+        restart: unless-stopped
+        environment:
+            WAHA_API_KEY: "${WAHA_API_KEY:-}"
+            WAHA_DASHBOARD_ENABLED: "True"
+            WAHA_DASHBOARD_USERNAME: "${WAHA_DASHBOARD_USERNAME:-admin}"
+            WAHA_DASHBOARD_PASSWORD: "${WAHA_DASHBOARD_PASSWORD:-admin}"
+            WAHA_PRINT_QR: "False"
+            WHATSAPP_DEFAULT_ENGINE: "WEBJS"
+        ports:
+            - "${WAHA_PORT:-3000}:3000"
+        volumes:
+            - waha-sessions:/app/.sessions
+        networks:
+            - presensio
+
+networks:
+    presensio:
+        driver: bridge
+
+volumes:
+    pgsql-data:
+        driver: local
+    waha-sessions:
+        driver: local
+    app-storage:
+        driver: local
