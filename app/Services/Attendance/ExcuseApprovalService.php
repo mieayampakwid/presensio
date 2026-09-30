@@ -56,6 +56,7 @@ class ExcuseApprovalService
                 'status' => ExcuseStatus::Approved,
                 'review_note' => $reviewNote,
                 'reviewed_by_user_id' => $reviewer->id,
+                'reviewed_at' => now(),
             ]);
 
             $status = $pending->type === ExcuseType::Sick
@@ -97,6 +98,7 @@ class ExcuseApprovalService
                 'status' => ExcuseStatus::Rejected,
                 'review_note' => $reviewNote,
                 'reviewed_by_user_id' => $reviewer->id,
+                'reviewed_at' => now(),
             ]);
 
         return $updated === 1;

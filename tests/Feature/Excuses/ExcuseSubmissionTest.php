@@ -73,8 +73,10 @@ class ExcuseSubmissionTest extends TestCase
         $this->assertTrue($excuse->status === ExcuseStatus::Pending);
         $this->assertTrue($excuse->type === ExcuseType::Sick);
         $this->assertSame($child->id, $excuse->student_id);
+        $this->assertSame($guardian->id, $excuse->submitted_by_guardian_id);
         $this->assertNull($excuse->attachment_path);
         $this->assertNull($excuse->reviewed_by_user_id);
+        $this->assertNull($excuse->reviewed_at);
     }
 
     public function test_submission_with_proof_stores_it_under_an_opaque_local_path(): void

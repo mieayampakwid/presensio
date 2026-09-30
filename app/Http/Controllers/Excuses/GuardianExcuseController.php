@@ -6,6 +6,7 @@ use App\Enums\ExcuseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Excuses\StoreExcuseRequest;
 use App\Models\Excuse;
+use App\Models\Guardian;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,6 +67,8 @@ class GuardianExcuseController extends Controller
     {
         $validated = $request->validated();
 
+        $guardian = Guardian::where('user_id', $request->user()->id)->first();
+        $validated['submitted_by_guardian_id'] = $guardian?->id;
         $validated['attachment_path'] = $this->storeAttachment($request);
         $validated['status'] = ExcuseStatus::Pending;
 

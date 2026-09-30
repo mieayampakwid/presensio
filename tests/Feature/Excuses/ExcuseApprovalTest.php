@@ -73,7 +73,7 @@ class ExcuseApprovalTest extends TestCase
         $this->assertTrue($excuse->status === ExcuseStatus::Approved);
         $this->assertSame('Doctor note received.', $excuse->review_note);
         $this->assertSame($admin->id, $excuse->reviewed_by_user_id);
-
+        $this->assertNotNull($excuse->reviewed_at);
         $this->assertSame(3, Attendance::count());
 
         $monday = $tapped->refresh();

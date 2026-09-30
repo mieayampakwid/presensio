@@ -26,6 +26,8 @@ use Illuminate\Support\Carbon;
  * @property ExcuseStatus $status
  * @property string|null $review_note
  * @property int|null $reviewed_by_user_id
+ * @property int|null $submitted_by_guardian_id
+ * @property Carbon|null $reviewed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -39,6 +41,8 @@ use Illuminate\Support\Carbon;
     'status',
     'review_note',
     'reviewed_by_user_id',
+    'submitted_by_guardian_id',
+    'reviewed_at',
 ])]
 class Excuse extends Model
 {
@@ -66,6 +70,16 @@ class Excuse extends Model
     }
 
     /**
+     * Guardian who submitted this excuse, if any.
+     *
+     * @return BelongsTo<Guardian, $this>
+     */
+    public function submittedByGuardian(): BelongsTo
+    {
+        return $this->belongsTo(Guardian::class, 'submitted_by_guardian_id');
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -77,6 +91,7 @@ class Excuse extends Model
             'start_date' => 'date:Y-m-d',
             'end_date' => 'date:Y-m-d',
             'status' => ExcuseStatus::class,
+            'reviewed_at' => 'datetime',
         ];
     }
 }

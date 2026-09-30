@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('status');
             $table->string('review_note')->nullable();
             $table->foreignId('reviewed_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('submitted_by_guardian_id')->nullable()->index()->constrained('guardians')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
             $table->timestamps();
 
             // Overlap is a validation-time rule (rejected ranges may be
