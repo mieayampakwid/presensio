@@ -6,6 +6,7 @@ use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        if ($this->app->runningInConsole() && env('LARAVEL_SAIL')) {
+            DevCommands::artisan('serve', 'server');
+        }
     }
 
     /**
