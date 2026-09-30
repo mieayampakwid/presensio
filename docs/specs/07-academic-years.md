@@ -1,47 +1,111 @@
 # 07 — Academic Roll-over & Historical Attribution
 
-Status: draft v1.1 (2026-09-21) — consolidated: the foundation schema (academic_years, year-scoped classes, enrollments, removal of `students.class_id`) now lives in spec 02 v2.0; this spec owns the annual lifecycle and how the rest of the system reads it.
+Status: v1.1 — implemented 2026-09-21 (amended 2026-09-25)
 
-## Purpose
+## Problem
 
-The academic year is the heartbeat of a school: rosters form each July, whole cohorts promote, students graduate. This spec defines the one admin operation that moves the school into a new year, the semantics of alumni, and the attribution rules that keep every historical report true — so last year's class report forever shows last year's children.
+Schools operate on cyclical annual rhythms: cohorts promote simultaneously each July (e.g. Class 1A becomes 2A), and the senior cohort graduates as alumni. Naive administrative software typically executes roll-overs through destructive in-place updates (such as updating student class pointers or renaming existing class records). This pattern permanently corrupts historical auditability: querying historical attendance from two years prior either crashes or displays current student rosters instead of the children who were actually enrolled at that time. Furthermore, if graduated alumni are not formally decoupled from active operational routines, automated scanners and morning absence sweeps mistakenly flag alumni as truant, sending false alerts to families of former students.
+
+## Goals
+
+1. Provide an administrative roll-over workflow that transitions the school into a new academic year in a single atomic operation without mutating historical records.
+2. Establish clean domain semantics for Alumni (graduated) and departed students: they retain full historical visibility in past reports, but are automatically excluded from all daily operational surfaces (scanners, sweeps, live boards, and today dashboards).
+3. Ensure date-effective attribution across all queries: attendance records are permanently bound to the class corresponding to the student's enrollment active on that specific date (`classOn(date)`).
+4. Provide a fail-safe user interface featuring mapping configuration, preview dry-runs, explicit confirmation modals, and idempotency protection against accidental repeat roll-overs.
+
+## Non-goals
+
+- Sub-semester divisions (tri-semesters or terms) within an academic year (formal report card periods are specified in spec 11).
+- Free-form manual date manipulation of historical enrollment rows via raw editing tables.
+- Retroactive re-attribution utilities ("move all my past records from Class A to Class B").
+- Automatic grade retention calculations (students repeating a grade are mapped manually to a target class of the same grade level during roll-over review).
+- Multi-school or multi-branch synchronized roll-overs.
+
+## User Stories
+
+- **As an administrator in July**, I want to set up the new "2027/2028" school year, map each existing class to its successor (1A -> 2A, 2A -> 3A, ..., 6A -> Graduated/Alumni), and apply the change in one click.
+- **As an administrator**, I want graduated students to automatically become Alumni so that they no longer trigger morning absence notifications or clutter daily teacher attendance rosters.
+- **As a principal**, I want to pull up the Class 5A attendance report from two years ago and see the exact roster and attendance percentages of that historical cohort, unchanged by subsequent promotions.
+- **As a parent with an alumni child**, I want to view my child's past attendance archives without seeing active morning check-in prompts.
 
 ## Decisions
 
-- **Enrollment is the source of truth** (user-locked 2026-09-21, Clean Architecture rationale — chosen over write-time class stamping for single-source-of-truth cleanliness): a student's class on any date is *derived* from their enrollment history via `classOn(date)`. No denormalized `class_id` on `attendances`; attribution is a domain query, not stored state.
-- **Roll-over is a use case, not a bulk UPDATE**: one admin screen — create the new year, map each existing class to a target class in the new year (created on the fly with homeroom teacher; default = same name), review, apply transactionally. Students left unmapped end their enrollment with no successor (alumni/left) but keep all history. Re-applying an already-promoted year is a no-op.
-- **Today-surfaces only see enrolled students**: the auto-absent sweep, presence board, attendance dashboard, and every active picker operate on open enrollments (active year). Alumni stop appearing everywhere "today", yet remain fully visible in the years they attended.
-- **Build order**: spec 08 (Dashboard, drafted) implements **after** this spec — its per-class counts read the enrollment model.
+- **Enrollment History as Sole Source of Truth**: As established in spec 02, class membership is derived through date-effective `enrollments`. The system never stamps `class_id` onto `attendances` records and never stores a static `class_id` on `students`.
+- **Atomic Roll-Over Workflow**: Roll-over is implemented as a structured application use case, not a batch SQL update:
+  1. Admin creates the new `academic_years` row with start and end dates.
+  2. System presents a mapping interface: each class from the currently active year is mapped to a target class in the new year (auto-suggesting same name or next grade level, with homeroom teacher assignment).
+  3. Classes marked as "Graduating / None" indicate that students in those classes will not have a successor enrollment created.
+  4. Upon administrative execution, the system transactionally closes active enrollments (`ended_on = roll_over_date - 1`) and opens new enrollments in the target classes (`started_on = roll_over_date`).
+  5. The new academic year becomes `is_active = true`, and the previous year becomes `is_active = false`.
+- **Alumni Semantics**: An "Alumni" or departed student is defined purely by domain state: a student who has **no open enrollment** (`ended_on IS NULL`) in the currently active academic year.
+  - Alumni are excluded from the morning auto-absent sweep (spec 03).
+  - Alumni are omitted from the Live Presence Board and Today's Attendance Dashboard (specs 06 and 08).
+  - Alumni are excluded from active class dropdowns and pickers.
+  - Historical reports for past years continue to display alumni with complete fidelity.
+- **Idempotency and Confirmation Guard**: Re-executing a roll-over on an already promoted academic year is prevented. The UI requires explicit confirmation with summary statistics before committing changes.
 
 ## Requirements
 
-1. **Roll-over (admin)**: create next year → per-source-class target mapping (create-with-name + homeroom teacher inline) → transactional apply: open enrollments end on the roll-over date, new enrollments open in the mapped target classes; unmapped students simply end with no successor.
-2. **Alumni/left students**: no open enrollment; excluded from sweep, board, active pickers and today-views; still selectable in admin lists (filter) and fully present in historical reports. Deletion guards unchanged.
-3. **Date-effective attribution**: the exception dashboard resolves the roster *as of the requested date* (not just today); reports attribute each record to the class of the student's enrollment active on the record's date — students not enrolled in that class on that date never appear in its report.
-4. **Class report UI (spec 06)**: gains an academic-year picker; the classes list is per selected year. Presence board and attendance dashboard stay active-year-only.
-5. **Auto-absent sweep (spec 03)**: marks only students with an enrollment active on the swept date; weekend/non-school-day skip unchanged.
-6. **Class name rendering (specs 04/05)**: excuse views and notification bodies render the class from the student's relevant enrollment (today's record → open enrollment); no behavior change otherwise.
-7. **Bootstrap**: the migration backfills one open enrollment per pre-existing student (with a `class_id`) into a bootstrap "2026/2027" year — the system never ships with students that have no enrollment row.
+1. **Roll-Over Preparation Screen (`GET /admin/academic-years/roll-over`)**:
+   - Requires an upcoming, non-active academic year to be defined.
+   - Lists all classes in the currently active academic year.
+   - For each class, provides target mapping options:
+     - Map to existing class in new year.
+     - Auto-create new target class in new year (input class name + select homeroom teacher).
+     - Mark as "Graduating / No Successor" (students become Alumni).
+   - Allows excluding individual students from promotion (e.g. retained students mapped to a retained class).
+2. **Roll-Over Execution (`POST /admin/academic-years/roll-over`)**:
+   - Executes inside a single database transaction (`DB::transaction`).
+   - Verifies target academic year is valid and has not previously been promoted into.
+   - Closes open enrollments for all mapped students: `ended_on = target_year.starts_at - 1 day`.
+   - Creates new open enrollments for promoted students: `started_on = target_year.starts_at`, `ended_on = null`.
+   - Deactivates previous year (`is_active = false`) and activates new year (`is_active = true`).
+   - Unmapped students simply have their open enrollment closed without a successor row.
+3. **Date-Effective Query Contract**:
+   - Resolving class roster on any date `D`:
+     $$\text{Students in Class } C \text{ on Date } D = \{ s \mid \exists e \in \text{enrollments}: e.\text{student\_id} = s.\text{id} \land e.\text{class\_id} = C.\text{id} \land e.\text{started\_on} \le D \land (e.\text{ended\_on} \text{ is null} \lor e.\text{ended\_on} \ge D) \}$$
+   - Any report generated for a historical date range queries enrollments matching that specific period.
+4. **Alumni Scanner Protection**:
+   - If an alumni student attempts to tap an uncollected RFID card at the gate, the scanner records `scan_events` with outcome `ignored_alumni` and creates no attendance record.
 
-## Acceptance criteria
+## Schema Reference
 
-- After a simulated roll-over (year 1 promoted to year 2): the year-1 class report shows year-1's roster and counts unchanged; the same class name in year 2 shows the new roster; alumni appear in neither today-view but appear in year-1 reports.
-- A student moved mid-year (5A → 5B in October) attributes September records to 5A and November records to 5B in the respective class reports.
-- Creating a second open enrollment for one student fails at the DB level (partial unique) and at validation (overlap guard message).
-- The sweep on a school day creates absent records only for students with an enrollment active that date; an alumni student's card tap still scans but never resurrects them into today-views.
-- Import into the active year maps/creates classes with the year's `academic_year_id`; last year's same-named class is never reused.
-- Every role-scoped surface keeps its spec 01 guarantees (teacher sees own homeroom classes of the relevant year; parent/student unchanged — they are class-agnostic).
+This specification utilizes the master data schema defined in spec 02:
 
-## Constraints & assumptions
+```
+academic_years (spec 02)
+      │
+      └───► classes (spec 02)
+                 │
+                 └───► enrollments (spec 02)
+                             │
+                             └───► students (spec 02)
+```
 
-- **Pre-production window**: no real attendance data exists yet — the schema reshaping (dropping `students.class_id`) is cheap now and impossible once data lands; this spec ships before go-live.
-- Tests run on sqlite; partial unique indexes work on both sqlite and PostgreSQL (dev).
-- Overlap/transaction patterns reuse existing house solutions (excuses overlap guard, transactional services, `lockForUpdate` re-fetch).
+**State Transition of Enrollments During Roll-over**:
+```text
+Before Roll-over (2026/2027 Active):
+[Enrollment #101] Student: Ahmad | Class: 5A (2026/2027) | started_on: 2026-07-01 | ended_on: NULL
 
-## Out of scope
+After Roll-over to 2027/2028:
+[Enrollment #101] Student: Ahmad | Class: 5A (2026/2027) | started_on: 2026-07-01 | ended_on: 2027-06-30
+[Enrollment #205] Student: Ahmad | Class: 6A (2027/2028) | started_on: 2027-07-01 | ended_on: NULL
+```
 
-- Semester entities within a year
-- Direct editing of historical enrollment rows (moves and roll-over create correct rows; date surgery is not a UI)
-- Retroactive re-attribution tools ("reassign these old records to another class")
-- Timetables, subjects, per-period attendance (unchanged deferrals)
-- Multi-school / multi-branch years
+## Acceptance Criteria
+
+- **AC-07-01**: After executing roll-over from Year 1 to Year 2, running Class 5A's attendance report for Year 1 shows the exact Year 1 student roster and counts unchanged.
+- **AC-07-02**: In Year 2, Class 6A displays the promoted cohort, while students who graduated in Year 1 appear in zero active rosters or today-views.
+- **AC-07-03**: Given a student transferred mid-year from 5A to 5B on October 1st, reports for September credit their attendance to 5A, and reports for October credit their attendance to 5B.
+- **AC-07-04**: An attempt to execute roll-over while leaving the database in an invalid state (e.g. overlapping enrollment) triggers a full transaction rollback with zero records altered.
+- **AC-07-05**: When the daily auto-absent sweep runs on a school day in Year 2, alumni students without active enrollments are skipped entirely.
+- **AC-07-06**: An alumni student tapping their RFID card at the gate does not generate an attendance record and logs `ignored_alumni`.
+
+## Constraints & Assumptions
+
+- Academic years run on contiguous date boundaries without calendar overlap.
+- Single active academic year invariant: exactly one row in `academic_years` has `is_active = true`.
+
+## Open Questions
+
+- `[NEEDS DECISION: Mid-Year Promotion / Retention Exception]`: If a student is promoted mid-year, the system handles it via the transfer workflow (spec 02). No additional roll-over tooling is required for individual mid-year adjustments.

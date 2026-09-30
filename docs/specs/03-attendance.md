@@ -1,99 +1,179 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: draft v2.5 (2026-09-21) — v2.5 amends the sweep's target population to enrollment-active students (spec 02 v2.0 / spec 07).
+Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25)
 
-## Purpose
+## Problem
 
-The core engine: Students independently log their attendance via Hardware Scanners (RFID or Secure Dynamic QR). The system natively guards against fraud (Buddy Punching), aggregates absences, and handles check-in/check-out policies autonomously.
+Manual morning roll call in classrooms consumes 15 to 20 minutes of instructional time per class each day, produces error-prone paper logs, and delays absence discovery until midday or later. While standalone card-based RFID systems automate gate check-ins, they suffer extensively from "titip absen" (buddy punching fraud), where one student carries several peers' cards through the turnstile. Furthermore, automated check-in systems frequently break down during power/network outages or trigger mass false alarms by marking students absent on unrecorded national holidays.
+
+## Goals
+
+1. Enable autonomous, sub-second attendance recording through two complementary input streams: physical RFID cards and authenticated Dynamic QR codes displayed on mobile/web.
+2. Defeat buddy punching and screenshot relay fraud through short-lived (30-second expiry, 25-second UI auto-refresh) HMAC-signed dynamic tokens issued exclusively by authenticated student sessions.
+3. Automatically detect missing students and generate `absent` records at a configurable cutoff time on valid school days, triggering immediate guardian alerts (spec 05).
+4. Integrate a resilient school calendar combining automated Indonesian national holiday/cuti bersama feeds with administrative school event overrides to suppress automated sweeps on non-school dates.
+5. Provide teachers and administrators with manual override tools (individual correction and bulk class check-in) as an operational safety net during hardware or connectivity failures.
+6. Maintain an immutable, append-only scan event log (`scan_events`) recording every raw tap and its exact system resolution for auditability, hardware diagnostics, and dispute settlement.
+
+## Non-goals
+
+- Subject-level or period-by-period attendance tracking in v1 (handled at the daily school level; per-period attendance deferred to v1.x; see spec 09 and spec 13).
+- Facial recognition or biometric scanning hardware integration.
+- Hardware-side offline store-and-forward buffering (v1 relies on teacher bulk manual override as the outage fallback; device buffering deferred to v1.x).
+- Unique asymmetric cryptographic keys per physical scanner device (v1 uses a shared device API bearer key).
+- Student notification dispatch (absence alerts notify guardians only; students verify status via self-serve portal).
+
+## User Stories
+
+- **As a student**, I want to tap my RFID card at the gate scanner and see my name and "Hadir" on the screen within 1 second, so I know my arrival is logged without delay.
+- **As a student who forgot my card**, I want to open the Presensio app on my smartphone, display my dynamic QR code to the scanner, and check in securely.
+- **As a school administrator**, I want the system to automatically sweep at 08:30 WIB and mark any enrolled student without a record as `absent`, so that their parents are notified promptly.
+- **As a teacher during a scanner power failure**, I want to select my class and mark all unrecorded students as present with a single confirmation, so instructional time is not wasted taking roll on paper.
+- **As an administrator**, I want national holidays like Idul Fitri to automatically populate the calendar, so the system never marks the entire student body absent while school is closed.
+- **As a student**, I want to log in to my dashboard and view my attendance records for the month, so I can ensure my taps were accurately recorded.
 
 ## Decisions
 
-- **Unified Identity Modality (RFID + Android/Web)**: System provides two streams for check-in to maximize flexibility and combat "titip absen" (buddy punching fraud).
-  - *Standard RFID*: Fast, reliable, but susceptible to card sharing.
-  - *Dynamic QR (Time-Based)*: Requires a student to be logged in via their personal device, raising the fraud bar from "borrow a card" to "share live credentials + screen". Codes expire quickly (e.g., 30s) to reject screenshots shared via chat apps. Residual risk (relaying a live screen over a video call) is accepted in v1.
-- **Server-Issued QR Tokens**: The QR content is a token signed with a server-side signing secret and issued by an authenticated, student-only endpoint. The client only requests and renders it — the secret never reaches any client. The UI refreshes the code every ~25s so a valid code is always on display.
-- **Scanner Authentication**: Hardware scanners authenticate with a shared device API key (config) on the scan endpoint. Per-device keys and a device registry are deferred (v1.x).
-- **Time Tracking & Debounce**: Accurately records `checked_in_at` and `checked_out_at`. A configurable debounce window (`scan_debounce_minutes`, default 1) turns taps following a check-in into no-ops — a hardware double-tap must never become an instant check-out.
-- **Device Scan Timestamps**: Scanners send their own scan clock in the payload. Within `scan_drift_tolerance_minutes` of server time, the device clock is authoritative for `checked_in_at`/`checked_out_at`/`scanned_at` — accurate under server lag and future-proof for offline buffering (v1.x). Beyond tolerance, server time wins.
-- **Application Configurability**: Key business logic anchors on settings (all evaluated in the school's timezone):
-  - `school_start_time` (Time to determine `late` / keterlambatan)
-  - `require_checkout` (Boolean to toggle Check-out tap logic)
-  - `auto_absent_cron_time` (Sweep time)
-  - `scan_debounce_minutes` (Double-tap shield)
-  - `scan_drift_tolerance_minutes` (Device-clock trust window, default 2)
-- **Automatic Absent Generation (Cron)**: A background scheduler sweeps for students missing a record and generates `absent` statuses automatically. This triggers Spec 05 Absence Notifications reliably.
-- **Non-School Day Calendar**: The sweep must never fire on a holiday. A `non_school_days` table is the single source of truth, combining auto-synced national holidays + cuti bersama (from a holiday feed — e.g., Google Calendar's public Indonesian holiday calendar or a public holidays API) with admin-managed school dates (semester breaks, exams, school events). Sync is one-way, scheduled, idempotent (upsert by date), imports only future dates, and never touches manual rows; admins may delete an imported day (e.g., school holds a session on a national holiday).
-- **Manual Override as Safety Net**: Teachers and admins can correct any day (IoT outage, damaged card); every edit is attributable and never re-sends notifications (Spec 05).
-- **Raw Scan Event Log (Append-Only)**: Every scan attempt is recorded with its outcome. The mutable `attendances` record stays the projection; the immutable event log is the history — for dispute resolution ("I did tap"), fraud analytics (a tap by a `sick`/`leave` student signals a lent card), and hardware debugging. Recorded from day one: event history cannot be retrofitted.
+- **Dual Modality (RFID + Dynamic QR)**:
+  - *Standard RFID*: Fast gate throughput; resolves card UID to `student_id`.
+  - *Dynamic QR*: High anti-fraud guarantee; short-lived HMAC-signed token generated server-side. Codes expire in 30s to prevent screenshot sharing via WhatsApp/Telegram.
+- **Ordered Tap Resolution**:
+  1. No record today -> create record: status `present` if `now <= school_start_time`, else `late`.
+  2. Record is `absent` (auto-sweep already ran) -> upgrade status to `late` or `present` based on clock; record `checked_in_at`. (Prior notification to guardian is not retracted).
+  3. Record is `present` or `late` without check-out:
+     - If elapsed time since check-in is within `scan_debounce_minutes` (default 1 min) -> ignore as duplicate double-tap (`ignored_debounce`).
+     - If beyond debounce window and `require_checkout` is true -> record `checked_out_at` (`check_out`).
+     - If `require_checkout` is false -> ignore (`ignored_complete`).
+  4. Record already checked out -> ignore (`ignored_complete`).
+  5. Record is `sick` or `leave` (pre-injected by approved excuse; spec 04) -> ignore tap (`ignored_excused`) to prevent accidental excuse corruption.
+- **Device Clock Authority with Tolerance**: Scanners transmit their local clock timestamp. If within `scan_drift_tolerance_minutes` (default 2 minutes) of server time, the device timestamp is authoritative. Beyond tolerance, the server clock is used.
+- **Active Enrolled Population Sweep**: The automated sweep targets only students with an open enrollment (`ended_on IS NULL`) in the active academic year on the swept date. Alumni, withdrawn students, and future enrollments are never swept.
+- **Calendar Single Source of Truth**: The `non_school_days` table combines auto-synced national holidays with admin-managed manual entries. Auto-sync is idempotent, one-way, and never modifies or deletes manual entries.
+- **Raw Event Immutability**: `scan_events` rows are append-only. Manual overrides update the mutable `attendances` table and stamp `override_by_user_id` and `overridden_at`, leaving raw scan events untouched.
 
 ## Requirements
 
-1. **Unified Scanner API Endpoint (`POST /api/attendance/scan`)**:
-   - Authenticated via the scanner device key; rate-limited. Parses incoming JSON payload containing credential type, token/string, and the device's scan timestamp.
-   - **QR Path (Anti-Fraud)**: Validates the token's HMAC signature and freshness against the server-side secret. If `|now − issued_at| > 30 seconds`, rejects the payload with `Expired Token` (blocks screenshot fraud). A valid token decodes to the bound `student_id`. Replays inside the window are harmless: they collapse into the same daily record via debounce.
-   - **RFID Path**: Looks up `rfid_number` in the `rfid_cards` registry (Spec 02) for its assigned `student_id`. Unknown or unassigned credentials return an error for the scanner display.
-   - **Tap Resolution (ordered)**:
-     1. No record today → create it: set `checked_in_at`; status `late` if past `school_start_time`, else `present`.
-     2. Record is `absent` (auto-sweep) without a check-in → set `checked_in_at` and re-status to `late`/`present`. The already-sent absence notification is not retracted (Spec 05).
-     3. Checked-in without check-out → within the debounce window: no-op; otherwise set `checked_out_at` if `require_checkout`, else no-op.
-     4. Already checked out → no-op.
-     5. Record is `sick`/`leave` (excuse-injected, Spec 04) → no-op.
-   - The `(student_id, date)` compound unique makes simultaneous taps on two scanners safe (create-once, update-thereafter).
-   - Responds with the outcome (`checked_in`, `checked_out`, `ignored`, or error) plus the student's `full_name` for the scanner display.
-2. **Student Portal — Dynamic QR Generator**:
-   - A student-only authenticated endpoint returns the short-lived signed token; the UI renders it as a QR and auto-refreshes (~25s), bound to the requester's `student_id`.
-3. **Auto Sweep (Cron Task)**:
-   - At `auto_absent_cron_time`, creates a record with status `absent` for every student **with an enrollment active on that date** (open enrollment, spec 02 v2.0 — alumni/left students are never swept, spec 07) and no record today (weekends and `non_school_days` skipped). Approved excuses need no special case — Spec 04 pre-creates their `sick`/`leave` records, which already count as "having a record". Sweep-created records carry `scan_method = null`.
-4. **Teacher & Admin Exception Dashboard**:
-   - Teachers may correct records for their own class(es) on any date; admins anywhere. An edit sets the status and optionally `checked_in_at`/`checked_out_at` (e.g., reconstructing a day the scanner was offline).
-   - Every manual edit stamps `override_by_user_id` and `scan_method = manual_override`, with an optional `notes` context (e.g., "Card damaged"). Edits never trigger notifications (Spec 05).
+1. **Scanner API Endpoint (`POST /api/attendance/scan`)**:
+   - Authenticated via `X-Scanner-Key` header against `config('attendance.scanner_keys')` (supports comma-separated keys for zero-downtime rotation).
+   - Throttled to 60 requests/minute per device IP (`RateLimiter::for('scanner')`).
+   - Payload accepts `{ "method": "rfid"|"dynamic_qr", "identifier": string, "scanned_at": ISO8601 }`.
+   - Rejects expired QR tokens (`|now - issued_at| > 30s`) with HTTP 422 (`Expired Token`).
+   - Resolves RFID card to active `student_id`; rejects unregistered cards with HTTP 404 (`Unknown Credential`).
+   - Executes tap resolution in an atomic database transaction.
+   - Returns JSON response `{ "status": "success", "outcome": string, "student_name": string, "time": string }`.
+2. **Dynamic QR Token Generation & Presentation (`GET /my-qr`)**:
+   - Authenticated student portal route rendered via Inertia (`StudentQrController`).
+   - Generates an HMAC-SHA256 token containing `student_id`, `issued_at`, and signature using a server-side secret (`ATTENDANCE_QR_SIGNING_KEY` falling back to `APP_KEY`).
+   - The Inertia view auto-refreshes every 25 seconds via Inertia partial reload to rotate the QR SVG.
+3. **Auto-Absent Sweep (Scheduled Console Task)**:
+   - Executes daily at configured `auto_absent_cron_time` (e.g. 08:30 WIB).
+   - Aborts immediately if the current date is a weekend (Saturday/Sunday) or exists in `non_school_days`.
+   - Identifies all students with active enrollment in the active academic year who have **no record** in `attendances` for today.
+   - Bulk-inserts attendance records with `status = 'absent'`, `date = today`, `scan_method = null`.
+   - Each created `absent` record triggers the asynchronous absence notification pipeline (spec 05).
+4. **Manual Exception Dashboard**:
+   - Authorized teachers (scoped to their assigned classes) and admins (all classes) can edit any attendance record.
+   - Supports setting status (`present`, `late`, `absent`, `sick`, `leave`), `checked_in_at`, `checked_out_at`, and an explanatory `notes` field.
+   - Stamped with `override_by_user_id`, `scan_method = 'manual_override'`, and `overridden_at = now()`.
+   - Manual edits **never** trigger absence notifications (spec 05).
 5. **Bulk Class Marking**:
-   - A teacher picks a class + date and marks all students *still without a record* as `present` in one action (scanner-outage day). Existing records — including `sick`/`leave` — are never overwritten. Bulk-created records count as manual overrides; since only `absent` creations notify (Spec 05), this sends no notifications.
-6. **Data Overlap Shield (Spec 04 Synergy)**:
-   - An approved Excuse pre-creates `sick`/`leave` records; the Scanner API treats taps by those students as no-ops (see Tap Resolution), so overlapping tap anomalies never corrupt an approved excuse.
-7. **Holiday Calendar & Sync**:
-   - A scheduled one-way sync from the configured holiday feed auto-applies national holidays and cuti bersama (dates ≥ today only) into `non_school_days` with `source = sync` and the holiday name. Idempotent upsert by date; manual rows are never overwritten or deleted by the sync. No write-back to the feed.
-   - Admin CRUD adds school-specific dates (`source = manual`) and may delete synced rows.
-8. **Scan Event Logging**:
-   - The scan endpoint persists one `scan_events` row per attempt, regardless of outcome: resolved `student_id` (null on unknown credential), `scan_method`, the raw `rfid_number` for RFID attempts (QR tokens are never stored — they expire by design), device `scanned_at`, and the outcome (`check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `error_expired_token`, `error_unknown_credential`).
-   - The log is append-only; the Exception Dashboard edits attendance records, never events.
-9. **Student Portal — My Attendance Page**:
-   - A student-only, read-only view of their own records: today's record highlighted in a card (status + check-in/out times), followed by paginated history (15/page, newest first; today excluded — it lives in the today card). Times render in the school timezone. A student without a linked profile sees an empty state, mirroring the QR page.
-   - Privacy carve-out: `notes` and `override_by_user_id` are teacher-facing and never exposed to students — override rationale may contain internal commentary. Rows expose date, status, times, and scan method only.
-   - This page is the student's self-serve feedback loop ("did my scan register?") — in v1 nobody notifies the *student* of an absence (Spec 05 notifies guardians only), and the scanner display is the only other feedback surface.
+   - Allows a teacher/admin to mark all unrecorded students in a class for a specific date as `present`.
+   - Does not overwrite existing records (`sick`, `leave`, or existing scans are preserved).
+6. **National Holiday Sync**:
+   - Scheduled Artisan command (`php artisan attendance:sync-holidays`) fetches Indonesian national holidays from Nager.Date API (`https://date.nager.at/api/v3/PublicHolidays/{year}/ID`).
+   - Idempotently upserts dates >= today with `source = 'sync'`.
+   - Preserves manual rows (`source = 'manual'`).
+7. **Student Self-Serve Attendance View**:
+   - Dedicated portal page displaying today's attendance card (status badge, check-in time, check-out time).
+   - Paginated historical table (15 records per page, newest first).
+   - Conceals administrative `notes` and `override_by_user_id` from student view.
 
-## Schema Expected (attendances)
+## Schema
 
-- `id`
-- `student_id`
-- `date` (date, compound unique w/ student_id)
-- `status` (enum: present, absent, late, sick, leave)
-- `checked_in_at` (timestamp, nullable)
-- `checked_out_at` (timestamp, nullable)
-- `scan_method` (string/enum, nullable) — Values: `rfid`, `dynamic_qr`, `manual_override`; `null` = system-generated (cron sweep, excuse injection). (Ensures analytics on method adoption).
-- `override_by_user_id` (foreign, nullable)
-- `notes` (string, nullable)
+### 1. `attendances` Table
 
-## Schema Expected (scan_events)
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | Internal identifier |
+| `student_id` | bigint | unsigned, not null | Foreign key -> `students.id` |
+| `date` | date | not null | School date of attendance record |
+| `status` | varchar(20) | not null | Enum: `present`, `absent`, `late`, `sick`, `leave` |
+| `checked_in_at` | timestamp | nullable | Timestamp of initial check-in |
+| `checked_out_at` | timestamp | nullable | Timestamp of check-out |
+| `scan_method` | varchar(30) | nullable | `rfid`, `dynamic_qr`, `manual_override`, null (cron) |
+| `override_by_user_id` | bigint | unsigned, nullable | Foreign key -> `users.id` |
+| `notes` | varchar(255) | nullable | Teacher/admin explanatory notes |
+| `created_at` | timestamp | nullable | |
+| `updated_at` | timestamp | nullable | (Tracks manual override timestamp) |
 
-- `id`
-- `student_id` (foreign, nullable — null when the credential resolves to nobody)
-- `scan_method` (enum: `rfid`, `dynamic_qr`)
-- `identifier` (string, nullable) — Raw `rfid_number` on RFID attempts; empty for QR (tokens expire by design, never stored).
-- `scanned_at` (timestamp — device clock when available)
-- `outcome` (string) — What the tap did, or why it was ignored/rejected.
+*Proposed Fields (Pending Migration)*:
+- `overridden_at`: timestamp, nullable
 
-## Schema Expected (non_school_days)
+**Indexes:**
+- `UNIQUE (student_id, date)`
+- `INDEX (date, status)`
 
-- `id`
-- `date` (date, unique)
-- `name` (string) — e.g., "Idul Fitri", "Cuti Bersama", "Libur Semester Ganjil".
-- `source` (enum: `sync`, `manual`)
+### 2. `scan_events` Table
 
-## Out of scope
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | Internal identifier |
+| `student_id` | bigint | unsigned, nullable | Resolved student ID (null if unrecognized) |
+| `scan_method` | varchar(20) | not null | `rfid` or `dynamic_qr` |
+| `identifier` | varchar(100) | nullable | RFID serial number (null for QR tokens) |
+| `scanned_at` | timestamp | not null | Device or server timestamp of scan attempt |
+| `outcome` | varchar(50) | not null | Result code: `check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `error_expired_token`, `error_unknown_credential` |
+| `created_at` | timestamp | nullable | Insertion timestamp |
 
-- Per-period attendance (mapel-level entry).
-- Timetables; per-class/per-level calendar overrides (one school-wide calendar in v1).
-- Two-way calendar sync (writing school dates back to the holiday feed).
-- Per-device scanner keys / device registry.
-- Offline scanner buffering (store-and-forward) — manual override is the v1 mitigation for outages.
+**Indexes:**
+- `INDEX (student_id, scanned_at)`
+- `INDEX (scanned_at)`
+
+### 3. `non_school_days` Table
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | Internal identifier |
+| `date` | date | not null, unique | Holiday date |
+| `name` | varchar(255) | not null | Name of holiday / break |
+| `source` | varchar(20) | not null | Enum: `sync`, `manual` |
+| `created_at` | timestamp | nullable | |
+| `updated_at` | timestamp | nullable | |
+
+
+### 4. `settings` Table (School Configuration)
+
+Single-row configuration table (`id = 1`) managed via `SchoolSetting` model:
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | Always 1 |
+| `school_timezone` | varchar(255) | not null, default: 'Asia/Jakarta' | Application timezone |
+| `school_start_time` | time | not null, default: '07:30:00' | Late threshold |
+| `require_checkout` | boolean | not null, default: false | Check-out tap required flag |
+| `auto_absent_cron_time` | time | not null, default: '15:30:00' | Daily auto-sweep time |
+| `scan_debounce_minutes` | smallint | unsigned, default: 1 | Double-tap shield window |
+| `scan_drift_tolerance_minutes` | smallint | unsigned, default: 2 | Scanner clock trust window |
+| `created_at` | timestamp | nullable | |
+| `updated_at` | timestamp | nullable | |
+## Acceptance Criteria
+
+- **AC-03-01**: Given an unregistered RFID card UID, when tapped on the scanner endpoint, the system logs an event with outcome `error_unknown_credential` and returns HTTP 404 with student name "Kartu Tidak Dikenal".
+- **AC-03-02**: Given a registered student tapping at 06:45 WIB before `school_start_time` (07:00 WIB), the system creates an attendance record with status `present` and logs outcome `check_in`.
+- **AC-03-03**: Given a student tapping at 07:15 WIB after `school_start_time`, the system creates an attendance record with status `late`.
+- **AC-03-04**: Given a student who tapped in 30 seconds ago, when they tap again within the 60-second debounce window, the second tap is ignored with outcome `ignored_debounce` and no record is modified.
+- **AC-03-05**: Given an expired Dynamic QR code (>30 seconds old), the scanner rejects the scan with outcome `error_expired_token` and HTTP 422.
+- **AC-03-06**: When the auto-absent sweep runs on a day listed in `non_school_days`, zero attendance records are generated.
+- **AC-03-07**: Given a student marked `absent` by the 08:30 sweep, when they tap in at 08:45, their record is updated to `late`, `checked_in_at` is set, and outcome is `absent_upgraded`.
+- **AC-03-08**: A teacher executing bulk class check-in marks unrecorded students as `present` with `scan_method = 'manual_override'`; existing `sick` records for that class are untouched.
+
+## Constraints & Assumptions
+
+- Hardware scanners communicate via standard HTTP/HTTPS JSON payloads.
+- Time tracking is evaluated in the school's configured timezone (`app.timezone` or `school_timezone` setting, e.g. `Asia/Jakarta`).
+- Single-school scale: daily sweep processes <= 2,000 students in a single lightweight background query.
+
+## Open Questions
+
+- `[NEEDS DECISION: Event Log Retention Policy]`: `scan_events` grows at ~80,000 rows/year for a 200-student school. In v1, logs are retained indefinitely. A pruning policy (retain 365 days) is recommended for v1.1.
+- `[NEEDS DECISION: Per-Device Scanner Authentication]`: Shared API key in v1. Migrating to individual device tokens with hardware registration table planned for v1.x when deploying multiple physical turnstiles.
