@@ -22,6 +22,10 @@ use Illuminate\Support\Carbon;
  * @property int $guardian_id
  * @property NotificationChannel $channel
  * @property NotificationDeliveryStatus $status
+ * @property string|null $recipient_contact
+ * @property string|null $provider_message_id
+ * @property Carbon|null $sent_at
+ * @property string|null $error_message
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -30,6 +34,10 @@ use Illuminate\Support\Carbon;
     'guardian_id',
     'channel',
     'status',
+    'recipient_contact',
+    'provider_message_id',
+    'sent_at',
+    'error_message',
 ])]
 class AbsenceNotification extends Model
 {
@@ -63,6 +71,7 @@ class AbsenceNotification extends Model
         return [
             'channel' => NotificationChannel::class,
             'status' => NotificationDeliveryStatus::class,
+            'sent_at' => 'datetime',
         ];
     }
 }

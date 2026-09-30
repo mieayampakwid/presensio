@@ -16,7 +16,7 @@ use Throwable;
  */
 class WhatsAppClient
 {
-    public function send(string $phone, string $text): void
+    public function send(string $phone, string $text): ?string
     {
         $baseUrl = (string) config('services.waha.base_url');
 
@@ -24,7 +24,7 @@ class WhatsAppClient
             throw new RuntimeException('WAHA_BASE_URL is not configured.');
         }
 
-        Http::baseUrl($baseUrl)
+        $response = Http::baseUrl($baseUrl)
             ->when(
                 config('services.waha.api_key'),
                 fn ($client, string $apiKey) => $client->withHeaders(['X-Api-Key' => $apiKey]),
@@ -44,6 +44,8 @@ class WhatsAppClient
                 'text' => $text,
             ])
             ->throw();
+
+        return $response->json('id');
     }
 
     /**

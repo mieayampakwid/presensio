@@ -80,7 +80,13 @@ class SendAbsenceNotifications implements ShouldQueue
 
             try {
                 if ($channel === NotificationChannel::WhatsApp) {
-                    $whatsapp->send($recipient, $text);
+                    $messageId = $whatsapp->send($recipient, $text);
+                    $row->update([
+                        'status' => NotificationDeliveryStatus::Sent->value,
+                        'recipient_contact' => $recipient,
+                        'provider_message_id' => $messageId,
+                        'sent_at' => now(),
+                    ]);
                 } else {
                     Mail::to($recipient)->send(new AbsenceAlertMail(
                         guardianName: $guardian->name,
@@ -90,11 +96,18 @@ class SendAbsenceNotifications implements ShouldQueue
                         dateText: $this->dateText($attendance->date->toDateString()),
                         dateShort: $attendance->date->toDateString(),
                     ));
+                    $row->update([
+                        'status' => NotificationDeliveryStatus::Sent->value,
+                        'recipient_contact' => $recipient,
+                        'sent_at' => now(),
+                    ]);
                 }
-
-                $row->update(['status' => NotificationDeliveryStatus::Sent->value]);
             } catch (Throwable $exception) {
-                $row->update(['status' => NotificationDeliveryStatus::Failed->value]);
+                $row->update([
+                    'status' => NotificationDeliveryStatus::Failed->value,
+                    'recipient_contact' => $recipient,
+                    'error_message' => mb_substr($exception->getMessage(), 0, 2000),
+                ]);
                 Log::warning('absence-notification-failed', [
                     'attendance_id' => $attendance->id,
                     'guardian_id' => $guardian->id,
@@ -155,8 +168,13 @@ class SendAbsenceNotifications implements ShouldQueue
                 $row->update([
                     'channel' => NotificationChannel::Email->value,
                     'status' => NotificationDeliveryStatus::Sent->value,
+                    'recipient_contact' => $email,
+                    'sent_at' => now(),
                 ]);
             } catch (Throwable $fallbackException) {
+                $row->update([
+                    'error_message' => mb_substr($fallbackException->getMessage(), 0, 2000),
+                ]);
                 Log::warning('absence-notification-fallback-failed', [
                     'attendance_id' => $attendance->id,
                     'guardian_id' => $row->guardian_id,

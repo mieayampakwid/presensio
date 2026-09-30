@@ -23,6 +23,10 @@ return new class extends Migration
             // pending | sent | failed — written before the send attempt;
             // retries re-attempt everything not yet 'sent'.
             $table->string('status');
+            $table->string('recipient_contact', 100)->nullable();
+            $table->string('provider_message_id', 100)->nullable();
+            $table->timestamp('sent_at')->nullable();
+            $table->text('error_message')->nullable();
             $table->timestamps();
 
             // Spec 05 §Requirements 3: at most one notification per

@@ -223,7 +223,7 @@ class AbsenceNotificationTest extends TestCase
         $second->students()->attach($student->id);
         $attendance = $this->absentAttendance($student);
 
-        Http::fake(['*/api/sendText' => Http::response(['success' => true])]);
+        Http::fake(['*/api/sendText' => Http::response(['id' => 'waha_msg_1', 'success' => true])]);
 
         (new SendAbsenceNotifications($attendance))->handle(new WhatsAppClient);
 
@@ -252,6 +252,11 @@ class AbsenceNotificationTest extends TestCase
             ->where('channel', NotificationChannel::WhatsApp->value)
             ->where('status', NotificationDeliveryStatus::Sent->value)
             ->count());
+
+        $firstRecord = AbsenceNotification::where('guardian_id', $first->id)->first();
+        $this->assertSame('+628111111111', $firstRecord->recipient_contact);
+        $this->assertSame('waha_msg_1', $firstRecord->provider_message_id);
+        $this->assertNotNull($firstRecord->sent_at);
     }
 
     public function test_guardian_without_a_phone_falls_back_to_the_linked_users_email(): void
