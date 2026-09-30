@@ -15,6 +15,7 @@ return new class extends Migration
             // Pivot rows are meaningless without both ends.
             $table->foreignId('guardian_id')->index()->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->index()->constrained()->cascadeOnDelete();
+            $table->string('relationship_type', 20)->default('guardian');
             $table->primary(['guardian_id', 'student_id']);
         });
     }

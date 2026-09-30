@@ -69,7 +69,7 @@ class StudentController extends Controller
     {
         $student = DB::transaction(function () use ($request): Student {
             $student = Student::create($request->studentAttributes());
-            $student->guardians()->sync($request->guardianIds());
+            $student->guardians()->sync($request->guardianPivotData());
             $this->assignClass($request, $student);
 
             return $student;
@@ -89,6 +89,10 @@ class StudentController extends Controller
             ...$this->formOptions(),
             'student' => $student,
             'current_guardian_ids' => $student->guardians()->pluck('guardian_id')->all(),
+            'current_guardians' => $student->guardians->map(fn ($g) => [
+                'id' => $g->id,
+                'relationship_type' => $g->pivot->relationship_type ?? 'guardian',
+            ])->all(),
         ]);
     }
 
@@ -99,7 +103,7 @@ class StudentController extends Controller
     {
         DB::transaction(function () use ($request, $student): void {
             $student->update($request->studentAttributes());
-            $student->guardians()->sync($request->guardianIds());
+            $student->guardians()->sync($request->guardianPivotData());
             $this->assignClass($request, $student);
         });
 

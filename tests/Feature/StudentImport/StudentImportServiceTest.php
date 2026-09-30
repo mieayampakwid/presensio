@@ -193,6 +193,31 @@ class StudentImportServiceTest extends TestCase
         $this->assertTrue($stored->mapping['options']['auto_create_classes']);
     }
 
+    public function test_import_commits_gender_birth_place_religion_and_address(): void
+    {
+        $reader = $this->csv("Nama;Tanggal Lahir;JK;Tempat Lahir;Agama;Alamat\nAyu;17/05/2012;P;Bandung;Islam;Jl. Merdeka No. 5\n");
+        $mapping = [
+            'full_name' => 'Nama',
+            'dob' => 'Tanggal Lahir',
+            'gender' => 'JK',
+            'birth_place' => 'Tempat Lahir',
+            'religion' => 'Agama',
+            'address' => 'Alamat',
+        ];
+
+        $result = $this->service->run($reader, $reader->fingerprint(), $mapping, new ImportOptions);
+
+        $this->assertSame(1, $result->validCount);
+        $this->assertSame([], $result->errors);
+
+        $student = Student::firstOrFail();
+        $this->assertSame('Ayu', $student->full_name);
+        $this->assertSame('P', $student->gender->value);
+        $this->assertSame('Bandung', $student->birth_place);
+        $this->assertSame('Islam', $student->religion);
+        $this->assertSame('Jl. Merdeka No. 5', $student->address);
+    }
+
     private function csv(string $content): CsvRowReader
     {
         $stream = fopen('php://temp', 'r+');

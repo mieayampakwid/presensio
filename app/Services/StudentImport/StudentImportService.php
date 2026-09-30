@@ -155,6 +155,10 @@ class StudentImportService
             'nickname' => $data['nickname'],
             'dob' => $data['dob'],
             'student_number' => $data['student_number'],
+            'gender' => $data['gender'] ?? 'L',
+            'birth_place' => $data['birth_place'] ?? null,
+            'religion' => $data['religion'] ?? null,
+            'address' => $data['address'] ?? null,
         ]);
 
         if ($class !== null) {

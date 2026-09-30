@@ -37,6 +37,10 @@ export default function CreateStudent({ classes, guardians }: Props) {
                         fullName: '',
                         nickname: '',
                         dob: '',
+                        gender: 'L',
+                        birthPlace: '',
+                        religion: '',
+                        address: '',
                         studentNumber: '',
                         classId: '',
                     }}

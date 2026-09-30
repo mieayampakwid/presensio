@@ -35,6 +35,10 @@ class RowValidator
             'nickname' => $cell('nickname'),
             'dob' => $cell('dob'),
             'student_number' => $cell('student_number'),
+            'gender' => $cell('gender'),
+            'birth_place' => $cell('birth_place'),
+            'religion' => $cell('religion'),
+            'address' => $cell('address'),
             'class' => $cell('class'),
             'guardian_name' => $cell('guardian_name'),
             'guardian_phone' => $cell('guardian_phone'),
@@ -79,6 +83,15 @@ class RowValidator
         } else {
             $data['class'] = null;
         }
+
+        $gender = $data['gender'];
+        if ($gender !== null && $gender !== '' && ! in_array(mb_strtoupper($gender), ['L', 'P'], true)) {
+            $errors[] = 'Gender must be L or P.';
+        }
+        $data['gender'] = ($gender !== null && $gender !== '') ? mb_strtoupper($gender) : 'L';
+        $data['birth_place'] = ($data['birth_place'] !== null && $data['birth_place'] !== '') ? $data['birth_place'] : null;
+        $data['religion'] = ($data['religion'] !== null && $data['religion'] !== '') ? $data['religion'] : null;
+        $data['address'] = ($data['address'] !== null && $data['address'] !== '') ? $data['address'] : null;
 
         $guardianPhone = $data['guardian_phone'];
         $guardianName = $data['guardian_name'];

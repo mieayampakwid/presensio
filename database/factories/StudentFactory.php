@@ -20,6 +20,10 @@ class StudentFactory extends Factory
             'nickname' => fake()->firstName(),
             'dob' => fake()->date('Y-m-d', '2015-01-01'),
             'student_number' => fake()->unique()->numerify('00########'),
+            'gender' => fake()->randomElement(['L', 'P']),
+            'birth_place' => fake()->city(),
+            'religion' => fake()->randomElement(['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']),
+            'address' => fake()->optional()->address(),
         ];
     }
 

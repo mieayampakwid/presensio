@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Gender;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,10 +20,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $nickname
  * @property Carbon $dob
  * @property string|null $student_number
+ * @property Gender $gender
+ * @property string|null $birth_place
+ * @property string|null $religion
+ * @property string|null $address
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'full_name', 'nickname', 'dob', 'student_number'])]
+#[Fillable(['user_id', 'full_name', 'nickname', 'dob', 'student_number', 'gender', 'birth_place', 'religion', 'address'])]
 class Student extends Model
 {
     /** @use HasFactory<StudentFactory> */
@@ -100,7 +105,7 @@ class Student extends Model
      */
     public function guardians(): BelongsToMany
     {
-        return $this->belongsToMany(Guardian::class);
+        return $this->belongsToMany(Guardian::class)->withPivot('relationship_type');
     }
 
     /**
@@ -142,6 +147,7 @@ class Student extends Model
     {
         return [
             'dob' => 'date:Y-m-d',
+            'gender' => Gender::class,
         ];
     }
 }

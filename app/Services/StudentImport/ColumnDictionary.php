@@ -53,6 +53,19 @@ class ColumnDictionary
                 'alamat wali', 'alamat', 'address', 'alamat orang tua',
                 'alamat lengkap',
             ],
+            'gender' => [
+                'jenis kelamin', 'jk', 'gender', 'l/p', 'kelamin',
+            ],
+            'birth_place' => [
+                'tempat lahir', 'tmp lahir', 'birthplace', 'kota lahir',
+            ],
+            'religion' => [
+                'agama', 'religion',
+            ],
+            'address' => [
+                'alamat siswa', 'alamat rumah', 'alamat tinggal',
+                'student address', 'home address',
+            ],
         ];
     }
 }

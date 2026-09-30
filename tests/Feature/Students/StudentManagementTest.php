@@ -63,6 +63,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('students.store'), [
                 'full_name' => 'Ayu Lestari',
+                'gender' => 'P',
                 'dob' => '2012-05-17',
                 'student_number' => '007',
                 'class_id' => $class->id,
@@ -87,6 +88,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('students.store'), [
                 'full_name' => 'Time Traveller',
+                'gender' => 'L',
                 'dob' => now()->addYear()->toDateString(),
             ])
             ->assertSessionHasErrors('dob');
@@ -100,6 +102,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('students.store'), [
                 'full_name' => 'Other Student',
+                'gender' => 'L',
                 'dob' => '2012-05-17',
                 'student_number' => $existing->student_number,
             ])
@@ -115,6 +118,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('students.update', $student), [
                 'full_name' => 'Ayu Lestari',
+                'gender' => 'P',
                 'dob' => $student->dob->toDateString(),
                 'student_number' => $student->student_number,
                 'class_id' => $class->id,
@@ -137,6 +141,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('students.update', $student), [
                 'full_name' => $student->full_name,
+                'gender' => 'L',
                 'dob' => $student->dob->toDateString(),
                 'guardian_ids' => [$second->id],
             ])
@@ -219,6 +224,63 @@ class StudentManagementTest extends TestCase
             ->assertRedirect(route('students.index'));
 
         $this->assertDatabaseHas('students', ['id' => $student->id]);
+    }
+
+    public function test_admin_can_create_and_update_student_profile_fields_and_guardian_relationships(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $father = Guardian::factory()->create(['name' => 'Ayah Budi']);
+        $mother = Guardian::factory()->create(['name' => 'Ibu Budi']);
+
+        $this->actingAs($admin)
+            ->post(route('students.store'), [
+                'full_name' => 'Budi Santoso',
+                'gender' => 'L',
+                'birth_place' => 'Bandung',
+                'religion' => 'Islam',
+                'address' => 'Jl. Asia Afrika No. 10',
+                'dob' => '2012-01-01',
+                'guardian_ids' => [$father->id, $mother->id],
+                'guardian_relationships' => [
+                    $father->id => 'father',
+                    $mother->id => 'mother',
+                ],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('students.index'));
+
+        $student = Student::where('full_name', 'Budi Santoso')->firstOrFail();
+        $this->assertSame('L', $student->gender->value);
+        $this->assertSame('Bandung', $student->birth_place);
+        $this->assertSame('Islam', $student->religion);
+        $this->assertSame('Jl. Asia Afrika No. 10', $student->address);
+
+        $linkedFather = $student->guardians()->where('guardian_id', $father->id)->first();
+        $this->assertSame('father', $linkedFather->pivot->relationship_type);
+        $linkedMother = $student->guardians()->where('guardian_id', $mother->id)->first();
+        $this->assertSame('mother', $linkedMother->pivot->relationship_type);
+
+        $this->actingAs($admin)
+            ->put(route('students.update', $student), [
+                'full_name' => 'Budi Santoso',
+                'gender' => 'P',
+                'birth_place' => 'Jakarta',
+                'religion' => 'Katolik',
+                'address' => 'Jl. Sudirman No. 1',
+                'dob' => '2012-01-01',
+                'guardian_ids' => [$father->id],
+                'guardian_relationships' => [
+                    $father->id => 'guardian',
+                ],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $student->refresh();
+        $this->assertSame('P', $student->gender->value);
+        $this->assertSame('Jakarta', $student->birth_place);
+        $this->assertSame('Katolik', $student->religion);
+        $this->assertSame('Jl. Sudirman No. 1', $student->address);
+        $this->assertSame('guardian', $student->guardians()->first()->pivot->relationship_type);
     }
 
     public static function nonAdminRoles(): array

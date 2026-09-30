@@ -23,12 +23,17 @@ type StudentFormProps = {
         fullName: string;
         nickname: string;
         dob: string;
+        gender?: string;
+        birthPlace?: string;
+        religion?: string;
+        address?: string;
         studentNumber: string;
         classId: string;
     };
     classes: ClassOption[];
     guardians: GuardianOption[];
     currentGuardianIds?: number[];
+    currentGuardians?: { id: number; relationship_type: string }[];
 };
 
 export default function StudentForm({
@@ -38,6 +43,7 @@ export default function StudentForm({
     classes,
     guardians,
     currentGuardianIds = [],
+    currentGuardians,
 }: StudentFormProps) {
     return (
         <Form {...action} className="space-y-6">
@@ -81,6 +87,64 @@ export default function StudentForm({
                     </div>
 
                     <div className="grid gap-2">
+                        <Label htmlFor="gender">Gender</Label>
+                        <select
+                            id="gender"
+                            name="gender"
+                            defaultValue={defaults.gender ?? 'L'}
+                            required
+                            className="border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                        >
+                            <option value="L">Laki-laki (L)</option>
+                            <option value="P">Perempuan (P)</option>
+                        </select>
+                        <InputError message={errors.gender} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="birth_place">Birth place (optional)</Label>
+                        <Input
+                            id="birth_place"
+                            name="birth_place"
+                            defaultValue={defaults.birthPlace ?? ''}
+                            placeholder="e.g. Jakarta"
+                            autoComplete="off"
+                        />
+                        <InputError message={errors.birth_place} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="religion">Religion (optional)</Label>
+                        <select
+                            id="religion"
+                            name="religion"
+                            defaultValue={defaults.religion ?? ''}
+                            className="border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                        >
+                            <option value="">Select religion</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Kristen">Kristen</option>
+                            <option value="Katolik">Katolik</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddha">Buddha</option>
+                            <option value="Konghucu">Konghucu</option>
+                        </select>
+                        <InputError message={errors.religion} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Address (optional)</Label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            defaultValue={defaults.address ?? ''}
+                            rows={3}
+                            placeholder="Home address"
+                            className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        />
+                        <InputError message={errors.address} />
+                    </div>
+                    <div className="grid gap-2">
                         <Label htmlFor="student_number">
                             Student number (optional)
                         </Label>
@@ -120,27 +184,54 @@ export default function StudentForm({
                                 first to link them here.
                             </p>
                         ) : (
-                            <div className="grid gap-2">
-                                {guardians.map((guardian) => (
-                                    <label
-                                        key={guardian.id}
-                                        className="flex items-center gap-3 text-sm"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="guardian_ids[]"
-                                            value={guardian.id}
-                                            defaultChecked={currentGuardianIds.includes(
-                                                guardian.id,
-                                            )}
-                                            className="border-input dark:bg-input/30 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none accent-primary"
-                                        />
-                                        <span>{guardian.name}</span>
-                                        <span className="text-muted-foreground">
-                                            {guardian.phone_number}
-                                        </span>
-                                    </label>
-                                ))}
+                            <div className="grid gap-3">
+                                {guardians.map((guardian) => {
+                                    const isLinked = currentGuardians
+                                        ? currentGuardians.some((g) => g.id === guardian.id)
+                                        : currentGuardianIds.includes(guardian.id);
+                                    const relationshipType =
+                                        currentGuardians?.find((g) => g.id === guardian.id)
+                                            ?.relationship_type ?? 'guardian';
+
+                                    return (
+                                        <div
+                                            key={guardian.id}
+                                            className="border-input dark:bg-input/10 flex flex-wrap items-center justify-between gap-3 rounded-md border p-3 text-sm"
+                                        >
+                                            <label className="flex cursor-pointer items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    name="guardian_ids[]"
+                                                    value={guardian.id}
+                                                    defaultChecked={isLinked}
+                                                    className="border-input dark:bg-input/30 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none accent-primary"
+                                                />
+                                                <span className="font-medium">{guardian.name}</span>
+                                                <span className="text-muted-foreground">
+                                                    {guardian.phone_number}
+                                                </span>
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <Label
+                                                    htmlFor={`rel_${guardian.id}`}
+                                                    className="text-muted-foreground text-xs"
+                                                >
+                                                    Relationship
+                                                </Label>
+                                                <select
+                                                    id={`rel_${guardian.id}`}
+                                                    name={`guardian_relationships[${guardian.id}]`}
+                                                    defaultValue={relationshipType}
+                                                    className="border-input dark:bg-input/30 flex h-8 rounded-md border bg-transparent px-2 py-0.5 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[2px]"
+                                                >
+                                                    <option value="father">Ayah (Father)</option>
+                                                    <option value="mother">Ibu (Mother)</option>
+                                                    <option value="guardian">Wali (Guardian)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                         <InputError message={errors.guardian_ids} />

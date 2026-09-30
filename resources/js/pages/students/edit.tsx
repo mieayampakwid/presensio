@@ -21,13 +21,18 @@ type StudentRow = {
     dob: string;
     student_number: string | null;
     class_id: number | null;
+    gender: string;
+    birth_place: string | null;
+    religion: string | null;
+    address: string | null;
 };
 
 type Props = {
     student: StudentRow;
     classes: ClassOption[];
     guardians: GuardianOption[];
-    current_guardian_ids: number[];
+    current_guardian_ids?: number[];
+    current_guardians?: { id: number; relationship_type: string }[];
 };
 
 export default function EditStudent({
@@ -35,6 +40,7 @@ export default function EditStudent({
     classes,
     guardians,
     current_guardian_ids,
+    current_guardians,
 }: Props) {
     return (
         <>
@@ -55,12 +61,17 @@ export default function EditStudent({
                         fullName: student.full_name,
                         nickname: student.nickname ?? '',
                         dob: student.dob,
+                        gender: student.gender ?? 'L',
+                        birthPlace: student.birth_place ?? '',
+                        religion: student.religion ?? '',
+                        address: student.address ?? '',
                         studentNumber: student.student_number ?? '',
                         classId: student.class_id ? String(student.class_id) : '',
                     }}
                     classes={classes}
                     guardians={guardians}
                     currentGuardianIds={current_guardian_ids}
+                    currentGuardians={current_guardians}
                 />
             </div>
         </>

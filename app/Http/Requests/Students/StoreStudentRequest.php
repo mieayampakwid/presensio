@@ -32,11 +32,17 @@ class StoreStudentRequest extends FormRequest
             'nickname' => ['nullable', 'string', 'max:255'],
             'dob' => ['required', 'date', 'before:today'],
             'student_number' => ['nullable', 'string', 'max:255', Rule::unique(Student::class)],
+            'gender' => ['required', 'string', Rule::in(['L', 'P'])],
+            'birth_place' => ['nullable', 'string', 'max:100'],
+            'religion' => ['nullable', 'string', 'max:50', Rule::in(['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'])],
+            'address' => ['nullable', 'string', 'max:2000'],
             // Classes are year-scoped — the form assigns inside the
             // active year only (spec 02 v2.0).
             'class_id' => ['nullable', Rule::exists(SchoolClass::class, 'id')->where('academic_year_id', AcademicYear::active()?->id)],
             'guardian_ids' => ['nullable', 'array'],
             'guardian_ids.*' => [Rule::exists(Guardian::class, 'id')],
+            'guardian_relationships' => ['nullable', 'array'],
+            'guardian_relationships.*' => ['nullable', 'string', Rule::in(['father', 'mother', 'guardian'])],
         ];
     }
 
@@ -48,7 +54,7 @@ class StoreStudentRequest extends FormRequest
      */
     public function studentAttributes(): array
     {
-        return collect($this->safe()->except(['guardian_ids', 'class_id']))->all();
+        return collect($this->safe()->except(['guardian_ids', 'guardian_relationships', 'class_id']))->all();
     }
 
     /**
@@ -69,5 +75,25 @@ class StoreStudentRequest extends FormRequest
     public function guardianIds(): array
     {
         return array_values(array_map(intval(...), (array) $this->input('guardian_ids', [])));
+    }
+
+    /**
+     * Guardian IDs with their relationship types for the pivot.
+     *
+     * @return array<int, array{relationship_type: string}>
+     */
+    public function guardianPivotData(): array
+    {
+        $ids = $this->guardianIds();
+        $relationships = (array) $this->input('guardian_relationships', []);
+        $pivot = [];
+
+        foreach ($ids as $id) {
+            $pivot[$id] = [
+                'relationship_type' => $relationships[$id] ?? 'guardian',
+            ];
+        }
+
+        return $pivot;
     }
 }

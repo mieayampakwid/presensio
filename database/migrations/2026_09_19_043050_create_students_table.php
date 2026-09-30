@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('nickname')->nullable();
             $table->date('dob');
             $table->string('student_number')->nullable()->unique();
+            $table->string('gender', 1)->default('L');
+            $table->string('birth_place', 100)->nullable();
+            $table->string('religion', 50)->nullable();
+            $table->text('address')->nullable();
             // Class membership lives in the enrollments history table
             // (spec 02 v2.0) — no class column on the student.
             $table->timestamps();
