@@ -144,11 +144,11 @@ Editable homeroom inputs before publication.
 
 ## Constraints & Assumptions
 
-- PDF rendering needs a library (e.g. `barryvdh/laravel-dompdf` or Spatie Browsershot). **New dependency — requires approval before implementation.**
-- Combined class PDF (≈ 30 students) renders in under 15 seconds; otherwise move it to a queued job with a download link.
+- PDF rendering uses `barryvdh/laravel-dompdf` (dependency approved 2026-10-01). Templates use table-based layout (dompdf supports roughly CSS 2.1: no flexbox/grid), embedded fonts, and `page-break` rules with repeating table headers.
+- "Cetak semua" for a class runs as a queued job and offers a download link when ready.
 - Requires specs 10 and 15.
 
 ## Open Questions
 
 - `[NEEDS DECISION: Signature & stamp images]`: Upload principal signature and school stamp images to the school profile (15) for printing? (v1.x candidate; v1 prints blank signature lines.)
-- `[NEEDS DECISION: Notify guardians on publication]`: Send a WhatsApp/in-app notice when a class's report cards are published? Depends on AUDIT S-07 / F-04.
+- ~~Notify guardians on publication~~ — resolved by spec 17 (`report_card_published`, `report_card_retracted`).

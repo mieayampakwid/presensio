@@ -26,7 +26,7 @@ Presensio already has gate scanners, a calendar, and a sweep engine for students
 - Payroll, honorarium or allowance calculation (the recap is the input; calculation is out of scope — README v2 candidate).
 - Shift scheduling (e.g. security night shifts). v1 assumes one daily working window, with per-employee working days.
 - Leave balance accounting (cuti quota). v1 records approved cuti days but does not enforce a quota.
-- WhatsApp alerts about employee absence (principal sees it on the dashboard; channel depends on AUDIT S-07).
+- WhatsApp alerts about employee absence (the principal gets the dashboard list plus an in-app `staff_absence_digest`, spec 17).
 - Per-period teaching attendance (jurnal mengajar) — v1.x, together with per-period student attendance (13).
 
 ## User Stories
@@ -78,7 +78,7 @@ Presensio already has gate scanners, a calendar, and a sweep engine for students
    - CRUD: name, `employee_number`, phone, `employment_type` (`pns`, `pppk`, `permanent` = GTY/PTY, `contract` = GTT/PTT, `honorary`), `position` (free text, e.g. "Guru Kelas", "Staf TU", "Satpam"), `working_days`, `is_active`, linked user.
    - "Is a teacher" toggle creates/removes the linked `teachers` row. Removal is blocked while the teacher is referenced by classes or assignments.
    - RFID card assignment for employees (extends spec 02 RFID management).
-2. **Scanner** (`POST /api/attendance/scan`, spec 03): resolves the credential to a student or an employee; employee taps follow the resolution above. Response `student_name` is generalized to `name`.
+2. **Scanner** (`POST /api/attendance/scan`, spec 03): resolves the credential to a student or an employee; employee taps follow the resolution above. The response contract (03) is unchanged: `student_name` carries the employee's name for employee taps. Firmware compatibility rules out renaming it; an additive `subject_type` (`student` / `employee`) field may be added.
 3. **Daily Overview (`GET /admin/staff-attendance?date=`)**:
    - Expected employees with status, check-in, check-out, late minutes and early-leave minutes. Filters: not yet arrived / late / absent / on leave.
    - Manual create/edit per row.

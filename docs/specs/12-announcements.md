@@ -21,7 +21,6 @@ Schools distribute announcements, circular letters (Surat Edaran), holiday notic
 ## Non-goals
 
 - Comments, reactions, discussion threads.
-- WhatsApp broadcast on publish (open question; depends on AUDIT S-07 / F-04 and messaging cost).
 - Consent forms with yes/no answers or digital signatures (acknowledgement means "I have read this"; consent forms are a v1.x candidate).
 - Auto-expiry of announcements.
 - Multiple attachments per announcement.
@@ -65,7 +64,8 @@ Schools distribute announcements, circular letters (Surat Edaran), holiday notic
 ## Requirements
 
 1. **Admin/Principal Management (`/admin/announcements`)**:
-   - CRUD. Fields: `title` (max 255), `body` (Markdown), `audience_type` plus the matching target, `is_pinned`, `requires_acknowledgement`, `attachment`, `published_at` (nullable; future allowed).
+   - CRUD. Fields: `title` (max 255), `body` (Markdown), `audience_type` plus the matching target, `is_pinned`, `requires_acknowledgement`, `notify_urgent` (admin/principal only: also sends `announcement_urgent` via spec 17, including WhatsApp subject to quota), `attachment`, `published_at` (nullable; future allowed).
+   - On publication (immediately, or when a scheduled `published_at` is reached), `announcement_urgent` and/or `announcement_ack_required` are dispatched to the audience through spec 17.
    - Validation: exactly the target column matching `audience_type` is set; `class_id` must belong to the active academic year.
 2. **Teacher Class Announcements (`/teacher/classes/{id}/announcements`)**:
    - Same form with audience locked to `class` = `{id}`; `{id}` must be in the teacher's scope.
@@ -99,6 +99,7 @@ Schools distribute announcements, circular letters (Surat Edaran), holiday notic
 | `class_id` | bigint | unsigned, nullable | FK -> `classes.id`; set when `audience_type = class` |
 | `is_pinned` | boolean | not null, default: false | |
 | `requires_acknowledgement` | boolean | not null, default: false | |
+| `notify_urgent` | boolean | not null, default: false | Push via spec 17 on publication |
 | `attachment_path` | varchar(255) | nullable | Private storage path |
 | `attachment_name` | varchar(255) | nullable | Original filename |
 | `published_at` | timestamp | nullable | Null = draft; future = scheduled |
@@ -138,4 +139,4 @@ Schools distribute announcements, circular letters (Surat Edaran), holiday notic
 
 ## Open Questions
 
-- `[NEEDS DECISION: WhatsApp push for urgent announcements]`: Push via spec 05 infrastructure when flagged urgent? Depends on AUDIT S-07 / F-04 and messaging cost.
+- ~~WhatsApp push for urgent announcements~~ — resolved by spec 17 (`notify_urgent`, `announcement_urgent`, daily quota).

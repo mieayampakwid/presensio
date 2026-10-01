@@ -419,11 +419,11 @@ Further rules:
 
 - IDR, `decimal(15,2)`; all amounts entered as whole rupiah in practice.
 - Accrual basis, intended to be compatible with ISAK 35 (Penyajian Laporan Keuangan Entitas Berorientasi Nonlaba) for yayasan-run schools. The school's accountant should validate the chart of accounts and posting rules before go-live.
-- Requires spec 15 (`finance` role, school profile, audit log). PDF library shared with spec 11 (requires approval).
+- Requires spec 15 (`finance` role, school profile, audit log). PDF rendering via `barryvdh/laravel-dompdf` (approved 2026-10-01), shared with spec 11.
 - All posting runs in the same database transaction as the operational change.
 
 ## Open Questions
 
 - `[NEEDS DECISION: Separation of duties]`: Should the user who recorded or verified a payment be prevented from voiding it, or from closing the period? Common internal-control practice, but small schools may have a single treasurer.
-- `[NEEDS DECISION: WhatsApp payment reminders]`: Depends on AUDIT S-07 / F-04.
+- ~~WhatsApp payment reminders~~ — resolved by spec 17 (`bill_due_reminder`, `payment_verified`, `payment_rejected`).
 - `[NEEDS DECISION: Per-grade SPP amounts]`: v1 sets the amount per generation run; a per-grade amount table is a v1.x candidate.

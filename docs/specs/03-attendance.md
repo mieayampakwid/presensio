@@ -1,6 +1,6 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-01/03/04/05/08)
+Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-01/03/04/05/08/10)
 
 > **Pending amendment (spec 16, draft):** the scanner endpoint also resolves employee credentials (`rfid_cards.employee_id`, employee QR tokens, `scan_events.employee_id`, outcome `ignored_inactive`). Not yet implemented.
 
@@ -59,11 +59,11 @@ Manual morning roll call in classrooms consumes 15 to 20 minutes of instructiona
 1. **Scanner API Endpoint (`POST /api/attendance/scan`)**:
    - Authenticated via `X-Scanner-Key` header against `config('attendance.scanner_keys')` (supports comma-separated keys for zero-downtime rotation).
    - Throttled to 60 requests/minute per device IP (`RateLimiter::for('scanner')`).
-   - Payload accepts `{ "method": "rfid"|"dynamic_qr", "identifier": string, "scanned_at": ISO8601 }`.
-   - Rejects expired QR tokens (`|now - issued_at| > 30s`) with HTTP 422 (`Expired Token`).
-   - Resolves RFID card to active `student_id`; rejects unregistered cards with HTTP 404 (`Unknown Credential`).
+   - Payload: `{ "credential_type": "rfid"|"dynamic_qr", "credential": string (max 255), "scanned_at": ISO8601|null }`. A missing or unparseable `scanned_at` falls back to the server clock.
+   - Every error outcome returns HTTP 422 with `{ "outcome": "error", "detail": "error_expired_token"|"error_unknown_credential" }`. That covers expired QR tokens (`|now - issued_at| > 30s`) and unregistered RFID cards.
    - Executes tap resolution in an atomic database transaction.
-   - Returns JSON response `{ "status": "success", "outcome": string, "student_name": string, "time": string }`.
+   - Non-error outcomes return HTTP 200 with `{ "outcome": "checked_in"|"checked_out"|"ignored", "detail": <scan_events outcome code>, "student_name": string }`. `outcome` is the coarse bucket the scanner display switches on; `detail` is the exact resolution.
+   - **This response shape is a hardware contract.** Scanner firmware depends on it, so changes must be additive (new fields only) unless every device is updated in the same release.
 2. **Dynamic QR Token Generation & Presentation (`GET /my-qr`)**:
    - Authenticated student portal route rendered via Inertia (`StudentQrController`).
    - Generates an HMAC-SHA256 token containing `student_id`, `issued_at`, and signature using a server-side secret (`ATTENDANCE_QR_SIGNING_KEY` falling back to `APP_KEY`).
@@ -160,7 +160,7 @@ Single-row configuration table (`id = 1`) managed via `SchoolSetting` model:
 | `updated_at` | timestamp | nullable | |
 ## Acceptance Criteria
 
-- **AC-03-01**: Given an unregistered RFID card UID, when tapped on the scanner endpoint, the system logs an event with outcome `error_unknown_credential` and returns HTTP 404 with student name "Kartu Tidak Dikenal".
+- **AC-03-01**: Given an unregistered RFID card UID, when tapped on the scanner endpoint, the system logs an event with outcome `error_unknown_credential` and returns HTTP 422 with `{ "outcome": "error", "detail": "error_unknown_credential" }`. The scanner display shows "Kartu Tidak Dikenal".
 - **AC-03-02**: Given a registered student tapping at 06:45 WIB before `school_start_time` (07:30 WIB), the system creates an attendance record with status `present` and logs outcome `check_in`.
 - **AC-03-03**: Given a student tapping at 07:45 WIB after `school_start_time`, the system creates an attendance record with status `late`.
 - **AC-03-04**: Given a student who tapped in 30 seconds ago, when they tap again within the 60-second debounce window, the second tap is ignored with outcome `ignored_debounce` and no record is modified.
