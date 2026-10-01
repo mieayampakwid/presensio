@@ -1,6 +1,6 @@
 # 08 — Dashboard (Role-Tailored Operational Landing)
 
-Status: v1.0 — implemented 2026-09-21 (amended 2026-09-25)
+Status: v1.0 — implemented 2026-09-21 (amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-09)
 
 ## Problem
 
@@ -54,7 +54,7 @@ Generic dashboard implementations frequently suffer from security leaks by inadv
 1. **Administrator Dashboard Payload**:
    - School-wide today totals: Enrolled Count, In-Building Count, Checked-In Count, Not-Yet-Arrived Count, Checked-Out Count.
    - Per-class summary table: Class Name, Enrolled, In-Building, Not-In-Building (each row links to class presence view).
-   - Pending Excuses Badge: Total count of excuses where `status = 'pending'`, linking directly to `/admin/excuses`.
+   - Pending Excuses Badge: Total count of excuses where `status = 'pending'`, linking directly to the excuse review queue (`GET /excuses`, spec 04).
    - Quick navigational shortcuts to Attendance Dashboard, Live Presence Board, and Academic Reports.
 2. **Teacher Dashboard Payload**:
    - Homeroom class summary: Presence totals for teacher's assigned classes in the active academic year.

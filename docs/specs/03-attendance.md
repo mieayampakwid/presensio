@@ -1,6 +1,6 @@
 # 03 — Attendance Recording (Dual IoT & Anti-Fraud Scanner)
 
-Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25)
+Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-01/03/04/05/08)
 
 ## Problem
 
@@ -38,6 +38,7 @@ Manual morning roll call in classrooms consumes 15 to 20 minutes of instructiona
   - *Standard RFID*: Fast gate throughput; resolves card UID to `student_id`.
   - *Dynamic QR*: High anti-fraud guarantee; short-lived HMAC-signed token generated server-side. Codes expire in 30s to prevent screenshot sharing via WhatsApp/Telegram.
 - **Ordered Tap Resolution**:
+  0. Student has no open enrollment in the active academic year (alumni/withdrawn; spec 07) -> no record is created (`ignored_alumni`).
   1. No record today -> create record: status `present` if `now <= school_start_time`, else `late`.
   2. Record is `absent` (auto-sweep already ran) -> upgrade status to `late` or `present` based on clock; record `checked_in_at`. (Prior notification to guardian is not retracted).
   3. Record is `present` or `late` without check-out:
@@ -67,12 +68,12 @@ Manual morning roll call in classrooms consumes 15 to 20 minutes of instructiona
    - The Inertia view auto-refreshes every 25 seconds via Inertia partial reload to rotate the QR SVG.
 3. **Auto-Absent Sweep (Scheduled Console Task)**:
    - Executes daily at configured `auto_absent_cron_time` (e.g. 08:30 WIB).
-   - Aborts immediately if the current date is a weekend (Saturday/Sunday) or exists in `non_school_days`.
+   - Aborts immediately if the current date is not an operational weekday (`school_operational_days`) or exists in `non_school_days`.
    - Identifies all students with active enrollment in the active academic year who have **no record** in `attendances` for today.
    - Bulk-inserts attendance records with `status = 'absent'`, `date = today`, `scan_method = null`.
    - Each created `absent` record triggers the asynchronous absence notification pipeline (spec 05).
 4. **Manual Exception Dashboard**:
-   - Authorized teachers (scoped to their assigned classes) and admins (all classes) can edit any attendance record.
+   - Authorized teachers (scoped to their assigned classes) and admins (all classes) can create or edit the record for any `(student_id, date)` in scope. The write is an upsert keyed on `(student_id, date)`, so days lost to a scanner outage can be reconstructed, not only existing records repaired.
    - Supports setting status (`present`, `late`, `absent`, `sick`, `leave`), `checked_in_at`, `checked_out_at`, and an explanatory `notes` field.
    - Stamped with `override_by_user_id`, `scan_method = 'manual_override'`, and `overridden_at = now()`.
    - Manual edits **never** trigger absence notifications (spec 05).
@@ -104,10 +105,8 @@ Manual morning roll call in classrooms consumes 15 to 20 minutes of instructiona
 | `override_by_user_id` | bigint | unsigned, nullable | Foreign key -> `users.id` |
 | `notes` | varchar(255) | nullable | Teacher/admin explanatory notes |
 | `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | (Tracks manual override timestamp) |
-
-*Proposed Fields (Pending Migration)*:
-- `overridden_at`: timestamp, nullable
+| `overridden_at` | timestamp | nullable | Timestamp of the last manual override (`updated_at` also moves on scanner check-out, so it cannot serve this purpose) |
+| `updated_at` | timestamp | nullable | |
 
 **Indexes:**
 - `UNIQUE (student_id, date)`
@@ -122,7 +121,7 @@ Manual morning roll call in classrooms consumes 15 to 20 minutes of instructiona
 | `scan_method` | varchar(20) | not null | `rfid` or `dynamic_qr` |
 | `identifier` | varchar(100) | nullable | RFID serial number (null for QR tokens) |
 | `scanned_at` | timestamp | not null | Device or server timestamp of scan attempt |
-| `outcome` | varchar(50) | not null | Result code: `check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `error_expired_token`, `error_unknown_credential` |
+| `outcome` | varchar(50) | not null | Result code: `check_in`, `check_out`, `absent_upgraded`, `ignored_debounce`, `ignored_complete`, `ignored_excused`, `ignored_alumni`, `error_expired_token`, `error_unknown_credential` |
 | `created_at` | timestamp | nullable | Insertion timestamp |
 
 **Indexes:**
@@ -151,7 +150,8 @@ Single-row configuration table (`id = 1`) managed via `SchoolSetting` model:
 | `school_timezone` | varchar(255) | not null, default: 'Asia/Jakarta' | Application timezone |
 | `school_start_time` | time | not null, default: '07:30:00' | Late threshold |
 | `require_checkout` | boolean | not null, default: false | Check-out tap required flag |
-| `auto_absent_cron_time` | time | not null, default: '15:30:00' | Daily auto-sweep time |
+| `auto_absent_cron_time` | time | not null, default: '08:30:00' | Daily auto-sweep time (must run in the morning — absence alerts are a safety signal, spec 05) |
+| `school_operational_days` | json | not null, default: `[1,2,3,4,5]` | ISO weekdays (1 = Senin … 7 = Minggu) on which school runs; `[1,2,3,4,5,6]` for 6-day schools. Drives `isSchoolDay()` for the sweep (03), excuse approval (04), dashboard banner (08) and timetable days (13) |
 | `scan_debounce_minutes` | smallint | unsigned, default: 1 | Double-tap shield window |
 | `scan_drift_tolerance_minutes` | smallint | unsigned, default: 2 | Scanner clock trust window |
 | `created_at` | timestamp | nullable | |
@@ -159,8 +159,8 @@ Single-row configuration table (`id = 1`) managed via `SchoolSetting` model:
 ## Acceptance Criteria
 
 - **AC-03-01**: Given an unregistered RFID card UID, when tapped on the scanner endpoint, the system logs an event with outcome `error_unknown_credential` and returns HTTP 404 with student name "Kartu Tidak Dikenal".
-- **AC-03-02**: Given a registered student tapping at 06:45 WIB before `school_start_time` (07:00 WIB), the system creates an attendance record with status `present` and logs outcome `check_in`.
-- **AC-03-03**: Given a student tapping at 07:15 WIB after `school_start_time`, the system creates an attendance record with status `late`.
+- **AC-03-02**: Given a registered student tapping at 06:45 WIB before `school_start_time` (07:30 WIB), the system creates an attendance record with status `present` and logs outcome `check_in`.
+- **AC-03-03**: Given a student tapping at 07:45 WIB after `school_start_time`, the system creates an attendance record with status `late`.
 - **AC-03-04**: Given a student who tapped in 30 seconds ago, when they tap again within the 60-second debounce window, the second tap is ignored with outcome `ignored_debounce` and no record is modified.
 - **AC-03-05**: Given an expired Dynamic QR code (>30 seconds old), the scanner rejects the scan with outcome `error_expired_token` and HTTP 422.
 - **AC-03-06**: When the auto-absent sweep runs on a day listed in `non_school_days`, zero attendance records are generated.

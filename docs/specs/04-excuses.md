@@ -1,6 +1,6 @@
 # 04 — Absence Excuses (Sakit & Izin)
 
-Status: v2.0 — implemented 2026-09-20 (amended 2026-09-25)
+Status: v2.0 — implemented 2026-09-20 (amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 C-01)
 
 ## Problem
 
@@ -41,7 +41,7 @@ In Indonesian school operations, guardians typically notify teachers of a child'
 - **Guardian Attribution**: The schema explicitly stores `submitted_by_guardian_id` (in addition to `student_id`), providing a verifiable audit trail of which legal guardian submitted the notice in multi-guardian households.
 - **Overlapping Range Guard**: Submitting an excuse whose date range overlaps with an existing `pending` or `approved` excuse for the same student is rejected with validation error (HTTP 422). If an illness extends, parents submit a subsequent contiguous date range.
 - **Atomic Attendance Resolution**:
-  - *On Approval*: System iterates all weekdays (Monday through Friday) in `[start_date, end_date]`. For each date, it upserts the `attendances` table with status `sick` or `leave`, setting `scan_method = null`. Weekend dates are skipped.
+  - *On Approval*: System iterates every date in `[start_date, end_date]` and, for each school day (operational weekday per `school_operational_days` and not in `non_school_days`; spec 03), upserts the `attendances` table with status `sick` or `leave`, setting `scan_method = null`. Non-school days are skipped, so a holiday inside the range never becomes a `sick`/`leave` record.
   - *On Rejection*: Existing attendance records remain untouched. The status changes to `rejected`, and the guardian views the `review_note`.
   - *Idempotency*: Re-approving an approved excuse is a no-op.
 - **Scanner Immunity**: The scanner API (spec 03 tap resolution rule 5) ignores taps for students with an existing `sick` or `leave` record, logging `ignored_excused`.
@@ -113,7 +113,7 @@ In Indonesian school operations, guardians typically notify teachers of a child'
 
 ## Constraints & Assumptions
 
-- Indonesian school week assumption: school sessions run Monday through Friday (or Monday through Saturday based on `school_operational_days` config). Weekends within an excuse range do not generate attendance records.
+- Indonesian school week assumption: school sessions run on the weekdays configured in `school_operational_days` (spec 03; Monday–Friday or Monday–Saturday). Non-school days within an excuse range do not generate attendance records.
 - Uploaded medical files are considered sensitive personal data; files are never stored in the public web root (`public/`).
 
 ## Open Questions

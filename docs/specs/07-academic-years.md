@@ -2,6 +2,8 @@
 
 Status: v1.1 — implemented 2026-09-21 (amended 2026-09-25)
 
+> **Pending amendments (draft specs, not yet implemented):** roll-over will also set `grade_level` and `curriculum` on target classes (15), optionally copy subject assignments (09), and pre-fill mappings from semester-2 promotion decisions (11).
+
 ## Problem
 
 Schools operate on cyclical annual rhythms: cohorts promote simultaneously each July (e.g. Class 1A becomes 2A), and the senior cohort graduates as alumni. Naive administrative software typically executes roll-overs through destructive in-place updates (such as updating student class pointers or renaming existing class records). This pattern permanently corrupts historical auditability: querying historical attendance from two years prior either crashes or displays current student rosters instead of the children who were actually enrolled at that time. Furthermore, if graduated alumni are not formally decoupled from active operational routines, automated scanners and morning absence sweeps mistakenly flag alumni as truant, sending false alerts to families of former students.

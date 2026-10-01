@@ -2,6 +2,8 @@
 
 Status: v1.0 — implemented 2026-09-19 (amended 2026-09-25)
 
+> **Pending supersession (spec 15, draft):** the single `users.role` column, the four-role enum and "One Role Per User" are replaced by `user_roles` (multiple roles per user, adding `principal`, `counselor`, `finance`) and a code-defined permission matrix. This spec stays authoritative for the implemented system until spec 15 ships; then the Schema and Decisions sections here are updated to point to it.
+
 ## Problem
 
 Indonesian schools operate in an environment where email is rarely the primary identity anchor. Primary/secondary school students and many guardians do not possess or actively monitor email addresses, while teachers and staff identify institutionally by official numbers (NIP, NUPTK). Standard web application authentication relying on email login and email-only password resets creates friction, high support overhead, and low adoption. Furthermore, public self-registration is unacceptable for a school system where every user must correspond to an enrolled student, employed teacher, or verified legal guardian.

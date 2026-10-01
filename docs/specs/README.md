@@ -17,9 +17,12 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | Notifications | `absence_notifications` | Idempotent ledger for guardian absence alerts (spec 05) |
 | Reports | — | Read-only views over attendances and enrollments; CSV mirrors the screen (spec 06) |
 | Role landing | — | Composite read-only landing payload per role (spec 08) |
-| **Curricular subjects** | `subjects` → `class_subjects` | Master subject catalog and year-scoped teacher teaching assignments with KKM (spec 09) |
-| **Assessments & grading** | `grade_categories` → `grades` | Course-level gradebook with weighted scoring and student progress tracking (spec 10) |
-| **Digital report cards** | `report_periods` → `report_card_publications` | Semester report synthesis (grades + attendance + notes) with PDF generation and publication gating (spec 11) |
+| **Roles & permissions** | `user_roles` | Multiple roles per user, code-defined permission matrix (spec 15) |
+| **Terms & class levels** | `semesters`, `classes.grade_level` / `curriculum` | Two semesters per academic year; curriculum chosen per class for staged transitions (spec 15) |
+| **School profile & audit** | `settings`, `audit_logs` | School identity for documents; append-only change history (spec 15) |
+| **Curricular subjects** | `subjects` → `class_subjects` | Subject catalog and year-scoped teaching assignments with passing threshold / KKTP (spec 09) |
+| **Assessments & grading** | `learning_objectives`, `assessments` → `scores` → `subject_results` | Semester gradebook, Kurikulum Merdeka assessment kinds, TP-based descriptions, finalization (spec 10) |
+| **Digital report cards** | `report_card_publications` → `report_cards` | Versioned immutable semester snapshots with PDF and publication gating (spec 11) |
 | **School announcements** | `announcements` | Role-targeted digital bulletin board with Markdown formatting and attachments (spec 12) |
 | **Weekly timetable** | `timetable_slots` | Weekly class schedules mapping time slots to subjects, teachers, and rooms (spec 13) |
 | **School fees & tuition** | `fee_types` → `bills` → `payments` | Fee catalog, automated monthly SPP/billing, cashier cash entry, bank transfer verification, receipts (spec 14) |
@@ -36,12 +39,15 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 06 | [Reports & Exports](06-reports.md) | Implemented 2026-09-20 (v1.5 year picker 2026-09-21, amended 2026-09-25) | Reporting |
 | 07 | [Academic Roll-over & Historical Attribution](07-academic-years.md) | Implemented 2026-09-21 (amended 2026-09-25) | Academic Lifecycle |
 | 08 | [Dashboard (Role Landing)](08-dashboard.md) | Implemented 2026-09-21 (amended 2026-09-25) | Portal Landing |
-| 09 | [Subjects & Teaching Assignments](09-subjects.md) | Draft v1.0 (2026-09-25) — Ready for planning | Academic Foundation |
-| 10 | [Student Assessment & Grading](10-grading.md) | Draft v1.0 (2026-09-25) — Ready for planning | Academic Evaluation |
-| 11 | [Digital Report Cards](11-report-cards.md) | Draft v1.0 (2026-09-25) — Ready for planning | Academic Reporting |
+| 09 | [Subjects & Teaching Assignments](09-subjects.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Foundation |
+| 10 | [Student Assessment & Grading](10-grading.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Evaluation |
+| 11 | [Digital Report Cards](11-report-cards.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Reporting |
 | 12 | [School Announcements](12-announcements.md) | Draft v1.0 (2026-09-25) — Ready for planning | Campus Communication |
 | 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.0 (2026-09-25) — Ready for planning | Timetable & Schedule |
 | 14 | [School Fees & Tuition](14-school-fees.md) | Draft v1.0 (2026-09-25) — Ready for planning | Student Billing & Cashier |
+| 15 | [Academic Foundation](15-foundation.md) | Draft v1.0 (2026-10-01) — Ready for planning | Roles, Semesters, Class Levels, School Profile, Audit |
+
+> **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–11 revised; 12–14 still need revision before planning.
 
 ## Build Order & Roadmap
 
@@ -49,7 +55,9 @@ Single-school information & attendance system. Each numbered spec is a decision 
 `01 (Auth) → 02 (Master Data & Enrollments) → 03 (Attendance Engine) → 04 (Excuses) → 05 (Notifications) → 06 (Reports) → 07 (Roll-over) → 08 (Dashboard)`
 
 ### Wave 2: Academic Teaching & Evaluation (Next Build Target 🎯)
-`09 (Subjects & Assignments) → 10 (Grading & Gradebook) → 11 (Digital Report Cards & PDF)`
+`15 (Foundation) → 09 (Subjects & Assignments) → 10 (Grading & Gradebook) → 11 (Digital Report Cards & PDF)`
+
+Spec 15 is numbered last to avoid renumbering but is built first.
 
 ### Wave 3: Campus Communication, Timetables & Tuition (Supporting & Operations 💳)
 `12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees & SPP Tuition)`

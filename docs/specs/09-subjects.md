@@ -1,10 +1,10 @@
 # 09 — Subjects & Teaching Assignments (Mata Pelajaran & Pengajar)
 
-Status: draft v1.0 (2026-09-25)
+Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P09-01…03, S-01). Supersedes draft v1.0 (2026-09-25): KKM column renamed to curriculum-neutral `passing_threshold`; subject `group` + `sort_order` added; assignment copy at roll-over added.
 
 ## Problem
 
-Presensio currently functions exclusively as an attendance tracking system with homeroom awareness. It has no concept of academic subjects (Mata Pelajaran), curriculum catalogs, or subject-specific teaching assignments. In Indonesian primary and secondary schools, education revolves around distinct subjects (e.g. Matematika, Bahasa Indonesia, IPA, Pendidikan Agama) taught by specialized subject teachers (Guru Bidang Studi). Without a subject master catalog and teaching assignment model:
+Presensio currently functions exclusively as an attendance tracking system with homeroom awareness. It has no concept of academic subjects (Mata Pelajaran), curriculum catalogs, or subject-specific teaching assignments. In Indonesian primary and secondary schools, education revolves around distinct subjects (e.g. Matematika, Bahasa Indonesia, IPAS, Pendidikan Agama) taught by specialized subject teachers (Guru Mata Pelajaran). Without a subject master catalog and teaching assignment model:
 1. Academic evaluation, homework, and grading are impossible to record in the platform.
 2. Semester report cards (Rapor) cannot be compiled digitally.
 3. Class timetables (Jadwal Pelajaran) cannot be constructed.
@@ -12,61 +12,63 @@ Presensio currently functions exclusively as an attendance tracking system with 
 
 ## Goals
 
-1. Establish a school-wide master catalog of academic subjects (`subjects`) with standardized naming and codes.
-2. Enable administrators to assign specific teachers to instruct subjects within specific classes for the active academic year (`class_subjects`).
-3. Define the Minimum Passing Criteria (Kriteria Ketuntasan Minimal / KKM) per subject per class.
-4. Grant subject teachers authenticated, role-scoped workspace access to view student rosters and manage academic records for their assigned classes.
+1. Establish a school-wide master catalog of academic subjects (`subjects`) with standardized naming, codes, and report-card grouping.
+2. Enable administrators to assign specific teachers to subjects within specific classes for an academic year (`class_subjects`).
+3. Define a passing threshold per subject per class (KKTP under Kurikulum Merdeka; the column is curriculum-neutral).
+4. Grant subject teachers role-scoped workspace access to view student rosters and manage academic records for their assigned classes.
 5. Provide homeroom teachers and administrators with visibility into all teaching assignments within a class.
-6. Serve as the foundational domain entity for subsequent academic modules: Grading (spec 10), Report Cards (spec 11), and Timetables (spec 13).
+6. Avoid yearly re-entry: roll-over (07) can copy assignments into the new year's classes.
+7. Serve as the foundational domain entity for Grading (10), Report Cards (11), and Timetables (13).
 
 ## Non-goals
 
-- Lesson plans, RPP (Rencana Pelaksanaan Pembelajaran), or syllabus digital file repository in v1.
-- Team teaching (multiple co-teachers assigned simultaneously to one `class_subject` row; single primary instructor per assignment in v1).
-- Higher education elective course registration (KRS / student course picking); all students enrolled in a class take all subjects assigned to that class.
-- Period-by-period / per-mapel physical attendance scanning in v1 (daily gate/homeroom attendance remains standard; per-period attendance deferred to v1.x).
-- Curricular tracking or competency base management (KD/CP).
+- Lesson plans, modul ajar, or syllabus file repository in v1.
+- Team teaching (one primary instructor per `class_subjects` row in v1).
+- Student elective course registration; all students enrolled in a class take all subjects assigned to that class. (SMA "mata pelajaran pilihan" per student is a v1.x candidate.)
+- Per-semester assignment changes as separate rows: `class_subjects` is year-scoped; a teacher change mid-year updates the row and is captured in the audit log (15).
+- Period-by-period attendance (deferred; see 13).
+- Learning objectives (TP) — owned by spec 10, since they exist to structure assessment.
 
 ## User Stories
 
-- **As an administrator**, I want to manage the school's subject catalog (e.g. create "Matematika" with code "MAT"), so that subjects can be assigned to classes.
-- **As an administrator**, I want to assign Ibu Siti as the Science (IPA) teacher for Class 7A in academic year 2026/2027 with a KKM of 75, so she can record student grades.
-- **As a subject teacher**, I want to log in and see a list of classes I teach this semester, click on Class 7A Science, and view the enrolled student roster.
-- **As a homeroom teacher**, I want to view my class dashboard and see the complete directory of subjects taught in my room alongside their assigned instructors.
-- **As a parent**, I want to see which subjects and teachers my child has this semester.
+- **As an administrator**, I want to manage the subject catalog (e.g. "Matematika", code "MAT", group "Umum"), so that subjects can be assigned to classes and appear in the right report-card section.
+- **As an administrator**, I want to assign Ibu Siti as the IPAS teacher for Class 5A in 2026/2027 with a passing threshold of 75, so she can record student grades.
+- **As an administrator during roll-over**, I want to copy last year's subject assignments into the new classes and only adjust the changes, instead of re-entering 9 subjects × 12 classes.
+- **As a subject teacher**, I want to see the classes I teach this year, open Class 5A IPAS, and view the enrolled roster.
+- **As a homeroom teacher**, I want to see every subject taught in my class alongside its teacher.
+- **As a parent**, I want to see which subjects and teachers my child has this year.
 
 ## Decisions
 
 - **Global Catalog vs Year-Scoped Assignment**:
-  - The `subjects` table is a global, durable master catalog that persists across academic years (e.g. "Matematika" does not need to be recreated every year).
-  - The `class_subjects` table establishes the operational assignment. Because `classes` are already strictly year-scoped instances (spec 02 v2.0), `class_subjects` inherits year-scoping naturally via its `class_id` foreign key.
-- **Single Teacher Per Assignment in v1**:
-  - Each `class_subject` record holds exactly one `teacher_id` foreign key. If a substitute teacher takes over temporarily, the admin updates the `teacher_id`. Team teaching is deferred to v1.x.
-- **KKM Per Assignment**:
-  - Different grade levels or curriculum tracks often impose different minimum passing grades for the same subject (e.g. Grade 1 Math KKM is 70, while Grade 6 Math KKM is 75). `kkm` is stored as a decimal column on `class_subjects`.
-- **Expanded Teacher Authorization Scope**:
-  - Updates the authorization rules established in spec 01: a teacher can access class academic views if:
-    $$\text{User is Homeroom Teacher: } classes.teacher\_id = \text{auth()->teacher->id}$$
-    $$\lor$$
-    $$\text{User is Subject Teacher: } \exists cs \in class\_subjects: cs.class\_id = classes.id \land cs.teacher\_id = \text{auth()->teacher->id}$$
+  - `subjects` is a durable catalog persisting across years.
+  - `class_subjects` is the operational assignment; it inherits year scope from `classes` (spec 02 v2.0).
+- **Subject Grouping**: `subjects.group` (`general` = Mata Pelajaran Umum, `local_content` = Muatan Lokal, `elective` = Pilihan) and `sort_order` determine report-card section and row order (11). (Resolves the v1.0 open question.)
+- **Single Teacher Per Assignment in v1**: Substitutions update `teacher_id`; the change is audited (15). Scores keep their own `graded_by_user_id` (10), so history of who graded is preserved.
+- **Curriculum-Neutral Passing Threshold**: `class_subjects.passing_threshold` (decimal, 0–100). Under Kurikulum Merdeka it is presented as **KKTP**. Changing it is allowed and audited; published report cards are unaffected because they are snapshots (11).
+- **Teacher Authorization Scope** (permission matrix in 15): a teacher can access a class's academic views if they are its homeroom teacher **or** hold any `class_subjects` row for it. Gradebook *write* access requires holding that specific `class_subjects` row.
+- **Assignment Copy at Roll-over**: For each class mapped in roll-over (07), the admin may tick "copy subject assignments". Rows are copied with the same `subject_id`, `teacher_id`, and `passing_threshold`; inactive subjects and inactive teachers are skipped and listed for review.
 
 ## Requirements
 
 1. **Subject Catalog Management (`/admin/subjects`)**:
-   - Admin CRUD operations for `subjects`.
-   - Fields: `name` (required, unique, e.g. "Pendidikan Agama Islam"), `code` (required, unique, e.g. "PAI", uppercase), `description` (optional, string), `is_active` (boolean, default true).
-   - Deletion guard: A subject referenced by any historical `class_subjects` record cannot be deleted (HTTP 422). Deactivation (`is_active = false`) is supported.
+   - Admin CRUD. Fields: `name` (required, unique), `code` (required, unique, uppercase), `group` (required enum), `sort_order` (integer, default 0), `description` (optional), `is_active` (default true).
+   - Deletion guard: a subject referenced by any `class_subjects` row cannot be deleted (HTTP 422); deactivation is supported.
 2. **Class Subject Assignment (`/admin/classes/{id}/subjects`)**:
-   - Admin can view, assign, edit, and remove subjects assigned to a class in the active academic year.
-   - Form fields: `subject_id` (required, dropdown of active subjects), `teacher_id` (required, dropdown of active teachers), `kkm` (decimal, default 75.0, range 0.0 to 100.0).
-   - Unique constraint: A subject can only be assigned once per class (`UNIQUE(class_id, subject_id)`).
-   - Removal guard: A `class_subject` that contains student grades (spec 10) cannot be deleted.
-3. **Teacher My Courses Portal (`GET /teacher/courses`)**:
-   - Lists all `class_subjects` assigned to the authenticated teacher in the active academic year.
-   - Shows Class Name, Subject Name, Subject Code, KKM, and enrolled student count.
-   - Clicking a course navigates to the course workspace (Roster view and Grading book; spec 10).
-4. **Homeroom Class Directory View**:
-   - Homeroom teachers can view a "Teachers & Subjects" tab on their class dashboard showing all subjects and instructors for their classroom.
+   - Admin can view, assign, edit, and remove assignments for a class.
+   - Fields: `subject_id` (active subjects), `teacher_id` (active teachers), `passing_threshold` (decimal 0.00–100.00, default from school setting `default_passing_threshold`, initially 75.00).
+   - `UNIQUE(class_id, subject_id)`.
+   - Removal guard: an assignment with any assessment (10) or timetable slot (13) cannot be deleted (HTTP 422).
+   - Classes of a past (non-active) academic year are read-only.
+3. **Roll-over Copy (extends spec 07 roll-over)**:
+   - Per mapped class, optional "copy subject assignments" checkbox (default on).
+   - Executed inside the roll-over transaction; result summary lists copied rows and skipped rows with reason.
+4. **Teacher My Courses Portal (`GET /teacher/courses`)**:
+   - Lists the authenticated teacher's `class_subjects` in the active academic year: class, subject, code, passing threshold, enrolled student count (as of today via `classOn`).
+   - Each course links to the course workspace (roster + gradebook; spec 10).
+5. **Class Directory View**:
+   - Homeroom teachers, admins and principals see a "Mata Pelajaran & Guru" tab per class.
+   - Parents and students see the same list (subject, teacher name) for the child's/own current class.
 
 ## Schema
 
@@ -74,49 +76,51 @@ Presensio currently functions exclusively as an attendance tracking system with 
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `code` | varchar(20) | not null, unique | Subject shorthand code (e.g. "MAT", "IPA") |
+| `id` | bigint | unsigned, primary key | |
+| `code` | varchar(20) | not null, unique | e.g. "MAT", "IPAS" |
 | `name` | varchar(255) | not null, unique | Official subject title |
-| `description` | text | nullable | Curricular description or notes |
-| `is_active` | boolean | not null, default: true | Status flag |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
-
-**Indexes:**
-- `UNIQUE (code)`
-- `UNIQUE (name)`
+| `group` | varchar(20) | not null, default: 'general' | Enum: `general`, `local_content`, `elective` |
+| `sort_order` | integer | not null, default: 0 | Report-card row order within group |
+| `description` | text | nullable | |
+| `is_active` | boolean | not null, default: true | |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
 ### 2. `class_subjects` Table
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `class_id` | bigint | unsigned, not null | Foreign key -> `classes.id` |
-| `subject_id` | bigint | unsigned, not null | Foreign key -> `subjects.id` |
-| `teacher_id` | bigint | unsigned, not null | Foreign key -> `teachers.id` (Subject instructor) |
-| `kkm` | decimal(5,2) | not null, default: 75.00 | Minimum passing score |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
+| `id` | bigint | unsigned, primary key | |
+| `class_id` | bigint | unsigned, not null | FK -> `classes.id` |
+| `subject_id` | bigint | unsigned, not null | FK -> `subjects.id` |
+| `teacher_id` | bigint | unsigned, not null | FK -> `teachers.id` |
+| `passing_threshold` | decimal(5,2) | not null, default: 75.00 | KKTP (Merdeka) / passing score |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
-**Indexes:**
-- `UNIQUE (class_id, subject_id)`
-- `INDEX (teacher_id)`
-- `INDEX (class_id)`
+**Indexes:** `UNIQUE (class_id, subject_id)`, `INDEX (teacher_id)`
+
+### 3. `settings` — added column
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `default_passing_threshold` | decimal(5,2) | not null, default: 75.00 | Pre-fill for new assignments |
 
 ## Acceptance Criteria
 
-- **AC-09-01**: Given an admin creates a subject with code "MAT" and name "Matematika", attempting to create another subject with the same code or name returns validation error HTTP 422.
-- **AC-09-02**: Given Class 5A in active academic year 2026/2027, assigning "Matematika" with Teacher Budi and KKM 75 creates a `class_subjects` record successfully.
-- **AC-09-03**: Attempting to assign "Matematika" a second time to Class 5A is rejected by the unique constraint with HTTP 422.
-- **AC-09-04**: When Teacher Budi logs into `/teacher/courses`, Class 5A Matematika appears in their active teaching list.
-- **AC-09-05**: Teacher Siti (who does not teach 5A Matematika and is not 5A's homeroom teacher) attempting to view 5A Matematika course data receives HTTP 403 Forbidden.
-- **AC-09-06**: An admin attempting to delete a `subjects` row that is assigned to any `class_subjects` record receives HTTP 422 with a descriptive dependency error.
+- **AC-09-01**: Creating a second subject with an existing `code` or `name` returns HTTP 422.
+- **AC-09-02**: Assigning "Matematika" to Class 5A (active year) with Teacher Budi and threshold 75 creates a `class_subjects` row.
+- **AC-09-03**: Assigning "Matematika" a second time to Class 5A returns HTTP 422.
+- **AC-09-04**: Teacher Budi sees Class 5A Matematika at `/teacher/courses`.
+- **AC-09-05**: Teacher Siti (neither 5A's homeroom teacher nor holding any 5A assignment) requesting 5A course data receives HTTP 403.
+- **AC-09-06**: Deleting a subject referenced by any `class_subjects` row returns HTTP 422.
+- **AC-09-07**: Roll-over with "copy subject assignments" on maps 5A (2026/2027, 9 assignments) to 6A (2027/2028) and creates 9 assignments on 6A; an assignment whose teacher is inactive is skipped and reported.
+- **AC-09-08**: Changing the teacher of an assignment writes an audit log row with old and new `teacher_id` (15).
+- **AC-09-09**: Attempting to edit assignments of a class in a non-active academic year returns HTTP 422.
 
 ## Constraints & Assumptions
 
-- Subjects master catalog is single-school scope.
-- Teaching assignments are tied directly to existing `classes` and automatically adhere to the active academic year bounds.
+- Single-school catalog.
+- Requires spec 15 (roles/permissions, audit log, `grade_level`).
 
 ## Open Questions
 
-- `[NEEDS DECISION: Subject Category / Grouping]`: Indonesian Kurikulum Merdeka groups subjects into "Kelompok Umum" and "Kelompok Pilihan/Muatan Lokal". Should `subjects` include an enum `group` column (`general`, `local_content`, `elective`)? (Recommended for v1.1 to assist report card formatting).
+- `[NEEDS DECISION: Per-student electives (SMA)]`: Kurikulum Merdeka SMA phase F lets students choose elective subjects. v1 assumes every student in a class takes every assigned subject. Needed only if an SMA adopts Presensio.

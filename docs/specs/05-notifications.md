@@ -1,6 +1,6 @@
 # 05 — Absence Notifications (WhatsApp & Email Alerting)
 
-Status: v1.1 — implemented 2026-09-20 (amended 2026-09-25)
+Status: v1.1 — implemented 2026-09-20 (amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-02/06/07)
 
 ## Problem
 
@@ -12,7 +12,7 @@ Unaccounted student absences present a grave child safety risk. When a child dep
 2. Prioritize WhatsApp messaging as the primary communication medium to maximize immediate delivery and read rates in Indonesia, gracefully falling back to email when phone contact is unavailable.
 3. Guarantee zero duplicate alerts through an idempotent notification ledger (`absence_notifications`), sending at most one alert per guardian per student per date.
 4. Minimize notification fatigue, guardian anxiety, and third-party messaging API costs by strictly excluding `late`, `sick`, and `leave` statuses from automated notification pipelines.
-5. Provide a resilient queue execution architecture featuring three exponential backoff retry attempts and detailed status logging (`pending`, `sent`, `failed`).
+5. Provide a resilient queue execution architecture featuring three retry attempts with backoff of 1, 5 and 15 minutes and detailed status logging (`pending`, `sent`, `failed`).
 
 ## Non-goals
 
@@ -33,7 +33,8 @@ Unaccounted student absences present a grave child safety risk. When a child dep
 
 - **Strict Trigger Condition**: Notifications are dispatched **only upon the initial creation** of an `attendances` row with status `absent`.
   - Updating an existing record (e.g. from `late` to `absent`, or `absent` to `present`) does **not** trigger a notification.
-  - Manual overrides by teachers/admins via the exception dashboard do **not** trigger notifications.
+  - A manual override that **creates** a new record with status `absent` (e.g. a teacher reconstructing a day the scanner missed) **does** notify — the trigger is record creation, regardless of source.
+  - A manual override that **edits** an existing record never notifies, whatever the old/new status.
   - Pre-approved excuses injected as `sick` or `leave` do **not** trigger notifications.
 - **Recipient Resolution via Domain Pivot**: When an absence record is created, the system queries the `guardian_student` pivot table and enqueues a notification job for every verified guardian linked to that student. If a student has no linked guardians, the task completes gracefully without error.
 - **WhatsApp-First Delivery Chain**:
@@ -56,7 +57,7 @@ Unaccounted student absences present a grave child safety risk. When a child dep
   Terima kasih atas perhatian dan kerja samanya.
   — Pengelola {school_name}
   ```
-- **Execution & Retry Policy**: Notifications run on Laravel's queued background workers (`absence-notifications` queue). Jobs retry up to 3 times with exponential backoff intervals of 1 minute, 5 minutes, and 15 minutes.
+- **Execution & Retry Policy**: Notifications run on Laravel's queued background workers (`absence-notifications` queue). A job makes 1 initial attempt plus up to 3 retries (`tries = 4`) with backoff intervals of 1, 5 and 15 minutes (`$backoff = [60, 300, 900]`).
 - **Persistent Delivery Ledger**: Every dispatch attempt is recorded in `absence_notifications`. Replays or duplicate jobs detect the existing ledger row and abort immediately (idempotency).
 
 ## Requirements
@@ -71,7 +72,7 @@ Unaccounted student absences present a grave child safety risk. When a child dep
    - Reads target guardian contact information.
    - Evaluates provider connection: sends payload to WAHA WhatsApp gateway API (`POST /api/sendText`, `chatId: {phone}@c.us`).
    - Upon HTTP 200 from gateway, updates ledger: `status = 'sent'`.
-   - Upon network timeout or HTTP 5xx error, throws exception to trigger queue retry (`$backoff = [60, 300]`).
+   - Upon network timeout or HTTP 5xx error, throws exception to trigger queue retry (`$backoff = [60, 300, 900]`).
    - If WhatsApp retries are exhausted, the job's `failed()` handler falls back to dispatching email to the guardian's user email.
 3. **Idempotency Guard**:
    - A compound unique constraint on `(attendance_id, guardian_id)` in the database prevents race conditions from creating duplicate notification records.
@@ -108,7 +109,8 @@ Unaccounted student absences present a grave child safety risk. When a child dep
 - **AC-05-01**: When the auto-absent sweep creates an `absent` record for a student with two linked guardians, two queued jobs are dispatched, and two ledger records are created with `status = 'pending'`.
 - **AC-05-02**: Given a student whose attendance record is created as `present` or `late`, zero notification jobs and zero ledger rows are generated.
 - **AC-05-03**: Given a student with no linked guardians, when marked absent, the sweep completes without errors, and zero notifications are dispatched.
-- **AC-05-04**: When an admin manually edits an attendance record from `late` to `absent`, no notification is dispatched.
+- **AC-05-04**: When an admin manually edits an existing attendance record from `late` to `absent`, no notification is dispatched.
+- **AC-05-04b**: When a teacher manually creates a new `absent` record for a student with no record that day, the linked guardians are notified exactly as for a sweep-created record.
 - **AC-05-05**: If the WhatsApp gateway returns HTTP 500 on the first attempt, the job retries 1 minute later; on the second attempt, if successful, `status` becomes `sent` and `provider_message_id` is recorded.
 - **AC-05-06**: If a guardian has no phone number but has an email, the channel is set to `email` and an HTML email is sent via Laravel Mail.
 - **AC-05-07**: Attempting to insert a duplicate notification for the same `(attendance_id, guardian_id)` pair is rejected by the database unique constraint.
@@ -121,4 +123,4 @@ Unaccounted student absences present a grave child safety risk. When a child dep
 
 ## Open Questions
 
-- `[NEEDS DECISION: WhatsApp Webhook for Read Receipts]`: Does Presensio listen to incoming webhooks to upgrade `sent` to `delivered` or `read`? (Supported by schema via `delivered` status; webhook endpoint deferred to v1.1).
+- `[NEEDS DECISION: WhatsApp Webhook for Read Receipts]`: Does Presensio listen to incoming webhooks to upgrade `sent` to `delivered` or `read`? (Would require adding `delivered`/`read` to the status enum, which currently holds only `pending`, `sent`, `failed`; webhook endpoint deferred to v1.1).
