@@ -43,7 +43,7 @@ Wave 1 was built around four fixed roles, a year-only academic calendar and an a
 
 ### Roles & permissions (S-01)
 
-- **Roles** (enum, stored in `user_roles`): `admin`, `principal`, `teacher`, `counselor`, `finance`, `parent`, `student`.
+- **Roles** (enum, stored in `user_roles`): `admin`, `principal`, `teacher`, `counselor`, `finance`, `staff`, `parent`, `student`. `staff` = non-teaching employee self-service (spec 16).
 - **Multiple roles per user.** A user holds one or more roles. `student` is exclusive: it cannot be combined with any other role.
 - **Authorization = union of the user's roles.** Policies and gates check whether *any* held role grants the ability. No request-time "active role" affects authorization.
 - **Active role is UI-only.** Users with several roles pick an active role from a header switcher (stored in the session — never in static/singleton state, Octane). Navigation and the dashboard (08) render for the active role. Default: the first role in the order above.
@@ -65,8 +65,9 @@ Wave 1 was built around four fixed roles, a year-only academic calendar and an a
 | View published report cards | ✓ | ✓ | scoped | | | own children | self |
 | Fees & payments (14) | ✓ | read | | | ✓ | own children | self (read) |
 | Audit log | ✓ | ✓ (read) | | | | | |
+| Staff attendance overview, recap, leave approval (16) | ✓ | ✓ | | | | | |
 
-"scoped" = homeroom classes plus classes with an assignment in `class_subjects` (09), in the selected academic year.
+Own staff attendance and leave requests (16) are available to any user linked to an employee record, regardless of role; `staff` grants nothing beyond that self-service. "scoped" = homeroom classes plus classes with an assignment in `class_subjects` (09), in the selected academic year.
 
 ### Semesters (S-02)
 
@@ -125,7 +126,7 @@ Wave 1 was built around four fixed roles, a year-only academic calendar and an a
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
 | `user_id` | bigint | unsigned, not null | FK -> `users.id` (cascade delete) |
-| `role` | varchar(20) | not null | Enum: `admin`, `principal`, `teacher`, `counselor`, `finance`, `parent`, `student` |
+| `role` | varchar(20) | not null | Enum: `admin`, `principal`, `teacher`, `counselor`, `finance`, `staff`, `parent`, `student` |
 | `created_at` | timestamp | nullable | |
 
 **Primary Key:** `(user_id, role)` · **Index:** `INDEX (role)`

@@ -26,6 +26,8 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | **School announcements** | `announcements` → `announcement_receipts` | Bulletin board targeted by role, grade level or class (resolved via enrollments), with read/acknowledgement tracking (spec 12) |
 | **Weekly timetable** | `bell_schedules` → `lesson_periods`, `timetable_slots` | School bell schedule with day variants; per-semester class timetables bound to periods (spec 13) |
 | **School fees & tuition** | `fee_types` → `bills` ← `payment_allocations` → `payments` | Fee catalog, discounts, bulk billing, cash and verified transfers, derived bill status, void-only corrections, receipts (spec 14) |
+| **General ledger** | `accounts` → `journal_entries` → `journal_lines`, `accounting_periods` | Double-entry, accrual basis; every fee event posts a balanced journal; manual journals, trial balance, receivables reconciliation, period closing (spec 14) |
+| **Employees & staff attendance** | `employees` ← `teachers`; `employee_attendances`, `employee_leave_requests` | Teacher and tendik master; scanner check-in/out, lateness, early leave, leave requests, monthly recap (spec 16) |
 
 ## Specs
 
@@ -44,8 +46,9 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 11 | [Digital Report Cards](11-report-cards.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Reporting |
 | 12 | [School Announcements](12-announcements.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Campus Communication |
 | 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
-| 14 | [School Fees & Tuition](14-school-fees.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Student Billing & Cashier |
+| 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Draft v2.0 (2026-10-01) — Ready for planning after 15 | Billing, Cashier & Accounting |
 | 15 | [Academic Foundation](15-foundation.md) | Draft v1.0 (2026-10-01) — Ready for planning | Roles, Semesters, Class Levels, School Profile, Audit |
+| 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | Teacher & Tendik Attendance |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 
@@ -57,10 +60,10 @@ Single-school information & attendance system. Each numbered spec is a decision 
 ### Wave 2: Academic Teaching & Evaluation (Next Build Target 🎯)
 `15 (Foundation) → 09 (Subjects & Assignments) → 10 (Grading & Gradebook) → 11 (Digital Report Cards & PDF)`
 
-Spec 15 is numbered last to avoid renumbering but is built first.
+Spec 15 is numbered after 14 to avoid renumbering, but is built first. Spec 16 (staff attendance) depends only on 15 and can run in parallel with 09–11.
 
 ### Wave 3: Campus Communication, Timetables & Tuition (Supporting & Operations 💳)
-`12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees & SPP Tuition)`
+`12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees, Receivables & General Ledger)`
 
 ---
 

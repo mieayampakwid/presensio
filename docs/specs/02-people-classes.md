@@ -2,6 +2,8 @@
 
 Status: v2.0 — implemented 2026-09-19 (enrollment model 2026-09-21, amended 2026-09-25)
 
+> **Pending amendment (spec 16, draft):** `teachers.name`, `teacher_number`, `phone_number` and `user_id` move to a new `employees` master (teachers + non-teaching staff); `teachers` keeps its `id` and gains `employee_id`. Not yet implemented.
+
 ## Problem
 
 School administrations face dynamic student rosters: cohorts promote annually, students transfer between classes mid-year, and siblings share parental guardians. Traditional educational software that stores a static `class_id` foreign key on the `students` table fundamentally breaks historical reporting: changing a student's class corrupts past attendance records or makes historical class rosters impossible to reconstruct. Furthermore, initial onboarding is often delayed because school administrative staff cannot conform to rigid spreadsheet templates, having already formatted their student rosters in varied Indonesian spreadsheet formats (e.g. "TGL LAHIR", "Tgl. Lahir", "DOB").

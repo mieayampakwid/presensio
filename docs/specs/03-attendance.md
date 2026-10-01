@@ -2,6 +2,8 @@
 
 Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-01/03/04/05/08)
 
+> **Pending amendment (spec 16, draft):** the scanner endpoint also resolves employee credentials (`rfid_cards.employee_id`, employee QR tokens, `scan_events.employee_id`, outcome `ignored_inactive`). Not yet implemented.
+
 ## Problem
 
 Manual morning roll call in classrooms consumes 15 to 20 minutes of instructional time per class each day, produces error-prone paper logs, and delays absence discovery until midday or later. While standalone card-based RFID systems automate gate check-ins, they suffer extensively from "titip absen" (buddy punching fraud), where one student carries several peers' cards through the turnstile. Furthermore, automated check-in systems frequently break down during power/network outages or trigger mass false alarms by marking students absent on unrecorded national holidays.
