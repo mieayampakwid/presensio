@@ -1,112 +1,141 @@
 # 12 — School Announcements (Papan Pengumuman Digital)
 
-Status: draft v1.0 (2026-09-25)
+Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 S-05, P12-01…03). Supersedes draft v1.0 (2026-09-25): audience resolution defined through enrollments; grade-level audience, subject-teacher authoring, private attachments, and read/acknowledgement tracking added.
 
 ## Problem
 
-Schools traditionally distribute institutional announcements, circular letters (Surat Edaran), holiday notices, exam schedules, and activity invitations through informal WhatsApp groups. This reliance on messaging channels creates significant communication failures:
-1. Critical official notices are rapidly buried under parental chat, stickers, and casual conversations, causing families to miss important deadlines, fee notices, or dress code updates.
-2. Communications lack audience targeting: announcements meant strictly for faculty are inadvertently leaked to parents, or Grade 1 notices clutter the feeds of Grade 6 families.
-3. Schools have no centralized, searchable historical repository of past official circulars, leaving new teachers or parents without an authoritative reference point.
+Schools distribute announcements, circular letters (Surat Edaran), holiday notices, exam schedules and permission requests through informal WhatsApp groups. This causes three failures:
+1. Official notices are buried under chat and stickers, so families miss deadlines, fee notices and dress-code changes.
+2. There is no audience targeting: faculty notices leak to parents, and Grade 1 notices clutter Grade 6 families' feeds.
+3. There is no searchable archive, and no way to know which families have actually read a notice that required their attention (e.g. a study-tour permission letter).
 
 ## Goals
 
-1. Provide an authenticated digital bulletin board (`announcements`) accessible across all user role portals.
-2. Support granular audience targeting: `all` (school-wide), `parents`, `teachers`, `students`, or `class` (scoped to a specific classroom roster).
-3. Allow authors to format notices with rich Markdown text and attach official supporting documents (PDF circulars, schedules, image posters) up to 5MB.
-4. Support pinning critical notices to guarantee they remain at the top of the feed until unpinned.
-5. Integrate recent announcements directly into the role landing dashboards (spec 08) and provide a dedicated, searchable announcement archive.
-6. Support a draft/publish workflow so administrators and teachers can review content prior to public release.
+1. Provide an authenticated bulletin board across all role portals.
+2. Target audiences precisely: everyone, a role, a grade level, or a class — resolved from enrollments, never from a stored class pointer.
+3. Support Markdown bodies and one attachment (PDF/JPG/PNG, max 5 MB) stored privately.
+4. Support pinning, scheduled publication, and drafts.
+5. Track who has read each announcement, and, when requested, who has explicitly acknowledged it.
+6. Show the latest relevant announcements on the dashboard (08) and in a searchable archive.
 
 ## Non-goals
 
-- Interactive social media features: comment threads, discussion forums, or like/emoji reactions in v1 (announcements are strictly one-way institutional broadcasts).
-- Automated bulk WhatsApp broadcasts upon publishing an announcement in v1 (reserved for emergency alerts in v1.x; portal presentation is standard in v1).
-- Time-based auto-expiration or self-deleting notices in v1 (authors manually unpin or delete outdated notices).
-- SMS broadcast dispatch.
+- Comments, reactions, discussion threads.
+- WhatsApp broadcast on publish (open question; depends on AUDIT S-07 / F-04 and messaging cost).
+- Consent forms with yes/no answers or digital signatures (acknowledgement means "I have read this"; consent forms are a v1.x candidate).
+- Auto-expiry of announcements.
+- Multiple attachments per announcement.
 
 ## User Stories
 
-- **As a school administrator**, I want to publish a school-wide announcement regarding the upcoming National Holiday schedule with an attached official PDF circular, so all families and staff can reference it.
-- **As a school administrator**, I want to publish a faculty-only notice about next week's curriculum workshop that is completely invisible to parents and students.
-- **As a homeroom teacher**, I want to post an announcement targeted specifically to my Class 5A parents regarding field trip permission slips.
-- **As a parent**, I want to glance at my dashboard upon login and see the latest school circular at the top of my feed, with a link to download the official letter.
-- **As a student**, I want to view announcements regarding school sports day and club schedules on my portal.
+- **As an admin**, I want to publish a school-wide holiday circular with the official PDF attached.
+- **As an admin**, I want to publish a teachers-only notice about a curriculum workshop that students and parents never see.
+- **As an admin**, I want to send a notice to all Grade 6 families about graduation, without picking six classes one by one.
+- **As a homeroom teacher**, I want to post a field-trip permission letter to my class, require acknowledgement, and see which students' guardians have not acknowledged yet.
+- **As a subject teacher**, I want to announce a project deadline to the classes I teach.
+- **As a parent with two children**, I want to see announcements for both children's classes and the school-wide ones in one feed.
 
 ## Decisions
 
-- **Audience Targeting Model**:
-  - `audience` enum: `all`, `parents`, `teachers`, `students`, `class`.
-  - When `audience = 'class'`, `class_id` is required.
-  - Queries filter notices strictly by matching the authenticated user's role or classroom enrollment.
-- **Authoring Permissions**:
-  - `admin`: Can create and publish announcements targeting any audience across the institution.
-  - `teacher`: Can create and publish announcements strictly targeting their assigned homeroom class (`audience = 'class'`). Attempts by teachers to broadcast school-wide or faculty-wide return HTTP 403 Forbidden.
-- **Draft and Publication Lifecycle**:
-  - The `published_at` timestamp determines visibility. If `published_at IS NULL` or in the future, the notice is a draft visible only to its author and administrators.
-  - An announcement becomes live immediately when `published_at <= now()`.
-- **Attachment Storage**:
-  - Stored in application storage with unique hashed filenames. Accepts `application/pdf`, `image/jpeg`, and `image/png` up to 5120 KB (5MB).
-- **Dashboard Widget Presentation**:
-  - The top 3 most recent published notices matching the user's role render in a dedicated card on `/dashboard` (spec 08).
-  - Pinned notices (`is_pinned = true`) sort ahead of unpinned notices regardless of publication date.
+- **Audience model**: `audience_type` ∈ `all`, `role`, `grade_level`, `class`, with exactly one matching target column:
+  - `role` → `audience_role` (`teacher`, `parent`, `student`, `principal`, `counselor`, `finance`).
+  - `grade_level` → `audience_grade_level` (1–12) in the active academic year.
+  - `class` → `class_id`.
+- **Audience resolution** (S-05). A user sees a published announcement if any of these holds:
+  - `audience_type = all`.
+  - `role`: the user holds `audience_role` (union of roles, spec 15).
+  - `class` / `grade_level`: the user is linked to a matching class:
+    - **Student**: the class from `classOn(today)`.
+    - **Guardian**: the `classOn(today)` of any linked child.
+    - **Teacher**: holds homeroom or any `class_subjects` assignment for the class (09).
+
+  For `grade_level`, a matching class is any class in the active year with that `grade_level`. Admins and principals see every announcement.
+- **Authoring permissions**:
+  - `admin`, `principal`: any audience.
+  - `teacher`: only `audience_type = class` for classes in their scope (homeroom or subject assignment in the active year). Anything else → HTTP 403.
+- **Lifecycle**: `published_at` null = draft; future = scheduled; past or now = live. Drafts and scheduled items are visible only to their author, admins and principals. Editing a live announcement is allowed and shows "Diperbarui {date}".
+- **Attachments**: private disk, hashed filename, served via an authorized download route that applies the same audience check. Never on the public disk.
+- **Reads and acknowledgements**:
+  - First open of an announcement's detail page records `read_at` for that user.
+  - When `requires_acknowledgement = true`, the reader sees a "Saya sudah membaca" button that records `acknowledged_at`.
+  - Authors, admins and principals see a recipient status report. For class and grade-level audiences it is listed **per student**: for each student, whether any linked guardian has read or acknowledged it.
+- **Markdown safety**: rendered with HTML disabled and sanitized output (XSS).
+- **Ordering**: `is_pinned DESC, published_at DESC`.
 
 ## Requirements
 
-1. **Admin Announcement Management (`/admin/announcements`)**:
-   - Admin CRUD interface for all announcements.
-   - Form fields: `title` (required, string, max 255 chars), `body` (required, text, Markdown supported), `audience` (required enum), `class_id` (conditional: required if audience is `class`), `is_pinned` (boolean, default false), `attachment` (optional file), `published_at` (nullable datetime).
-2. **Teacher Class Announcement Management (`/teacher/classes/{id}/announcements`)**:
-   - Homeroom teacher can create, edit, and delete announcements for their assigned class.
-   - Audience is locked to `class` with `class_id` bound to that homeroom.
-3. **Public Announcement Feed (`GET /announcements`)**:
-   - Dedicated searchable bulletin board page.
-   - Filterable by keyword search (matches `title` and `body`) and category/date.
-   - Shows author name, publication date, pinned badge, rendered Markdown body, and downloadable attachment link.
-   - Paginated at 10 announcements per page.
-4. **Dashboard Integration Widget**:
-   - `/dashboard` controller injects the latest 3 visible announcements matching the user:
-     $$\text{Targeted Notices} = \{ a \in \text{announcements} \mid a.\text{published\_at} \le \text{now}() \land (a.\text{audience} = \text{'all'} \lor a.\text{audience} = \text{user.role} \lor a.\text{class\_id} \in \text{user.classes}) \}$$
-   - Sorted by `is_pinned DESC, published_at DESC`.
+1. **Admin/Principal Management (`/admin/announcements`)**:
+   - CRUD. Fields: `title` (max 255), `body` (Markdown), `audience_type` plus the matching target, `is_pinned`, `requires_acknowledgement`, `attachment`, `published_at` (nullable; future allowed).
+   - Validation: exactly the target column matching `audience_type` is set; `class_id` must belong to the active academic year.
+2. **Teacher Class Announcements (`/teacher/classes/{id}/announcements`)**:
+   - Same form with audience locked to `class` = `{id}`; `{id}` must be in the teacher's scope.
+   - A teacher edits and deletes only their own announcements.
+3. **Feed & Archive (`GET /announcements`)**:
+   - Visible announcements per the resolution rule; keyword search on title and body; date filter; 10 per page.
+   - Shows author, publication date, pinned badge, rendered body, attachment link, and acknowledgement state.
+4. **Detail & Acknowledge**:
+   - `GET /announcements/{id}` records `read_at` (first view only).
+   - `POST /announcements/{id}/acknowledge` records `acknowledged_at`. Only allowed when the announcement requires acknowledgement and is visible to the user.
+5. **Recipient Report (`GET /announcements/{id}/recipients`)**:
+   - Author, admin or principal only.
+   - For class/grade audiences: rows per enrolled student with guardian names, read status and acknowledgement status. Filter "belum membaca" / "belum konfirmasi".
+   - For role/all audiences: counts plus a list of users who have read.
+6. **Dashboard Widget (08)**:
+   - The 3 latest visible announcements (pinned first).
+   - A badge counting unacknowledged announcements that require acknowledgement.
 
 ## Schema
 
-### `announcements` Table
+### 1. `announcements` Table
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `title` | varchar(255) | not null | Headline title |
-| `body` | text | not null | Full announcement content (Markdown) |
-| `audience` | varchar(20) | not null, default: 'all' | Enum: `all`, `parents`, `teachers`, `students`, `class` |
-| `class_id` | bigint | unsigned, nullable | Foreign key -> `classes.id` (when audience = class) |
-| `is_pinned` | boolean | not null, default: false | Top-of-feed pin flag |
-| `attachment_path` | varchar(255) | nullable | Path to uploaded file |
-| `attachment_name` | varchar(255) | nullable | Original filename for download |
-| `published_at` | timestamp | nullable | Live publication timestamp (null = draft) |
-| `created_by_user_id` | bigint | unsigned, not null | Foreign key -> `users.id` (Author audit) |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
+| `id` | bigint | unsigned, primary key | |
+| `title` | varchar(255) | not null | |
+| `body` | text | not null | Markdown |
+| `audience_type` | varchar(20) | not null, default: 'all' | Enum: `all`, `role`, `grade_level`, `class` |
+| `audience_role` | varchar(20) | nullable | Set when `audience_type = role` |
+| `audience_grade_level` | tinyint | unsigned, nullable | Set when `audience_type = grade_level` |
+| `class_id` | bigint | unsigned, nullable | FK -> `classes.id`; set when `audience_type = class` |
+| `is_pinned` | boolean | not null, default: false | |
+| `requires_acknowledgement` | boolean | not null, default: false | |
+| `attachment_path` | varchar(255) | nullable | Private storage path |
+| `attachment_name` | varchar(255) | nullable | Original filename |
+| `published_at` | timestamp | nullable | Null = draft; future = scheduled |
+| `created_by_user_id` | bigint | unsigned, not null | FK -> `users.id` |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
-**Indexes:**
-- `INDEX (audience, published_at)`
-- `INDEX (class_id, published_at)`
-- `INDEX (is_pinned, published_at)`
+**Indexes:** `INDEX (audience_type, published_at)`, `INDEX (class_id, published_at)`, `INDEX (is_pinned, published_at)`
+
+### 2. `announcement_receipts` Table
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `announcement_id` | bigint | unsigned, not null | FK -> `announcements.id` (cascade delete) |
+| `user_id` | bigint | unsigned, not null | FK -> `users.id` (cascade delete) |
+| `read_at` | timestamp | not null | First view |
+| `acknowledged_at` | timestamp | nullable | Explicit acknowledgement |
+
+**Primary Key:** `(announcement_id, user_id)`
 
 ## Acceptance Criteria
 
-- **AC-12-01**: Given an announcement with `audience = 'teachers'`, when a parent or student views the announcements feed or dashboard, that announcement is completely absent from props.
-- **AC-12-02**: Given an announcement targeted to Class 5A, when parents of Class 5B log in, the announcement is absent from their feed.
-- **AC-12-03**: Given a draft announcement (`published_at = null`), when a non-admin, non-author user queries announcements, the draft is not returned.
-- **AC-12-04**: An announcement marked `is_pinned = true` published three weeks ago renders above an unpinned announcement published yesterday.
-- **AC-12-05**: A teacher attempting to create an announcement with `audience = 'all'` receives HTTP 403 Forbidden.
-- **AC-12-06**: Clicking the attachment link on an announcement downloads the original uploaded file with correct MIME headers.
+- **AC-12-01**: An announcement with `audience_type = role`, `audience_role = teacher` is absent from parent and student feeds and dashboards.
+- **AC-12-02**: An announcement for Class 5A is absent from feeds of 5B parents; a parent with children in 5A and 6B sees it.
+- **AC-12-03**: A student who transferred from 5A to 5B yesterday no longer sees new 5A class announcements and does see 5B's.
+- **AC-12-04**: An announcement with `audience_grade_level = 6` is visible to guardians of students currently enrolled in any grade-6 class of the active year.
+- **AC-12-05**: A draft or future-scheduled announcement is not returned to non-author, non-admin, non-principal users.
+- **AC-12-06**: A pinned announcement from three weeks ago renders above an unpinned one from yesterday.
+- **AC-12-07**: A teacher creating an announcement with `audience_type = all`, or for a class outside their scope, receives HTTP 403. A subject teacher creating one for a class they teach succeeds.
+- **AC-12-08**: Requesting the attachment of an announcement the user cannot see returns HTTP 403.
+- **AC-12-09**: Opening an announcement twice records one `read_at` (the first); acknowledging sets `acknowledged_at`; acknowledging an announcement that does not require it returns HTTP 422.
+- **AC-12-10**: The recipient report for a 30-student class announcement lists 30 rows. A student counts as acknowledged when any linked guardian has acknowledged.
 
 ## Constraints & Assumptions
 
-- Markdown parsing is sanitized on the server or rendered using safe client-side Markdown libraries (e.g. `marked` with DOMPurify) to prevent Cross-Site Scripting (XSS).
-- File storage leverages standard Laravel storage disks (`public` or `private` with signed stream downloads).
+- Requires spec 15 (roles, `grade_level`) and spec 09 (subject-teacher scope).
+- Audience resolution runs as indexed queries over enrollments at single-school scale.
 
 ## Open Questions
 
-- `[NEEDS DECISION: WhatsApp Push for Urgent Announcements]`: When an admin flags an announcement as `urgent`, should the system trigger a WhatsApp broadcast to all guardians using spec 05 infra? (Recommended for v1.1; deferred in v1 to protect third-party messaging costs).
+- `[NEEDS DECISION: WhatsApp push for urgent announcements]`: Push via spec 05 infrastructure when flagged urgent? Depends on AUDIT S-07 / F-04 and messaging cost.

@@ -23,9 +23,9 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | **Curricular subjects** | `subjects` → `class_subjects` | Subject catalog and year-scoped teaching assignments with passing threshold / KKTP (spec 09) |
 | **Assessments & grading** | `learning_objectives`, `assessments` → `scores` → `subject_results` | Semester gradebook, Kurikulum Merdeka assessment kinds, TP-based descriptions, finalization (spec 10) |
 | **Digital report cards** | `report_card_publications` → `report_cards` | Versioned immutable semester snapshots with PDF and publication gating (spec 11) |
-| **School announcements** | `announcements` | Role-targeted digital bulletin board with Markdown formatting and attachments (spec 12) |
-| **Weekly timetable** | `timetable_slots` | Weekly class schedules mapping time slots to subjects, teachers, and rooms (spec 13) |
-| **School fees & tuition** | `fee_types` → `bills` → `payments` | Fee catalog, automated monthly SPP/billing, cashier cash entry, bank transfer verification, receipts (spec 14) |
+| **School announcements** | `announcements` → `announcement_receipts` | Bulletin board targeted by role, grade level or class (resolved via enrollments), with read/acknowledgement tracking (spec 12) |
+| **Weekly timetable** | `bell_schedules` → `lesson_periods`, `timetable_slots` | School bell schedule with day variants; per-semester class timetables bound to periods (spec 13) |
+| **School fees & tuition** | `fee_types` → `bills` ← `payment_allocations` → `payments` | Fee catalog, discounts, bulk billing, cash and verified transfers, derived bill status, void-only corrections, receipts (spec 14) |
 
 ## Specs
 
@@ -42,12 +42,12 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 09 | [Subjects & Teaching Assignments](09-subjects.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Foundation |
 | 10 | [Student Assessment & Grading](10-grading.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Evaluation |
 | 11 | [Digital Report Cards](11-report-cards.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Reporting |
-| 12 | [School Announcements](12-announcements.md) | Draft v1.0 (2026-09-25) — Ready for planning | Campus Communication |
-| 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.0 (2026-09-25) — Ready for planning | Timetable & Schedule |
-| 14 | [School Fees & Tuition](14-school-fees.md) | Draft v1.0 (2026-09-25) — Ready for planning | Student Billing & Cashier |
+| 12 | [School Announcements](12-announcements.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Campus Communication |
+| 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
+| 14 | [School Fees & Tuition](14-school-fees.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Student Billing & Cashier |
 | 15 | [Academic Foundation](15-foundation.md) | Draft v1.0 (2026-10-01) — Ready for planning | Roles, Semesters, Class Levels, School Profile, Audit |
 
-> **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–11 revised; 12–14 still need revision before planning.
+> **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 
 ## Build Order & Roadmap
 

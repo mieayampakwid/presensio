@@ -1,102 +1,128 @@
-# 14 — School Fees & Tuition (Manajemen Keuangan SPP & Tagihan Siswa)
+# 14 — School Fees & Tuition (SPP & Tagihan Siswa)
 
-Status: draft v1.0 (2026-09-25)
+Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P14-01…09). Supersedes draft v1.0 (2026-09-25):
+- Payments now split into header + allocations (one payment can cover several bills, including siblings).
+- Bill status is derived from verified allocations.
+- Verified payments are immutable and can only be voided with a reason.
+- Discounts, scholarships, bill cancellation on withdrawal, and an unambiguous billing period added.
+- Receipt numbering made concurrency-safe.
+- `finance` role from spec 15.
 
 ## Problem
 
-Private and independent schools in Indonesia rely heavily on periodic tuition (SPP - Sumbangan Pembinaan Pendidikan) and institutional fees (Uang Pangkal/Gedung, Seragam, Buku, Kegiatan) to fund daily school operations and staff salaries. In the absence of an integrated digital financial ledger:
-1. School administration and treasurers (Tata Usaha / Bendahara) manage billing through physical payment booklets (Kartu SPP) or disconnected spreadsheets. This workflow is prone to lost receipts, unrecorded cash transactions, and frequent disputes with parents regarding payment status ("saya sudah transfer bulan lalu tapi masih ditagih").
-2. School leadership lacks real-time oversight of financial health: compiling reports on total fee collection and identifying cumulative student arrears (tunggakan per kelas) requires days of manual spreadsheet reconciliation.
-3. Parents have no self-service transparency into their financial obligations. They do not know their exact outstanding balance, payment deadlines, or official bank account details, and must visit the school cashier during working hours simply to pay tuition or retrieve a receipt.
+Private and independent schools in Indonesia fund operations through monthly tuition (SPP) and one-time fees (Uang Pangkal, Seragam, Buku, Kegiatan). Without an integrated ledger:
+1. Treasurers (Bendahara / Staf TU) track billing in payment booklets or spreadsheets: receipts get lost, cash goes unrecorded, and disputes ("saya sudah transfer bulan lalu tapi masih ditagih") are hard to settle.
+2. Leadership cannot see collection totals or arrears per class (tunggakan per kelas) without days of reconciliation.
+3. Parents cannot see what they owe, the due dates, or the school's bank account, and must visit the cashier during office hours for receipts.
+4. Mistakes are corrected by editing or deleting records, which destroys the audit trail a school needs when money is disputed.
 
 ## Goals
 
-1. Define a centralized catalog of school fee categories (`fee_types`), accommodating recurring monthly tuition (SPP) and one-time capital/activity charges (Uang Gedung, Seragam, Kegiatan).
-2. Automate the generation of student billings (`bills`) for all actively enrolled students across the active academic year with configurable due dates.
-3. Support hybrid payment collection workflows:
-   - In-person cash payments received directly by the school cashier/TU.
-   - Bank transfer payments where guardians upload digital transfer receipts (Bukti Transfer) for administrative verification.
-4. Support flexible payment resolution states: `unpaid`, `pending_verification`, `partially_paid`, `paid`, and `waived` (beasiswa / potongan khusus).
-5. Generate official, printable digital payment receipts (Kuitansi Pembayaran) with unique receipt numbers and school validation stamps.
-6. Provide guardians and students with a self-service "Tagihan & Pembayaran" portal to view current bills, download past payment receipts, and submit transfer proofs.
-7. Deliver financial reporting tools for school leadership: daily cash book (Buku Kas Penerimaan), class arrears ledgers (Rekap Tunggakan per Kelas), and exportable CSV statements.
+1. Catalog fee types: monthly recurring (SPP) and one-time.
+2. Generate bills in bulk for active students, applying per-student discounts and scholarships.
+3. Collect payments two ways:
+   - Cash at the cashier.
+   - Bank transfer with proof upload and staff verification.
+4. Let one payment settle several bills, including bills of siblings paid together.
+5. Derive bill status from verified money, so there is a single source of truth.
+6. Keep verified payments immutable; corrections are voids with a reason, visible in the cash book.
+7. Issue official receipts (Kuitansi) with concurrency-safe unique numbers.
+8. Give guardians a self-service bills and payments portal.
+9. Report the daily cash book and arrears per class, exportable to CSV.
 
 ## Non-goals
 
-- Third-party automated payment gateway integration (Midtrans, Xendit, Duitku, or QRIS dynamic callbacks) in v1. (Automated payment gateway onboarding requires business legal entities, escrow merchant fees, and API integration; manual bank transfer verification + physical cashier serves v1 reliably; payment gateways are scoped for v1.x).
-- Full enterprise double-entry general ledger accounting (Jurnal Umum, Neraca Saldo, Buku Besar Akuntansi, Laporan Laba Rugi). Presensio is a school operations platform, not a corporate accounting system like SAP or Zahir.
-- Operational expense management and teacher payroll (Pengeluaran Kas & Gaji/Honorarium Guru) in v1 (scope is strictly student receivables and fee collection).
-- Automated compounding late payment interest or financial penalty calculations (Denda keterlambatan berbunga).
-- Digital wallet (e-wallet balances or prepaid top-ups) within the school.
+- Payment gateway / QRIS callbacks (v2 candidate).
+- Double-entry general ledger, balance sheet, profit and loss.
+- Expenses and payroll.
+- Late-payment penalties or interest.
+- Credit balances / deposits: overpayment is not stored as credit in v1. The verifier allocates the excess to other open bills of the same students, or rejects the payment.
+- Refunds of money to families (voiding records an error; actual refunds are handled outside the system in v1).
 
 ## User Stories
 
-- **As a school treasurer (Bendahara)**, I want to define the monthly SPP fee for academic year 2026/2027 as Rp 350.000, and generate 12 monthly bills for all enrolled Grade 5 students with a single action.
-- **As a school cashier (Staf TU)**, I want a parent who visits my office with cash to pay SPP for September and October, enter the payment, and immediately print an official receipt (Kuitansi) with a unique number.
-- **As a working guardian**, I want to log into my Presensio portal, see that September's SPP is due next week, transfer the exact amount from my mobile banking app, upload a screenshot of the transfer slip, and track verification status.
-- **As a school cashier**, I want to open my verification queue, review the uploaded transfer slip for Ahmad's October SPP, verify that the funds arrived in the school bank account, and click "Verifikasi Pembayaran" to mark the bill as paid.
-- **As a school principal**, I want to view a real-time summary of total fees collected this month and see which classes have the highest outstanding arrears (tunggakan), so we can plan operational expenditures.
+- **As a treasurer**, I want to generate 12 monthly SPP bills of Rp 350.000 for all Grade 5 students, with the 50% scholarship for two students applied automatically.
+- **As a cashier**, I want to take cash from a parent for September and October SPP of two siblings in one transaction, and print one receipt listing both children.
+- **As a guardian**, I want to see that September SPP is due, view the school's bank account, transfer, upload the slip, and track verification.
+- **As a cashier**, I want to verify a transfer after checking the bank statement, and be warned if the same slip image was already used.
+- **As a treasurer who made an entry error yesterday**, I want to void the payment with a reason so it appears as a correction in the cash book, instead of silently disappearing.
+- **As a principal**, I want to see this month's collections and which classes have the highest arrears.
 
 ## Decisions
 
-- **Fee Types Hierarchy (`fee_types`)**:
-  - `type` enum: `monthly_recurring` (e.g. SPP Bulanan) vs `one_time` (e.g. Uang Pangkal, Uang Seragam, Biaya Ujian, Biaya Wisuda).
-  - Fees belong to an academic year or are global with an active flag.
-- **Billing Entity (`bills`)**:
-  - A bill is an individual payable obligation issued to a specific student (`student_id`).
-  - For recurring monthly fees, the bill specifies `bill_month` (integer 1 through 12, representing January through December, or July through June).
-  - Status progression:
-    $$\text{unpaid} \longrightarrow [\text{pending\_verification}] \longrightarrow \text{partially\_paid} \mid \text{paid} \mid \text{waived}$$
-  - A bill tracks `amount` (total nominal due) and `paid_amount` (accumulated verified payments).
-- **Payment Transaction Entity (`payments`)**:
-  - Every verified or submitted payment generates a row in `payments`.
-  - Holds a unique serialized invoice/receipt code (e.g. `KWT-202609-00142`).
-  - Supports partial payments: if a student owes Rp 500.000 and pays Rp 300.000, the bill status transitions to `partially_paid`, leaving a remaining balance of Rp 200.000.
-  - Payment method enum: `cash` (tunai) or `bank_transfer` (transfer).
-- **Verification Gate for Bank Transfers**:
-  - When a guardian submits proof of transfer, the payment is created with status `pending_verification`, and the parent bill shows "Menunggu Verifikasi".
-  - Only authorized cashiers/admins can verify (`status = 'verified'`) or reject (`status = 'rejected'` with explanatory reason).
-  - Only verified payments increment the bill's `paid_amount` and alter bill status.
-- **Official Digital Kuitansi**:
-  - Generated on-the-fly via printable Blade template / PDF.
-  - Contains School Kop Surat, Kuitansi Number, Student Name, NIS, Class, Payment Item, Amount (angka & terbilang), Cashier Name, and Date.
-- **Role Scoping & Access Control**:
-  - `admin` / `treasurer` (staff with finance role): Full access to create fee types, generate bills, record cash payments, verify transfers, and view school-wide financial reports.
-  - `parent`: Can view bills and payments strictly belonging to their linked children (`guardian_student`), and upload transfer slips.
-  - `student`: Read-only view of their own billing status (no payment submission).
-  - `teacher`: No financial access by default (financial privacy from classroom teachers).
+- **Fee types**: `type` ∈ `monthly_recurring`, `one_time`, with `default_amount`. Optionally scoped to an academic year.
+- **Billing period**: `period_key` is `YYYY-MM` (calendar month) for recurring fees and `once` for one-time fees. `UNIQUE (student_id, fee_type_id, period_key)` prevents duplicates, so re-running the generator is safe.
+- **Discounts & scholarships**: `student_fee_discounts` gives a student a percentage or fixed reduction on a fee type, with a reason (beasiswa, saudara kandung, yatim), valid within an academic year. The generator applies it as the bill's `discount_amount`. An individual bill's discount can also be edited, which is audited.
+- **Derived bill status**. With `net = amount − discount_amount` and `paid = Σ verified, non-void allocations`:
+  - `cancelled` if `cancelled_at` is set.
+  - else `waived` if `net = 0`.
+  - else `paid` if `paid ≥ net`.
+  - else `partially_paid` if `paid > 0`.
+  - else `unpaid`.
+
+  `paid_amount` and `status` are stored as cached columns, recomputed by one routine in the same transaction as any change to allocations, discounts or cancellation. "Menunggu verifikasi" is a separate derived flag (the bill has an allocation on a `pending` payment), **not** a status.
+- **Payments = header + allocations**:
+  - A `payments` row is the money movement: method, total, proof, status.
+  - `payment_allocations` split it over bills. The sum of allocations must equal the payment amount, and no allocation may exceed the bill's remaining `net − paid`.
+  - Allocated bills may belong to several students, but only students linked to the paying guardian (transfer) or chosen together by the cashier (cash).
+- **Payment status**:
+  - `pending` → `verified` or `rejected`.
+  - `verified` → `void` (with reason).
+  - Cash payments are created directly as `verified`.
+  - Rejected and voided payments never count toward `paid`.
+  - Verified payments are never edited or deleted.
+- **Void**: requires a reason. It stamps `voided_at` and `voided_by_user_id`, writes an audit log row (15), and recomputes the affected bills. The cash book shows the void as a negative line on the **void date**, so past days' totals do not change.
+- **Receipt numbers**: `KWT-{YYYYMM}-{NNNNN}`, assigned when a payment becomes `verified`, from `receipt_sequences` locked with `SELECT … FOR UPDATE` inside the transaction. Pending transfers have no receipt number.
+- **Duplicate proof detection**: the SHA-256 hash of each uploaded proof is stored. On verification, a matching hash on another non-rejected payment shows a warning.
+- **Withdrawal / graduation**: when a student's open enrollment is closed without a successor (02 / 07), unpaid bills with zero payments whose period starts after the end date are cancelled automatically (`cancel_reason = 'Siswa keluar/lulus'`). Bills with partial payments are listed for treasurer review.
+- **Class attribution in reports**: arrears are grouped by the student's current class (`classOn(today)`). Students without an open enrollment are grouped as "Alumni / Keluar".
+- **School bank account and kop** come from the school profile (15).
+- **Access** (matrix in 15):
+  - `finance`, `admin`: full access.
+  - `principal`: read-only.
+  - `parent`: own children only; uploads proofs.
+  - `student`: read-only, self.
+  - `teacher` / `counselor`: none.
 
 ## Requirements
 
-1. **Fee Type Catalog (`/admin/fees/types`)**:
-   - Admin CRUD for fee types.
-   - Fields: `name` (required, string, e.g. "SPP Bulanan 2026/2027"), `code` (required, unique, e.g. "SPP-2627"), `type` (required enum: `monthly_recurring`, `one_time`), `default_amount` (required, decimal > 0), `description` (optional text), `is_active` (boolean).
-2. **Bulk Bill Generator (`/admin/fees/generate`)**:
-   - Allows admin to generate bills in bulk:
-     - Target cohort: Select Class, Grade Level, or All Active Students in the active academic year.
-     - Fee type selector.
-     - If `monthly_recurring`: Select range of months (e.g. Juli 2026 s/d Juni 2027).
-     - Due date per month (e.g. tanggal 10 setiap bulan).
-   - Generates individual `bills` rows transactionally, skipping students who already have an existing bill for that fee type and month (duplicate prevention).
-3. **Cashier Point-of-Sale Payment Entry (`GET /admin/fees/cashier`)**:
-   - Search student by name or NIS.
-   - Displays all outstanding and unpaid bills for that student.
-   - Cashier selects bill(s) to pay, inputs received amount, chooses payment method `cash`, adds optional note.
-   - Automatically marks bill as `paid` or `partially_paid`, stamps `verified_by_user_id = auth()->id()`, and opens printable Kuitansi in a pop-up window.
-4. **Transfer Verification Queue (`GET /admin/fees/verifications`)**:
-   - Lists all payments submitted by guardians with `status = 'pending'`.
-   - Displays student name, class, bill item, transfer amount, transfer timestamp, and clickable image preview of the bank receipt (`payment_proof_path`).
-   - "Verify" action: Approves payment, updates `payments.status = 'verified'`, recalculates bill `paid_amount`, and updates bill status.
-   - "Reject" action: Rejects payment with required rejection reason note (`reject_reason`). Parent is notified of the rejection on their portal.
-5. **Guardian Tagihan Portal (`GET /parent/children/{id}/fees`)**:
-   - Displays summarized balance: Total Belum Dibayar, Total Menunggu Verifikasi, Total Lunas.
-   - Chronological list of bills: Month/Fee Name, Due Date, Nominal, Status Badge, Paid Amount, and "Bayar / Unggah Bukti" button.
-   - Payment history tab: Lists all verified payments with a "Cetak Kuitansi" button.
-   - Upload modal: Allows guardian to select target bill, input transfer date, transfer bank origin, transferred amount, and attach image/PDF file (max 5MB).
-6. **Financial Reports & Arrears Ledger (`/admin/fees/reports`)**:
-   - *Buku Kas Harian*: Chronological log of all verified payments within a date range, grouped by cashier, with total cash and total bank transfer subtotals.
-   - *Laporan Tunggakan (Arrears)*: Per-class table showing enrolled student count, total billed, total collected, total outstanding tunggakan, and list of students with overdue bills.
-   - All reports exportable to Excel-compatible CSV.
+1. **Fee Types (`/admin/fees/types`)**: CRUD with `name`, `code` (unique), `type`, `default_amount` (> 0), `academic_year_id` (optional), `description`, `is_active`.
+2. **Discounts (`/admin/fees/discounts`)**:
+   - CRUD of `student_fee_discounts`: student, fee type, academic year, `percent` (0–100) **or** `fixed_amount`, `reason`.
+   - Changes affect future generated bills only; existing bills are adjusted individually.
+3. **Bulk Bill Generator (`/admin/fees/generate`)**:
+   - Inputs:
+     - Target: one class, one grade level, or all actively enrolled students in the active year.
+     - Fee type and amount (default `default_amount`).
+     - For recurring fees: a month range and the due day of the month. For one-time fees: a due date.
+   - Creates bills in one transaction, applying discounts and skipping existing `(student, fee type, period_key)` rows.
+   - Shows a dry-run summary (created / skipped / discounted) before commit.
+4. **Cashier (`/admin/fees/cashier`)**:
+   - Search students by name or NIS. Siblings (sharing a guardian) can be added to the same transaction.
+   - Select open bills, enter the amount received and its allocation (auto-allocated oldest-due first, editable), and an optional note.
+   - Saves a `verified` cash payment with allocations, assigns the receipt number, and opens the printable Kuitansi.
+5. **Transfer Verification Queue (`/admin/fees/verifications`)**:
+   - Lists `pending` payments with student(s), allocations, amount, transfer date, origin bank, proof preview, and duplicate-hash warning.
+   - Verify: optionally re-allocate (e.g. an amount differing from the bills); sets `verified`, assigns the receipt number, recomputes bills.
+   - Reject: requires `reject_reason`; the guardian sees it on the portal.
+6. **Void (`POST /admin/fees/payments/{id}/void`)**: `finance` or `admin`; `verified` payments only; requires `reason`.
+7. **Guardian Portal (`/parent/fees`)**:
+   - Bills for all linked children: totals (belum dibayar, menunggu verifikasi, lunas), and per bill the period, due date, net amount, paid, status, and pending flag.
+   - The school bank account is shown.
+   - Upload modal: select one or more open bills (any linked child), transfer date, origin bank, amount, and proof (JPG/PNG/PDF, max 5 MB, private storage). Creates a `pending` payment with the proposed allocations.
+   - Payment history with status, reject reason, and "Cetak Kuitansi" for verified payments.
+8. **Reports (`/admin/fees/reports`)**:
+   - *Buku Kas Penerimaan*: per date range, verified payments by verification date and voids as negative lines by void date; subtotals per method and per staff member.
+   - *Rekap Tunggakan*: per class, students with overdue open bills (`due_date < today`, status `unpaid` / `partially_paid`), billed, collected and outstanding totals.
+   - CSV export (UTF-8 BOM, as spec 06).
+9. **Kuitansi**:
+   - Contents:
+     - Header: school kop (15), receipt number, date.
+     - Line items: student, NIS, class, bill title, amount.
+     - Total in figures and words (terbilang), method.
+     - Signature: verifying staff name.
+   - A voided payment's receipt is watermarked "BATAL".
+   - PDF uses the same library as spec 11 (requires approval).
 
 ## Schema
 
@@ -104,88 +130,119 @@ Private and independent schools in Indonesia rely heavily on periodic tuition (S
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `academic_year_id` | bigint | unsigned, nullable | Foreign key -> `academic_years.id` |
-| `name` | varchar(100) | not null | Name of fee (e.g. "SPP Bulanan", "Uang Gedung") |
-| `code` | varchar(30) | not null, unique | Code (e.g. "SPP-2026", "GEDUNG-2026") |
+| `id` | bigint | unsigned, primary key | |
+| `academic_year_id` | bigint | unsigned, nullable | FK -> `academic_years.id` |
+| `name` | varchar(100) | not null | |
+| `code` | varchar(30) | not null, unique | |
 | `type` | varchar(30) | not null | Enum: `monthly_recurring`, `one_time` |
-| `default_amount` | decimal(12,2) | not null | Standard nominal amount (Rupiah) |
-| `description` | text | nullable | Fee purpose details |
-| `is_active` | boolean | not null, default: true | Active status |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
+| `default_amount` | decimal(12,2) | not null | |
+| `description` | text | nullable | |
+| `is_active` | boolean | not null, default: true | |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
-**Indexes:**
-- `UNIQUE (code)`
-- `INDEX (academic_year_id, is_active)`
-
-### 2. `bills` Table
+### 2. `student_fee_discounts` Table
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `student_id` | bigint | unsigned, not null | Foreign key -> `students.id` |
-| `fee_type_id` | bigint | unsigned, not null | Foreign key -> `fee_types.id` |
-| `academic_year_id` | bigint | unsigned, not null | Foreign key -> `academic_years.id` |
-| `title` | varchar(255) | not null | Descriptive title (e.g. "SPP September 2026") |
-| `bill_month` | tinyint | unsigned, nullable | Month number (1 to 12) for recurring fees |
-| `bill_year` | smallint | unsigned, nullable | Calendar year of bill (e.g. 2026) |
-| `amount` | decimal(12,2) | not null | Total nominal billed (IDR) |
-| `paid_amount` | decimal(12,2) | not null, default: 0.00 | Total nominal verified paid |
-| `due_date` | date | not null | Payment deadline |
-| `status` | varchar(30) | not null, default: 'unpaid' | Enum: `unpaid`, `pending_verification`, `partially_paid`, `paid`, `waived` |
-| `notes` | varchar(255) | nullable | Special notes / scholarship remarks |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
+| `id` | bigint | unsigned, primary key | |
+| `student_id` | bigint | unsigned, not null | FK -> `students.id` |
+| `fee_type_id` | bigint | unsigned, not null | FK -> `fee_types.id` |
+| `academic_year_id` | bigint | unsigned, not null | FK -> `academic_years.id` |
+| `percent` | decimal(5,2) | nullable | 0–100; exactly one of `percent` / `fixed_amount` |
+| `fixed_amount` | decimal(12,2) | nullable | |
+| `reason` | varchar(255) | not null | e.g. "Beasiswa prestasi" |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
-**Indexes:**
-- `INDEX (student_id, status)`
-- `INDEX (fee_type_id, bill_month, bill_year)`
-- `INDEX (academic_year_id, due_date)`
+**Indexes:** `UNIQUE (student_id, fee_type_id, academic_year_id)`
 
-### 3. `payments` Table
+### 3. `bills` Table
 
 | Column | Type | Modifiers | Description |
 |---|---|---|---|
-| `id` | bigint | unsigned, primary key | Internal identifier |
-| `bill_id` | bigint | unsigned, not null | Foreign key -> `bills.id` |
-| `payment_number` | varchar(50) | not null, unique | Serial receipt code (e.g. "KWT-202609-0012") |
-| `amount` | decimal(12,2) | not null | Amount paid in this transaction |
+| `id` | bigint | unsigned, primary key | |
+| `student_id` | bigint | unsigned, not null | FK -> `students.id` |
+| `fee_type_id` | bigint | unsigned, not null | FK -> `fee_types.id` |
+| `academic_year_id` | bigint | unsigned, not null | FK -> `academic_years.id` |
+| `period_key` | varchar(7) | not null | `YYYY-MM` or `once` |
+| `title` | varchar(255) | not null | e.g. "SPP September 2026" |
+| `amount` | decimal(12,2) | not null | Gross amount |
+| `discount_amount` | decimal(12,2) | not null, default: 0.00 | |
+| `discount_reason` | varchar(255) | nullable | |
+| `paid_amount` | decimal(12,2) | not null, default: 0.00 | Cached Σ verified, non-void allocations |
+| `status` | varchar(20) | not null, default: 'unpaid' | Cached derived status: `unpaid`, `partially_paid`, `paid`, `waived`, `cancelled` |
+| `due_date` | date | not null | |
+| `cancelled_at` | timestamp | nullable | |
+| `cancel_reason` | varchar(255) | nullable | |
+| `created_at` / `updated_at` | timestamp | nullable | |
+
+**Indexes:** `UNIQUE (student_id, fee_type_id, period_key)`, `INDEX (student_id, status)`, `INDEX (academic_year_id, due_date, status)`
+
+### 4. `payments` Table
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | |
+| `receipt_number` | varchar(30) | nullable, unique | Assigned on verification |
+| `amount` | decimal(12,2) | not null | Total money received |
 | `payment_method` | varchar(20) | not null | Enum: `cash`, `bank_transfer` |
-| `payment_proof_path` | varchar(255) | nullable | Path to uploaded bank transfer receipt |
-| `payment_date` | date | not null | Date payment occurred |
-| `status` | varchar(30) | not null, default: 'pending' | Enum: `pending`, `verified`, `rejected` |
-| `reject_reason` | text | nullable | Reason if rejected by cashier |
-| `notes` | varchar(255) | nullable | Bank account origin or cashier notes |
-| `submitted_by_user_id` | bigint | unsigned, nullable | User who initiated / uploaded payment |
-| `verified_by_user_id` | bigint | unsigned, nullable | Staff member who verified transaction |
-| `verified_at` | timestamp | nullable | Timestamp of verification |
-| `created_at` | timestamp | nullable | |
-| `updated_at` | timestamp | nullable | |
+| `payment_date` | date | not null | Cash date or stated transfer date |
+| `origin_bank` | varchar(100) | nullable | Transfer origin |
+| `proof_path` | varchar(255) | nullable | Private storage |
+| `proof_hash` | char(64) | nullable | SHA-256 of proof file |
+| `status` | varchar(20) | not null, default: 'pending' | Enum: `pending`, `verified`, `rejected`, `void` |
+| `reject_reason` | varchar(255) | nullable | |
+| `void_reason` | varchar(255) | nullable | |
+| `notes` | varchar(255) | nullable | |
+| `submitted_by_user_id` | bigint | unsigned, not null | Guardian (transfer) or cashier (cash) |
+| `verified_by_user_id` | bigint | unsigned, nullable | |
+| `verified_at` | timestamp | nullable | |
+| `voided_by_user_id` | bigint | unsigned, nullable | |
+| `voided_at` | timestamp | nullable | |
+| `created_at` / `updated_at` | timestamp | nullable | |
 
-**Indexes:**
-- `UNIQUE (payment_number)`
-- `INDEX (bill_id, status)`
-- `INDEX (payment_date, status)`
+**Indexes:** `UNIQUE (receipt_number)`, `INDEX (status, created_at)`, `INDEX (verified_at)`, `INDEX (voided_at)`, `INDEX (proof_hash)`
+
+### 5. `payment_allocations` Table
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `id` | bigint | unsigned, primary key | |
+| `payment_id` | bigint | unsigned, not null | FK -> `payments.id` |
+| `bill_id` | bigint | unsigned, not null | FK -> `bills.id` |
+| `amount` | decimal(12,2) | not null | > 0 |
+| `created_at` | timestamp | nullable | |
+
+**Indexes:** `UNIQUE (payment_id, bill_id)`, `INDEX (bill_id)`
+
+### 6. `receipt_sequences` Table
+
+| Column | Type | Modifiers | Description |
+|---|---|---|---|
+| `period` | char(6) | primary key | `YYYYMM` |
+| `last_number` | integer | unsigned, not null | Last issued sequence |
 
 ## Acceptance Criteria
 
-- **AC-14-01**: Given an active student, generating SPP for September 2026 with amount Rp 350.000 creates a bill with `amount = 350000.00`, `paid_amount = 0.00`, and `status = 'unpaid'`.
-- **AC-14-02**: Attempting to generate a duplicate bill for the same student, same fee type, and same month/year is detected and skipped without duplicating rows.
-- **AC-14-03**: When a cashier enters a cash payment of Rp 350.000 against an unpaid bill of Rp 350.000, a payment record is created with `status = 'verified'`, the bill status updates immediately to `paid`, and a unique receipt number `KWT-YYYYMM-XXXXX` is generated.
-- **AC-14-04**: When a guardian uploads a transfer receipt via `/parent/children/{id}/fees`, a payment record is created with `status = 'pending'`, and the bill displays status `pending_verification`.
-- **AC-14-05**: When the cashier rejects a pending payment with note "Nominal transfer kurang Rp 50.000", the payment status becomes `rejected`, the bill status reverts to `unpaid`, and the guardian sees the rejection note.
-- **AC-14-06**: When a cashier verifies a partial payment of Rp 200.000 on a Rp 500.000 bill, the bill's `paid_amount` becomes `200000.00` and its status becomes `partially_paid`.
-- **AC-14-07**: A parent attempting to view fee bills or payment receipts belonging to an unlinked student receives HTTP 403 Forbidden.
-- **AC-14-08**: A classroom teacher attempting to access `/admin/fees` or student financial records receives HTTP 403 Forbidden.
+- **AC-14-01**: Generating SPP for September 2026 at Rp 350.000 creates a bill with `period_key = '2026-09'`, `amount = 350000.00`, `paid_amount = 0.00`, `status = 'unpaid'`.
+- **AC-14-02**: Re-running the same generation creates zero new bills and reports them as skipped.
+- **AC-14-03**: A student with a 50% SPP scholarship gets `discount_amount = 175000.00`; a full scholarship results in `status = 'waived'`.
+- **AC-14-04**: A cash payment of Rp 700.000 allocated to two siblings' September SPP bills creates one `verified` payment, two allocations, both bills `paid`, and one receipt `KWT-YYYYMM-NNNNN` listing both children.
+- **AC-14-05**: Allocations not summing to the payment amount, or exceeding a bill's remaining balance, return HTTP 422.
+- **AC-14-06**: A guardian's transfer upload creates a `pending` payment; the bill keeps `status = 'unpaid'` and shows the "menunggu verifikasi" flag.
+- **AC-14-07**: Rejecting a pending transfer on a bill that already had Rp 200.000 verified leaves the bill `partially_paid` with `paid_amount = 200000.00`.
+- **AC-14-08**: Voiding a verified Rp 350.000 payment without a reason returns HTTP 422. With a reason, the bill returns to `unpaid`, an audit row is written, and the cash book shows −350.000 on the void date while the original day's total is unchanged.
+- **AC-14-09**: Two cashiers verifying simultaneously receive distinct consecutive receipt numbers.
+- **AC-14-10**: Verifying a transfer whose proof hash matches another non-rejected payment shows a duplicate warning.
+- **AC-14-11**: When a student's enrollment is closed on 2026-11-15 without a successor, unpaid zero-payment SPP bills for 2026-12 onward become `cancelled`; a partially paid bill is listed for review instead.
+- **AC-14-12**: A guardian requesting bills of an unlinked student receives HTTP 403; a teacher requesting `/admin/fees` receives HTTP 403; a principal can view reports but recording a payment returns HTTP 403.
 
 ## Constraints & Assumptions
 
-- Currency format: Indonesian Rupiah (IDR / Rp) formatted with standard punctuation (e.g. `Rp 350.000,00`).
-- Database precision: `decimal(12,2)` supports transactions up to Rp 9.999.999.999,99.
-- Cashier receipt serial numbers reset or serialize monotonically (e.g. `KWT-{YYYYMM}-{00001}`).
+- Currency IDR, displayed as `Rp 350.000`; `decimal(12,2)`.
+- Requires spec 15 (`finance` role, school profile, audit log).
+- PDF library shared with spec 11 — **new dependency, requires approval**.
 
 ## Open Questions
 
-- `[NEEDS DECISION: WhatsApp Payment Reminders]`: Should the automated notification engine (spec 05) send a WhatsApp bill reminder to guardians 3 days before `due_date`? (Recommended for v1.1; v1 provides portal dashboard warnings).
-- `[NEEDS DECISION: Automated QRIS Payment in v1.x]`: When the school registers an official bank/payment gateway account (e.g. Midtrans or BCA QRIS), dynamic QRIS codes can be rendered directly inside the parent payment modal for instant settlement without manual verification.
+- `[NEEDS DECISION: WhatsApp payment reminders]`: Remind guardians N days before `due_date` via spec 05 infrastructure? Depends on AUDIT S-07 / F-04 and messaging cost.
+- `[NEEDS DECISION: Per-grade SPP amounts]`: v1 sets the amount per generation run (run once per grade level when amounts differ). A per-grade amount table is a v1.x candidate if this proves error-prone.
