@@ -105,7 +105,7 @@ class UserController extends Controller
             $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'User created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('users.toast.created')]);
 
         return to_route('users.index');
     }
@@ -176,7 +176,7 @@ class UserController extends Controller
             $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'User updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('users.toast.updated')]);
 
         return to_route('users.edit', $user);
     }
@@ -188,7 +188,7 @@ class UserController extends Controller
     {
         $user->update(['password' => $request->string('password')->toString()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Password updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('users.toast.password_updated')]);
 
         return to_route('users.edit', $user);
     }

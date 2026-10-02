@@ -27,6 +27,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $password
  * @property-read UserRole $role
  * @property bool $is_active
+ * @property string|null $locale
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -37,7 +38,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Guardian|null $guardian
  * @property-read Student|null $student
  */
-#[Fillable(['username', 'email', 'password', 'is_active'])]
+#[Fillable(['username', 'email', 'password', 'is_active', 'locale'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {

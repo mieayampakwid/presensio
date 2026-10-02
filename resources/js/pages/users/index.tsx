@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 
 type UserRow = {
     id: number;
@@ -29,20 +30,22 @@ type Props = {
 };
 
 export default function UsersIndex({ users, filters }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Users" />
+            <Head title={t('users.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Users"
-                        description="Provisioned accounts for all roles."
+                        title={t('users.index.title')}
+                        description={t('users.index.description')}
                     />
 
                     <Button asChild>
                         <Link href={UserController.create().url}>
-                            Create user
+                            {t('users.index.create')}
                         </Link>
                     </Button>
                 </div>
@@ -51,7 +54,7 @@ export default function UsersIndex({ users, filters }: Props) {
                     <Input
                         name="search"
                         defaultValue={filters.search}
-                        placeholder="Search by username or email…"
+                        placeholder={t('users.index.search_placeholder')}
                     />
                 </form>
 
@@ -60,16 +63,16 @@ export default function UsersIndex({ users, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Username
+                                    {t('users.index.columns.username')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Email
+                                    {t('users.index.columns.email')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Roles
+                                    {t('users.index.columns.roles')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('users.index.columns.status')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -95,7 +98,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                                     variant="outline"
                                                     className="capitalize"
                                                 >
-                                                    {role}
+                                                    {t(`roles.${role}`)}
                                                 </Badge>
                                             ))}
                                         </div>
@@ -109,8 +112,8 @@ export default function UsersIndex({ users, filters }: Props) {
                                             }
                                         >
                                             {user.is_active
-                                                ? 'Active'
-                                                : 'Inactive'}
+                                                ? t('users.status.active')
+                                                : t('users.status.inactive')}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-3 text-right">
@@ -128,7 +131,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit
+                                                    {t('common.edit')}
                                                 </span>
                                             </Link>
                                         </Button>
@@ -142,7 +145,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                         colSpan={5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No users found.
+                                        {t('users.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -152,7 +155,10 @@ export default function UsersIndex({ users, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {users.current_page} of {users.last_page}
+                        {t('common.page_of', {
+                            current: users.current_page,
+                            last: users.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -164,7 +170,7 @@ export default function UsersIndex({ users, filters }: Props) {
                         >
                             <Link href={users.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -174,7 +180,7 @@ export default function UsersIndex({ users, filters }: Props) {
                             disabled={!users.next_page_url}
                         >
                             <Link href={users.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>

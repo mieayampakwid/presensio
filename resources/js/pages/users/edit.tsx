@@ -2,6 +2,7 @@ import { AuditHistory, type AuditLogEntry } from '@/components/audit-history';
 import { Form, Head } from '@inertiajs/react';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -40,19 +41,21 @@ export default function EditUser({
     current_profile_ids,
     audit_logs,
 }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title={`Edit ${user.username}`} />
+            <Head title={t('users.edit.head', { username: user.username })} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Edit user"
-                    description="Account credentials and role. Deactivate instead of deleting."
+                    title={t('users.edit.title')}
+                    description={t('users.edit.description')}
                 />
 
                 <UserForm
                     action={UserController.update.form({ user: user.id })}
-                    submitLabel="Save changes"
+                    submitLabel={t('users.edit.submit')}
                     defaults={{
                         username: user.username,
                         email: user.email,
@@ -66,7 +69,10 @@ export default function EditUser({
                     showActive
                 />
 
-                <Heading variant="small" title="Reset password" />
+                <Heading
+                    variant="small"
+                    title={t('users.reset_password.title')}
+                />
 
                 <Form
                     {...UserController.updatePassword.form({ user: user.id })}
@@ -76,13 +82,17 @@ export default function EditUser({
                     {({ processing, errors }) => (
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                                <Label htmlFor="password">
+                                    {t('users.reset_password.label')}
+                                </Label>
                                 <PasswordInput
                                     id="password"
                                     name="password"
                                     required
                                     autoComplete="new-password"
-                                    placeholder="New password"
+                                    placeholder={t(
+                                        'users.reset_password.placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -93,7 +103,7 @@ export default function EditUser({
                                 disabled={processing}
                             >
                                 {processing && <Spinner />}
-                                Reset password
+                                {t('users.reset_password.submit')}
                             </Button>
                         </div>
                     )}

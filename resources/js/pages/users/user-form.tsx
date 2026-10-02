@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 import { UserRole } from '@/types';
 
 type ProfileOption = { id: number; label: string };
@@ -41,15 +42,15 @@ type UserFormProps = {
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
-const ALL_ROLES: { value: UserRole; label: string }[] = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'principal', label: 'Principal' },
-    { value: 'teacher', label: 'Teacher' },
-    { value: 'counselor', label: 'Counselor' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'staff', label: 'Staff' },
-    { value: 'parent', label: 'Parent' },
-    { value: 'student', label: 'Student' },
+const ALL_ROLES: UserRole[] = [
+    'admin',
+    'principal',
+    'teacher',
+    'counselor',
+    'finance',
+    'staff',
+    'parent',
+    'student',
 ];
 
 export default function UserForm({
@@ -61,6 +62,8 @@ export default function UserForm({
     showPassword,
     showActive,
 }: UserFormProps) {
+    const { t } = useTranslation();
+
     const initialRoles: UserRole[] =
         defaults.roles && defaults.roles.length > 0
             ? defaults.roles
@@ -127,7 +130,9 @@ export default function UserForm({
             {({ processing, errors }) => (
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="username">Username</Label>
+                        <Label htmlFor="username">
+                            {t('users.form.username')}
+                        </Label>
                         <Input
                             id="username"
                             name="username"
@@ -135,13 +140,13 @@ export default function UserForm({
                             required
                             autoFocus
                             autoComplete="off"
-                            placeholder="NIS / NIP / NIK"
+                            placeholder={t('users.form.username_placeholder')}
                         />
                         <InputError message={errors.username} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email (optional)</Label>
+                        <Label htmlFor="email">{t('users.form.email')}</Label>
                         <Input
                             id="email"
                             type="email"
@@ -154,22 +159,22 @@ export default function UserForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Roles</Label>
+                        <Label>{t('users.form.roles')}</Label>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            {ALL_ROLES.map((r) => (
+                            {ALL_ROLES.map((role) => (
                                 <label
-                                    key={r.value}
+                                    key={role}
                                     className="flex cursor-pointer items-center gap-2 text-sm font-normal"
                                 >
                                     <input
                                         type="checkbox"
                                         name="roles[]"
-                                        value={r.value}
-                                        checked={roles.includes(r.value)}
-                                        onChange={() => toggleRole(r.value)}
+                                        value={role}
+                                        checked={roles.includes(role)}
+                                        onChange={() => toggleRole(role)}
                                         className="text-primary focus:ring-primary size-4 rounded border-gray-300"
                                     />
-                                    <span>{r.label}</span>
+                                    <span>{t(`roles.${role}`)}</span>
                                 </label>
                             ))}
                         </div>
@@ -184,7 +189,9 @@ export default function UserForm({
                     {activeProfileRole && (
                         <div className="grid gap-2">
                             <Label htmlFor="profile_id">
-                                Linked {activeProfileRole} profile
+                                {t('users.form.linked_profile', {
+                                    role: t(`roles.${activeProfileRole}`),
+                                })}
                             </Label>
                             <select
                                 id="profile_id"
@@ -195,7 +202,9 @@ export default function UserForm({
                                 }
                                 className={SELECT_CLASS}
                             >
-                                <option value="">Not linked</option>
+                                <option value="">
+                                    {t('users.form.not_linked')}
+                                </option>
                                 {profileOptions.map((profile) => (
                                     <option key={profile.id} value={profile.id}>
                                         {profile.label}
@@ -217,20 +226,26 @@ export default function UserForm({
                                 defaultChecked={defaults.is_active ?? true}
                                 className="border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                             />
-                            <Label htmlFor="is_active">Active</Label>
+                            <Label htmlFor="is_active">
+                                {t('users.form.active')}
+                            </Label>
                             <InputError message={errors.is_active} />
                         </div>
                     )}
 
                     {showPassword && (
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">
+                                {t('users.form.password')}
+                            </Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 required
                                 autoComplete="new-password"
-                                placeholder="Password"
+                                placeholder={t(
+                                    'users.form.password_placeholder',
+                                )}
                             />
                             <InputError message={errors.password} />
                         </div>
