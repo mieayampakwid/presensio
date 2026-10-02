@@ -54,8 +54,10 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
     const handleFilter = (e: React.FormEvent) => {
         e.preventDefault();
         const query: Record<string, string> = {};
-        if (filterForm.auditable_type) query.auditable_type = filterForm.auditable_type;
-        if (filterForm.auditable_id) query.auditable_id = String(filterForm.auditable_id);
+        if (filterForm.auditable_type)
+            query.auditable_type = filterForm.auditable_type;
+        if (filterForm.auditable_id)
+            query.auditable_id = String(filterForm.auditable_id);
         if (filterForm.user_id) query.user_id = String(filterForm.user_id);
         if (filterForm.from) query.from = filterForm.from;
         if (filterForm.to) query.to = filterForm.to;
@@ -89,56 +91,99 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     description="Append-only record of academic, administrative, and financial mutations."
                 />
 
-                <form onSubmit={handleFilter} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg bg-card">
+                <form
+                    onSubmit={handleFilter}
+                    className="bg-card grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-5"
+                >
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-1">Entity Type</label>
+                        <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                            Entity Type
+                        </label>
                         <Input
                             placeholder="e.g. User"
                             value={filterForm.auditable_type}
-                            onChange={(e) => setFilterForm({ ...filterForm, auditable_type: e.target.value })}
+                            onChange={(e) =>
+                                setFilterForm({
+                                    ...filterForm,
+                                    auditable_type: e.target.value,
+                                })
+                            }
                             className="text-xs"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-1">Entity ID</label>
+                        <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                            Entity ID
+                        </label>
                         <Input
                             type="number"
                             placeholder="e.g. 1"
                             value={filterForm.auditable_id}
-                            onChange={(e) => setFilterForm({ ...filterForm, auditable_id: e.target.value })}
+                            onChange={(e) =>
+                                setFilterForm({
+                                    ...filterForm,
+                                    auditable_id: e.target.value,
+                                })
+                            }
                             className="text-xs"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-1">User ID</label>
+                        <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                            User ID
+                        </label>
                         <Input
                             type="number"
                             placeholder="e.g. 1"
                             value={filterForm.user_id}
-                            onChange={(e) => setFilterForm({ ...filterForm, user_id: e.target.value })}
+                            onChange={(e) =>
+                                setFilterForm({
+                                    ...filterForm,
+                                    user_id: e.target.value,
+                                })
+                            }
                             className="text-xs"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-1">From Date</label>
+                        <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                            From Date
+                        </label>
                         <Input
                             type="date"
                             value={filterForm.from}
-                            onChange={(e) => setFilterForm({ ...filterForm, from: e.target.value })}
+                            onChange={(e) =>
+                                setFilterForm({
+                                    ...filterForm,
+                                    from: e.target.value,
+                                })
+                            }
                             className="text-xs"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-1">To Date</label>
+                        <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                            To Date
+                        </label>
                         <Input
                             type="date"
                             value={filterForm.to}
-                            onChange={(e) => setFilterForm({ ...filterForm, to: e.target.value })}
+                            onChange={(e) =>
+                                setFilterForm({
+                                    ...filterForm,
+                                    to: e.target.value,
+                                })
+                            }
                             className="text-xs"
                         />
                     </div>
-                    <div className="md:col-span-5 flex justify-end gap-2 mt-2">
-                        <Button type="button" variant="outline" size="sm" onClick={handleReset}>
+                    <div className="mt-2 flex justify-end gap-2 md:col-span-5">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleReset}
+                        >
                             Reset
                         </Button>
                         <Button type="submit" size="sm" className="gap-1.5">
@@ -152,59 +197,103 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
-                                <th className="px-4 py-3 text-left font-medium">Timestamp</th>
-                                <th className="px-4 py-3 text-left font-medium">Actor</th>
-                                <th className="px-4 py-3 text-left font-medium">Action</th>
-                                <th className="px-4 py-3 text-left font-medium">Target</th>
-                                <th className="px-4 py-3 text-left font-medium">Changes</th>
-                                <th className="px-4 py-3 text-left font-medium">Reason / IP</th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Timestamp
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Actor
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Action
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Target
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Changes
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Reason / IP
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {logs.data.map((log) => (
-                                <tr key={log.id} className="border-t hover:bg-muted/20">
+                                <tr
+                                    key={log.id}
+                                    className="hover:bg-muted/20 border-t"
+                                >
                                     <td className="px-4 py-3 text-xs whitespace-nowrap">
-                                        {new Date(log.created_at).toLocaleString()}
+                                        {new Date(
+                                            log.created_at,
+                                        ).toLocaleString()}
                                     </td>
                                     <td className="px-4 py-3 font-medium">
-                                        {log.user ? log.user.username : <span className="text-muted-foreground italic">System</span>}
+                                        {log.user ? (
+                                            log.user.username
+                                        ) : (
+                                            <span className="text-muted-foreground italic">
+                                                System
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <Badge variant="outline" className="capitalize text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs capitalize"
+                                        >
                                             {log.action}
                                         </Badge>
                                     </td>
-                                    <td className="px-4 py-3 text-xs font-mono">
-                                        {shortType(log.auditable_type)} #{log.auditable_id}
+                                    <td className="px-4 py-3 font-mono text-xs">
+                                        {shortType(log.auditable_type)} #
+                                        {log.auditable_id}
                                     </td>
-                                    <td className="px-4 py-3 text-xs max-w-xs">
-                                        {(log.old_values || log.new_values) ? (
-                                            <div className="space-y-1 font-mono text-[11px] bg-muted/60 p-1.5 rounded">
+                                    <td className="max-w-xs px-4 py-3 text-xs">
+                                        {log.old_values || log.new_values ? (
+                                            <div className="bg-muted/60 space-y-1 rounded p-1.5 font-mono text-[11px]">
                                                 {log.old_values && (
                                                     <div className="text-destructive truncate">
-                                                        - {JSON.stringify(log.old_values)}
+                                                        -{' '}
+                                                        {JSON.stringify(
+                                                            log.old_values,
+                                                        )}
                                                     </div>
                                                 )}
                                                 {log.new_values && (
-                                                    <div className="text-green-600 truncate">
-                                                        + {JSON.stringify(log.new_values)}
+                                                    <div className="truncate text-green-600">
+                                                        +{' '}
+                                                        {JSON.stringify(
+                                                            log.new_values,
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <span className="text-muted-foreground">—</span>
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                                        {log.reason && <p className="font-medium text-foreground">"{log.reason}"</p>}
-                                        {log.ip_address && <p>{log.ip_address}</p>}
+                                    <td className="text-muted-foreground px-4 py-3 text-xs">
+                                        {log.reason && (
+                                            <p className="text-foreground font-medium">
+                                                "{log.reason}"
+                                            </p>
+                                        )}
+                                        {log.ip_address && (
+                                            <p>{log.ip_address}</p>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
 
                             {logs.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                                    <td
+                                        colSpan={6}
+                                        className="text-muted-foreground px-4 py-8 text-center"
+                                    >
                                         No audit log entries found.
                                     </td>
                                 </tr>
@@ -213,32 +302,35 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     </table>
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-between text-sm">
                     <span>
-                        Page {logs.current_page} of {logs.last_page} ({logs.total} entries)
+                        Page {logs.current_page} of {logs.last_page} (
+                        {logs.total} entries)
                     </span>
                     <div className="flex gap-2">
                         {logs.prev_page_url ? (
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={logs.prev_page_url} preserveState>
-                                    <ChevronLeft className="size-4 mr-1" /> Previous
+                                    <ChevronLeft className="mr-1 size-4" />{' '}
+                                    Previous
                                 </Link>
                             </Button>
                         ) : (
                             <Button variant="outline" size="sm" disabled>
-                                <ChevronLeft className="size-4 mr-1" /> Previous
+                                <ChevronLeft className="mr-1 size-4" /> Previous
                             </Button>
                         )}
 
                         {logs.next_page_url ? (
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={logs.next_page_url} preserveState>
-                                    Next <ChevronRight className="size-4 ml-1" />
+                                    Next{' '}
+                                    <ChevronRight className="ml-1 size-4" />
                                 </Link>
                             </Button>
                         ) : (
                             <Button variant="outline" size="sm" disabled>
-                                <ChevronRight className="size-4 ml-1" /> Next
+                                <ChevronRight className="ml-1 size-4" /> Next
                             </Button>
                         )}
                     </div>

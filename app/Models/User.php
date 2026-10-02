@@ -8,6 +8,7 @@ use App\Notifications\ResetPassword;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -24,7 +25,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $username
  * @property string|null $email
  * @property string $password
- * @property UserRole $role
+ * @property-read UserRole $role
  * @property bool $is_active
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -32,8 +33,11 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Teacher|null $teacher
+ * @property-read Guardian|null $guardian
+ * @property-read Student|null $student
  */
-#[Fillable(['username', 'email', 'password', 'role', 'is_active'])]
+#[Fillable(['username', 'email', 'password', 'is_active'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -49,7 +53,6 @@ class User extends Authenticatable implements PasskeyUser
     {
         return [
             'password' => 'hashed',
-            'role' => UserRole::class,
             'is_active' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
         ];
@@ -64,25 +67,26 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * @return Collection<int, UserRole>
      */
+    /**
+     * @deprecated Use activeRole() or hasRole()
+     *
+     * @return Attribute<UserRole, never>
+     */
+    public function role(): Attribute
+    {
+        return Attribute::get(fn (): UserRole => $this->activeRole());
+    }
+
+    /**
+     * @return Collection<int, UserRole>
+     */
     public function roles(): Collection
     {
         $held = $this->roleGrants->pluck('role');
 
-        if ($held->isEmpty()) {
-            $directRole = $this->getAttribute('role');
-            if ($directRole instanceof UserRole) {
-                $held = collect([$directRole]);
-            } elseif (is_string($directRole) && $directRole !== '') {
-                $roleEnum = UserRole::tryFrom($directRole);
-                if ($roleEnum !== null) {
-                    $held = collect([$roleEnum]);
-                }
-            }
-        }
-
         $order = array_flip(array_map(fn (UserRole $case) => $case->value, UserRole::cases()));
 
-        return $held->unique()->sortBy(fn (UserRole $role) => $order[$role->value] ?? 99)->values();
+        return $held->unique()->sortBy(fn (UserRole $role) => $order[$role->value])->values();
     }
 
     public function hasRole(UserRole $role): bool
@@ -161,8 +165,16 @@ class User extends Authenticatable implements PasskeyUser
      */
     public function passwordResetContact(): ?string
     {
-        return $this->teacher?->phone_number
-            ?? $this->guardian?->phone_number
-            ?? $this->email;
+        $teacher = $this->teacher;
+        if ($teacher instanceof Teacher && $teacher->phone_number !== null) {
+            return $teacher->phone_number;
+        }
+
+        $guardian = $this->guardian;
+        if ($guardian instanceof Guardian) {
+            return $guardian->phone_number;
+        }
+
+        return $this->email;
     }
 }

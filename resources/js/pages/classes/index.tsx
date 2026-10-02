@@ -120,10 +120,7 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                         </thead>
                         <tbody>
                             {classes.data.map((schoolClass) => (
-                                <tr
-                                    key={schoolClass.id}
-                                    className="border-t"
-                                >
+                                <tr key={schoolClass.id} className="border-t">
                                     <td className="px-4 py-3 font-medium">
                                         {schoolClass.name}
                                     </td>
@@ -138,12 +135,14 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={SchoolClassController.edit(
-                                                        {
-                                                            school_class:
-                                                                schoolClass.id,
-                                                        },
-                                                    ).url}
+                                                    href={
+                                                        SchoolClassController.edit(
+                                                            {
+                                                                school_class:
+                                                                    schoolClass.id,
+                                                            },
+                                                        ).url
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -170,8 +169,8 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                                         Delete class
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want
-                                                        to delete "
+                                                        Are you sure you want to
+                                                        delete "
                                                         {schoolClass.name}"?
                                                         Classes with enrolled
                                                         students cannot be

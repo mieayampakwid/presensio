@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Reports;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\Attendance\ClassAccess;
@@ -96,8 +97,8 @@ class StudentReportController extends Controller
         }
 
         if ($user->hasRole(UserRole::Teacher)) {
-            $class = $student->currentEnrollment?->schoolClass;
-            $classId = $class?->id ?? $student->class_id;
+            $enrollment = $student->currentEnrollment;
+            $classId = $enrollment instanceof Enrollment ? $enrollment->class_id : $student->class_id;
             if ($classId !== null && ClassAccess::canAccess($user, $classId)) {
                 return true;
             }
@@ -122,7 +123,7 @@ class StudentReportController extends Controller
      * The picker options per role — the student role always sees self
      * only, so the page hides the selector for them.
      *
-     * @return Collection<int, array{id: int, full_name: string, student_number: string|null}>
+     * @return Collection<int, Student>
      */
     private function selectableStudents(User $user): Collection
     {
@@ -150,11 +151,7 @@ class StudentReportController extends Controller
         }
 
         if ($user->hasRole(UserRole::Student) && $user->student) {
-            $students->push([
-                'id' => $user->student->id,
-                'full_name' => $user->student->full_name,
-                'student_number' => $user->student->student_number,
-            ]);
+            $students->push($user->student);
         }
 
         return $students->unique('id')->values();

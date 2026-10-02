@@ -187,7 +187,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                             ? (STATUS_BADGES[
                                                                   day.status
                                                               ]?.label ??
-                                                                  day.status)
+                                                              day.status)
                                                             : 'No record'
                                                     }`}
                                                 >
@@ -195,8 +195,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                         variant={
                                                             day.status
                                                                 ? (STATUS_BADGES[
-                                                                      day
-                                                                          .status
+                                                                      day.status
                                                                   ]?.variant ??
                                                                   'secondary')
                                                                 : 'outline'

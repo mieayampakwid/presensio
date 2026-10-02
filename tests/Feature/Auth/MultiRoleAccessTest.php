@@ -45,9 +45,7 @@ class MultiRoleAccessTest extends TestCase
         $guardian = Guardian::factory()->create();
         $guardian->students()->attach($child->id, ['relationship_type' => 'parent']);
 
-        $user = User::factory()->create([
-            'role' => UserRole::Teacher,
-        ]);
+        $user = User::factory()->teacher()->create();
         $user->roleGrants()->create(['role' => UserRole::Parent]);
 
         $teacher->update(['user_id' => $user->id]);
@@ -149,9 +147,7 @@ class MultiRoleAccessTest extends TestCase
             'ended_on' => null,
         ]);
 
-        $principal = User::factory()->create([
-            'role' => UserRole::Principal,
-        ]);
+        $principal = User::factory()->principal()->create();
 
         // Principal write attempts are rejected (403)
         $this->actingAs($principal)->put(route('attendance.record.update'), [
@@ -178,9 +174,7 @@ class MultiRoleAccessTest extends TestCase
      */
     public function test_finance_cannot_enter_grades(): void
     {
-        $finance = User::factory()->create([
-            'role' => UserRole::Finance,
-        ]);
+        $finance = User::factory()->finance()->create();
 
         $this->assertFalse(Gate::forUser($finance)->allows(Ability::EnterGrades->value));
     }
@@ -191,9 +185,8 @@ class MultiRoleAccessTest extends TestCase
      */
     public function test_password_reset_contact_lookup_prefers_teacher_then_guardian_then_email(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->teacher()->create([
             'email' => 'user@presensio.test',
-            'role' => UserRole::Teacher,
         ]);
         $user->roleGrants()->create(['role' => UserRole::Parent]);
 

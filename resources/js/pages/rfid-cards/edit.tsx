@@ -37,7 +37,9 @@ export default function EditCard({ card, students }: Props) {
                     submitLabel="Save changes"
                     defaults={{
                         rfidNumber: card.rfid_number,
-                        studentId: card.student_id ? String(card.student_id) : '',
+                        studentId: card.student_id
+                            ? String(card.student_id)
+                            : '',
                     }}
                     students={students}
                 />

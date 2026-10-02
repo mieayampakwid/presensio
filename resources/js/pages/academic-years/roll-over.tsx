@@ -111,10 +111,7 @@ export default function AcademicYearsRollOver({
         );
     };
 
-    const setMapping = (
-        classId: number,
-        patch: Partial<Mapping>,
-    ) => {
+    const setMapping = (classId: number, patch: Partial<Mapping>) => {
         setMappings((current) => ({
             ...current,
             [classId]: { ...current[classId], ...patch },
@@ -136,7 +133,9 @@ export default function AcademicYearsRollOver({
                         description={`Promote ${source.name} rosters into the target year — the target becomes the active year.`}
                     />
                     <Button variant="outline" asChild>
-                        <Link href={AcademicYearController.index().url}>Back</Link>
+                        <Link href={AcademicYearController.index().url}>
+                            Back
+                        </Link>
                     </Button>
                 </div>
 
@@ -144,8 +143,8 @@ export default function AcademicYearsRollOver({
                     <Alert>
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription>
-                            The selected target year already has enrollments — it was
-                            promoted before. Applying again does nothing.
+                            The selected target year already has enrollments —
+                            it was promoted before. Applying again does nothing.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -157,11 +156,14 @@ export default function AcademicYearsRollOver({
                             id="target_year_id"
                             defaultValue={target_year_id ?? ''}
                             className={`${SELECT_CLASS} w-72`}
-                            onChange={(event) => changeTargetYear(event.target.value)}
+                            onChange={(event) =>
+                                changeTargetYear(event.target.value)
+                            }
                         >
                             {target_years.map((year) => (
                                 <option key={year.id} value={year.id}>
-                                    {year.name} ({year.starts_at} — {year.ends_at})
+                                    {year.name} ({year.starts_at} —{' '}
+                                    {year.ends_at})
                                 </option>
                             ))}
                         </select>
@@ -182,12 +184,16 @@ export default function AcademicYearsRollOver({
                                 />
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="effective_on">Effective on</Label>
+                                    <Label htmlFor="effective_on">
+                                        Effective on
+                                    </Label>
                                     <Input
                                         id="effective_on"
                                         type="date"
                                         name="effective_on"
-                                        defaultValue={targetYear?.starts_at ?? ''}
+                                        defaultValue={
+                                            targetYear?.starts_at ?? ''
+                                        }
                                         className="w-56"
                                     />
                                     <InputError message={errors.effective_on} />
@@ -212,140 +218,193 @@ export default function AcademicYearsRollOver({
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {source_classes.map((schoolClass) => {
-                                                const mapping =
-                                                    mappings[schoolClass.id] ??
-                                                    ({
-                                                        mode: 'existing',
-                                                        target_class_id: '',
-                                                        new_name: schoolClass.name,
-                                                        new_teacher_id: '',
-                                                    } satisfies Mapping);
+                                            {source_classes.map(
+                                                (schoolClass) => {
+                                                    const mapping =
+                                                        mappings[
+                                                            schoolClass.id
+                                                        ] ??
+                                                        ({
+                                                            mode: 'existing',
+                                                            target_class_id: '',
+                                                            new_name:
+                                                                schoolClass.name,
+                                                            new_teacher_id: '',
+                                                        } satisfies Mapping);
 
-                                                return (
-                                                    <tr
-                                                        key={schoolClass.id}
-                                                        className="border-t"
-                                                    >
-                                                        <td className="px-4 py-3 font-medium">
-                                                            {schoolClass.name}
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            {schoolClass.students_count}
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            <select
-                                                                name={`mappings[${schoolClass.id}][mode]`}
-                                                                value={mapping.mode}
-                                                                onChange={(event) =>
-                                                                    setMapping(schoolClass.id, {
-                                                                        mode: event.target
-                                                                            .value as MappingMode,
-                                                                    })
+                                                    return (
+                                                        <tr
+                                                            key={schoolClass.id}
+                                                            className="border-t"
+                                                        >
+                                                            <td className="px-4 py-3 font-medium">
+                                                                {
+                                                                    schoolClass.name
                                                                 }
-                                                                className={`${SELECT_CLASS} w-56`}
-                                                            >
-                                                                <option value="existing">
-                                                                    Map to existing class
-                                                                </option>
-                                                                <option value="new">
-                                                                    Create new class
-                                                                </option>
-                                                                <option value="none">
-                                                                    No successor (alumni)
-                                                                </option>
-                                                            </select>
-                                                        </td>
-                                                        <td className="space-y-1 px-4 py-3">
-                                                            {mapping.mode === 'existing' && (
-                                                                <>
-                                                                    <select
-                                                                        name={`mappings[${schoolClass.id}][target_class_id]`}
-                                                                        value={
-                                                                            mapping.target_class_id
-                                                                        }
-                                                                        onChange={(event) =>
-                                                                            setMapping(
-                                                                                schoolClass.id,
-                                                                                {
-                                                                                    target_class_id:
-                                                                                        event
-                                                                                            .target
-                                                                                            .value,
-                                                                                },
-                                                                            )
-                                                                        }
-                                                                        className={`${SELECT_CLASS} w-56`}
-                                                                    >
-                                                                        <option value="">
-                                                                            Choose target class…
-                                                                        </option>
-                                                                        {target_classes.map(
-                                                                            (option) => (
-                                                                                <option
-                                                                                    key={option.id}
-                                                                                    value={option.id}
-                                                                                >
-                                                                                    {option.name}
-                                                                                </option>
-                                                                            ),
-                                                                        )}
-                                                                    </select>
-                                                                    <InputError
-                                                                        message={
-                                                                            errors[
-                                                                                `mappings.${schoolClass.id}.target_class_id`
-                                                                            ]
-                                                                        }
-                                                                    />
-                                                                </>
-                                                            )}
-                                                            {mapping.mode === 'new' && (
-                                                                <>
-                                                                    <Input
-                                                                        name={`mappings[${schoolClass.id}][new_name]`}
-                                                                        defaultValue={
-                                                                            mapping.new_name
-                                                                        }
-                                                                        placeholder="Class name in target year"
-                                                                        className="w-56"
-                                                                    />
-                                                                    <select
-                                                                        name={`mappings[${schoolClass.id}][new_teacher_id]`}
-                                                                        defaultValue={
-                                                                            mapping.new_teacher_id
-                                                                        }
-                                                                        className={`${SELECT_CLASS} w-56`}
-                                                                    >
-                                                                        <option value="">
-                                                                            Homeroom teacher (optional)
-                                                                        </option>
-                                                                        {teachers.map((teacher) => (
-                                                                            <option
-                                                                                key={teacher.id}
-                                                                                value={teacher.id}
-                                                                            >
-                                                                                {teacher.name}
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                {
+                                                                    schoolClass.students_count
+                                                                }
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <select
+                                                                    name={`mappings[${schoolClass.id}][mode]`}
+                                                                    value={
+                                                                        mapping.mode
+                                                                    }
+                                                                    onChange={(
+                                                                        event,
+                                                                    ) =>
+                                                                        setMapping(
+                                                                            schoolClass.id,
+                                                                            {
+                                                                                mode: event
+                                                                                    .target
+                                                                                    .value as MappingMode,
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                    className={`${SELECT_CLASS} w-56`}
+                                                                >
+                                                                    <option value="existing">
+                                                                        Map to
+                                                                        existing
+                                                                        class
+                                                                    </option>
+                                                                    <option value="new">
+                                                                        Create
+                                                                        new
+                                                                        class
+                                                                    </option>
+                                                                    <option value="none">
+                                                                        No
+                                                                        successor
+                                                                        (alumni)
+                                                                    </option>
+                                                                </select>
+                                                            </td>
+                                                            <td className="space-y-1 px-4 py-3">
+                                                                {mapping.mode ===
+                                                                    'existing' && (
+                                                                    <>
+                                                                        <select
+                                                                            name={`mappings[${schoolClass.id}][target_class_id]`}
+                                                                            value={
+                                                                                mapping.target_class_id
+                                                                            }
+                                                                            onChange={(
+                                                                                event,
+                                                                            ) =>
+                                                                                setMapping(
+                                                                                    schoolClass.id,
+                                                                                    {
+                                                                                        target_class_id:
+                                                                                            event
+                                                                                                .target
+                                                                                                .value,
+                                                                                    },
+                                                                                )
+                                                                            }
+                                                                            className={`${SELECT_CLASS} w-56`}
+                                                                        >
+                                                                            <option value="">
+                                                                                Choose
+                                                                                target
+                                                                                class…
                                                                             </option>
-                                                                        ))}
-                                                                    </select>
-                                                                </>
-                                                            )}
-                                                            {mapping.mode === 'none' && (
-                                                                <span className="text-muted-foreground text-xs">
-                                                                    {schoolClass.students_count}{' '}
-                                                                    student
-                                                                    {schoolClass.students_count ===
-                                                                    1
-                                                                        ? ''
-                                                                        : 's'}{' '}
-                                                                    become alumni
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
+                                                                            {target_classes.map(
+                                                                                (
+                                                                                    option,
+                                                                                ) => (
+                                                                                    <option
+                                                                                        key={
+                                                                                            option.id
+                                                                                        }
+                                                                                        value={
+                                                                                            option.id
+                                                                                        }
+                                                                                    >
+                                                                                        {
+                                                                                            option.name
+                                                                                        }
+                                                                                    </option>
+                                                                                ),
+                                                                            )}
+                                                                        </select>
+                                                                        <InputError
+                                                                            message={
+                                                                                errors[
+                                                                                    `mappings.${schoolClass.id}.target_class_id`
+                                                                                ]
+                                                                            }
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                                {mapping.mode ===
+                                                                    'new' && (
+                                                                    <>
+                                                                        <Input
+                                                                            name={`mappings[${schoolClass.id}][new_name]`}
+                                                                            defaultValue={
+                                                                                mapping.new_name
+                                                                            }
+                                                                            placeholder="Class name in target year"
+                                                                            className="w-56"
+                                                                        />
+                                                                        <select
+                                                                            name={`mappings[${schoolClass.id}][new_teacher_id]`}
+                                                                            defaultValue={
+                                                                                mapping.new_teacher_id
+                                                                            }
+                                                                            className={`${SELECT_CLASS} w-56`}
+                                                                        >
+                                                                            <option value="">
+                                                                                Homeroom
+                                                                                teacher
+                                                                                (optional)
+                                                                            </option>
+                                                                            {teachers.map(
+                                                                                (
+                                                                                    teacher,
+                                                                                ) => (
+                                                                                    <option
+                                                                                        key={
+                                                                                            teacher.id
+                                                                                        }
+                                                                                        value={
+                                                                                            teacher.id
+                                                                                        }
+                                                                                    >
+                                                                                        {
+                                                                                            teacher.name
+                                                                                        }
+                                                                                    </option>
+                                                                                ),
+                                                                            )}
+                                                                        </select>
+                                                                    </>
+                                                                )}
+                                                                {mapping.mode ===
+                                                                    'none' && (
+                                                                    <span className="text-muted-foreground text-xs">
+                                                                        {
+                                                                            schoolClass.students_count
+                                                                        }{' '}
+                                                                        student
+                                                                        {schoolClass.students_count ===
+                                                                        1
+                                                                            ? ''
+                                                                            : 's'}{' '}
+                                                                        become
+                                                                        alumni
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                },
+                                            )}
 
                                             {source_classes.length === 0 && (
                                                 <tr className="border-t">
@@ -353,7 +412,8 @@ export default function AcademicYearsRollOver({
                                                         colSpan={4}
                                                         className="text-muted-foreground px-4 py-8 text-center"
                                                     >
-                                                        No classes in the active year.
+                                                        No classes in the active
+                                                        year.
                                                     </td>
                                                 </tr>
                                             )}
@@ -363,12 +423,16 @@ export default function AcademicYearsRollOver({
 
                                 <div className="flex items-center justify-between gap-4">
                                     <p className="text-muted-foreground text-sm">
-                                        {mappedCount} of {source_classes.length} classes have a
-                                        successor — unmapped students stay in history as alumni.
+                                        {mappedCount} of {source_classes.length}{' '}
+                                        classes have a successor — unmapped
+                                        students stay in history as alumni.
                                     </p>
                                     <Button
                                         type="button"
-                                        disabled={processing || source_classes.length === 0}
+                                        disabled={
+                                            processing ||
+                                            source_classes.length === 0
+                                        }
                                         onClick={() => setConfirming(true)}
                                     >
                                         Apply roll-over
@@ -385,23 +449,35 @@ export default function AcademicYearsRollOver({
                                 >
                                     <DialogContent>
                                         <DialogHeader>
-                                            <DialogTitle>Apply roll-over?</DialogTitle>
+                                            <DialogTitle>
+                                                Apply roll-over?
+                                            </DialogTitle>
                                             <DialogDescription>
-                                                All {source.name} enrollments end the day before
-                                                the effective date, mapped students start in their
-                                                target classes, and{' '}
-                                                {targetYear?.name ?? 'the target year'} becomes
-                                                the active year. Historical reports keep last
+                                                All {source.name} enrollments
+                                                end the day before the effective
+                                                date, mapped students start in
+                                                their target classes, and{' '}
+                                                {targetYear?.name ??
+                                                    'the target year'}{' '}
+                                                becomes the active year.
+                                                Historical reports keep last
                                                 year's attribution.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <DialogFooter className="gap-2">
                                             <DialogClose asChild>
-                                                <Button variant="secondary" type="button">
+                                                <Button
+                                                    variant="secondary"
+                                                    type="button"
+                                                >
                                                     Cancel
                                                 </Button>
                                             </DialogClose>
-                                            <Button type="submit" form="roll-over-form" disabled={processing}>
+                                            <Button
+                                                type="submit"
+                                                form="roll-over-form"
+                                                disabled={processing}
+                                            >
                                                 Apply roll-over
                                             </Button>
                                         </DialogFooter>

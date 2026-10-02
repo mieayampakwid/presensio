@@ -12,11 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_roles', function (Blueprint $table) {
+        Schema::create('user_roles', function (Blueprint $table): void {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('role', 20)->index();
-            $table->timestamp('created_at')->nullable();
+            $table->string('role', 30);
+            $table->timestamp('created_at')->useCurrent();
+
             $table->primary(['user_id', 'role']);
+            $table->index(['role', 'user_id']);
         });
 
         self::backfill();
@@ -35,6 +37,10 @@ return new class extends Migration
      */
     public static function backfill(): void
     {
+        if (! Schema::hasColumn('users', 'role')) {
+            return;
+        }
+
         DB::table('user_roles')->insertUsing(
             ['user_id', 'role', 'created_at'],
             DB::table('users')->select('id', 'role', DB::raw('CURRENT_TIMESTAMP'))

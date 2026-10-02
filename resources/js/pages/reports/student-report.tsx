@@ -59,7 +59,7 @@ type Props = {
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
-const COUNT_CARDS: { key: keyof Counts; }[] = [
+const COUNT_CARDS: { key: keyof Counts }[] = [
     { key: 'present' },
     { key: 'late' },
     { key: 'absent' },
@@ -229,9 +229,7 @@ export default function StudentReport({
                                         id="include_excused"
                                         name="include_excused"
                                         value="1"
-                                        defaultChecked={
-                                            filters.include_excused
-                                        }
+                                        defaultChecked={filters.include_excused}
                                         onChange={submitFilters}
                                         className="accent-primary size-4"
                                     />
@@ -253,10 +251,7 @@ export default function StudentReport({
                                         <Card key={key}>
                                             <CardHeader className="pb-2">
                                                 <CardDescription>
-                                                    {
-                                                        STATUS_BADGES[key]
-                                                            ?.label
-                                                    }
+                                                    {STATUS_BADGES[key]?.label}
                                                 </CardDescription>
                                                 <CardTitle className="text-3xl">
                                                     {summary.counts[key]}

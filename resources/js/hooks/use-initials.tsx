@@ -20,9 +20,6 @@ export function useInitials(): GetInitialsFn {
             return getInitial(trimmed).toUpperCase();
         }
 
-        return Array.from(trimmed)
-            .slice(0, 2)
-            .join('')
-            .toUpperCase();
+        return Array.from(trimmed).slice(0, 2).join('').toUpperCase();
     }, []);
 }

@@ -86,10 +86,7 @@ class UpdateUserRequest extends FormRequest
                 if ($isTargetActiveAdmin && ($isRemovingAdmin || $isDeactivating)) {
                     $activeAdminCount = User::query()
                         ->where('is_active', true)
-                        ->where(function ($query) {
-                            $query->whereHas('roleGrants', fn ($q) => $q->where('role', UserRole::Admin->value))
-                                ->orWhere('role', UserRole::Admin->value);
-                        })
+                        ->whereHas('roleGrants', fn ($q) => $q->where('role', UserRole::Admin->value))
                         ->count();
 
                     if ($activeAdminCount <= 1) {

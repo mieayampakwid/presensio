@@ -115,7 +115,7 @@ export default function UserForm({
     };
 
     const profileOptions = activeProfileRole
-        ? profiles[activeProfileRole as keyof ProfileOptions] ?? []
+        ? (profiles[activeProfileRole as keyof ProfileOptions] ?? [])
         : [];
 
     return (
@@ -159,7 +159,7 @@ export default function UserForm({
                             {ALL_ROLES.map((r) => (
                                 <label
                                     key={r.value}
-                                    className="flex items-center gap-2 text-sm font-normal cursor-pointer"
+                                    className="flex cursor-pointer items-center gap-2 text-sm font-normal"
                                 >
                                     <input
                                         type="checkbox"
@@ -167,7 +167,7 @@ export default function UserForm({
                                         value={r.value}
                                         checked={roles.includes(r.value)}
                                         onChange={() => toggleRole(r.value)}
-                                        className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        className="text-primary focus:ring-primary size-4 rounded border-gray-300"
                                     />
                                     <span>{r.label}</span>
                                 </label>
@@ -197,10 +197,7 @@ export default function UserForm({
                             >
                                 <option value="">Not linked</option>
                                 {profileOptions.map((profile) => (
-                                    <option
-                                        key={profile.id}
-                                        value={profile.id}
-                                    >
+                                    <option key={profile.id} value={profile.id}>
                                         {profile.label}
                                     </option>
                                 ))}
@@ -211,11 +208,7 @@ export default function UserForm({
 
                     {showActive && (
                         <div className="flex items-center gap-3">
-                            <input
-                                type="hidden"
-                                name="is_active"
-                                value="0"
-                            />
+                            <input type="hidden" name="is_active" value="0" />
                             <input
                                 id="is_active"
                                 type="checkbox"

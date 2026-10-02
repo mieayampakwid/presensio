@@ -103,9 +103,11 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={TeacherController.edit(
-                                                        { teacher: teacher.id },
-                                                    ).url}
+                                                    href={
+                                                        TeacherController.edit({
+                                                            teacher: teacher.id,
+                                                        }).url
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -132,9 +134,8 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                                         Delete teacher
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want
-                                                        to delete "
-                                                        {teacher.name}"?
+                                                        Are you sure you want to
+                                                        delete "{teacher.name}"?
                                                         Teachers homerooming a
                                                         class or linked to a
                                                         login account cannot be

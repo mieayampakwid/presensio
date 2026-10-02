@@ -47,11 +47,11 @@ export default function ImportUpload() {
                                     type="checkbox"
                                     name="auto_create_classes"
                                     value="1"
-                                    className="border-input dark:bg-input/30 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none accent-primary"
+                                    className="border-input dark:bg-input/30 accent-primary size-4 shrink-0 rounded-[4px] border shadow-xs outline-none"
                                 />
                                 <Label htmlFor="auto_create_classes">
-                                    Create classes from the file when they
-                                    don't exist yet
+                                    Create classes from the file when they don't
+                                    exist yet
                                 </Label>
                             </div>
 

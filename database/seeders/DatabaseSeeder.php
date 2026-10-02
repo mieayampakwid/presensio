@@ -59,15 +59,17 @@ class DatabaseSeeder extends Seeder
             'username' => 'admin',
             'email' => 'admin@presensio.test',
             'password' => $password,
-            'role' => UserRole::Admin,
             'is_active' => true,
         ]);
+        $admin->roleGrants()->create(['role' => UserRole::Admin, 'created_at' => now()]);
 
         // --- Teachers + homeroom classes ----------------------------------
         $budi = Teacher::create(['name' => 'Budi Santoso', 'teacher_number' => '198505052010011001', 'phone_number' => '+628111002001']);
         $siti = Teacher::create(['name' => 'Siti Aminah', 'teacher_number' => '198703102011012002', 'phone_number' => '+628111002002']);
-        $budiUser = User::create(['username' => 'teacher1', 'email' => 'teacher1@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
-        $sitiUser = User::create(['username' => 'teacher2', 'email' => 'teacher2@presensio.test', 'password' => $password, 'role' => UserRole::Teacher, 'is_active' => true]);
+        $budiUser = User::create(['username' => 'teacher1', 'email' => 'teacher1@presensio.test', 'password' => $password, 'is_active' => true]);
+        $budiUser->roleGrants()->create(['role' => UserRole::Teacher, 'created_at' => now()]);
+        $sitiUser = User::create(['username' => 'teacher2', 'email' => 'teacher2@presensio.test', 'password' => $password, 'is_active' => true]);
+        $sitiUser->roleGrants()->create(['role' => UserRole::Teacher, 'created_at' => now()]);
         $budi->update(['user_id' => $budiUser->id]);
         $siti->update(['user_id' => $sitiUser->id]);
 
@@ -103,9 +105,9 @@ class DatabaseSeeder extends Seeder
                     'username' => 'student'.($index + 1),
                     'email' => 'student'.($index + 1).'@presensio.test',
                     'password' => $password,
-                    'role' => UserRole::Student,
                     'is_active' => true,
                 ]);
+                $studentUser->roleGrants()->create(['role' => UserRole::Student, 'created_at' => now()]);
                 $student->update(['user_id' => $studentUser->id]);
             }
 
@@ -127,7 +129,8 @@ class DatabaseSeeder extends Seeder
             'work' => 'Merchant',
             'address' => 'Jl. Kenanga 9, Jakarta',
         ]);
-        $slametUser = User::create(['username' => 'parent1', 'email' => 'parent1@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
+        $slametUser = User::create(['username' => 'parent1', 'email' => 'parent1@presensio.test', 'password' => $password, 'is_active' => true]);
+        $slametUser->roleGrants()->create(['role' => UserRole::Parent, 'created_at' => now()]);
         $slamet->update(['user_id' => $slametUser->id]);
 
         $dewi = Guardian::create([
@@ -137,7 +140,8 @@ class DatabaseSeeder extends Seeder
             'work' => 'Teacher',
             'address' => 'Jl. Kenanga 9, Jakarta',
         ]);
-        $dewiUser = User::create(['username' => 'parent2', 'email' => 'parent2@presensio.test', 'password' => $password, 'role' => UserRole::Parent, 'is_active' => true]);
+        $dewiUser = User::create(['username' => 'parent2', 'email' => 'parent2@presensio.test', 'password' => $password, 'is_active' => true]);
+        $dewiUser->roleGrants()->create(['role' => UserRole::Parent, 'created_at' => now()]);
         $dewi->update(['user_id' => $dewiUser->id]);
 
         $sitiRahayu = Guardian::create([

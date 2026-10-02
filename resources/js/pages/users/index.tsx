@@ -31,13 +31,13 @@ type Props = {
 export default function UsersIndex({ users, filters }: Props) {
     return (
         <>
-            <Head title=\"Users\" />
+            <Head title="Users" />
 
-            <div className=\"space-y-6 p-4\">
-                <div className=\"flex items-center justify-between\">
+            <div className="space-y-6 p-4">
+                <div className="flex items-center justify-between">
                     <Heading
-                        title=\"Users\"
-                        description=\"Provisioned accounts for all roles.\"
+                        title="Users"
+                        description="Provisioned accounts for all roles."
                     />
 
                     <Button asChild>
@@ -47,56 +47,60 @@ export default function UsersIndex({ users, filters }: Props) {
                     </Button>
                 </div>
 
-                <form className=\"max-w-sm\">
+                <form className="max-w-sm">
                     <Input
-                        name=\"search\"
+                        name="search"
                         defaultValue={filters.search}
-                        placeholder=\"Search by username or email…\"
+                        placeholder="Search by username or email…"
                     />
                 </form>
 
-                <div className=\"overflow-x-auto rounded-lg border\">
-                    <table className=\"w-full text-sm\">
-                        <thead className=\"bg-muted/50 text-muted-foreground\">
+                <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full text-sm">
+                        <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
-                                <th className=\"px-4 py-3 text-left font-medium\">
+                                <th className="px-4 py-3 text-left font-medium">
                                     Username
                                 </th>
-                                <th className=\"px-4 py-3 text-left font-medium\">
+                                <th className="px-4 py-3 text-left font-medium">
                                     Email
                                 </th>
-                                <th className=\"px-4 py-3 text-left font-medium\">
+                                <th className="px-4 py-3 text-left font-medium">
                                     Roles
                                 </th>
-                                <th className=\"px-4 py-3 text-left font-medium\">
+                                <th className="px-4 py-3 text-left font-medium">
                                     Status
                                 </th>
-                                <th className=\"px-4 py-3\" />
+                                <th className="px-4 py-3" />
                             </tr>
                         </thead>
                         <tbody>
                             {users.data.map((user) => (
-                                <tr key={user.id} className=\"border-t\">
-                                    <td className=\"px-4 py-3 font-medium\">
+                                <tr key={user.id} className="border-t">
+                                    <td className="px-4 py-3 font-medium">
                                         {user.username}
                                     </td>
-                                    <td className=\"text-muted-foreground px-4 py-3\">
+                                    <td className="text-muted-foreground px-4 py-3">
                                         {user.email ?? '—'}
                                     </td>
-                                    <td className=\"px-4 py-3\">
-                                        <div className=\"flex flex-wrap gap-1\">
-                                            {(user.roles && user.roles.length > 0 ? user.roles : [user.role]).map((role) => (
+                                    <td className="px-4 py-3">
+                                        <div className="flex flex-wrap gap-1">
+                                            {(user.roles &&
+                                            user.roles.length > 0
+                                                ? user.roles
+                                                : [user.role]
+                                            ).map((role) => (
                                                 <Badge
                                                     key={role}
-                                                    variant=\"outline\"
-                                                    className=\"capitalize\"
+                                                    variant="outline"
+                                                    className="capitalize"
                                                 >
                                                     {role}
                                                 </Badge>
                                             ))}
                                         </div>
                                     </td>
-                                    <td className=\"px-4 py-3\">
+                                    <td className="px-4 py-3">
                                         <Badge
                                             variant={
                                                 user.is_active
@@ -109,19 +113,21 @@ export default function UsersIndex({ users, filters }: Props) {
                                                 : 'Inactive'}
                                         </Badge>
                                     </td>
-                                    <td className=\"px-4 py-3 text-right\">
+                                    <td className="px-4 py-3 text-right">
                                         <Button
-                                            variant=\"ghost\"
-                                            size=\"icon\"
+                                            variant="ghost"
+                                            size="icon"
                                             asChild
                                         >
                                             <Link
-                                                href={UserController.edit({
-                                                    user: user.id,
-                                                }).url}
+                                                href={
+                                                    UserController.edit({
+                                                        user: user.id,
+                                                    }).url
+                                                }
                                             >
-                                                <Pencil className=\"h-4 w-4\" />
-                                                <span className=\"sr-only\">
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">
                                                     Edit
                                                 </span>
                                             </Link>
@@ -131,10 +137,10 @@ export default function UsersIndex({ users, filters }: Props) {
                             ))}
 
                             {users.data.length === 0 && (
-                                <tr className=\"border-t\">
+                                <tr className="border-t">
                                     <td
                                         colSpan={5}
-                                        className=\"text-muted-foreground px-4 py-8 text-center\"
+                                        className="text-muted-foreground px-4 py-8 text-center"
                                     >
                                         No users found.
                                     </td>
@@ -144,32 +150,32 @@ export default function UsersIndex({ users, filters }: Props) {
                     </table>
                 </div>
 
-                <div className=\"flex items-center justify-between\">
-                    <p className=\"text-muted-foreground text-sm\">
+                <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground text-sm">
                         Page {users.current_page} of {users.last_page}
                     </p>
 
-                    <div className=\"flex gap-2\">
+                    <div className="flex gap-2">
                         <Button
-                            variant=\"outline\"
-                            size=\"sm\"
+                            variant="outline"
+                            size="sm"
                             asChild
                             disabled={!users.prev_page_url}
                         >
                             <Link href={users.prev_page_url ?? '#'}>
-                                <ChevronLeft className=\"h-4 w-4\" />
+                                <ChevronLeft className="h-4 w-4" />
                                 Previous
                             </Link>
                         </Button>
                         <Button
-                            variant=\"outline\"
-                            size=\"sm\"
+                            variant="outline"
+                            size="sm"
                             asChild
                             disabled={!users.next_page_url}
                         >
                             <Link href={users.next_page_url ?? '#'}>
                                 Next
-                                <ChevronRight className=\"h-4 w-4\" />
+                                <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
                     </div>

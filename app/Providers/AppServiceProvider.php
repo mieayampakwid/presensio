@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
             Gate::define($ability->value, fn (User $user) => $user->hasAnyRole(...RolePermissions::rolesFor($ability)));
         }
 
-        if ($this->app->runningInConsole() && env('LARAVEL_SAIL')) {
+        if ($this->app->runningInConsole() && ($_SERVER['LARAVEL_SAIL'] ?? $_ENV['LARAVEL_SAIL'] ?? false)) {
             DevCommands::artisan('serve', 'server');
         }
     }

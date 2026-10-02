@@ -230,8 +230,8 @@ export function AppSidebar() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <SidebarMenuButton className="justify-between border text-xs">
-                                        <span className="flex items-center gap-1.5 capitalize font-medium">
-                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                        <span className="flex items-center gap-1.5 font-medium capitalize">
+                                            <span className="text-muted-foreground text-[10px] tracking-wider uppercase">
                                                 Role:
                                             </span>
                                             {activeRole}
@@ -249,9 +249,12 @@ export function AppSidebar() {
                                             className={`cursor-pointer capitalize ${r === activeRole ? 'bg-accent text-accent-foreground font-semibold' : ''}`}
                                             onClick={() => {
                                                 if (r !== activeRole) {
-                                                    router.post('/active-role', {
-                                                        role: r,
-                                                    });
+                                                    router.post(
+                                                        '/active-role',
+                                                        {
+                                                            role: r,
+                                                        },
+                                                    );
                                                 }
                                             }}
                                         >

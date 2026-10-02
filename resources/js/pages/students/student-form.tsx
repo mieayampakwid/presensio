@@ -93,7 +93,7 @@ export default function StudentForm({
                             name="gender"
                             defaultValue={defaults.gender ?? 'L'}
                             required
-                            className="border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                            className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
                             <option value="L">Laki-laki (L)</option>
                             <option value="P">Perempuan (P)</option>
@@ -102,7 +102,9 @@ export default function StudentForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="birth_place">Birth place (optional)</Label>
+                        <Label htmlFor="birth_place">
+                            Birth place (optional)
+                        </Label>
                         <Input
                             id="birth_place"
                             name="birth_place"
@@ -119,7 +121,7 @@ export default function StudentForm({
                             id="religion"
                             name="religion"
                             defaultValue={defaults.religion ?? ''}
-                            className="border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                            className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
                             <option value="">Select religion</option>
                             <option value="Islam">Islam</option>
@@ -164,11 +166,14 @@ export default function StudentForm({
                             id="class_id"
                             name="class_id"
                             defaultValue={defaults.classId}
-                            className="border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                            className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
                             <option value="">No class yet</option>
                             {classes.map((schoolClass) => (
-                                <option key={schoolClass.id} value={schoolClass.id}>
+                                <option
+                                    key={schoolClass.id}
+                                    value={schoolClass.id}
+                                >
                                     {schoolClass.name}
                                 </option>
                             ))}
@@ -187,11 +192,16 @@ export default function StudentForm({
                             <div className="grid gap-3">
                                 {guardians.map((guardian) => {
                                     const isLinked = currentGuardians
-                                        ? currentGuardians.some((g) => g.id === guardian.id)
-                                        : currentGuardianIds.includes(guardian.id);
+                                        ? currentGuardians.some(
+                                              (g) => g.id === guardian.id,
+                                          )
+                                        : currentGuardianIds.includes(
+                                              guardian.id,
+                                          );
                                     const relationshipType =
-                                        currentGuardians?.find((g) => g.id === guardian.id)
-                                            ?.relationship_type ?? 'guardian';
+                                        currentGuardians?.find(
+                                            (g) => g.id === guardian.id,
+                                        )?.relationship_type ?? 'guardian';
 
                                     return (
                                         <div
@@ -204,9 +214,11 @@ export default function StudentForm({
                                                     name="guardian_ids[]"
                                                     value={guardian.id}
                                                     defaultChecked={isLinked}
-                                                    className="border-input dark:bg-input/30 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none accent-primary"
+                                                    className="border-input dark:bg-input/30 accent-primary size-4 shrink-0 rounded-[4px] border shadow-xs outline-none"
                                                 />
-                                                <span className="font-medium">{guardian.name}</span>
+                                                <span className="font-medium">
+                                                    {guardian.name}
+                                                </span>
                                                 <span className="text-muted-foreground">
                                                     {guardian.phone_number}
                                                 </span>
@@ -221,12 +233,20 @@ export default function StudentForm({
                                                 <select
                                                     id={`rel_${guardian.id}`}
                                                     name={`guardian_relationships[${guardian.id}]`}
-                                                    defaultValue={relationshipType}
-                                                    className="border-input dark:bg-input/30 flex h-8 rounded-md border bg-transparent px-2 py-0.5 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[2px]"
+                                                    defaultValue={
+                                                        relationshipType
+                                                    }
+                                                    className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-8 rounded-md border bg-transparent px-2 py-0.5 text-xs shadow-xs outline-none focus-visible:ring-[2px]"
                                                 >
-                                                    <option value="father">Ayah (Father)</option>
-                                                    <option value="mother">Ibu (Mother)</option>
-                                                    <option value="guardian">Wali (Guardian)</option>
+                                                    <option value="father">
+                                                        Ayah (Father)
+                                                    </option>
+                                                    <option value="mother">
+                                                        Ibu (Mother)
+                                                    </option>
+                                                    <option value="guardian">
+                                                        Wali (Guardian)
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>

@@ -104,12 +104,14 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={GuardianController.edit(
-                                                        {
-                                                            guardian:
-                                                                guardian.id,
-                                                        },
-                                                    ).url}
+                                                    href={
+                                                        GuardianController.edit(
+                                                            {
+                                                                guardian:
+                                                                    guardian.id,
+                                                            },
+                                                        ).url
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -136,11 +138,11 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                                         Delete guardian
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want
-                                                        to delete "
-                                                        {guardian.name}"? Their
-                                                        links to children are
-                                                        removed with them.
+                                                        Are you sure you want to
+                                                        delete "{guardian.name}
+                                                        "? Their links to
+                                                        children are removed
+                                                        with them.
                                                     </DialogDescription>
                                                     <DialogFooter className="gap-2">
                                                         <DialogClose asChild>

@@ -16,10 +16,14 @@ export function AuditHistory({ entries }: { entries: AuditLogEntry[] }) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">Riwayat Perubahan</CardTitle>
+                    <CardTitle className="text-base">
+                        Riwayat Perubahan
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-muted-foreground">Belum ada catatan riwayat perubahan.</p>
+                    <p className="text-muted-foreground text-sm">
+                        Belum ada catatan riwayat perubahan.
+                    </p>
                 </CardContent>
             </Card>
         );
@@ -32,27 +36,45 @@ export function AuditHistory({ entries }: { entries: AuditLogEntry[] }) {
             </CardHeader>
             <CardContent className="space-y-4">
                 {entries.map((entry) => (
-                    <div key={entry.id} className="border-b pb-3 last:border-b-0 last:pb-0 text-sm space-y-1">
+                    <div
+                        key={entry.id}
+                        className="space-y-1 border-b pb-3 text-sm last:border-b-0 last:pb-0"
+                    >
                         <div className="flex items-center justify-between">
                             <span className="font-medium">
                                 {entry.user ? entry.user.username : 'Sistem'}
                             </span>
-                            <span className="text-xs text-muted-foreground">{entry.created_at}</span>
+                            <span className="text-muted-foreground text-xs">
+                                {entry.created_at}
+                            </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs capitalize">
+                            <Badge
+                                variant="outline"
+                                className="text-xs capitalize"
+                            >
                                 {entry.action}
                             </Badge>
                             {entry.reason && (
-                                <span className="text-xs italic text-muted-foreground">
+                                <span className="text-muted-foreground text-xs italic">
                                     "{entry.reason}"
                                 </span>
                             )}
                         </div>
                         {(entry.old_values || entry.new_values) && (
-                            <div className="mt-1 text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
-                                {entry.old_values && <div>Sebelum: {JSON.stringify(entry.old_values)}</div>}
-                                {entry.new_values && <div>Sesudah: {JSON.stringify(entry.new_values)}</div>}
+                            <div className="text-muted-foreground bg-muted mt-1 rounded p-2 font-mono text-xs">
+                                {entry.old_values && (
+                                    <div>
+                                        Sebelum:{' '}
+                                        {JSON.stringify(entry.old_values)}
+                                    </div>
+                                )}
+                                {entry.new_values && (
+                                    <div>
+                                        Sesudah:{' '}
+                                        {JSON.stringify(entry.new_values)}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

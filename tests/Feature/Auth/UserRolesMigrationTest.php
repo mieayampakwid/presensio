@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserRoleGrant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class UserRolesMigrationTest extends TestCase
@@ -15,11 +16,22 @@ class UserRolesMigrationTest extends TestCase
 
     public function test_backfill_creates_exactly_one_grant_per_user_equal_to_their_legacy_role(): void
     {
+        if (! Schema::hasColumn('users', 'role')) {
+            Schema::table('users', function ($table): void {
+                $table->string('role', 30)->nullable();
+            });
+        }
+
         // Create users with various legacy roles
         $admin = User::factory()->admin()->create();
         $teacher = User::factory()->teacher()->create();
         $student = User::factory()->student()->create();
         $parent = User::factory()->parent()->create();
+
+        DB::table('users')->where('id', $admin->id)->update(['role' => UserRole::Admin->value]);
+        DB::table('users')->where('id', $teacher->id)->update(['role' => UserRole::Teacher->value]);
+        DB::table('users')->where('id', $student->id)->update(['role' => UserRole::Student->value]);
+        DB::table('users')->where('id', $parent->id)->update(['role' => UserRole::Parent->value]);
 
         // Clear user_roles to simulate pre-migration state where users exist but user_roles is empty
         DB::table('user_roles')->truncate();

@@ -84,9 +84,8 @@ export default function MyExcuses({ children, excuses }: Props) {
                                 No guardian profile linked
                             </p>
                             <p className="text-sm">
-                                Your account is not linked to a guardian
-                                profile yet. Ask the school office to connect
-                                it.
+                                Your account is not linked to a guardian profile
+                                yet. Ask the school office to connect it.
                             </p>
                         </CardContent>
                     </Card>
@@ -96,10 +95,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                             <CardHeader>
                                 <CardTitle>New excuse</CardTitle>
                                 <CardDescription>
-                                    One child and one date range per
-                                    submission. Attach proof such as a
-                                    doctor's note or invitation (JPG, PNG, or
-                                    PDF).
+                                    One child and one date range per submission.
+                                    Attach proof such as a doctor's note or
+                                    invitation (JPG, PNG, or PDF).
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -121,7 +119,10 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                         required
                                                         className={SELECT_CLASS}
                                                     >
-                                                        <option value="" disabled>
+                                                        <option
+                                                            value=""
+                                                            disabled
+                                                        >
                                                             Select a child…
                                                         </option>
                                                         {children.map(
@@ -202,7 +203,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                         required
                                                     />
                                                     <InputError
-                                                        message={errors.end_date}
+                                                        message={
+                                                            errors.end_date
+                                                        }
                                                     />
                                                 </div>
                                             </div>

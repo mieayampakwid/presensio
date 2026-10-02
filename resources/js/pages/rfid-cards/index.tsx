@@ -36,10 +36,9 @@ type Props = {
 
 export default function RfidCardsIndex({ cards, filters }: Props) {
     const destroy = (card: CardRow) => {
-        router.delete(
-            RfidCardController.destroy({ rfid_card: card.id }).url,
-            { preserveScroll: true },
-        );
+        router.delete(RfidCardController.destroy({ rfid_card: card.id }).url, {
+            preserveScroll: true,
+        });
     };
 
     const revoke = (card: CardRow) => {
@@ -132,12 +131,14 @@ export default function RfidCardsIndex({ cards, filters }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={RfidCardController.edit(
-                                                        {
-                                                            rfid_card:
-                                                                card.id,
-                                                        },
-                                                    ).url}
+                                                    href={
+                                                        RfidCardController.edit(
+                                                            {
+                                                                rfid_card:
+                                                                    card.id,
+                                                            },
+                                                        ).url
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -164,8 +165,8 @@ export default function RfidCardsIndex({ cards, filters }: Props) {
                                                         Delete card
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want
-                                                        to delete card "
+                                                        Are you sure you want to
+                                                        delete card "
                                                         {card.rfid_number}"?
                                                     </DialogDescription>
                                                     <DialogFooter className="gap-2">

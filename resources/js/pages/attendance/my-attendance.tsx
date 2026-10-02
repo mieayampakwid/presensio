@@ -88,8 +88,7 @@ export default function MyAttendance({
                                             <span>
                                                 In:{' '}
                                                 <span className="text-foreground font-medium">
-                                                    {today.checked_in_at ??
-                                                        '—'}
+                                                    {today.checked_in_at ?? '—'}
                                                 </span>
                                             </span>
                                             <span>
@@ -103,8 +102,7 @@ export default function MyAttendance({
                                     </>
                                 ) : (
                                     <p className="text-muted-foreground text-sm">
-                                        No record yet — check in at the
-                                        scanner.
+                                        No record yet — check in at the scanner.
                                     </p>
                                 )}
                             </CardContent>

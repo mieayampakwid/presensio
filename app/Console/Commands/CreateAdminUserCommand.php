@@ -42,12 +42,16 @@ class CreateAdminUserCommand extends Command
             return self::FAILURE;
         }
 
-        User::create([
+        $user = User::create([
             'username' => $username,
             'email' => $email,
             'password' => $password,
-            'role' => UserRole::Admin,
             'is_active' => true,
+        ]);
+
+        $user->roleGrants()->create([
+            'role' => UserRole::Admin,
+            'created_at' => now(),
         ]);
 
         $this->info("Admin user [{$username}] created.");

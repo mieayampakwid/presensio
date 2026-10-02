@@ -38,10 +38,9 @@ type Props = {
 
 export default function StudentsIndex({ students, filters }: Props) {
     const destroy = (student: StudentRow) => {
-        router.delete(
-            StudentController.destroy({ student: student.id }).url,
-            { preserveScroll: true },
-        );
+        router.delete(StudentController.destroy({ student: student.id }).url, {
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -121,12 +120,11 @@ export default function StudentsIndex({ students, filters }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={StudentController.edit(
-                                                        {
-                                                            student:
-                                                                student.id,
-                                                        },
-                                                    ).url}
+                                                    href={
+                                                        StudentController.edit({
+                                                            student: student.id,
+                                                        }).url
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -153,13 +151,13 @@ export default function StudentsIndex({ students, filters }: Props) {
                                                         Delete student
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want
-                                                        to delete "
+                                                        Are you sure you want to
+                                                        delete "
                                                         {student.full_name}"?
-                                                        Their guardian links
-                                                        are removed and any
-                                                        RFID card returns to
-                                                        the spare pool.
+                                                        Their guardian links are
+                                                        removed and any RFID
+                                                        card returns to the
+                                                        spare pool.
                                                     </DialogDescription>
                                                     <DialogFooter className="gap-2">
                                                         <DialogClose asChild>

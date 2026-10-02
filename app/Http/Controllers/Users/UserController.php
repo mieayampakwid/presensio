@@ -42,7 +42,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'username' => $user->username,
                 'email' => $user->email,
-                'role' => $user->role?->value ?? '',
+                'role' => $user->role->value,
                 'roles' => $user->roles()->map(fn ($r) => $r->value)->values()->all(),
                 'is_active' => $user->is_active,
             ]);
@@ -82,9 +82,7 @@ class UserController extends Controller
 
             $primaryRole = $parsedRoles[0] ?? UserRole::Teacher;
 
-            $data = collect($request->safe()->except(['profile_id', 'roles']))
-                ->put('role', $primaryRole)
-                ->all();
+            $data = collect($request->safe()->except(['profile_id', 'roles', 'role']))->all();
 
             $user = User::create($data);
 
@@ -122,7 +120,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'username' => $user->username,
                 'email' => $user->email,
-                'role' => $user->role?->value ?? '',
+                'role' => $user->role->value,
                 'roles' => $user->roles()->map(fn ($r) => $r->value)->values()->all(),
                 'is_active' => $user->is_active,
             ],
@@ -153,9 +151,7 @@ class UserController extends Controller
 
             $primaryRole = $parsedRoles[0] ?? UserRole::Teacher;
 
-            $data = collect($request->safe()->except(['profile_id', 'roles']))
-                ->put('role', $primaryRole)
-                ->all();
+            $data = collect($request->safe()->except(['profile_id', 'roles', 'role']))->all();
 
             $user->update($data);
 

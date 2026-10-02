@@ -24,11 +24,12 @@ class UserFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
-            if ($user->roleGrants()->doesntExist() && $user->role !== null) {
+            if ($user->roleGrants()->doesntExist()) {
                 $user->roleGrants()->create([
-                    'role' => $user->role,
+                    'role' => UserRole::Teacher,
                     'created_at' => now(),
                 ]);
+                $user->unsetRelation('roleGrants');
             }
         });
     }
@@ -44,7 +45,6 @@ class UserFactory extends Factory
             'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => UserRole::Teacher,
             'is_active' => true,
             'remember_token' => Str::random(10),
             'two_factor_secret' => null,
@@ -58,9 +58,7 @@ class UserFactory extends Factory
      */
     public function withRoles(UserRole ...$roles): static
     {
-        return $this->state(fn () => [
-            'role' => $roles[0] ?? UserRole::Teacher,
-        ])->afterCreating(function (User $user) use ($roles) {
+        return $this->afterCreating(function (User $user) use ($roles) {
             $user->roleGrants()->delete();
             foreach ($roles as $role) {
                 $user->roleGrants()->create([
@@ -68,6 +66,7 @@ class UserFactory extends Factory
                     'created_at' => now(),
                 ]);
             }
+            $user->unsetRelation('roleGrants');
         });
     }
 
@@ -76,7 +75,7 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Admin]);
+        return $this->withRoles(UserRole::Admin);
     }
 
     /**
@@ -84,16 +83,15 @@ class UserFactory extends Factory
      */
     public function principal(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Principal]);
+        return $this->withRoles(UserRole::Principal);
     }
 
     /**
-     * Indicate that the user is a teacher (the factory default, made explicit
-     * for data providers that build states by name).
+     * Indicate that the user is a teacher.
      */
     public function teacher(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Teacher]);
+        return $this->withRoles(UserRole::Teacher);
     }
 
     /**
@@ -101,7 +99,7 @@ class UserFactory extends Factory
      */
     public function counselor(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Counselor]);
+        return $this->withRoles(UserRole::Counselor);
     }
 
     /**
@@ -109,7 +107,7 @@ class UserFactory extends Factory
      */
     public function finance(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Finance]);
+        return $this->withRoles(UserRole::Finance);
     }
 
     /**
@@ -117,7 +115,7 @@ class UserFactory extends Factory
      */
     public function staff(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Staff]);
+        return $this->withRoles(UserRole::Staff);
     }
 
     /**
@@ -125,7 +123,7 @@ class UserFactory extends Factory
      */
     public function student(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Student]);
+        return $this->withRoles(UserRole::Student);
     }
 
     /**
@@ -133,7 +131,7 @@ class UserFactory extends Factory
      */
     public function parent(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Parent]);
+        return $this->withRoles(UserRole::Parent);
     }
 
     /**

@@ -59,15 +59,14 @@ export default function ImportPreview({
                 </div>
 
                 {errors.length > 0 && (
-                    <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+                    <div className="border-destructive/40 bg-destructive/5 rounded-lg border p-4">
                         <p className="text-destructive mb-2 text-sm font-medium">
                             Rows that will be skipped
                         </p>
                         <ul className="text-destructive list-disc space-y-1 pl-5 text-sm">
                             {errors.map((error) => (
                                 <li key={error.row}>
-                                    Row {error.row}:{' '}
-                                    {error.errors.join(' ')}
+                                    Row {error.row}: {error.errors.join(' ')}
                                 </li>
                             ))}
                         </ul>
@@ -97,10 +96,7 @@ export default function ImportPreview({
                         </thead>
                         <tbody>
                             {rows.map((row, index) => (
-                                <tr
-                                    key={index}
-                                    className="border-t"
-                                >
+                                <tr key={index} className="border-t">
                                     <td className="px-4 py-3 font-medium">
                                         {row.full_name}
                                     </td>
@@ -140,45 +136,30 @@ export default function ImportPreview({
                 >
                     {({ processing }) => (
                         <>
-                            <input
-                                type="hidden"
-                                name="token"
-                                value={token}
-                            />
-                            {Object.entries(mapping).map(
-                                ([field, header]) => (
-                                    <input
-                                        key={field}
-                                        type="hidden"
-                                        name={`mapping[${field}]`}
-                                        value={header}
-                                    />
-                                ),
-                            )}
+                            <input type="hidden" name="token" value={token} />
+                            {Object.entries(mapping).map(([field, header]) => (
+                                <input
+                                    key={field}
+                                    type="hidden"
+                                    name={`mapping[${field}]`}
+                                    value={header}
+                                />
+                            ))}
                             <input
                                 type="hidden"
                                 name="auto_create_classes"
-                                value={
-                                    options.auto_create_classes ? '1' : '0'
-                                }
+                                value={options.auto_create_classes ? '1' : '0'}
                             />
                             <Button
                                 type="submit"
-                                disabled={
-                                    processing || validCount === 0
-                                }
+                                disabled={processing || validCount === 0}
                             >
                                 {processing
                                     ? 'Importing…'
                                     : `Import ${validCount} students`}
                             </Button>
                             <Button variant="outline" asChild>
-                                <a
-                                    href={
-                                        StudentImportController.create()
-                                            .url
-                                    }
-                                >
+                                <a href={StudentImportController.create().url}>
                                     Start over
                                 </a>
                             </Button>

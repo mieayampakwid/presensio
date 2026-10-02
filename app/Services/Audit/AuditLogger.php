@@ -30,7 +30,7 @@ class AuditLogger
             'old_values' => $old,
             'new_values' => $new,
             'reason' => $reason,
-            'ip_address' => request()?->ip(),
+            'ip_address' => request()->ip(),
             'created_at' => now(),
         ]);
     }

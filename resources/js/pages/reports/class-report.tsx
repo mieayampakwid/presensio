@@ -77,7 +77,12 @@ const SUMMARY_COLUMNS: { key: keyof Counts; label: string }[] = [
     { key: 'leave', label: 'Leave' },
 ];
 
-export default function ClassReport({ years, classes, filters, report }: Props) {
+export default function ClassReport({
+    years,
+    classes,
+    filters,
+    report,
+}: Props) {
     const submitFilters = (
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
@@ -226,29 +231,23 @@ export default function ClassReport({ years, classes, filters, report }: Props) 
                                 </thead>
                                 <tbody>
                                     {report.rows.map((row) => (
-                                        <tr
-                                            key={row.id}
-                                            className="border-t"
-                                        >
+                                        <tr key={row.id} className="border-t">
                                             <td className="px-4 py-3">
                                                 <div className="font-medium">
                                                     {row.full_name}
                                                 </div>
                                                 <div className="text-muted-foreground text-xs">
-                                                    {row.student_number ??
-                                                        '—'}
+                                                    {row.student_number ?? '—'}
                                                 </div>
                                             </td>
-                                            {SUMMARY_COLUMNS.map(
-                                                (column) => (
-                                                    <td
-                                                        key={column.key}
-                                                        className="px-4 py-3"
-                                                    >
-                                                        {row.counts[column.key]}
-                                                    </td>
-                                                ),
-                                            )}
+                                            {SUMMARY_COLUMNS.map((column) => (
+                                                <td
+                                                    key={column.key}
+                                                    className="px-4 py-3"
+                                                >
+                                                    {row.counts[column.key]}
+                                                </td>
+                                            ))}
                                             <td className="px-4 py-3">
                                                 {row.rate === null
                                                     ? '—'
@@ -275,7 +274,7 @@ export default function ClassReport({ years, classes, filters, report }: Props) 
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50 text-muted-foreground">
                                     <tr>
-                                        <th className="sticky left-0 bg-muted/50 px-4 py-3 text-left font-medium">
+                                        <th className="bg-muted/50 sticky left-0 px-4 py-3 text-left font-medium">
                                             Student
                                         </th>
                                         {report.dates.map((date) => (
@@ -293,11 +292,8 @@ export default function ClassReport({ years, classes, filters, report }: Props) 
                                 </thead>
                                 <tbody>
                                     {report.rows.map((row) => (
-                                        <tr
-                                            key={row.id}
-                                            className="border-t"
-                                        >
-                                            <td className="sticky left-0 bg-background px-4 py-2 font-medium whitespace-nowrap">
+                                        <tr key={row.id} className="border-t">
+                                            <td className="bg-background sticky left-0 px-4 py-2 font-medium whitespace-nowrap">
                                                 {row.full_name}
                                             </td>
                                             {report.dates.map((date) => {
@@ -308,9 +304,7 @@ export default function ClassReport({ years, classes, filters, report }: Props) 
                                                 const badge =
                                                     status === undefined
                                                         ? undefined
-                                                        : STATUS_BADGES[
-                                                              status
-                                                          ];
+                                                        : STATUS_BADGES[status];
 
                                                 return (
                                                     <td

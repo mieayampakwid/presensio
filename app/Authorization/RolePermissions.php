@@ -8,20 +8,22 @@ use App\Enums\UserRole;
 class RolePermissions
 {
     /**
+     * The single source of truth for role-ability mappings (spec 15 §Permissions).
+     *
      * @var array<string, list<UserRole>>
      */
-    private const MATRIX = [
-        Ability::ManageMasterData->value => [
+    public const MATRIX = [
+        'manage-master-data' => [
             UserRole::Admin,
         ],
-        Ability::OverrideAttendance->value => [
+        'override-attendance' => [
             UserRole::Admin,
             UserRole::Teacher,
         ],
-        Ability::ReviewExcuses->value => [
+        'review-excuses' => [
             UserRole::Admin,
         ],
-        Ability::ViewAttendanceReports->value => [
+        'view-attendance-reports' => [
             UserRole::Admin,
             UserRole::Principal,
             UserRole::Teacher,
@@ -29,42 +31,42 @@ class RolePermissions
             UserRole::Parent,
             UserRole::Student,
         ],
-        Ability::EnterGrades->value => [
+        'enter-grades' => [
             UserRole::Admin,
             UserRole::Teacher,
         ],
-        Ability::ViewGrades->value => [
+        'view-grades' => [
             UserRole::Admin,
             UserRole::Principal,
             UserRole::Teacher,
         ],
-        Ability::PublishReportCards->value => [
+        'publish-report-cards' => [
             UserRole::Admin,
             UserRole::Teacher,
         ],
-        Ability::ViewReportCards->value => [
+        'view-report-cards' => [
             UserRole::Admin,
             UserRole::Principal,
             UserRole::Teacher,
             UserRole::Parent,
             UserRole::Student,
         ],
-        Ability::ManageFees->value => [
+        'manage-staff-attendance' => [
+            UserRole::Admin,
+            UserRole::Principal,
+        ],
+        'manage-fees' => [
             UserRole::Admin,
             UserRole::Finance,
         ],
-        Ability::ViewFees->value => [
+        'view-fees' => [
             UserRole::Admin,
             UserRole::Principal,
             UserRole::Finance,
             UserRole::Parent,
             UserRole::Student,
         ],
-        Ability::ViewAuditLog->value => [
-            UserRole::Admin,
-            UserRole::Principal,
-        ],
-        Ability::ManageStaffAttendance->value => [
+        'view-audit-log' => [
             UserRole::Admin,
             UserRole::Principal,
         ],
@@ -75,7 +77,7 @@ class RolePermissions
      */
     public static function rolesFor(Ability $ability): array
     {
-        return self::MATRIX[$ability->value] ?? [];
+        return self::MATRIX[$ability->value];
     }
 
     /**
@@ -84,9 +86,10 @@ class RolePermissions
     public static function grants(UserRole $role): array
     {
         $abilities = [];
-        foreach (Ability::cases() as $ability) {
-            if (in_array($role, self::rolesFor($ability), true)) {
-                $abilities[] = $ability;
+
+        foreach (self::MATRIX as $abilityValue => $roles) {
+            if (in_array($role, $roles, true)) {
+                $abilities[] = Ability::from($abilityValue);
             }
         }
 

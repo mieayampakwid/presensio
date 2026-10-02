@@ -17,7 +17,11 @@ export default function CreateTeacher() {
                 <TeacherForm
                     action={TeacherController.store.form()}
                     submitLabel="Create teacher"
-                    defaults={{ name: '', teacherNumber: null, phoneNumber: null }}
+                    defaults={{
+                        name: '',
+                        teacherNumber: null,
+                        phoneNumber: null,
+                    }}
                 />
             </div>
         </>

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Enums\UserRole;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +15,7 @@ class AuditLogTest extends TestCase
     public function test_admin_and_principal_can_view_audit_logs(): void
     {
         $admin = User::factory()->admin()->create();
-        $principal = User::factory()->create(['role' => UserRole::Principal]);
+        $principal = User::factory()->principal()->create();
 
         AuditLog::factory()->count(3)->create();
 
@@ -37,7 +36,7 @@ class AuditLogTest extends TestCase
 
     public function test_unauthorized_roles_cannot_view_audit_logs(): void
     {
-        $finance = User::factory()->create(['role' => UserRole::Finance]);
+        $finance = User::factory()->finance()->create();
         $teacher = User::factory()->teacher()->create();
         $student = User::factory()->student()->create();
 

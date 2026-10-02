@@ -176,8 +176,7 @@ function StaffSection({
                                 <td className="px-4 py-3 font-medium">
                                     <Link
                                         href={
-                                            PresenceBoardController.index()
-                                                .url
+                                            PresenceBoardController.index().url
                                         }
                                         className="hover:underline"
                                     >
@@ -337,11 +336,13 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                             </Button>
                             <Button variant="outline" size="sm" asChild>
                                 <Link
-                                    href={StudentReportController.index({
-                                        query: {
-                                            student_id: child.id,
-                                        },
-                                    }).url}
+                                    href={
+                                        StudentReportController.index({
+                                            query: {
+                                                student_id: child.id,
+                                            },
+                                        }).url
+                                    }
                                 >
                                     Child report
                                 </Link>
@@ -420,7 +421,9 @@ export default function Dashboard({
 }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const role = auth.active_role ?? auth.user.role;
-    const isStaff = ['admin', 'principal', 'teacher', 'counselor'].includes(role);
+    const isStaff = ['admin', 'principal', 'teacher', 'counselor'].includes(
+        role,
+    );
 
     return (
         <>

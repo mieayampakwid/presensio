@@ -90,20 +90,11 @@ export default function ImportMap({
                 >
                     {({ processing, errors }) => (
                         <div className="grid max-w-xl gap-6">
-                            <input
-                                type="hidden"
-                                name="token"
-                                value={token}
-                            />
+                            <input type="hidden" name="token" value={token} />
 
                             {FIELDS.map((field) => (
-                                <div
-                                    key={field.key}
-                                    className="grid gap-2"
-                                >
-                                    <Label
-                                        htmlFor={`mapping_${field.key}`}
-                                    >
+                                <div key={field.key} className="grid gap-2">
+                                    <Label htmlFor={`mapping_${field.key}`}>
                                         {field.label}
                                         {field.required && ' *'}
                                     </Label>
@@ -115,14 +106,9 @@ export default function ImportMap({
                                         }
                                         className={SELECT_CLASS}
                                     >
-                                        <option value="">
-                                            — ignored —
-                                        </option>
+                                        <option value="">— ignored —</option>
                                         {headers.map((header) => (
-                                            <option
-                                                key={header}
-                                                value={header}
-                                            >
+                                            <option key={header} value={header}>
                                                 {header || '—'}
                                             </option>
                                         ))}
@@ -144,31 +130,21 @@ export default function ImportMap({
                                     name="auto_create_classes"
                                     value="1"
                                     defaultChecked={autoCreateClasses}
-                                    className="border-input dark:bg-input/30 size-4 shrink-0 rounded-[4px] border shadow-xs outline-none accent-primary"
+                                    className="border-input dark:bg-input/30 accent-primary size-4 shrink-0 rounded-[4px] border shadow-xs outline-none"
                                 />
                                 <Label htmlFor="auto_create_classes">
-                                    Create classes from the file when they
-                                    don't exist yet
+                                    Create classes from the file when they don't
+                                    exist yet
                                 </Label>
                             </div>
 
                             <div className="flex gap-2">
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                >
+                                <Button type="submit" disabled={processing}>
                                     {processing && <Spinner />}
                                     Preview import
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    asChild
-                                >
-                                    <a
-                                        href={
-                                            StudentController.index().url
-                                        }
-                                    >
+                                <Button variant="outline" asChild>
+                                    <a href={StudentController.index().url}>
                                         Cancel
                                     </a>
                                 </Button>

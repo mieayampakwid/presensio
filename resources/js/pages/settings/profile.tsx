@@ -41,14 +41,18 @@ export default function Profile() {
 
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <p className="text-sm leading-none font-medium">Username</p>
+                        <p className="text-sm leading-none font-medium">
+                            Username
+                        </p>
                         <p className="text-muted-foreground text-sm">
                             {auth.user.username}
                         </p>
                     </div>
 
                     <div className="grid gap-2">
-                        <p className="text-sm leading-none font-medium">Email</p>
+                        <p className="text-sm leading-none font-medium">
+                            Email
+                        </p>
                         <p className="text-muted-foreground text-sm">
                             {auth.user.email ?? '—'}
                         </p>
@@ -68,7 +72,9 @@ export default function Profile() {
 
                 <p className="text-muted-foreground text-sm">
                     Change your password from the{' '}
-                    <span className="text-foreground font-medium">Security</span>{' '}
+                    <span className="text-foreground font-medium">
+                        Security
+                    </span>{' '}
                     tab.
                 </p>
             </div>

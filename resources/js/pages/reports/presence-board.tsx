@@ -63,7 +63,7 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                     />
 
                     <div className="text-muted-foreground text-right text-sm">
-                        <div className="font-medium text-foreground">
+                        <div className="text-foreground font-medium">
                             As of {board.as_of}
                         </div>
                         <div>Auto-refreshes every 30 seconds</div>

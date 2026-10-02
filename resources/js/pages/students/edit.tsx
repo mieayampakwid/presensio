@@ -66,7 +66,9 @@ export default function EditStudent({
                         religion: student.religion ?? '',
                         address: student.address ?? '',
                         studentNumber: student.student_number ?? '',
-                        classId: student.class_id ? String(student.class_id) : '',
+                        classId: student.class_id
+                            ? String(student.class_id)
+                            : '',
                     }}
                     classes={classes}
                     guardians={guardians}

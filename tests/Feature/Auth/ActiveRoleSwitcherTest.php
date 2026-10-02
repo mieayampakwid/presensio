@@ -13,9 +13,7 @@ class ActiveRoleSwitcherTest extends TestCase
 
     public function test_user_can_switch_to_a_role_they_hold(): void
     {
-        $user = User::factory()->create([
-            'role' => UserRole::Teacher,
-        ]);
+        $user = User::factory()->teacher()->create();
         $user->roleGrants()->create(['role' => UserRole::Parent]);
 
         $response = $this->actingAs($user)
@@ -30,9 +28,7 @@ class ActiveRoleSwitcherTest extends TestCase
 
     public function test_user_cannot_switch_to_a_role_they_do_not_hold(): void
     {
-        $user = User::factory()->create([
-            'role' => UserRole::Teacher,
-        ]);
+        $user = User::factory()->teacher()->create();
 
         $response = $this->actingAs($user)
             ->post(route('active-role.switch'), [

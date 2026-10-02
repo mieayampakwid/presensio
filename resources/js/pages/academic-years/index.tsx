@@ -56,29 +56,43 @@ export default function AcademicYearsIndex({ years }: Props) {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
-                                <th className="px-4 py-3 text-left font-medium">Year</th>
-                                <th className="px-4 py-3 text-left font-medium">Period</th>
-                                <th className="px-4 py-3 text-left font-medium">Classes</th>
-                                <th className="px-4 py-3 text-left font-medium">Status</th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Year
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Period
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Classes
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Status
+                                </th>
                                 <th className="px-4 py-3" />
                             </tr>
                         </thead>
                         <tbody>
                             {years.map((year) => (
                                 <tr key={year.id} className="border-t">
-                                    <td className="px-4 py-3 font-medium">{year.name}</td>
+                                    <td className="px-4 py-3 font-medium">
+                                        {year.name}
+                                    </td>
                                     <td className="text-muted-foreground px-4 py-3">
                                         {year.starts_at} — {year.ends_at}
                                     </td>
-                                    <td className="px-4 py-3">{year.classes_count}</td>
+                                    <td className="px-4 py-3">
+                                        {year.classes_count}
+                                    </td>
                                     <td className="px-4 py-3">
                                         {year.is_active ? (
                                             <Badge>Active</Badge>
                                         ) : (
                                             <Form
-                                                {...AcademicYearController.activate.form({
-                                                    academic_year: year.id,
-                                                })}
+                                                {...AcademicYearController.activate.form(
+                                                    {
+                                                        academic_year: year.id,
+                                                    },
+                                                )}
                                             >
                                                 {({ processing }) => (
                                                     <Button
@@ -98,18 +112,26 @@ export default function AcademicYearsIndex({ years }: Props) {
                                             <EditYearDialog year={year} />
                                             {!year.is_active && (
                                                 <Form
-                                                    {...AcademicYearController.destroy.form({
-                                                        academic_year: year.id,
-                                                    })}
+                                                    {...AcademicYearController.destroy.form(
+                                                        {
+                                                            academic_year:
+                                                                year.id,
+                                                        },
+                                                    )}
                                                 >
                                                     {({ processing }) => (
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
                                                             type="submit"
-                                                            disabled={processing || year.classes_count > 0}
+                                                            disabled={
+                                                                processing ||
+                                                                year.classes_count >
+                                                                    0
+                                                            }
                                                             title={
-                                                                year.classes_count > 0
+                                                                year.classes_count >
+                                                                0
                                                                     ? 'Cannot delete: classes exist in this year.'
                                                                     : 'Delete year'
                                                             }
@@ -158,8 +180,8 @@ function CreateYearDialog() {
                 <DialogHeader>
                     <DialogTitle>Create academic year</DialogTitle>
                     <DialogDescription>
-                        New years start inactive — use roll-over or “Set active” when
-                        the year begins.
+                        New years start inactive — use roll-over or “Set active”
+                        when the year begins.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -172,18 +194,30 @@ function CreateYearDialog() {
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
-                                <Input id="name" name="name" placeholder="2027/2028" />
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    placeholder="2027/2028"
+                                />
                                 <InputError message={errors.name} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="starts_at">Starts</Label>
-                                    <Input id="starts_at" type="date" name="starts_at" />
+                                    <Input
+                                        id="starts_at"
+                                        type="date"
+                                        name="starts_at"
+                                    />
                                     <InputError message={errors.starts_at} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="ends_at">Ends</Label>
-                                    <Input id="ends_at" type="date" name="ends_at" />
+                                    <Input
+                                        id="ends_at"
+                                        type="date"
+                                        name="ends_at"
+                                    />
                                     <InputError message={errors.ends_at} />
                                 </div>
                             </div>
@@ -227,7 +261,9 @@ function EditYearDialog({ year }: { year: Year }) {
                 </DialogHeader>
 
                 <Form
-                    {...AcademicYearController.update.form({ academic_year: year.id })}
+                    {...AcademicYearController.update.form({
+                        academic_year: year.id,
+                    })}
                     onSuccess={() => setOpen(false)}
                     className="space-y-4"
                 >
@@ -244,7 +280,9 @@ function EditYearDialog({ year }: { year: Year }) {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor={`starts-${year.id}`}>Starts</Label>
+                                    <Label htmlFor={`starts-${year.id}`}>
+                                        Starts
+                                    </Label>
                                     <Input
                                         id={`starts-${year.id}`}
                                         type="date"
@@ -254,7 +292,9 @@ function EditYearDialog({ year }: { year: Year }) {
                                     <InputError message={errors.starts_at} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor={`ends-${year.id}`}>Ends</Label>
+                                    <Label htmlFor={`ends-${year.id}`}>
+                                        Ends
+                                    </Label>
                                     <Input
                                         id={`ends-${year.id}`}
                                         type="date"
