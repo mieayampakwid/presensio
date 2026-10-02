@@ -11,6 +11,7 @@ use App\Models\Attendance;
 use App\Models\Guardian;
 use App\Models\Student;
 use App\Services\Notifications\WhatsAppClient;
+use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -244,9 +245,11 @@ class SendAbsenceNotifications implements ShouldQueue
     {
         $class = $student->currentEnrollment?->schoolClass?->name;
 
+        $schoolName = app(SchoolSettings::class)->schoolName();
+
         return sprintf(
             '[%s] Anak Anda, %s%s, tercatat %s pada %s. Silakan hubungi wali kelas atau masuk ke %s untuk melihat catatan kehadiran.',
-            (string) config('app.name'),
+            $schoolName,
             $student->full_name,
             $class !== null ? " ({$class})" : '',
             $this->statusPhrase($attendance->status),

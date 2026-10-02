@@ -4,6 +4,8 @@ use App\Http\Controllers\Settings\AttendanceSettingsController;
 use App\Http\Controllers\Settings\GuardianContactController;
 use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\SchoolLogoController;
+use App\Http\Controllers\Settings\SchoolProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('guardian-contact.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+
+    Route::get('settings/school/logo', SchoolLogoController::class)->name('school-logo');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -36,6 +40,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::put('settings/attendance', [AttendanceSettingsController::class, 'update'])
         ->name('attendance-settings.update');
+
+    Route::get('settings/school', [SchoolProfileController::class, 'edit'])
+        ->name('school-profile.edit');
+    Route::put('settings/school', [SchoolProfileController::class, 'update'])
+        ->name('school-profile.update');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {

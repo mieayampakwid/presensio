@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Single-row settings record (id = 1) anchoring attendance business logic
- * (spec 03 §Decisions "Application Configurability").
+ * and school profile (spec 03 §Decisions, spec 15 §School profile).
  *
  * @property int $id
  * @property string $school_timezone
@@ -17,6 +17,18 @@ use Illuminate\Support\Carbon;
  * @property string $auto_absent_cron_time
  * @property int $scan_debounce_minutes
  * @property int $scan_drift_tolerance_minutes
+ * @property string $school_name
+ * @property string|null $npsn
+ * @property string|null $school_address
+ * @property string|null $school_phone
+ * @property string|null $school_email
+ * @property string|null $logo_path
+ * @property string|null $principal_name
+ * @property string|null $principal_nip
+ * @property string|null $bank_name
+ * @property string|null $bank_account_number
+ * @property string|null $bank_account_holder
+ * @property string $default_curriculum
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -27,6 +39,18 @@ use Illuminate\Support\Carbon;
     'auto_absent_cron_time',
     'scan_debounce_minutes',
     'scan_drift_tolerance_minutes',
+    'school_name',
+    'npsn',
+    'school_address',
+    'school_phone',
+    'school_email',
+    'logo_path',
+    'principal_name',
+    'principal_nip',
+    'bank_name',
+    'bank_account_number',
+    'bank_account_holder',
+    'default_curriculum',
 ])]
 class SchoolSetting extends Model
 {

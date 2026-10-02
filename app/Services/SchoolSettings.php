@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Date;
 /**
  * Read model for the single-row settings table, with the school-timezone
  * helpers every attendance decision anchors on (spec 03 §Decisions
- * "Application Configurability"). The app itself runs UTC; all business
- * dates/times are derived here in the school timezone.
+ * "Application Configurability") and school profile helpers (spec 15).
+ * The app itself runs UTC; all business dates/times are derived here in the school timezone.
  */
 class SchoolSettings
 {
@@ -34,6 +34,14 @@ class SchoolSettings
         } catch (QueryException) {
             return new SchoolSetting($this->defaults());
         }
+    }
+
+    /**
+     * Clear memoized settings row.
+     */
+    public function refresh(): void
+    {
+        $this->memoized = null;
     }
 
     /**
@@ -121,6 +129,31 @@ class SchoolSettings
     }
 
     /**
+     * School name for documents and notifications.
+     */
+    public function schoolName(): string
+    {
+        $name = trim($this->row()->school_name);
+
+        return $name !== '' ? $name : (string) config('app.name');
+    }
+
+    /**
+     * Principal details: name and NIP.
+     *
+     * @return array{name: string|null, nip: string|null}
+     */
+    public function principal(): array
+    {
+        $row = $this->row();
+
+        return [
+            'name' => $row->principal_name,
+            'nip' => $row->principal_nip,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function defaults(): array
@@ -132,6 +165,8 @@ class SchoolSettings
             'auto_absent_cron_time' => '15:30',
             'scan_debounce_minutes' => 1,
             'scan_drift_tolerance_minutes' => 2,
+            'school_name' => '',
+            'default_curriculum' => 'merdeka',
         ];
     }
 }
