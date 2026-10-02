@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicYears\AcademicYearController;
+use App\Http\Controllers\AcademicYears\SemesterController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -9,6 +10,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('academic-years/{academic_year}', [AcademicYearController::class, 'update'])->name('academic-years.update');
     Route::post('academic-years/{academic_year}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
     Route::delete('academic-years/{academic_year}', [AcademicYearController::class, 'destroy'])->name('academic-years.destroy');
+
+    Route::get('academic-years/{academic_year}/semesters', [SemesterController::class, 'edit'])->name('academic-years.semesters.edit');
+    Route::put('academic-years/{academic_year}/semesters', [SemesterController::class, 'update'])->name('academic-years.semesters.update');
 
     Route::get('academic-years/roll-over', [AcademicYearController::class, 'rollOver'])->name('academic-years.roll-over');
     Route::post('academic-years/roll-over', [AcademicYearController::class, 'applyRollOver'])->name('academic-years.roll-over.apply');

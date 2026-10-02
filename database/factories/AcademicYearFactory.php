@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\AcademicYear;
+use App\Services\AcademicYears\SemesterService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,6 +24,18 @@ class AcademicYearFactory extends Factory
             // exactly-one-active invariant.
             'is_active' => false,
         ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (AcademicYear $year) {
+            if ($year->semesters()->doesntExist()) {
+                app(SemesterService::class)->createFor($year);
+            }
+        });
     }
 
     /**
