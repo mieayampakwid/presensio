@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ActiveRoleController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,7 @@ Route::post('reset-password', [PasswordResetController::class, 'update'])
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('active-role', ActiveRoleController::class)->name('active-role.switch');
 });
 
 require __DIR__.'/settings.php';

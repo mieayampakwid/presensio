@@ -1,9 +1,10 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     CalendarCheck,
     CalendarOff,
     CalendarRange,
+    ChevronsUpDown,
     ClipboardList,
     FileSpreadsheet,
     FileText,
@@ -18,22 +19,28 @@ import {
     UserRound,
     Users,
 } from 'lucide-react';
-import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
-import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
-import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
+import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
+import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
-import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
+import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
+import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
+import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
-import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -46,7 +53,7 @@ import {
 import { dashboard } from '@/routes';
 import { myAttendance, myQr } from '@/routes/attendance';
 import { my } from '@/routes/excuses';
-import type { Auth, NavItem } from '@/types';
+import type { Auth, NavItem, UserRole } from '@/types';
 
 const footerNavItems: NavItem[] = [
     {
@@ -63,6 +70,8 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
+    const activeRole = auth.active_role ?? auth.user.role;
+    const roles: UserRole[] = auth.user.roles ?? [auth.user.role];
 
     const mainNavItems: NavItem[] = [
         {
@@ -70,7 +79,7 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
-        ...(auth.user.role === 'admin'
+        ...(activeRole === 'admin'
             ? [
                   { title: 'Users', href: '/users', icon: Users },
                   {
@@ -110,7 +119,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(auth.user.role === 'student'
+        ...(activeRole === 'student'
             ? [
                   {
                       title: 'My QR',
@@ -129,7 +138,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(auth.user.role === 'teacher' || auth.user.role === 'admin'
+        ...(activeRole === 'teacher' || activeRole === 'admin'
             ? [
                   {
                       title: 'Attendance',
@@ -143,7 +152,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(auth.user.role === 'parent'
+        ...(activeRole === 'parent'
             ? [
                   {
                       title: 'My Excuses',
@@ -159,28 +168,34 @@ export function AppSidebar() {
             : []),
     ];
 
-    // Teacher/admin only — the three report screens grouped under their
-    // own sidebar section.
-    const reportNavItems: NavItem[] =
-        auth.user.role === 'teacher' || auth.user.role === 'admin'
-            ? [
-                  {
-                      title: 'Student Report',
-                      href: StudentReportController.index().url,
-                      icon: FileSpreadsheet,
-                  },
-                  {
-                      title: 'Class Report',
-                      href: ClassReportController.index().url,
-                      icon: Table2,
-                  },
-                  {
-                      title: 'Presence Board',
-                      href: PresenceBoardController.index().url,
-                      icon: Monitor,
-                  },
-              ]
-            : [];
+    const reportNavItems: NavItem[] = [
+        'admin',
+        'teacher',
+        'principal',
+        'counselor',
+    ].includes(activeRole)
+        ? [
+              {
+                  title: 'Student Report',
+                  href: StudentReportController.index().url,
+                  icon: FileSpreadsheet,
+              },
+              {
+                  title: 'Class Report',
+                  href: ClassReportController.index().url,
+                  icon: Table2,
+              },
+              ...(['admin', 'teacher', 'principal'].includes(activeRole)
+                  ? [
+                        {
+                            title: 'Presence Board',
+                            href: PresenceBoardController.index().url,
+                            icon: Monitor,
+                        },
+                    ]
+                  : []),
+          ]
+        : [];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -194,6 +209,46 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+
+                {roles.length > 1 && (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <SidebarMenuButton className="justify-between border text-xs">
+                                        <span className="flex items-center gap-1.5 capitalize font-medium">
+                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                                Role:
+                                            </span>
+                                            {activeRole}
+                                        </span>
+                                        <ChevronsUpDown className="size-3.5 opacity-50" />
+                                    </SidebarMenuButton>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="w-(--radix-dropdown-menu-trigger-width) min-w-44"
+                                >
+                                    {roles.map((r) => (
+                                        <DropdownMenuItem
+                                            key={r}
+                                            className={`cursor-pointer capitalize ${r === activeRole ? 'bg-accent text-accent-foreground font-semibold' : ''}`}
+                                            onClick={() => {
+                                                if (r !== activeRole) {
+                                                    router.post('/active-role', {
+                                                        role: r,
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            {r}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
             </SidebarHeader>
 
             <SidebarContent>
