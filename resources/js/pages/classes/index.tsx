@@ -19,6 +19,8 @@ import {
 type ClassRow = {
     id: number;
     name: string;
+    grade_level: number;
+    curriculum: string;
     teacher?: { id: number; name: string } | null;
 };
 
@@ -113,6 +115,12 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                     Name
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
+                                    Grade
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Curriculum
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
                                     Homeroom teacher
                                 </th>
                                 <th className="px-4 py-3" />
@@ -123,6 +131,16 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                 <tr key={schoolClass.id} className="border-t">
                                     <td className="px-4 py-3 font-medium">
                                         {schoolClass.name}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        {schoolClass.grade_level > 0 ? (
+                                            <span>Kelas {schoolClass.grade_level}</span>
+                                        ) : (
+                                            <span className="text-amber-600 font-medium">Belum diatur</span>
+                                        )}
+                                    </td>
+                                    <td className="text-muted-foreground px-4 py-3 capitalize">
+                                        {schoolClass.curriculum}
                                     </td>
                                     <td className="text-muted-foreground px-4 py-3">
                                         {schoolClass.teacher?.name ?? '—'}

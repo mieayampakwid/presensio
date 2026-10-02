@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Curriculum;
+use App\Support\MerdekaPhase;
 use Database\Factories\SchoolClassFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,11 +17,13 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $academic_year_id
  * @property string $name
+ * @property int $grade_level
+ * @property Curriculum|string $curriculum
  * @property int|null $teacher_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['academic_year_id', 'name', 'teacher_id'])]
+#[Fillable(['academic_year_id', 'name', 'grade_level', 'curriculum', 'teacher_id'])]
 class SchoolClass extends Model
 {
     /** @use HasFactory<SchoolClassFactory> */
@@ -80,5 +84,35 @@ class SchoolClass extends Model
             'id',
             'student_id',
         )->whereNull('enrollments.ended_on');
+    }
+
+    /**
+     * Derived Merdeka phase (A..F) based on grade level (1..12).
+     */
+    public function phase(): ?MerdekaPhase
+    {
+        return MerdekaPhase::forGradeLevel($this->grade_level);
+    }
+
+    /**
+     * Check if curriculum is locked (editable until the class has finalized grades).
+     * Plan 6 replaces this when course_semesters.finalized_at exists.
+     */
+    public function curriculumLocked(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'grade_level' => 'integer',
+            'curriculum' => Curriculum::class,
+        ];
     }
 }

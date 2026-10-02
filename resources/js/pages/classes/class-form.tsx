@@ -15,6 +15,8 @@ type ClassFormProps = {
     submitLabel: string;
     defaults: {
         name: string;
+        gradeLevel: number;
+        curriculum: string;
         teacherId: number | null;
     };
     teachers: TeacherOption[];
@@ -41,9 +43,44 @@ export default function ClassForm({
                             required
                             autoFocus
                             autoComplete="off"
-                            placeholder="e.g. Class 1A"
+                            placeholder="e.g. Kelas 1A"
                         />
                         <InputError message={errors.name} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="grade_level">Grade Level (1–12)</Label>
+                            <select
+                                id="grade_level"
+                                name="grade_level"
+                                defaultValue={defaults.gradeLevel > 0 ? defaults.gradeLevel : ''}
+                                required
+                                className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            >
+                                <option value="" disabled>Pilih tingkat kelas</option>
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map((lvl) => (
+                                    <option key={lvl} value={lvl}>
+                                        Kelas {lvl}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors.grade_level} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="curriculum">Curriculum</Label>
+                            <select
+                                id="curriculum"
+                                name="curriculum"
+                                defaultValue={defaults.curriculum || 'merdeka'}
+                                required
+                                className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            >
+                                <option value="merdeka">Kurikulum Merdeka</option>
+                            </select>
+                            <InputError message={errors.curriculum} />
+                        </div>
                     </div>
 
                     <div className="grid gap-2">

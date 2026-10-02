@@ -37,8 +37,8 @@ class RollOverTest extends TestCase
         $this->sourceYear = AcademicYear::active();
         $this->admin = User::factory()->admin()->create();
 
-        $this->class5a = SchoolClass::factory()->create(['name' => 'Kelas 5A', 'academic_year_id' => $this->sourceYear->id]);
-        $this->class5b = SchoolClass::factory()->create(['name' => 'Kelas 5B', 'academic_year_id' => $this->sourceYear->id]);
+        $this->class5a = SchoolClass::factory()->create(['name' => 'Kelas 5A', 'grade_level' => 5, 'academic_year_id' => $this->sourceYear->id]);
+        $this->class5b = SchoolClass::factory()->create(['name' => 'Kelas 5B', 'grade_level' => 5, 'academic_year_id' => $this->sourceYear->id]);
 
         Student::factory()->enrolledIn($this->class5a)->create(['full_name' => 'Ahmad Fauzi']);
         Student::factory()->enrolledIn($this->class5a)->create(['full_name' => 'Ayu Lestari']);
@@ -101,6 +101,8 @@ class RollOverTest extends TestCase
         $this->assertNotNull($target5b);
         $this->assertSame($teacher->id, $target5b->teacher_id);
         $this->assertSame(2, Enrollment::query()->whereNull('ended_on')->where('class_id', $target5b->id)->count());
+        $this->assertSame(6, $target5b->grade_level); // Source was grade 5, new class gets 5 + 1 = 6
+        $this->assertSame('merdeka', $target5b->curriculum instanceof \BackedEnum ? $target5b->curriculum->value : $target5b->curriculum);
 
         // The target year is now the single active one.
         $this->assertTrue($this->targetYear->fresh()->is_active);

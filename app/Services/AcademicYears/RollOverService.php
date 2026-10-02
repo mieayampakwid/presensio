@@ -2,9 +2,11 @@
 
 namespace App\Services\AcademicYears;
 
+use App\Enums\Curriculum;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
+use App\Services\SchoolSettings;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -18,6 +20,8 @@ use InvalidArgumentException;
  */
 class RollOverService
 {
+    public function __construct(private readonly SchoolSettings $schoolSettings) {}
+
     /**
      * @param  array<int, array{mode: 'existing'|'new'|'none', target_class_id?: int|null, new_name?: string|null, new_teacher_id?: int|null}>  $mappings
      *                                                                                                                                                     Keyed by source class id.
@@ -80,14 +84,19 @@ class RollOverService
      */
     private function resolveTargets(AcademicYear $target, AcademicYear $source, array $mappings): array
     {
-        $sourceClassIds = $source->classes()->pluck('id');
+        $sourceClasses = $source->classes()->get()->keyBy('id');
         $targets = [];
         $created = [];
 
+        $defaultCurriculum = $this->schoolSettings->row()->default_curriculum ?? Curriculum::Merdeka->value;
+
         foreach ($mappings as $sourceClassId => $mapping) {
-            if (! $sourceClassIds->contains((int) $sourceClassId)) {
+            $sourceClass = $sourceClasses->get((int) $sourceClassId);
+            if ($sourceClass === null) {
                 throw new InvalidArgumentException('A mapped source class does not belong to the active year.');
             }
+
+            $suggestedGradeLevel = min(12, max(1, $sourceClass->grade_level > 0 ? $sourceClass->grade_level + 1 : 1));
 
             $targetClassId = match ($mapping['mode']) {
                 'none' => null,
@@ -95,6 +104,8 @@ class RollOverService
                 'new' => $created[$sourceClassId] ??= SchoolClass::query()->create([
                     'academic_year_id' => $target->id,
                     'name' => $mapping['new_name'] ?? throw new InvalidArgumentException('A new target class needs a name.'),
+                    'grade_level' => $suggestedGradeLevel,
+                    'curriculum' => $defaultCurriculum,
                     'teacher_id' => $mapping['new_teacher_id'] ?? null,
                 ])->id,
             };

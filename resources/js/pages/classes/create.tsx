@@ -26,7 +26,12 @@ export default function CreateClass({ teachers }: Props) {
                 <ClassForm
                     action={SchoolClassController.store.form()}
                     submitLabel="Create class"
-                    defaults={{ name: '', teacherId: null }}
+                    defaults={{
+                        name: '',
+                        gradeLevel: 1,
+                        curriculum: 'merdeka',
+                        teacherId: null,
+                    }}
                     teachers={teachers}
                 />
             </div>

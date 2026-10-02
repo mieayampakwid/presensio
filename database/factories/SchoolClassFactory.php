@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Curriculum;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
@@ -14,10 +15,14 @@ class SchoolClassFactory extends Factory
 {
     public function definition(): array
     {
+        $grade = fake()->numberBetween(1, 12);
+
         return [
             // The bootstrap migration guarantees an active year exists.
             'academic_year_id' => fn () => AcademicYear::active()->id,
-            'name' => 'Kelas '.fake()->unique()->numerify('#'),
+            'name' => $grade.' '.fake()->unique()->regexify('[A-C]'),
+            'grade_level' => $grade,
+            'curriculum' => Curriculum::Merdeka,
             'teacher_id' => null,
         ];
     }

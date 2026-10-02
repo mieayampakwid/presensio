@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Classes;
 
+use App\Enums\Curriculum;
 use App\Enums\UserRole;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
@@ -29,6 +30,8 @@ class UpdateSchoolClassRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'grade_level' => ['required', 'integer', 'between:1,12'],
+            'curriculum' => ['required', Rule::enum(Curriculum::class)],
             'teacher_id' => ['nullable', Rule::exists(Teacher::class, 'id')],
         ];
     }

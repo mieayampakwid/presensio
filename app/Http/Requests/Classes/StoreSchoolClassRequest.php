@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Classes;
 
+use App\Enums\Curriculum;
 use App\Enums\UserRole;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
@@ -35,6 +36,8 @@ class StoreSchoolClassRequest extends FormRequest
                 'academic_year_id',
                 AcademicYear::active()?->id,
             )],
+            'grade_level' => ['required', 'integer', 'between:1,12'],
+            'curriculum' => ['required', Rule::enum(Curriculum::class)],
             'teacher_id' => ['nullable', Rule::exists(Teacher::class, 'id')],
         ];
     }

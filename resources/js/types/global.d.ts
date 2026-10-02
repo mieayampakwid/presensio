@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             locale: string;
+            incomplete_class_count?: number;
             locales: { value: string; label: string }[];
             translations: Record<string, unknown>;
             [key: string]: unknown;

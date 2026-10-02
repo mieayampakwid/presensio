@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Enums\Locale;
+use App\Enums\UserRole;
+use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Lang;
@@ -50,6 +52,9 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'active_role' => $user?->activeRole()->value,
             ],
+            'incomplete_class_count' => fn (): int => $user?->hasRole(UserRole::Admin)
+                ? SchoolClass::query()->where('grade_level', 0)->count()
+                : 0,
             'locale' => app()->getLocale(),
             'locales' => array_map(
                 fn (Locale $locale): array => ['value' => $locale->value, 'label' => $locale->label()],

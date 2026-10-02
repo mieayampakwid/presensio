@@ -11,6 +11,8 @@ type TeacherOption = {
 type ClassRow = {
     id: number;
     name: string;
+    grade_level: number;
+    curriculum: string;
     teacher_id: number | null;
 };
 
@@ -37,6 +39,8 @@ export default function EditClass({ class: schoolClass, teachers }: Props) {
                     submitLabel="Save changes"
                     defaults={{
                         name: schoolClass.name,
+                        gradeLevel: schoolClass.grade_level,
+                        curriculum: typeof schoolClass.curriculum === 'string' ? schoolClass.curriculum : 'merdeka',
                         teacherId: schoolClass.teacher_id,
                     }}
                     teachers={teachers}

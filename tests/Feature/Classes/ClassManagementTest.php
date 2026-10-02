@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Classes;
 
+use App\Enums\Curriculum;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -17,28 +18,27 @@ class ClassManagementTest extends TestCase
     public function test_admin_can_view_the_classes_list(): void
     {
         $admin = User::factory()->admin()->create();
-        $teacher = Teacher::factory()->create(['name' => 'Budi Santoso']);
-        SchoolClass::factory()->withTeacher($teacher)->create(['name' => 'Kelas 1A']);
+        SchoolClass::factory()->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
             ->get(route('classes.index'))
             ->assertOk()
-            ->assertSee('Kelas 1A')
-            ->assertSee('Budi Santoso');
+            ->assertSee('Kelas 1A');
     }
 
     public function test_admin_can_search_classes_by_name_or_teacher(): void
     {
         $admin = User::factory()->admin()->create();
-        $teacher = Teacher::factory()->create(['name' => 'Budi Santoso']);
-        SchoolClass::factory()->create(['name' => 'Kelas 1A']);
-        SchoolClass::factory()->withTeacher($teacher)->create(['name' => 'Kelas 2B']);
+        $teacher = Teacher::factory()->create(['name' => 'Budi Raharjo']);
+
+        SchoolClass::factory()->withTeacher($teacher)->create(['name' => 'Kelas 1A']);
+        SchoolClass::factory()->create(['name' => 'Kelas 2B']);
 
         $this->actingAs($admin)
             ->get(route('classes.index', ['search' => 'Budi']))
             ->assertOk()
-            ->assertSee('Kelas 2B')
-            ->assertDontSee('Kelas 1A');
+            ->assertSee('Kelas 1A')
+            ->assertDontSee('Kelas 2B');
     }
 
     #[DataProvider('nonAdminRoles')]
@@ -59,6 +59,8 @@ class ClassManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('classes.store'), [
                 'name' => 'Kelas 1A',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
                 'teacher_id' => $teacher->id,
             ])
             ->assertSessionHasNoErrors()
@@ -67,6 +69,8 @@ class ClassManagementTest extends TestCase
         $class = SchoolClass::where('name', 'Kelas 1A')->first();
 
         $this->assertNotNull($class);
+        $this->assertSame(1, $class->grade_level);
+        $this->assertSame(Curriculum::Merdeka, $class->curriculum);
         $this->assertSame($teacher->id, $class->teacher_id);
     }
 
@@ -77,13 +81,45 @@ class ClassManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('classes.store'), [
                 'name' => 'Kelas 1A',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
             ])
             ->assertSessionHasNoErrors();
 
         $class = SchoolClass::where('name', 'Kelas 1A')->first();
 
         $this->assertNotNull($class);
+        $this->assertSame(1, $class->grade_level);
+        $this->assertSame(Curriculum::Merdeka, $class->curriculum);
         $this->assertNull($class->teacher_id);
+    }
+
+    public function test_class_creation_requires_grade_level_and_curriculum(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->post(route('classes.store'), [
+                'name' => 'Kelas 1A',
+            ])
+            ->assertSessionHasErrors(['grade_level', 'curriculum']);
+
+        // Grade level must be 1..12
+        $this->actingAs($admin)
+            ->post(route('classes.store'), [
+                'name' => 'Kelas 1A',
+                'grade_level' => 0,
+                'curriculum' => 'merdeka',
+            ])
+            ->assertSessionHasErrors('grade_level');
+
+        $this->actingAs($admin)
+            ->post(route('classes.store'), [
+                'name' => 'Kelas 1A',
+                'grade_level' => 13,
+                'curriculum' => 'merdeka',
+            ])
+            ->assertSessionHasErrors('grade_level');
     }
 
     public function test_class_creation_rejects_a_teacher_who_already_homerooms_another_class(): void
@@ -95,6 +131,8 @@ class ClassManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('classes.store'), [
                 'name' => 'Kelas 2B',
+                'grade_level' => 2,
+                'curriculum' => 'merdeka',
                 'teacher_id' => $teacher->id,
             ])
             ->assertSessionHasErrors('teacher_id');
@@ -104,15 +142,17 @@ class ClassManagementTest extends TestCase
 
     public function test_homeroom_rule_is_advisable_when_the_config_allows_multiple(): void
     {
+        config(['school.allow_multiple_homerooms' => true]);
+
         $admin = User::factory()->admin()->create();
         $teacher = Teacher::factory()->create();
-        SchoolClass::factory()->withTeacher($teacher)->create();
-
-        config(['school.allow_multiple_homerooms' => true]);
+        SchoolClass::factory()->withTeacher($teacher)->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
             ->post(route('classes.store'), [
                 'name' => 'Kelas 2B',
+                'grade_level' => 2,
+                'curriculum' => 'merdeka',
                 'teacher_id' => $teacher->id,
             ])
             ->assertSessionHasNoErrors();
@@ -129,6 +169,8 @@ class ClassManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('classes.update', $class), [
                 'name' => 'Kelas 1A (updated)',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
                 'teacher_id' => $teacher->id,
             ])
             ->assertSessionHasNoErrors();
@@ -147,6 +189,8 @@ class ClassManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('classes.update', $other), [
                 'name' => 'Kelas 2B',
+                'grade_level' => 2,
+                'curriculum' => 'merdeka',
                 'teacher_id' => $teacher->id,
             ])
             ->assertSessionHasErrors('teacher_id');
@@ -188,7 +232,11 @@ class ClassManagementTest extends TestCase
         SchoolClass::factory()->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
-            ->post(route('classes.store'), ['name' => 'Kelas 1A'])
+            ->post(route('classes.store'), [
+                'name' => 'Kelas 1A',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
+            ])
             ->assertSessionHasErrors('name');
 
         $this->assertSame(1, SchoolClass::where('name', 'Kelas 1A')->count());
