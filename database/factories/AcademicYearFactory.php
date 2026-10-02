@@ -13,7 +13,7 @@ class AcademicYearFactory extends Factory
 {
     public function definition(): array
     {
-        $start = fake()->unique()->numerify('20##');
+        $start = fake()->unique()->numberBetween(2030, 2090);
 
         return [
             'name' => $start.'/'.((int) $start + 1),

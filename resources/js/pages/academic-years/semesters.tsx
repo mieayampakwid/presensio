@@ -6,7 +6,13 @@ import SemesterController from '@/actions/App/Http/Controllers/AcademicYears/Sem
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -82,7 +88,10 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                     <CardHeader>
                         <CardTitle>Adjust Semesters</CardTitle>
                         <CardDescription>
-                            Semester Ganjil begins on the academic year start date. Semester Genap must begin the day after Semester Ganjil ends and conclude on the academic year end date.
+                            Semester Ganjil begins on the academic year start
+                            date. Semester Genap must begin the day after
+                            Semester Ganjil ends and conclude on the academic
+                            year end date.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -94,72 +103,150 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                         >
                             {({ errors, processing }) => (
                                 <>
-                                    <InputError message={errors['semesters'] as string | undefined} />
+                                    <InputError
+                                        message={
+                                            errors['semesters'] as
+                                                | string
+                                                | undefined
+                                        }
+                                    />
 
                                     <div className="grid gap-6 md:grid-cols-2">
                                         <div className="space-y-4 rounded-lg border p-4">
-                                            <h3 className="font-semibold">Semester 1 (Ganjil)</h3>
-                                            <input type="hidden" name="semesters[0][number]" value={1} />
-                                            <input type="hidden" name="semesters[0][starts_at]" value={academic_year.starts_at} />
+                                            <h3 className="font-semibold">
+                                                Semester 1 (Ganjil)
+                                            </h3>
+                                            <input
+                                                type="hidden"
+                                                name="semesters[0][number]"
+                                                value={1}
+                                            />
+                                            <input
+                                                type="hidden"
+                                                name="semesters[0][starts_at]"
+                                                value={academic_year.starts_at}
+                                            />
                                             <div className="space-y-2">
-                                                <Label htmlFor="ganjil_start">Start Date</Label>
+                                                <Label htmlFor="ganjil_start">
+                                                    Start Date
+                                                </Label>
                                                 <Input
                                                     id="ganjil_start"
                                                     type="date"
-                                                    value={academic_year.starts_at}
+                                                    value={
+                                                        academic_year.starts_at
+                                                    }
                                                     disabled
                                                     className="bg-muted"
                                                 />
-                                                <p className="text-muted-foreground text-xs">Locked to academic year start</p>
-                                                <InputError message={errors['semesters.0.starts_at'] as string | undefined} />
+                                                <p className="text-muted-foreground text-xs">
+                                                    Locked to academic year
+                                                    start
+                                                </p>
+                                                <InputError
+                                                    message={
+                                                        errors[
+                                                            'semesters.0.starts_at'
+                                                        ] as string | undefined
+                                                    }
+                                                />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="ganjil_end">End Date</Label>
+                                                <Label htmlFor="ganjil_end">
+                                                    End Date
+                                                </Label>
                                                 <Input
                                                     id="ganjil_end"
                                                     type="date"
                                                     name="semesters[0][ends_at]"
                                                     value={ganjilEnd}
-                                                    onChange={(e) => handleGanjilEndChange(e.target.value)}
+                                                    onChange={(e) =>
+                                                        handleGanjilEndChange(
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     required
                                                 />
-                                                <InputError message={errors['semesters.0.ends_at'] as string | undefined} />
+                                                <InputError
+                                                    message={
+                                                        errors[
+                                                            'semesters.0.ends_at'
+                                                        ] as string | undefined
+                                                    }
+                                                />
                                             </div>
                                         </div>
 
                                         <div className="space-y-4 rounded-lg border p-4">
-                                            <h3 className="font-semibold">Semester 2 (Genap)</h3>
-                                            <input type="hidden" name="semesters[1][number]" value={2} />
-                                            <input type="hidden" name="semesters[1][ends_at]" value={academic_year.ends_at} />
+                                            <h3 className="font-semibold">
+                                                Semester 2 (Genap)
+                                            </h3>
+                                            <input
+                                                type="hidden"
+                                                name="semesters[1][number]"
+                                                value={2}
+                                            />
+                                            <input
+                                                type="hidden"
+                                                name="semesters[1][ends_at]"
+                                                value={academic_year.ends_at}
+                                            />
                                             <div className="space-y-2">
-                                                <Label htmlFor="genap_start">Start Date</Label>
+                                                <Label htmlFor="genap_start">
+                                                    Start Date
+                                                </Label>
                                                 <Input
                                                     id="genap_start"
                                                     type="date"
                                                     name="semesters[1][starts_at]"
                                                     value={genapStart}
-                                                    onChange={(e) => setGenapStart(e.target.value)}
+                                                    onChange={(e) =>
+                                                        setGenapStart(
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     required
                                                 />
-                                                <InputError message={errors['semesters.1.starts_at'] as string | undefined} />
+                                                <InputError
+                                                    message={
+                                                        errors[
+                                                            'semesters.1.starts_at'
+                                                        ] as string | undefined
+                                                    }
+                                                />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="genap_end">End Date</Label>
+                                                <Label htmlFor="genap_end">
+                                                    End Date
+                                                </Label>
                                                 <Input
                                                     id="genap_end"
                                                     type="date"
-                                                    value={academic_year.ends_at}
+                                                    value={
+                                                        academic_year.ends_at
+                                                    }
                                                     disabled
                                                     className="bg-muted"
                                                 />
-                                                <p className="text-muted-foreground text-xs">Locked to academic year end</p>
-                                                <InputError message={errors['semesters.1.ends_at'] as string | undefined} />
+                                                <p className="text-muted-foreground text-xs">
+                                                    Locked to academic year end
+                                                </p>
+                                                <InputError
+                                                    message={
+                                                        errors[
+                                                            'semesters.1.ends_at'
+                                                        ] as string | undefined
+                                                    }
+                                                />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex justify-end">
-                                        <Button type="submit" disabled={processing}>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                        >
                                             Save Semester Boundaries
                                         </Button>
                                     </div>

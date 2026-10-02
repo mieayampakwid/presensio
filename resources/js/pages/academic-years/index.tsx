@@ -110,9 +110,20 @@ export default function AcademicYearsIndex({ years }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="sm" asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                asChild
+                                            >
                                                 <Link
-                                                    href={SemesterController.edit({ academic_year: year.id }).url}
+                                                    href={
+                                                        SemesterController.edit(
+                                                            {
+                                                                academic_year:
+                                                                    year.id,
+                                                            },
+                                                        ).url
+                                                    }
                                                     title="Manage semesters"
                                                 >
                                                     <CalendarDays className="h-4 w-4" />

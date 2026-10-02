@@ -47,7 +47,9 @@ export default function SchoolProfile({ profile }: Props) {
                     {({ processing, errors }) => (
                         <div className="space-y-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="school_name">Official School Name</Label>
+                                <Label htmlFor="school_name">
+                                    Official School Name
+                                </Label>
                                 <Input
                                     id="school_name"
                                     name="school_name"
@@ -58,7 +60,7 @@ export default function SchoolProfile({ profile }: Props) {
                                 <InputError message={errors.school_name} />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
                                     <Label htmlFor="npsn">NPSN</Label>
                                     <Input
@@ -71,21 +73,32 @@ export default function SchoolProfile({ profile }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_curriculum">Default Curriculum</Label>
+                                    <Label htmlFor="default_curriculum">
+                                        Default Curriculum
+                                    </Label>
                                     <select
                                         id="default_curriculum"
                                         name="default_curriculum"
-                                        defaultValue={profile.default_curriculum || 'merdeka'}
+                                        defaultValue={
+                                            profile.default_curriculum ||
+                                            'merdeka'
+                                        }
                                         className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                     >
-                                        <option value="merdeka">Kurikulum Merdeka</option>
+                                        <option value="merdeka">
+                                            Kurikulum Merdeka
+                                        </option>
                                     </select>
-                                    <InputError message={errors.default_curriculum} />
+                                    <InputError
+                                        message={errors.default_curriculum}
+                                    />
                                 </div>
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="school_address">School Address</Label>
+                                <Label htmlFor="school_address">
+                                    School Address
+                                </Label>
                                 <textarea
                                     id="school_address"
                                     name="school_address"
@@ -97,25 +110,31 @@ export default function SchoolProfile({ profile }: Props) {
                                 <InputError message={errors.school_address} />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
                                     <Label htmlFor="school_phone">Phone</Label>
                                     <Input
                                         id="school_phone"
                                         name="school_phone"
-                                        defaultValue={profile.school_phone ?? ''}
+                                        defaultValue={
+                                            profile.school_phone ?? ''
+                                        }
                                         placeholder="e.g. 031-1234567"
                                     />
                                     <InputError message={errors.school_phone} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="school_email">Official Email</Label>
+                                    <Label htmlFor="school_email">
+                                        Official Email
+                                    </Label>
                                     <Input
                                         id="school_email"
                                         type="email"
                                         name="school_email"
-                                        defaultValue={profile.school_email ?? ''}
+                                        defaultValue={
+                                            profile.school_email ?? ''
+                                        }
                                         placeholder="e.g. info@sekolah.sch.id"
                                     />
                                     <InputError message={errors.school_email} />
@@ -123,18 +142,23 @@ export default function SchoolProfile({ profile }: Props) {
                             </div>
 
                             <div className="space-y-2 rounded-lg border p-4">
-                                <h3 className="text-sm font-semibold">School Logo</h3>
+                                <h3 className="text-sm font-semibold">
+                                    School Logo
+                                </h3>
                                 <p className="text-muted-foreground text-xs">
-                                    PNG, JPG, or JPEG format (max 1 MB). Private storage streamed via authorized endpoint.
+                                    PNG, JPG, or JPEG format (max 1 MB). Private
+                                    storage streamed via authorized endpoint.
                                 </p>
                                 {profile.has_logo && (
                                     <div className="flex items-center gap-4 py-2">
                                         <img
                                             src="/settings/school/logo"
                                             alt="School logo preview"
-                                            className="h-16 w-16 object-contain rounded border bg-white p-1"
+                                            className="h-16 w-16 rounded border bg-white object-contain p-1"
                                         />
-                                        <span className="text-muted-foreground text-xs">Current logo</span>
+                                        <span className="text-muted-foreground text-xs">
+                                            Current logo
+                                        </span>
                                     </div>
                                 )}
                                 <Input
@@ -147,68 +171,106 @@ export default function SchoolProfile({ profile }: Props) {
                             </div>
 
                             <div className="space-y-4 rounded-lg border p-4">
-                                <h3 className="text-sm font-semibold">Principal (Kepala Sekolah)</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <h3 className="text-sm font-semibold">
+                                    Principal (Kepala Sekolah)
+                                </h3>
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="principal_name">Principal Name & Titles</Label>
+                                        <Label htmlFor="principal_name">
+                                            Principal Name & Titles
+                                        </Label>
                                         <Input
                                             id="principal_name"
                                             name="principal_name"
-                                            defaultValue={profile.principal_name ?? ''}
+                                            defaultValue={
+                                                profile.principal_name ?? ''
+                                            }
                                             placeholder="e.g. Dr. H. Sulaiman, M.Pd."
                                         />
-                                        <InputError message={errors.principal_name} />
+                                        <InputError
+                                            message={errors.principal_name}
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="principal_nip">NIP</Label>
+                                        <Label htmlFor="principal_nip">
+                                            NIP
+                                        </Label>
                                         <Input
                                             id="principal_nip"
                                             name="principal_nip"
-                                            defaultValue={profile.principal_nip ?? ''}
+                                            defaultValue={
+                                                profile.principal_nip ?? ''
+                                            }
                                             placeholder="e.g. 197001011995011001"
                                         />
-                                        <InputError message={errors.principal_nip} />
+                                        <InputError
+                                            message={errors.principal_nip}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-4 rounded-lg border p-4">
-                                <h3 className="text-sm font-semibold">School Bank Account (Transfer Instructions)</h3>
+                                <h3 className="text-sm font-semibold">
+                                    School Bank Account (Transfer Instructions)
+                                </h3>
                                 <div className="grid gap-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="bank_name">Bank Name</Label>
+                                            <Label htmlFor="bank_name">
+                                                Bank Name
+                                            </Label>
                                             <Input
                                                 id="bank_name"
                                                 name="bank_name"
-                                                defaultValue={profile.bank_name ?? ''}
+                                                defaultValue={
+                                                    profile.bank_name ?? ''
+                                                }
                                                 placeholder="e.g. Bank Mandiri"
                                             />
-                                            <InputError message={errors.bank_name} />
+                                            <InputError
+                                                message={errors.bank_name}
+                                            />
                                         </div>
 
                                         <div className="grid gap-2">
-                                            <Label htmlFor="bank_account_number">Account Number</Label>
+                                            <Label htmlFor="bank_account_number">
+                                                Account Number
+                                            </Label>
                                             <Input
                                                 id="bank_account_number"
                                                 name="bank_account_number"
-                                                defaultValue={profile.bank_account_number ?? ''}
+                                                defaultValue={
+                                                    profile.bank_account_number ??
+                                                    ''
+                                                }
                                                 placeholder="e.g. 1420012345678"
                                             />
-                                            <InputError message={errors.bank_account_number} />
+                                            <InputError
+                                                message={
+                                                    errors.bank_account_number
+                                                }
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="bank_account_holder">Account Holder Name</Label>
+                                        <Label htmlFor="bank_account_holder">
+                                            Account Holder Name
+                                        </Label>
                                         <Input
                                             id="bank_account_holder"
                                             name="bank_account_holder"
-                                            defaultValue={profile.bank_account_holder ?? ''}
+                                            defaultValue={
+                                                profile.bank_account_holder ??
+                                                ''
+                                            }
                                             placeholder="e.g. SMP Negeri 1 Surabaya"
                                         />
-                                        <InputError message={errors.bank_account_holder} />
+                                        <InputError
+                                            message={errors.bank_account_holder}
+                                        />
                                     </div>
                                 </div>
                             </div>

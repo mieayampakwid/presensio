@@ -40,7 +40,6 @@ class UpdateSemestersRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
-            /** @var AcademicYear $academicYear */
             $academicYear = $this->route('academic_year');
             if (! $academicYear instanceof AcademicYear) {
                 return;

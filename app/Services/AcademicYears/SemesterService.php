@@ -31,7 +31,7 @@ class SemesterService
             'academic_year_id' => $year->id,
             'number' => 1,
             'name' => 'Semester Ganjil',
-            'starts_at' => $year->starts_at instanceof CarbonInterface ? $year->starts_at->toDateString() : (string) $year->starts_at,
+            'starts_at' => $year->starts_at->toDateString(),
             'ends_at' => $december31,
         ]);
 
@@ -40,7 +40,7 @@ class SemesterService
             'number' => 2,
             'name' => 'Semester Genap',
             'starts_at' => $january1,
-            'ends_at' => $year->ends_at instanceof CarbonInterface ? $year->ends_at->toDateString() : (string) $year->ends_at,
+            'ends_at' => $year->ends_at->toDateString(),
         ]);
 
         return [$ganjil, $genap];

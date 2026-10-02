@@ -40,7 +40,10 @@ export default function EditClass({ class: schoolClass, teachers }: Props) {
                     defaults={{
                         name: schoolClass.name,
                         gradeLevel: schoolClass.grade_level,
-                        curriculum: typeof schoolClass.curriculum === 'string' ? schoolClass.curriculum : 'merdeka',
+                        curriculum:
+                            typeof schoolClass.curriculum === 'string'
+                                ? schoolClass.curriculum
+                                : 'merdeka',
                         teacherId: schoolClass.teacher_id,
                     }}
                     teachers={teachers}

@@ -88,26 +88,33 @@ export default function AttendanceSettings({ settings }: Props) {
                                     Hari Sekolah Operasional (Operational Days)
                                 </Label>
                                 <p className="text-muted-foreground text-xs">
-                                    Pilih hari-hari kegiatan belajar mengajar berlangsung. Absensi otomatis dan perhitungan ketidakhadiran hanya aktif pada hari operasional.
+                                    Pilih hari-hari kegiatan belajar mengajar
+                                    berlangsung. Absensi otomatis dan
+                                    perhitungan ketidakhadiran hanya aktif pada
+                                    hari operasional.
                                 </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                                <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3">
                                     {WEEKDAYS.map((day) => (
                                         <label
                                             key={day.value}
-                                            className="flex items-center gap-2 text-sm cursor-pointer"
+                                            className="flex cursor-pointer items-center gap-2 text-sm"
                                         >
                                             <input
                                                 type="checkbox"
                                                 name="school_operational_days[]"
                                                 value={day.value}
-                                                defaultChecked={settings.school_operational_days.includes(day.value)}
-                                                className="border-input text-primary focus:ring-primary rounded h-4 w-4"
+                                                defaultChecked={settings.school_operational_days.includes(
+                                                    day.value,
+                                                )}
+                                                className="border-input text-primary focus:ring-primary h-4 w-4 rounded"
                                             />
                                             <span>{day.label}</span>
                                         </label>
                                     ))}
                                 </div>
-                                <InputError message={errors.school_operational_days} />
+                                <InputError
+                                    message={errors.school_operational_days}
+                                />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">
@@ -167,9 +174,7 @@ export default function AttendanceSettings({ settings }: Props) {
                                 >
                                     Require check-out scan at end of day
                                 </Label>
-                                <InputError
-                                    message={errors.require_checkout}
-                                />
+                                <InputError message={errors.require_checkout} />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">

@@ -134,9 +134,13 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                     </td>
                                     <td className="px-4 py-3">
                                         {schoolClass.grade_level > 0 ? (
-                                            <span>Kelas {schoolClass.grade_level}</span>
+                                            <span>
+                                                Kelas {schoolClass.grade_level}
+                                            </span>
                                         ) : (
-                                            <span className="text-amber-600 font-medium">Belum diatur</span>
+                                            <span className="font-medium text-amber-600">
+                                                Belum diatur
+                                            </span>
                                         )}
                                     </td>
                                     <td className="text-muted-foreground px-4 py-3 capitalize">

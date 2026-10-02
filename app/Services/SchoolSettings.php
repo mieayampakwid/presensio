@@ -120,7 +120,7 @@ class SchoolSettings
     {
         $days = $this->row()->school_operational_days;
 
-        if (is_array($days) && ! empty($days)) {
+        if ($days !== []) {
             return array_map('intval', $days);
         }
 

@@ -28,11 +28,12 @@ class SemesterServiceTest extends TestCase
     public function test_create_for_academic_year_splits_at_january_first(): void
     {
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-13',
             'ends_at' => '2028-06-24',
         ]);
 
-        // Clean out any existing semesters for this year (e.g. from migrations)
+        // Clean out any existing semesters for this year (e.g. from migrations/factory)
         Semester::query()->where('academic_year_id', $year->id)->delete();
 
         [$ganjil, $genap] = $this->service->createFor($year);
@@ -68,6 +69,7 @@ class SemesterServiceTest extends TestCase
     public function test_current_semester_resolves_ganjil_on_date(): void
     {
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-13',
             'ends_at' => '2028-06-24',
         ]);
@@ -84,6 +86,7 @@ class SemesterServiceTest extends TestCase
     public function test_current_semester_resolves_genap_on_date(): void
     {
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-13',
             'ends_at' => '2028-06-24',
         ]);
@@ -100,6 +103,7 @@ class SemesterServiceTest extends TestCase
     public function test_gap_rule_resolves_to_most_recently_started_semester(): void
     {
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-01',
             'ends_at' => '2028-06-30',
         ]);
@@ -135,10 +139,10 @@ class SemesterServiceTest extends TestCase
         $this->assertNull($this->service->current('2027-01-01'));
 
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-01',
             'ends_at' => '2028-06-30',
         ]);
-        $this->service->createFor($year);
 
         // Before any semester starts
         $this->assertNull($this->service->current('2020-01-01'));
@@ -147,6 +151,7 @@ class SemesterServiceTest extends TestCase
     public function test_current_uses_school_settings_today_when_on_is_null(): void
     {
         $year = AcademicYear::factory()->create([
+            'name' => '2027/2028',
             'starts_at' => '2027-07-01',
             'ends_at' => '2028-06-30',
         ]);
