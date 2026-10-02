@@ -19,6 +19,21 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            if ($user->roleGrants()->doesntExist() && $user->role !== null) {
+                $user->roleGrants()->create([
+                    'role' => $user->role,
+                    'created_at' => now(),
+                ]);
+            }
+        });
+    }
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -39,11 +54,37 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user has the given roles.
+     */
+    public function withRoles(UserRole ...$roles): static
+    {
+        return $this->state(fn () => [
+            'role' => $roles[0] ?? UserRole::Teacher,
+        ])->afterCreating(function (User $user) use ($roles) {
+            $user->roleGrants()->delete();
+            foreach ($roles as $role) {
+                $user->roleGrants()->create([
+                    'role' => $role,
+                    'created_at' => now(),
+                ]);
+            }
+        });
+    }
+
+    /**
      * Indicate that the user is an administrator.
      */
     public function admin(): static
     {
         return $this->state(fn () => ['role' => UserRole::Admin]);
+    }
+
+    /**
+     * Indicate that the user is a principal.
+     */
+    public function principal(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Principal]);
     }
 
     /**
@@ -53,6 +94,30 @@ class UserFactory extends Factory
     public function teacher(): static
     {
         return $this->state(fn () => ['role' => UserRole::Teacher]);
+    }
+
+    /**
+     * Indicate that the user is a counselor.
+     */
+    public function counselor(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Counselor]);
+    }
+
+    /**
+     * Indicate that the user is a finance officer.
+     */
+    public function finance(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Finance]);
+    }
+
+    /**
+     * Indicate that the user is a staff member.
+     */
+    public function staff(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::Staff]);
     }
 
     /**

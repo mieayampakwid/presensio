@@ -8,10 +8,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -50,6 +52,69 @@ class User extends Authenticatable implements PasskeyUser
             'is_active' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /** @return HasMany<UserRoleGrant, $this> */
+    public function roleGrants(): HasMany
+    {
+        return $this->hasMany(UserRoleGrant::class);
+    }
+
+    /**
+     * @return Collection<int, UserRole>
+     */
+    public function roles(): Collection
+    {
+        $held = $this->roleGrants->pluck('role');
+
+        if ($held->isEmpty()) {
+            $directRole = $this->getAttribute('role');
+            if ($directRole instanceof UserRole) {
+                $held = collect([$directRole]);
+            } elseif (is_string($directRole) && $directRole !== '') {
+                $roleEnum = UserRole::tryFrom($directRole);
+                if ($roleEnum !== null) {
+                    $held = collect([$roleEnum]);
+                }
+            }
+        }
+
+        $order = array_flip(array_map(fn (UserRole $case) => $case->value, UserRole::cases()));
+
+        return $held->unique()->sortBy(fn (UserRole $role) => $order[$role->value] ?? 99)->values();
+    }
+
+    public function hasRole(UserRole $role): bool
+    {
+        return $this->roles()->contains($role);
+    }
+
+    public function hasAnyRole(UserRole ...$roles): bool
+    {
+        $held = $this->roles();
+
+        foreach ($roles as $role) {
+            if ($held->contains($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function activeRole(): UserRole
+    {
+        $roles = $this->roles();
+        $sessionRole = session('active_role');
+
+        if ($sessionRole !== null) {
+            $parsed = is_string($sessionRole) ? UserRole::tryFrom($sessionRole) : ($sessionRole instanceof UserRole ? $sessionRole : null);
+            if ($parsed !== null && $roles->contains($parsed)) {
+                return $parsed;
+            }
+        }
+
+        return $roles->first() ?? UserRole::Teacher;
     }
 
     /** @return HasOne<Teacher, $this> */
