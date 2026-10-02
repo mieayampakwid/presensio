@@ -28,7 +28,8 @@ class AttendanceSettingsTest extends TestCase
                 ->where('settings.auto_absent_cron_time', '15:30')
                 ->where('settings.require_checkout', false)
                 ->where('settings.scan_debounce_minutes', 1)
-                ->where('settings.scan_drift_tolerance_minutes', 2));
+                ->where('settings.scan_drift_tolerance_minutes', 2)
+                ->where('settings.school_operational_days', [1, 2, 3, 4, 5]));
     }
 
     public function test_admin_updates_every_field(): void
@@ -43,6 +44,7 @@ class AttendanceSettingsTest extends TestCase
                 'require_checkout' => '1',
                 'scan_debounce_minutes' => '5',
                 'scan_drift_tolerance_minutes' => '3',
+                'school_operational_days' => [1, 2, 3, 4, 5, 6],
             ])
             ->assertRedirect(route('attendance-settings.edit'));
 
@@ -53,6 +55,7 @@ class AttendanceSettingsTest extends TestCase
         $this->assertTrue($row->require_checkout);
         $this->assertSame(5, $row->scan_debounce_minutes);
         $this->assertSame(3, $row->scan_drift_tolerance_minutes);
+        $this->assertSame([1, 2, 3, 4, 5, 6], $row->school_operational_days);
 
         // The singleton memoizes per process; a fresh process would re-read.
         app()->forgetInstance(SchoolSettings::class);
@@ -62,7 +65,8 @@ class AttendanceSettingsTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('settings.school_timezone', 'Asia/Makassar')
-                ->where('settings.require_checkout', true));
+                ->where('settings.require_checkout', true)
+                ->where('settings.school_operational_days', [1, 2, 3, 4, 5, 6]));
     }
 
     public function test_invalid_values_are_rejected(): void
@@ -77,15 +81,34 @@ class AttendanceSettingsTest extends TestCase
                 'require_checkout' => '1',
                 'scan_debounce_minutes' => '999',
                 'scan_drift_tolerance_minutes' => '-1',
+                'school_operational_days' => [8], // 8 is invalid day
             ])
             ->assertSessionHasErrors([
                 'school_timezone',
                 'school_start_time',
                 'scan_debounce_minutes',
                 'scan_drift_tolerance_minutes',
+                'school_operational_days.0',
             ]);
 
         $this->assertSame('Asia/Jakarta', SchoolSetting::query()->sole()->school_timezone);
+    }
+
+    public function test_operational_days_cannot_be_empty(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('attendance-settings.update'), [
+                'school_timezone' => 'Asia/Jakarta',
+                'school_start_time' => '07:30',
+                'auto_absent_cron_time' => '15:30',
+                'require_checkout' => '1',
+                'scan_debounce_minutes' => '1',
+                'scan_drift_tolerance_minutes' => '2',
+                'school_operational_days' => [],
+            ])
+            ->assertSessionHasErrors(['school_operational_days']);
     }
 
     #[DataProvider('nonAdminRoles')]
@@ -98,23 +121,16 @@ class AttendanceSettingsTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->put(route('attendance-settings.update'), [
-                'school_timezone' => 'UTC',
-                'school_start_time' => '07:30',
-                'auto_absent_cron_time' => '15:30',
-                'require_checkout' => '0',
-                'scan_debounce_minutes' => '1',
-                'scan_drift_tolerance_minutes' => '2',
-            ])
+            ->put(route('attendance-settings.update'), [])
             ->assertForbidden();
     }
 
     public static function nonAdminRoles(): array
     {
         return [
-            ['teacher'],
-            ['student'],
-            ['parent'],
+            'teacher' => ['teacher'],
+            'student' => ['student'],
+            'parent' => ['parent'],
         ];
     }
 

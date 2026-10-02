@@ -14,6 +14,7 @@ type Settings = {
     require_checkout: boolean;
     scan_debounce_minutes: number;
     scan_drift_tolerance_minutes: number;
+    school_operational_days: number[];
 };
 
 type Props = {
@@ -30,6 +31,16 @@ const TIMEZONES = [
     'Asia/Singapore',
     'Asia/Tokyo',
     'UTC',
+];
+
+const WEEKDAYS = [
+    { value: 1, label: 'Senin (Mon)' },
+    { value: 2, label: 'Selasa (Tue)' },
+    { value: 3, label: 'Rabu (Wed)' },
+    { value: 4, label: 'Kamis (Thu)' },
+    { value: 5, label: 'Jumat (Fri)' },
+    { value: 6, label: 'Sabtu (Sat)' },
+    { value: 7, label: 'Minggu (Sun)' },
 ];
 
 export default function AttendanceSettings({ settings }: Props) {
@@ -70,6 +81,33 @@ export default function AttendanceSettings({ settings }: Props) {
                                     ))}
                                 </select>
                                 <InputError message={errors.school_timezone} />
+                            </div>
+
+                            <div className="space-y-2 rounded-lg border p-4">
+                                <Label className="text-sm font-semibold">
+                                    Hari Sekolah Operasional (Operational Days)
+                                </Label>
+                                <p className="text-muted-foreground text-xs">
+                                    Pilih hari-hari kegiatan belajar mengajar berlangsung. Absensi otomatis dan perhitungan ketidakhadiran hanya aktif pada hari operasional.
+                                </p>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                                    {WEEKDAYS.map((day) => (
+                                        <label
+                                            key={day.value}
+                                            className="flex items-center gap-2 text-sm cursor-pointer"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name="school_operational_days[]"
+                                                value={day.value}
+                                                defaultChecked={settings.school_operational_days.includes(day.value)}
+                                                className="border-input text-primary focus:ring-primary rounded h-4 w-4"
+                                            />
+                                            <span>{day.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <InputError message={errors.school_operational_days} />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">
@@ -121,18 +159,23 @@ export default function AttendanceSettings({ settings }: Props) {
                                     name="require_checkout"
                                     value="1"
                                     defaultChecked={settings.require_checkout}
-                                    className="border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="border-input text-primary focus:ring-primary rounded"
                                 />
-                                <Label htmlFor="require_checkout">
-                                    Require check-out tap
+                                <Label
+                                    htmlFor="require_checkout"
+                                    className="font-normal"
+                                >
+                                    Require check-out scan at end of day
                                 </Label>
-                                <InputError message={errors.require_checkout} />
+                                <InputError
+                                    message={errors.require_checkout}
+                                />
                             </div>
 
                             <div className="grid max-w-xs grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="scan_debounce_minutes">
-                                        Scan debounce (minutes)
+                                        Scan debounce (min)
                                     </Label>
                                     <Input
                                         id="scan_debounce_minutes"
@@ -150,7 +193,7 @@ export default function AttendanceSettings({ settings }: Props) {
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="scan_drift_tolerance_minutes">
-                                        Device clock tolerance (minutes)
+                                        Drift tolerance (min)
                                     </Label>
                                     <Input
                                         id="scan_drift_tolerance_minutes"
@@ -169,12 +212,12 @@ export default function AttendanceSettings({ settings }: Props) {
                                     />
                                 </div>
                             </div>
-                        </div>
 
-                        <Button type="submit" disabled={processing}>
-                            {processing && <Spinner />}
-                            Save changes
-                        </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing && <Spinner />}
+                                Save changes
+                            </Button>
+                        </div>
                     </>
                 )}
             </Form>

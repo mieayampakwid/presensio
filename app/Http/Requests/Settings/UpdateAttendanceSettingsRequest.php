@@ -43,6 +43,8 @@ class UpdateAttendanceSettingsRequest extends FormRequest
             'require_checkout' => ['required', 'boolean'],
             'scan_debounce_minutes' => ['required', 'integer', 'min:0', 'max:120'],
             'scan_drift_tolerance_minutes' => ['required', 'integer', 'min:0', 'max:60'],
+            'school_operational_days' => ['required', 'array', 'min:1'],
+            'school_operational_days.*' => ['integer', 'between:1,7'],
         ];
     }
 }

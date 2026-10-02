@@ -112,8 +112,24 @@ class SchoolSettings
     }
 
     /**
-     * School day = not a weekend (Sat/Sun in school tz) and not a recorded
-     * non-school day.
+     * Configured operational weekdays (1 = Monday, 7 = Sunday per ISO-8601).
+     *
+     * @return array<int, int>
+     */
+    public function operationalWeekdays(): array
+    {
+        $days = $this->row()->school_operational_days;
+
+        if (is_array($days) && ! empty($days)) {
+            return array_map('intval', $days);
+        }
+
+        return [1, 2, 3, 4, 5];
+    }
+
+    /**
+     * School day = day of week is an operational day and not a recorded
+     * non-school day (AUDIT D-05).
      */
     public function isSchoolDay(CarbonInterface|string $date): bool
     {
@@ -121,7 +137,8 @@ class SchoolSettings
             ? Date::parse($date, $this->timezone())->startOfDay()
             : $date->copy()->tz($this->timezone())->startOfDay();
 
-        if ($day->isWeekend()) {
+        // dayOfWeekIso returns 1 (Monday) through 7 (Sunday)
+        if (! in_array($day->dayOfWeekIso, $this->operationalWeekdays(), true)) {
             return false;
         }
 
@@ -165,6 +182,7 @@ class SchoolSettings
             'auto_absent_cron_time' => '15:30',
             'scan_debounce_minutes' => 1,
             'scan_drift_tolerance_minutes' => 2,
+            'school_operational_days' => [1, 2, 3, 4, 5],
             'school_name' => '',
             'default_curriculum' => 'merdeka',
         ];

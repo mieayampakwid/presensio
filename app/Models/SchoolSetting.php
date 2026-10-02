@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $auto_absent_cron_time
  * @property int $scan_debounce_minutes
  * @property int $scan_drift_tolerance_minutes
+ * @property list<int> $school_operational_days
  * @property string $school_name
  * @property string|null $npsn
  * @property string|null $school_address
@@ -39,6 +40,7 @@ use Illuminate\Support\Carbon;
     'auto_absent_cron_time',
     'scan_debounce_minutes',
     'scan_drift_tolerance_minutes',
+    'school_operational_days',
     'school_name',
     'npsn',
     'school_address',
@@ -67,6 +69,7 @@ class SchoolSetting extends Model
             'require_checkout' => 'boolean',
             'scan_debounce_minutes' => 'integer',
             'scan_drift_tolerance_minutes' => 'integer',
+            'school_operational_days' => 'array',
         ];
     }
 }
