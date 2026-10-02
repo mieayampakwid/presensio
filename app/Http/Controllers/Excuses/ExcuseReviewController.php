@@ -51,7 +51,7 @@ class ExcuseReviewController extends Controller
             // Admins review everywhere (even a student with no enrollment
             // at all); teachers see students currently in their homeroom
             // classes only.
-            ->when($user->role !== UserRole::Admin, fn ($query) => $query->whereHas(
+            ->when(! $user->hasRole(UserRole::Admin), fn ($query) => $query->whereHas(
                 'student.enrollments',
                 fn ($query) => $query->whereNull('ended_on')->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)),
             ))
@@ -65,7 +65,7 @@ class ExcuseReviewController extends Controller
 
         return Inertia::render('excuses/index', [
             'excuses' => $excuses->through(fn (Excuse $excuse) => $this->row($excuse, $attendance)),
-            'can_review' => $user->role === UserRole::Admin,
+            'can_review' => $user->can('review-excuses'),
         ]);
     }
 

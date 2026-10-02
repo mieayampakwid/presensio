@@ -22,11 +22,11 @@ class UpsertAttendanceRequest extends FormRequest
     {
         $user = $this->user();
 
-        if ($user === null || ! in_array($user->role, [UserRole::Admin, UserRole::Teacher], true)) {
+        if ($user === null || ! $user->can('override-attendance')) {
             return false;
         }
 
-        if ($user->role === UserRole::Admin) {
+        if ($user->hasRole(UserRole::Admin)) {
             return true;
         }
 
@@ -43,7 +43,7 @@ class UpsertAttendanceRequest extends FormRequest
             ? $student->classOn(Date::parse($date)->toDateString())
             : $student->currentEnrollment?->schoolClass;
 
-        return $class !== null && ClassAccess::canAccess($user, $class->id);
+        return $class !== null && ClassAccess::canWrite($user, $class->id);
     }
 
     /**

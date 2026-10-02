@@ -12,21 +12,20 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Authorized excuse-attachment download — the only file-serving route in
- * the app. Attachments live on the private local disk under opaque token
- * names; access mirrors who may see the excuse itself: admins, the
- * child's guardians, and the child's homeroom teacher.
+ * Downloads a submitted excuse note attachment. Access mirrors the excuse
+ * review queue / student report: admins anywhere, homeroom teachers for
+ * their students, parents for their own children.
  */
 class ExcuseAttachmentController extends Controller
 {
     public function show(Request $request, Excuse $excuse): StreamedResponse
     {
         $user = $request->user();
+
+        abort_unless($this->canView($user, $excuse), 403);
+
         $path = $excuse->attachment_path;
 
-        // Authorization first — a missing file must not leak to a probe
-        // from someone who could not view the excuse anyway.
-        abort_unless($this->canView($user, $excuse), 403);
         abort_if($path === null, 404);
 
         $extension = pathinfo((string) $path, PATHINFO_EXTENSION);
@@ -36,15 +35,15 @@ class ExcuseAttachmentController extends Controller
 
     private function canView(User $user, Excuse $excuse): bool
     {
-        if ($user->role === UserRole::Admin) {
+        if ($user->hasRole(UserRole::Admin)) {
             return true;
         }
 
-        if ($user->role === UserRole::Parent) {
-            return $user->guardian?->students()->whereKey($excuse->student_id)->exists() ?? false;
+        if ($user->hasRole(UserRole::Parent) && ($user->guardian?->students()->whereKey($excuse->student_id)->exists() ?? false)) {
+            return true;
         }
 
-        if ($user->role === UserRole::Teacher) {
+        if ($user->hasAnyRole(UserRole::Teacher, UserRole::Principal, UserRole::Counselor)) {
             // The class the student was enrolled in when the excuse started
             // (spec 07 — date-effective, so a mid-year move keeps the old
             // homeroom's teacher able to see the old excuse).

@@ -6,6 +6,7 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { UserRole } from '@/types';
 import UserForm from './user-form';
 
 type ProfileOption = { id: number; label: string };
@@ -16,6 +17,7 @@ type Props = {
         username: string;
         email: string | null;
         role: string;
+        roles?: UserRole[];
         is_active: boolean;
     };
     profiles: {
@@ -52,6 +54,7 @@ export default function EditUser({
                         username: user.username,
                         email: user.email,
                         role: user.role,
+                        roles: user.roles,
                         is_active: user.is_active,
                     }}
                     profiles={profiles}

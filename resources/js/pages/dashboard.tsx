@@ -419,7 +419,8 @@ export default function Dashboard({
     student,
 }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
-    const role = auth.user.role;
+    const role = auth.active_role ?? auth.user.role;
+    const isStaff = ['admin', 'principal', 'teacher', 'counselor'].includes(role);
 
     return (
         <>
@@ -437,14 +438,13 @@ export default function Dashboard({
                     </p>
                 )}
 
-                {(role === 'admin' || role === 'teacher') &&
-                    board !== null && (
-                        <StaffSection
-                            board={board}
-                            pendingExcuses={pending_excuses ?? 0}
-                            role={role}
-                        />
-                    )}
+                {isStaff && board !== null && (
+                    <StaffSection
+                        board={board}
+                        pendingExcuses={pending_excuses ?? 0}
+                        role={role}
+                    />
+                )}
 
                 {role === 'parent' && <ParentSection cards={children} />}
 

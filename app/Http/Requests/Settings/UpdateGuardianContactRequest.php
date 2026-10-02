@@ -16,7 +16,7 @@ class UpdateGuardianContactRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->role === UserRole::Parent
+        return ($this->user()?->hasRole(UserRole::Parent) ?? false)
             && $this->user()->guardian !== null;
     }
 

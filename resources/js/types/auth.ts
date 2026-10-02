@@ -1,10 +1,19 @@
-export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
+export type UserRole =
+    | 'admin'
+    | 'principal'
+    | 'teacher'
+    | 'counselor'
+    | 'finance'
+    | 'staff'
+    | 'parent'
+    | 'student';
 
 export type User = {
     id: number;
     username: string;
     email: string | null;
     role: UserRole;
+    roles?: UserRole[];
     avatar?: string;
     is_active?: boolean;
     two_factor_enabled?: boolean;
@@ -15,6 +24,7 @@ export type User = {
 
 export type Auth = {
     user: User;
+    active_role?: UserRole;
 };
 
 export type Passkey = {

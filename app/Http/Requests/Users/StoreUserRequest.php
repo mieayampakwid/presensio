@@ -28,7 +28,17 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->role === UserRole::Admin;
+        return $this->user()?->hasRole(UserRole::Admin) ?? false;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('role') && ! $this->has('roles')) {
+            $this->merge(['roles' => [$this->input('role')]]);
+        } elseif ($this->has('roles') && ! $this->has('role')) {
+            $roles = (array) $this->input('roles');
+            $this->merge(['role' => $roles[0] ?? null]);
+        }
     }
 
     /**
@@ -41,14 +51,16 @@ class StoreUserRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'max:255', Rule::unique(User::class)],
             'email' => ['nullable', 'email', 'max:255', Rule::unique(User::class)],
-            'role' => ['required', Rule::enum(UserRole::class)],
+            'roles' => ['required_without:role', 'array', 'min:1'],
+            'roles.*' => [Rule::enum(UserRole::class)],
+            'role' => ['required_without:roles', Rule::enum(UserRole::class)],
             'password' => $this->passwordRules(),
             'profile_id' => ['nullable', 'integer'],
         ];
     }
 
     /**
-     * Cross-field guard for the optional profile link.
+     * Cross-field guards: student exclusivity and optional profile link.
      *
      * @return array<int, callable(Validator): void>
      */
@@ -56,9 +68,15 @@ class StoreUserRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
+                $roles = (array) $this->input('roles', []);
+                if (in_array(UserRole::Student->value, $roles, true) && count(array_unique($roles)) > 1) {
+                    $validator->errors()->add('roles', 'The student role cannot be combined with other roles.');
+                }
+            },
+            function (Validator $validator): void {
                 $this->linker->validateSelection(
                     $validator,
-                    $this->string('role')->toString(),
+                    $this->string('role')->toString() ?: null,
                     $this->filled('profile_id') ? (int) $this->input('profile_id') : null,
                     null,
                 );

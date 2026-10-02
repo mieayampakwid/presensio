@@ -32,14 +32,15 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $staff = $user->role === UserRole::Admin || $user->role === UserRole::Teacher;
+        $activeRole = $user->activeRole();
+        $isStaff = in_array($activeRole, [UserRole::Admin, UserRole::Principal, UserRole::Teacher, UserRole::Counselor], true);
 
         return Inertia::render('dashboard', [
             'is_school_day' => $this->settings->isSchoolDay($this->settings->todayDate()),
-            'board' => $staff ? $this->boardSummary($user) : null,
-            'pending_excuses' => $staff ? $this->pendingCount($user) : null,
-            'children' => $user->role === UserRole::Parent ? $this->children($user) : null,
-            'student' => $user->role === UserRole::Student ? $this->studentToday($user) : null,
+            'board' => $isStaff ? $this->boardSummary($user) : null,
+            'pending_excuses' => $isStaff ? $this->pendingCount($user) : null,
+            'children' => $activeRole === UserRole::Parent ? $this->children($user) : null,
+            'student' => $activeRole === UserRole::Student ? $this->studentToday($user) : null,
         ]);
     }
 
@@ -77,7 +78,7 @@ class DashboardController extends Controller
     {
         return Excuse::query()
             ->where('status', ExcuseStatus::Pending)
-            ->when($user->role !== UserRole::Admin, fn ($query) => $query->whereHas(
+            ->when(! $user->hasRole(UserRole::Admin), fn ($query) => $query->whereHas(
                 'student.enrollments',
                 fn ($query) => $query->whereNull('ended_on')->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)),
             ))

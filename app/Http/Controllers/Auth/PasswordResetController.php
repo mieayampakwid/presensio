@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Concerns\PasswordValidationRules;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\RedirectResponse;
@@ -95,5 +96,14 @@ class PasswordResetController extends Controller
     protected function broker(): PasswordBroker
     {
         return Password::broker(config('fortify.passwords'));
+    }
+
+    /**
+     * Contact lookup for password reset (spec 15 §Profiles, spec 01 §5):
+     * order teacher profile → guardian profile → users.email.
+     */
+    public function resolveContact(User $user): ?string
+    {
+        return $user->passwordResetContact();
     }
 }

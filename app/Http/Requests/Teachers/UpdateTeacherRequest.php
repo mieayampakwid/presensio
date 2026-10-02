@@ -13,7 +13,7 @@ class UpdateTeacherRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->role === UserRole::Admin;
+        return $this->user()?->hasRole(UserRole::Admin) ?? false;
     }
 
     /**

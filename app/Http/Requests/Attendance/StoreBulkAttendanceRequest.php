@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Attendance;
 
-use App\Enums\UserRole;
 use App\Models\SchoolClass;
 use App\Services\Attendance\ClassAccess;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -15,15 +14,11 @@ class StoreBulkAttendanceRequest extends FormRequest
     {
         $user = $this->user();
 
-        if ($user === null || ! in_array($user->role, [UserRole::Admin, UserRole::Teacher], true)) {
+        if ($user === null || ! $user->can('override-attendance')) {
             return false;
         }
 
-        if ($user->role === UserRole::Admin) {
-            return true;
-        }
-
-        return ClassAccess::canAccess($user, $this->integer('class_id'));
+        return ClassAccess::canWrite($user, $this->integer('class_id'));
     }
 
     /**

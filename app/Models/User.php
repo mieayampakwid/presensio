@@ -153,4 +153,15 @@ class User extends Authenticatable implements PasskeyUser
     {
         $this->notify(new ResetPassword($token));
     }
+
+    /**
+     * Contact resolution for password recovery (spec 15 §Profiles, spec 01 §5):
+     * order teacher profile → guardian profile → users.email.
+     */
+    public function passwordResetContact(): ?string
+    {
+        return $this->teacher?->phone_number
+            ?? $this->guardian?->phone_number
+            ?? $this->email;
+    }
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { UserRole } from '@/types';
 
 type ProfileOption = { id: number; label: string };
 
@@ -27,7 +28,8 @@ type UserFormProps = {
     defaults: {
         username: string;
         email: string | null;
-        role: string;
+        role?: string;
+        roles?: UserRole[];
         is_active?: boolean;
     };
     profiles: ProfileOptions;
@@ -39,9 +41,17 @@ type UserFormProps = {
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
-// Native <select> and <input type="checkbox"> are used deliberately: the
-// Radix Select and Checkbox primitives don't submit values with native
-// form posts (Inertia <Form> serializes DOM inputs).
+const ALL_ROLES: { value: UserRole; label: string }[] = [
+    { value: 'admin', label: 'Admin' },
+    { value: 'principal', label: 'Principal' },
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'counselor', label: 'Counselor' },
+    { value: 'finance', label: 'Finance' },
+    { value: 'staff', label: 'Staff' },
+    { value: 'parent', label: 'Parent' },
+    { value: 'student', label: 'Student' },
+];
+
 export default function UserForm({
     action,
     submitLabel,
@@ -51,28 +61,62 @@ export default function UserForm({
     showPassword,
     showActive,
 }: UserFormProps) {
-    const [role, setRole] = useState(defaults.role);
+    const initialRoles: UserRole[] =
+        defaults.roles && defaults.roles.length > 0
+            ? defaults.roles
+            : defaults.role
+              ? [defaults.role as UserRole]
+              : ['teacher'];
+
+    const [roles, setRoles] = useState<UserRole[]>(initialRoles);
+
+    const activeProfileRole = roles.find((r) =>
+        ['teacher', 'parent', 'student'].includes(r),
+    );
+
     const [profileId, setProfileId] = useState(
-        defaults.role !== 'admin'
-            ? String(currentProfileIds?.[defaults.role as keyof CurrentProfileIds] ?? '')
+        activeProfileRole
+            ? String(
+                  currentProfileIds?.[
+                      activeProfileRole as keyof CurrentProfileIds
+                  ] ?? '',
+              )
             : '',
     );
 
-    const changeRole = (nextRole: string) => {
-        setRole(nextRole);
-        setProfileId(
-            nextRole === 'admin'
-                ? ''
-                : String(
-                      currentProfileIds?.[
-                          nextRole as keyof CurrentProfileIds
-                      ] ?? '',
-                  ),
+    const toggleRole = (targetRole: UserRole) => {
+        let nextRoles: UserRole[];
+        if (targetRole === 'student') {
+            nextRoles = ['student'];
+        } else {
+            const withoutStudent = roles.filter((r) => r !== 'student');
+            if (withoutStudent.includes(targetRole)) {
+                nextRoles = withoutStudent.filter((r) => r !== targetRole);
+            } else {
+                nextRoles = [...withoutStudent, targetRole];
+            }
+        }
+        setRoles(nextRoles);
+
+        const nextActiveProfileRole = nextRoles.find((r) =>
+            ['teacher', 'parent', 'student'].includes(r),
         );
+        if (nextActiveProfileRole) {
+            setProfileId(
+                String(
+                    currentProfileIds?.[
+                        nextActiveProfileRole as keyof CurrentProfileIds
+                    ] ?? '',
+                ),
+            );
+        } else {
+            setProfileId('');
+        }
     };
 
-    const profileOptions =
-        role === 'admin' ? [] : profiles[role as keyof ProfileOptions] ?? [];
+    const profileOptions = activeProfileRole
+        ? profiles[activeProfileRole as keyof ProfileOptions] ?? []
+        : [];
 
     return (
         <Form
@@ -110,25 +154,38 @@ export default function UserForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="role">Role</Label>
-                        <select
-                            id="role"
+                        <Label>Roles</Label>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            {ALL_ROLES.map((r) => (
+                                <label
+                                    key={r.value}
+                                    className="flex items-center gap-2 text-sm font-normal cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        name="roles[]"
+                                        value={r.value}
+                                        checked={roles.includes(r.value)}
+                                        onChange={() => toggleRole(r.value)}
+                                        className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <span>{r.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <input
+                            type="hidden"
                             name="role"
-                            value={role}
-                            onChange={(event) => changeRole(event.target.value)}
-                            className={SELECT_CLASS}
-                        >
-                            <option value="admin">Admin</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="student">Student</option>
-                            <option value="parent">Parent</option>
-                        </select>
-                        <InputError message={errors.role} />
+                            value={roles[0] ?? ''}
+                        />
+                        <InputError message={errors.roles ?? errors.role} />
                     </div>
 
-                    {role !== 'admin' && (
+                    {activeProfileRole && (
                         <div className="grid gap-2">
-                            <Label htmlFor="profile_id">Linked profile</Label>
+                            <Label htmlFor="profile_id">
+                                Linked {activeProfileRole} profile
+                            </Label>
                             <select
                                 id="profile_id"
                                 name="profile_id"
@@ -154,8 +211,6 @@ export default function UserForm({
 
                     {showActive && (
                         <div className="flex items-center gap-3">
-                            {/* Hidden input first so unchecked submits "0";
-                                FormData keeps the last occurrence per name. */}
                             <input
                                 type="hidden"
                                 name="is_active"

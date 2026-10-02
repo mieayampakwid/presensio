@@ -10,7 +10,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('my-attendance', [StudentAttendanceController::class, 'index'])->name('attendance.my-attendance');
 });
 
-Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
+Route::middleware(['auth', 'can:override-attendance'])->group(function () {
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::put('attendance/record', [AttendanceController::class, 'updateRecord'])->name('attendance.record.update');
     Route::post('attendance/bulk-present', [AttendanceController::class, 'bulkPresent'])->name('attendance.bulk-present');

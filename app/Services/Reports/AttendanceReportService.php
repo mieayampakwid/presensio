@@ -315,7 +315,7 @@ class AttendanceReportService
 
         return [
             'classes' => $classes,
-            'totals' => $viewer->role === UserRole::Admin ? $totals : null,
+            'totals' => $viewer->hasAnyRole(UserRole::Admin, UserRole::Principal) ? $totals : null,
             'as_of' => $this->settings->now()->format('H:i'),
         ];
     }

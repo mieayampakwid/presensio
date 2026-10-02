@@ -8,11 +8,11 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
- * Class scoping (spec 01 §Data Scoping): admins work anywhere; teachers
- * see the classes they homeroom. A teacher without a linked teacher
- * profile sees nothing — an empty dashboard, not a 403. Today-surfaces
- * pass the active year; historical surfaces (reports, the exception
- * dashboard) omit it so past-year classes stay reachable.
+ * Class scoping (spec 01 §Data Scoping): admins, principals, and counselors work
+ * anywhere; teachers see the classes they homeroom. A teacher without a linked
+ * teacher profile sees nothing — an empty dashboard, not a 403. Today-surfaces
+ * pass the active year; historical surfaces (reports, the exception dashboard)
+ * omit it so past-year classes stay reachable.
  */
 class ClassAccess
 {
@@ -21,20 +21,37 @@ class ClassAccess
      */
     public static function classIds(User $user, ?int $yearId = null): Collection
     {
-        if ($user->role === UserRole::Admin) {
+        if ($user->hasAnyRole(UserRole::Admin, UserRole::Principal, UserRole::Counselor)) {
             return SchoolClass::query()
                 ->when($yearId !== null, fn ($query) => $query->where('academic_year_id', $yearId))
                 ->pluck('id');
         }
 
-        return SchoolClass::query()
-            ->where('teacher_id', $user->teacher?->id)
-            ->when($yearId !== null, fn ($query) => $query->where('academic_year_id', $yearId))
-            ->pluck('id');
+        if ($user->hasRole(UserRole::Teacher)) {
+            return SchoolClass::query()
+                ->where('teacher_id', $user->teacher?->id)
+                ->when($yearId !== null, fn ($query) => $query->where('academic_year_id', $yearId))
+                ->pluck('id');
+        }
+
+        return collect();
     }
 
     public static function canAccess(User $user, int $classId): bool
     {
         return self::classIds($user)->contains($classId);
+    }
+
+    public static function canWrite(User $user, int $classId): bool
+    {
+        if ($user->hasRole(UserRole::Admin)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Teacher)) {
+            return self::classIds($user)->contains($classId);
+        }
+
+        return false;
     }
 }

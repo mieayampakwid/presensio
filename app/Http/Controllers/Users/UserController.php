@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Users;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\StoreUserRequest;
 use App\Http\Requests\Users\UpdateUserRequest;
@@ -25,6 +26,7 @@ class UserController extends Controller
         $search = $request->string('search')->toString();
 
         $users = User::query()
+            ->with('roleGrants')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('username', 'like', "%{$search}%")
@@ -34,7 +36,15 @@ class UserController extends Controller
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (User $user) => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role?->value ?? '',
+                'roles' => $user->roles()->map(fn ($r) => $r->value)->values()->all(),
+                'is_active' => $user->is_active,
+            ]);
 
         return Inertia::render('users/index', [
             'users' => $users,
@@ -60,8 +70,33 @@ class UserController extends Controller
     public function store(StoreUserRequest $request, UserProfileLinker $linker): RedirectResponse
     {
         DB::transaction(function () use ($request, $linker): void {
-            $user = User::create(collect($request->safe()->except(['profile_id']))->all());
-            $linker->sync($user, $user->role, $request->validated('profile_id'));
+            $roles = (array) $request->input('roles', []);
+            $parsedRoles = array_filter(
+                array_map(fn ($r) => is_string($r) ? UserRole::tryFrom($r) : $r, $roles),
+                fn ($r) => $r instanceof UserRole
+            );
+
+            $enumOrder = array_flip(array_map(fn (UserRole $case) => $case->value, UserRole::cases()));
+            usort($parsedRoles, fn (UserRole $a, UserRole $b) => $enumOrder[$a->value] <=> $enumOrder[$b->value]);
+
+            $primaryRole = $parsedRoles[0] ?? UserRole::Teacher;
+
+            $data = collect($request->safe()->except(['profile_id', 'roles']))
+                ->put('role', $primaryRole)
+                ->all();
+
+            $user = User::create($data);
+
+            $user->roleGrants()->delete();
+            foreach ($parsedRoles as $role) {
+                $user->roleGrants()->create([
+                    'role' => $role,
+                    'created_at' => now(),
+                ]);
+            }
+
+            $user->unsetRelation('roleGrants');
+            $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'User created.']);
@@ -75,7 +110,14 @@ class UserController extends Controller
     public function edit(User $user, UserProfileLinker $linker): Response
     {
         return Inertia::render('users/edit', [
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role?->value ?? '',
+                'roles' => $user->roles()->map(fn ($r) => $r->value)->values()->all(),
+                'is_active' => $user->is_active,
+            ],
             'profiles' => $linker->profileOptions($user),
             'current_profile_ids' => [
                 'teacher' => $user->teacher()->value('id'),
@@ -91,8 +133,33 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user, UserProfileLinker $linker): RedirectResponse
     {
         DB::transaction(function () use ($request, $user, $linker): void {
-            $user->update(collect($request->safe()->except(['profile_id']))->all());
-            $linker->sync($user, $user->role, $request->validated('profile_id'));
+            $roles = (array) $request->input('roles', []);
+            $parsedRoles = array_filter(
+                array_map(fn ($r) => is_string($r) ? UserRole::tryFrom($r) : $r, $roles),
+                fn ($r) => $r instanceof UserRole
+            );
+
+            $enumOrder = array_flip(array_map(fn (UserRole $case) => $case->value, UserRole::cases()));
+            usort($parsedRoles, fn (UserRole $a, UserRole $b) => $enumOrder[$a->value] <=> $enumOrder[$b->value]);
+
+            $primaryRole = $parsedRoles[0] ?? UserRole::Teacher;
+
+            $data = collect($request->safe()->except(['profile_id', 'roles']))
+                ->put('role', $primaryRole)
+                ->all();
+
+            $user->update($data);
+
+            $user->roleGrants()->delete();
+            foreach ($parsedRoles as $role) {
+                $user->roleGrants()->create([
+                    'role' => $role,
+                    'created_at' => now(),
+                ]);
+            }
+
+            $user->unsetRelation('roleGrants');
+            $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'User updated.']);

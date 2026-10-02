@@ -28,21 +28,28 @@ class UserProfileLinker
     ];
 
     /**
-     * Detach any profile rows pointing at the user, then attach the selected
-     * profile for the given role. Passing a null profile id detaches only,
-     * so changing role always clears the old link.
+     * Detach any profile rows pointing at the user for roles the user no longer holds,
+     * then attach/detach the selected profile for the given role.
      */
     public function sync(User $user, UserRole $role, ?int $profileId): void
     {
         DB::transaction(function () use ($user, $role, $profileId): void {
-            foreach (self::PROFILE_MODELS as $model) {
-                $model::where('user_id', $user->id)->update(['user_id' => null]);
+            $userRoles = $user->roles();
+
+            foreach (self::PROFILE_MODELS as $roleValue => $model) {
+                if (! $userRoles->contains(UserRole::from($roleValue))) {
+                    $model::where('user_id', $user->id)->update(['user_id' => null]);
+                }
             }
 
             $model = self::PROFILE_MODELS[$role->value] ?? null;
 
-            if ($profileId !== null && $model !== null) {
-                $model::whereKey($profileId)->update(['user_id' => $user->id]);
+            if ($model !== null) {
+                $model::where('user_id', $user->id)->update(['user_id' => null]);
+
+                if ($profileId !== null) {
+                    $model::whereKey($profileId)->update(['user_id' => $user->id]);
+                }
             }
         });
     }

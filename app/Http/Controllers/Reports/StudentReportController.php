@@ -17,10 +17,10 @@ use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Student attendance report (spec 06 §Requirements 1). All four roles
+ * Student attendance report (spec 06 §Requirements 1). All roles
  * reach this controller — every request re-resolves the student through
- * the spec 01 scoping: admin → all, teacher → homeroom classes, parent →
- * linked children, student → self. Reports feed students and parents, so
+ * the spec 01 scoping: admin/principal/counselor → all, teacher → homeroom classes,
+ * parent → linked children, student → self. Reports feed students and parents, so
  * notes/override attribution never leaves the server (spec 03 carve-out).
  */
 class StudentReportController extends Controller
@@ -91,12 +91,31 @@ class StudentReportController extends Controller
 
     private function canView(User $user, Student $student): bool
     {
-        return match ($user->role) {
-            UserRole::Admin => true,
-            UserRole::Teacher => $student->class_id !== null && ClassAccess::canAccess($user, $student->class_id),
-            UserRole::Parent => (bool) $user->guardian?->students()->whereKey($student->id)->exists(),
-            UserRole::Student => (bool) $user->student?->is($student),
-        };
+        if ($user->hasAnyRole(UserRole::Admin, UserRole::Principal, UserRole::Counselor)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Teacher)) {
+            $class = $student->currentEnrollment?->schoolClass;
+            $classId = $class?->id ?? $student->class_id;
+            if ($classId !== null && ClassAccess::canAccess($user, $classId)) {
+                return true;
+            }
+        }
+
+        if ($user->hasRole(UserRole::Parent)) {
+            if ((bool) $user->guardian?->students()->whereKey($student->id)->exists()) {
+                return true;
+            }
+        }
+
+        if ($user->hasRole(UserRole::Student)) {
+            if ((bool) $user->student?->is($student)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -109,26 +128,35 @@ class StudentReportController extends Controller
     {
         $columns = ['id', 'full_name', 'student_number'];
 
-        return match ($user->role) {
-            UserRole::Admin => Student::query()->orderBy('full_name')->get($columns),
-            UserRole::Teacher => Student::query()
-                // Students currently in the teacher's homeroom classes of
-                // the active year (spec 07).
+        if ($user->hasAnyRole(UserRole::Admin, UserRole::Principal, UserRole::Counselor)) {
+            return Student::query()->orderBy('full_name')->get($columns);
+        }
+
+        $students = collect();
+
+        if ($user->hasRole(UserRole::Teacher)) {
+            $teacherStudents = Student::query()
                 ->whereHas('enrollments', fn (Builder $query) => $query
                     ->whereNull('ended_on')
                     ->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)))
                 ->orderBy('full_name')
-                ->get($columns),
-            UserRole::Parent => $user->guardian
-                ? $user->guardian->students()->orderBy('full_name')->get($columns)
-                : collect(),
-            UserRole::Student => $user->student
-                ? collect([[
-                    'id' => $user->student->id,
-                    'full_name' => $user->student->full_name,
-                    'student_number' => $user->student->student_number,
-                ]])
-                : collect(),
-        };
+                ->get($columns);
+            $students = $students->merge($teacherStudents);
+        }
+
+        if ($user->hasRole(UserRole::Parent) && $user->guardian) {
+            $parentStudents = $user->guardian->students()->orderBy('full_name')->get($columns);
+            $students = $students->merge($parentStudents);
+        }
+
+        if ($user->hasRole(UserRole::Student) && $user->student) {
+            $students->push([
+                'id' => $user->student->id,
+                'full_name' => $user->student->full_name,
+                'student_number' => $user->student->student_number,
+            ]);
+        }
+
+        return $students->unique('id')->values();
     }
 }

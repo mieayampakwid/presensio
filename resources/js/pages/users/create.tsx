@@ -27,7 +27,12 @@ export default function CreateUser({ profiles }: Props) {
                 <UserForm
                     action={UserController.store.form()}
                     submitLabel="Create user"
-                    defaults={{ username: '', email: null, role: 'teacher' }}
+                    defaults={{
+                        username: '',
+                        email: null,
+                        roles: ['teacher'],
+                        role: 'teacher',
+                    }}
                     profiles={profiles}
                     showPassword
                     showActive={false}
