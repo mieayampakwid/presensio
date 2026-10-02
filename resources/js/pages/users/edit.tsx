@@ -1,3 +1,4 @@
+import { AuditHistory, type AuditLogEntry } from '@/components/audit-history';
 import { Form, Head } from '@inertiajs/react';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
 import Heading from '@/components/heading';
@@ -30,12 +31,14 @@ type Props = {
         parent: number | null;
         student: number | null;
     };
+    audit_logs?: AuditLogEntry[];
 };
 
 export default function EditUser({
     user,
     profiles,
     current_profile_ids,
+    audit_logs,
 }: Props) {
     return (
         <>
@@ -95,6 +98,8 @@ export default function EditUser({
                         </div>
                     )}
                 </Form>
+
+                <AuditHistory entries={audit_logs ?? []} />
             </div>
         </>
     );

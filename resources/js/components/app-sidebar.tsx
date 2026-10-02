@@ -117,6 +117,20 @@ export function AppSidebar() {
                       href: NonSchoolDayController.index().url,
                       icon: CalendarOff,
                   },
+                  {
+                      title: 'Audit Logs',
+                      href: '/admin/audit-logs',
+                      icon: FileText,
+                  },
+              ]
+            : []),
+        ...(activeRole === 'principal'
+            ? [
+                  {
+                      title: 'Audit Logs',
+                      href: '/admin/audit-logs',
+                      icon: FileText,
+                  },
               ]
             : []),
         ...(activeRole === 'student'

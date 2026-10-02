@@ -8,6 +8,7 @@ use App\Http\Requests\Users\StoreUserRequest;
 use App\Http\Requests\Users\UpdateUserRequest;
 use App\Http\Requests\Users\UserPasswordUpdateRequest;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use App\Services\UserProfileLinker;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -95,6 +96,13 @@ class UserController extends Controller
                 ]);
             }
 
+            $newRoles = collect($parsedRoles)->map(fn ($r) => $r->value)->values()->all();
+            app(AuditLogger::class)->record(
+                $user,
+                'created',
+                null,
+                ['roles' => $newRoles]
+            );
             $user->unsetRelation('roleGrants');
             $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
@@ -133,6 +141,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user, UserProfileLinker $linker): RedirectResponse
     {
         DB::transaction(function () use ($request, $user, $linker): void {
+            $oldRoles = $user->roles()->map(fn ($r) => $r->value)->values()->all();
             $roles = (array) $request->input('roles', []);
             $parsedRoles = array_filter(
                 array_map(fn ($r) => is_string($r) ? UserRole::tryFrom($r) : $r, $roles),
@@ -158,6 +167,15 @@ class UserController extends Controller
                 ]);
             }
 
+            $newRoles = collect($parsedRoles)->map(fn ($r) => $r->value)->values()->all();
+            if ($oldRoles !== $newRoles) {
+                app(AuditLogger::class)->record(
+                    $user,
+                    'roles_updated',
+                    ['roles' => $oldRoles],
+                    ['roles' => $newRoles]
+                );
+            }
             $user->unsetRelation('roleGrants');
             $linker->sync($user, $primaryRole, $request->validated('profile_id'));
         });
