@@ -47,6 +47,16 @@ class AcademicYear extends Model
     }
 
     /**
+     * Semesters under this academic year.
+     *
+     * @return HasMany<Semester, $this>
+     */
+    public function semesters(): HasMany
+    {
+        return $this->hasMany(Semester::class)->orderBy('number');
+    }
+
+    /**
      * Scope to the currently active year.
      */
     public function scopeActive(Builder $query): void

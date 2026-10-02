@@ -11,6 +11,7 @@ use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use App\Services\AcademicYears\RollOverService;
+use App\Services\AcademicYears\SemesterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,10 @@ use InvalidArgumentException;
  */
 class AcademicYearController extends Controller
 {
-    public function __construct(private readonly RollOverService $rollOverService) {}
+    public function __construct(
+        private readonly RollOverService $rollOverService,
+        private readonly SemesterService $semesterService,
+    ) {}
 
     public function index(): Response
     {
@@ -42,7 +46,10 @@ class AcademicYearController extends Controller
 
     public function store(StoreAcademicYearRequest $request): RedirectResponse
     {
-        AcademicYear::create($request->validated());
+        DB::transaction(function () use ($request) {
+            $academicYear = AcademicYear::create($request->validated());
+            $this->semesterService->createFor($academicYear);
+        });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Academic year created.']);
 
