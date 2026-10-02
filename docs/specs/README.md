@@ -29,6 +29,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | **General ledger** | `accounts` → `journal_entries` → `journal_lines`, `accounting_periods` | Double-entry, accrual basis; every fee event posts a balanced journal; manual journals, trial balance, receivables reconciliation, period closing (spec 14) |
 | **Notification center** | `notifications`, `notification_deliveries`, `notification_preferences` | In-app inbox plus WhatsApp/email per type, idempotent ledger, quota, quiet hours, opt-out; absence alerts stay on spec 05 (spec 17) |
 | **Employees & staff attendance** | `employees` ← `teachers`; `employee_attendances`, `employee_leave_requests` | Teacher and tendik master; scanner check-in/out, lateness, early leave, leave requests, monthly recap (spec 16) |
+| **Interface language** | `users.locale`, `lang/{en,id}` | Per-user locale (id default), strings in Laravel lang files shared to React; user-entered data and stored enum values stay untranslated (spec 18) |
 
 ## Specs
 
@@ -51,6 +52,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 15 | [Academic Foundation](15-foundation.md) | Draft v1.0 (2026-10-01) — Ready for planning | Roles, Semesters, Class Levels, School Profile, Audit |
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | Teacher & Tendik Attendance |
 | 17 | [Notification Center](17-notifications-center.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | In-App, WhatsApp & Email Notifications |
+| 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 
