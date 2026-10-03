@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\TeacherFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,5 +44,36 @@ class Teacher extends Model
     public function classes(): HasMany
     {
         return $this->hasMany(SchoolClass::class);
+    }
+
+    /**
+     * Teaching assignments for this teacher across classes.
+     *
+     * @return HasMany<ClassSubject, $this>
+     */
+    public function classSubjects(): HasMany
+    {
+        return $this->hasMany(ClassSubject::class, 'teacher_id');
+    }
+
+    /**
+     * Scope a query to only active teachers.
+     *
+     * @param  Builder<Teacher>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where(function (Builder $query) {
+            $query->whereNull('user_id')
+                ->orWhereHas('user', fn (Builder $q) => $q->where('is_active', true));
+        });
+    }
+
+    /**
+     * Check if the teacher profile is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->user === null || $this->user->is_active;
     }
 }

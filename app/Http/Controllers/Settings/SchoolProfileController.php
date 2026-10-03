@@ -40,6 +40,7 @@ class SchoolProfileController extends Controller
                 'bank_account_number' => $setting->bank_account_number,
                 'bank_account_holder' => $setting->bank_account_holder,
                 'default_curriculum' => $setting->default_curriculum,
+                'default_passing_threshold' => (string) ($setting->default_passing_threshold ?? '75.00'),
             ],
         ]);
     }

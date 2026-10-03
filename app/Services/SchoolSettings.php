@@ -171,6 +171,14 @@ class SchoolSettings
     }
 
     /**
+     * Default passing threshold for class subject assignments.
+     */
+    public function defaultPassingThreshold(): string
+    {
+        return (string) ($this->row()->default_passing_threshold ?? '75.00');
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function defaults(): array
@@ -185,6 +193,7 @@ class SchoolSettings
             'school_operational_days' => [1, 2, 3, 4, 5],
             'school_name' => '',
             'default_curriculum' => 'merdeka',
+            'default_passing_threshold' => '75.00',
         ];
     }
 }

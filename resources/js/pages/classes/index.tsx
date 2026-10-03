@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { type ChangeEvent } from 'react';
+import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -151,6 +152,28 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                                title="Mata Pelajaran & Guru"
+                                            >
+                                                <Link
+                                                    href={
+                                                        ClassSubjectController.index(
+                                                            {
+                                                                school_class:
+                                                                    schoolClass.id,
+                                                            },
+                                                        ).url
+                                                    }
+                                                >
+                                                    <BookOpen className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        Mata Pelajaran
+                                                    </span>
+                                                </Link>
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

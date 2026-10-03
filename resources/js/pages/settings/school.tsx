@@ -21,6 +21,7 @@ type SchoolProfileData = {
     bank_account_number: string | null;
     bank_account_holder: string | null;
     default_curriculum: string;
+    default_passing_threshold?: string;
 };
 
 type Props = {
@@ -91,6 +92,29 @@ export default function SchoolProfile({ profile }: Props) {
                                     </select>
                                     <InputError
                                         message={errors.default_curriculum}
+                                    />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="default_passing_threshold">
+                                        Default Passing Threshold (KKTP)
+                                    </Label>
+                                    <Input
+                                        id="default_passing_threshold"
+                                        name="default_passing_threshold"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        defaultValue={
+                                            profile.default_passing_threshold ??
+                                            '75.00'
+                                        }
+                                    />
+                                    <InputError
+                                        message={
+                                            errors.default_passing_threshold
+                                        }
                                     />
                                 </div>
                             </div>

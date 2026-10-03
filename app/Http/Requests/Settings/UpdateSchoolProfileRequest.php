@@ -37,6 +37,7 @@ class UpdateSchoolProfileRequest extends FormRequest
             'bank_account_number' => ['nullable', 'string', 'max:50'],
             'bank_account_holder' => ['nullable', 'string', 'max:255'],
             'default_curriculum' => ['required', Rule::enum(Curriculum::class)],
+            'default_passing_threshold' => ['nullable', 'numeric', 'between:0,100'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
         ];
     }

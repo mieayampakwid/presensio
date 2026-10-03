@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_account_number
  * @property string|null $bank_account_holder
  * @property string $default_curriculum
+ * @property string $default_passing_threshold
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -53,6 +54,7 @@ use Illuminate\Support\Carbon;
     'bank_account_number',
     'bank_account_holder',
     'default_curriculum',
+    'default_passing_threshold',
 ])]
 class SchoolSetting extends Model
 {
@@ -70,6 +72,7 @@ class SchoolSetting extends Model
             'scan_debounce_minutes' => 'integer',
             'scan_drift_tolerance_minutes' => 'integer',
             'school_operational_days' => 'array',
+            'default_passing_threshold' => 'decimal:2',
         ];
     }
 }

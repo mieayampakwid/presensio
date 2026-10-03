@@ -60,6 +60,15 @@ class ClassSubject extends Model
     }
 
     /**
+     * Check if this class subject assignment has downstream usage
+     * (assessments in plan 5, timetable slots in plan 11).
+     */
+    public function isInUse(): bool
+    {
+        return false;
+    }
+
+    /**
      * Attributes that should be cast.
      *
      * @return array<string, string>

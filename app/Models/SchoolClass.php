@@ -68,6 +68,16 @@ class SchoolClass extends Model
     }
 
     /**
+     * Teaching assignments for this class.
+     *
+     * @return HasMany<ClassSubject, $this>
+     */
+    public function classSubjects(): HasMany
+    {
+        return $this->hasMany(ClassSubject::class, 'class_id');
+    }
+
+    /**
      * Students currently enrolled (open enrollment only) — today-rosters
      * for boards and pickers; historical attribution goes through
      * enrollments instead (spec 07).
