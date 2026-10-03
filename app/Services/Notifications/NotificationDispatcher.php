@@ -2,7 +2,10 @@
 
 namespace App\Services\Notifications;
 
+use App\Enums\DeliveryStatus;
 use App\Enums\NotificationType;
+use App\Jobs\DeliverNotification;
+use App\Models\NotificationDelivery;
 use App\Notifications\AppNotification;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -75,7 +78,6 @@ class NotificationDispatcher
         } catch (UniqueConstraintViolationException) {
             // Already dispatched; second dispatch is an idempotent no-op (AC-17-02)
         } catch (QueryException $e) {
-            // Postgres unique constraint violation error code
             if ($e->getCode() !== '23505') {
                 throw $e;
             }
@@ -88,6 +90,142 @@ class NotificationDispatcher
         Message $message,
         string $dedupeKey,
     ): void {
-        // External channels (WhatsApp, email, quota, quiet hours) wired in Task 3.
+        $policy = app(ChannelPolicy::class);
+        $quietHours = app(QuietHours::class);
+        $quota = app(WhatsAppQuota::class);
+
+        // 1. WhatsApp Channel
+        if ($policy->isChannelEnabled($type, 'whatsapp')) {
+            $this->dispatchWhatsAppDelivery($type, $recipient, $message, $dedupeKey, $policy, $quietHours, $quota);
+        }
+
+        // 2. Direct Email Channel
+        if ($policy->isChannelEnabled($type, 'email')) {
+            $this->dispatchEmailDelivery($type, $recipient, $message, $dedupeKey, $policy);
+        }
+    }
+
+    protected function dispatchWhatsAppDelivery(
+        NotificationType $type,
+        Recipient $recipient,
+        Message $message,
+        string $dedupeKey,
+        ChannelPolicy $policy,
+        QuietHours $quietHours,
+        WhatsAppQuota $quota,
+    ): void {
+        $existing = NotificationDelivery::query()
+            ->where('dedupe_key', $dedupeKey)
+            ->where('channel', 'whatsapp')
+            ->first();
+
+        if ($existing !== null) {
+            return;
+        }
+
+        if ($policy->isOptedOut($type, $recipient)) {
+            NotificationDelivery::create([
+                'dedupe_key' => $dedupeKey,
+                'type_key' => $type->value,
+                'channel' => 'whatsapp',
+                'recipient_type' => $recipient->type,
+                'recipient_id' => $recipient->id,
+                'recipient_contact' => $recipient->phone,
+                'status' => DeliveryStatus::SkippedOptOut,
+            ]);
+
+            return;
+        }
+
+        if (! $policy->hasContact($recipient, 'whatsapp')) {
+            NotificationDelivery::create([
+                'dedupe_key' => $dedupeKey,
+                'type_key' => $type->value,
+                'channel' => 'whatsapp',
+                'recipient_type' => $recipient->type,
+                'recipient_id' => $recipient->id,
+                'recipient_contact' => null,
+                'status' => DeliveryStatus::SkippedNoContact,
+            ]);
+
+            return;
+        }
+
+        if ($quota->isExceeded($type)) {
+            NotificationDelivery::create([
+                'dedupe_key' => $dedupeKey,
+                'type_key' => $type->value,
+                'channel' => 'whatsapp',
+                'recipient_type' => $recipient->type,
+                'recipient_id' => $recipient->id,
+                'recipient_contact' => $recipient->phone,
+                'status' => DeliveryStatus::SkippedQuota,
+            ]);
+
+            return;
+        }
+
+        $scheduledFor = null;
+        if ($type->quietHoursBound() && $quietHours->isQuietTime()) {
+            $scheduledFor = $quietHours->delayUntil();
+        }
+
+        $delivery = NotificationDelivery::create([
+            'dedupe_key' => $dedupeKey,
+            'type_key' => $type->value,
+            'channel' => 'whatsapp',
+            'recipient_type' => $recipient->type,
+            'recipient_id' => $recipient->id,
+            'recipient_contact' => $recipient->phone,
+            'status' => DeliveryStatus::Pending,
+            'scheduled_for' => $scheduledFor,
+        ]);
+
+        if ($scheduledFor === null) {
+            DeliverNotification::dispatch($delivery->id, $message->title, $message->body, $message->url);
+        }
+    }
+
+    protected function dispatchEmailDelivery(
+        NotificationType $type,
+        Recipient $recipient,
+        Message $message,
+        string $dedupeKey,
+        ChannelPolicy $policy,
+    ): void {
+        $existing = NotificationDelivery::query()
+            ->where('dedupe_key', $dedupeKey)
+            ->where('channel', 'email')
+            ->first();
+
+        if ($existing !== null) {
+            return;
+        }
+
+        if (! $policy->hasContact($recipient, 'email')) {
+            NotificationDelivery::create([
+                'dedupe_key' => $dedupeKey,
+                'type_key' => $type->value,
+                'channel' => 'email',
+                'recipient_type' => $recipient->type,
+                'recipient_id' => $recipient->id,
+                'recipient_contact' => null,
+                'status' => DeliveryStatus::SkippedNoContact,
+            ]);
+
+            return;
+        }
+
+        $delivery = NotificationDelivery::create([
+            'dedupe_key' => $dedupeKey,
+            'type_key' => $type->value,
+            'channel' => 'email',
+            'recipient_type' => $recipient->type,
+            'recipient_id' => $recipient->id,
+            'recipient_contact' => $recipient->email,
+            'status' => DeliveryStatus::Pending,
+        ]);
+
+        DeliverNotification::dispatch($delivery->id, $message->title, $message->body, $message->url);
     }
 }
