@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\NotificationType;
 use App\Models\NonSchoolDay;
 use App\Models\SchoolSetting;
 use Carbon\CarbonInterface;
@@ -179,10 +180,73 @@ class SchoolSettings
     }
 
     /**
+     * Notification channels toggles merged with catalog defaults and clamped.
+     *
+     * @return array<string, array{whatsapp: bool, email: bool}>
+     */
+    public function notificationChannels(): array
+    {
+        $stored = (array) ($this->row()->notification_channels ?? []);
+        $channels = [];
+
+        foreach (NotificationType::cases() as $type) {
+            $typeStored = (array) ($stored[$type->value] ?? []);
+
+            $channels[$type->value] = [
+                'whatsapp' => $type->whatsappAllowed() && (bool) ($typeStored['whatsapp'] ?? $type->defaultWhatsapp()),
+                'email' => $type->emailAllowed() && (bool) ($typeStored['email'] ?? $type->defaultEmail()),
+            ];
+        }
+
+        return $channels;
+    }
+
+    /**
+     * Daily WhatsApp quota for quota-bound notification types (null = unlimited).
+     */
+    public function whatsappDailyQuota(): ?int
+    {
+        $quota = $this->row()->whatsapp_daily_quota;
+
+        return $quota !== null ? (int) $quota : null;
+    }
+
+    /**
+     * Quiet hours window (school timezone).
+     *
+     * @return array{start: string, end: string}
+     */
+    public function quietHours(): array
+    {
+        $row = $this->row();
+
+        return [
+            'start' => (string) ($row->quiet_hours_start ?? '21:00:00'),
+            'end' => (string) ($row->quiet_hours_end ?? '06:00:00'),
+        ];
+    }
+
+    /**
+     * Number of days before due_date to send bill reminder.
+     */
+    public function billReminderDaysBefore(): int
+    {
+        return (int) ($this->row()->bill_reminder_days_before ?? 3);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function defaults(): array
     {
+        $catalogDefaults = [];
+        foreach (NotificationType::cases() as $type) {
+            $catalogDefaults[$type->value] = [
+                'whatsapp' => $type->defaultWhatsapp(),
+                'email' => $type->defaultEmail(),
+            ];
+        }
+
         return [
             'school_timezone' => 'Asia/Jakarta',
             'school_start_time' => '07:30',
@@ -194,6 +258,11 @@ class SchoolSettings
             'school_name' => '',
             'default_curriculum' => 'merdeka',
             'default_passing_threshold' => '75.00',
+            'notification_channels' => $catalogDefaults,
+            'whatsapp_daily_quota' => 500,
+            'quiet_hours_start' => '21:00:00',
+            'quiet_hours_end' => '06:00:00',
+            'bill_reminder_days_before' => 3,
         ];
     }
 }

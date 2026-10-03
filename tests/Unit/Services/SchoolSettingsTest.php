@@ -140,4 +140,42 @@ class SchoolSettingsTest extends TestCase
         $this->assertFalse($this->settings->isLate($day->copy()->setTime(7, 59, 59)));
         $this->assertTrue($this->settings->isLate($day->copy()->setTime(8, 0, 1)));
     }
+
+    public function test_notification_settings_defaults(): void
+    {
+        $this->assertSame(500, $this->settings->whatsappDailyQuota());
+        $this->assertSame(['start' => '21:00:00', 'end' => '06:00:00'], $this->settings->quietHours());
+        $this->assertSame(3, $this->settings->billReminderDaysBefore());
+
+        $channels = $this->settings->notificationChannels();
+        $this->assertCount(13, $channels);
+        $this->assertTrue($channels['report_card_published']['whatsapp']);
+        $this->assertFalse($channels['report_card_published']['email']);
+        $this->assertTrue($channels['payment_rejected']['whatsapp']);
+        $this->assertFalse($channels['excuse_reviewed']['whatsapp']);
+        $this->assertFalse($channels['absence_alert']['whatsapp']);
+    }
+
+    public function test_notification_channels_clamps_to_catalog(): void
+    {
+        // Try to enable WhatsApp and email for absence_alert and excuse_submitted (which are not allowed in catalog)
+        $this->settings->row()->update([
+            'notification_channels' => [
+                'absence_alert' => ['whatsapp' => true, 'email' => true],
+                'excuse_submitted' => ['whatsapp' => true, 'email' => true],
+                'excuse_reviewed' => ['whatsapp' => true, 'email' => true],
+            ],
+        ]);
+        $this->settings->refresh();
+
+        $channels = $this->settings->notificationChannels();
+        // absence_alert and excuse_submitted must be clamped to false
+        $this->assertFalse($channels['absence_alert']['whatsapp']);
+        $this->assertFalse($channels['absence_alert']['email']);
+        $this->assertFalse($channels['excuse_submitted']['whatsapp']);
+        $this->assertFalse($channels['excuse_submitted']['email']);
+        // excuse_reviewed allows whatsapp and email
+        $this->assertTrue($channels['excuse_reviewed']['whatsapp']);
+        $this->assertTrue($channels['excuse_reviewed']['email']);
+    }
 }

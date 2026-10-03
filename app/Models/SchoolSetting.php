@@ -31,6 +31,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_account_holder
  * @property string $default_curriculum
  * @property string $default_passing_threshold
+ * @property array<string, array{whatsapp: bool, email: bool}>|null $notification_channels
+ * @property int|null $whatsapp_daily_quota
+ * @property string $quiet_hours_start
+ * @property string $quiet_hours_end
+ * @property int $bill_reminder_days_before
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -55,6 +60,11 @@ use Illuminate\Support\Carbon;
     'bank_account_holder',
     'default_curriculum',
     'default_passing_threshold',
+    'notification_channels',
+    'whatsapp_daily_quota',
+    'quiet_hours_start',
+    'quiet_hours_end',
+    'bill_reminder_days_before',
 ])]
 class SchoolSetting extends Model
 {
@@ -73,6 +83,9 @@ class SchoolSetting extends Model
             'scan_drift_tolerance_minutes' => 'integer',
             'school_operational_days' => 'array',
             'default_passing_threshold' => 'decimal:2',
+            'notification_channels' => 'array',
+            'whatsapp_daily_quota' => 'integer',
+            'bill_reminder_days_before' => 'integer',
         ];
     }
 }
