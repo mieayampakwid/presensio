@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $guardian = $user?->guardian;
         $preferences = null;
 
-        if ($guardian !== null && $user !== null) {
+        if ($guardian !== null) {
             $existing = NotificationPreference::query()
                 ->where('user_id', $user->id)
                 ->get()

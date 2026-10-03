@@ -91,7 +91,7 @@ class ExcuseApprovalService
                 $guardian = $pending->submittedByGuardian;
                 if ($guardian !== null) {
                     $pending->loadMissing('student');
-                    $studentName = $pending->student?->full_name ?? 'Siswa';
+                    $studentName = $pending->student->full_name;
                     $recipient = Recipient::fromGuardian($guardian);
                     $message = new Message(
                         title: 'Pengajuan Izin Disetujui',
@@ -140,7 +140,7 @@ class ExcuseApprovalService
                 $guardian = $pending->submittedByGuardian;
                 if ($guardian !== null) {
                     $pending->loadMissing('student');
-                    $studentName = $pending->student?->full_name ?? 'Siswa';
+                    $studentName = $pending->student->full_name;
                     $recipient = Recipient::fromGuardian($guardian);
                     $message = new Message(
                         title: 'Pengajuan Izin Ditolak',

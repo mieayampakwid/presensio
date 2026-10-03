@@ -40,7 +40,7 @@ class NotificationDeliveryController extends Controller
             'recipient_type' => $d->recipient_type,
             'recipient_id' => $d->recipient_id,
             'recipient_contact' => $d->recipient_contact,
-            'status' => $d->status instanceof DeliveryStatus ? $d->status->value : (string) $d->status,
+            'status' => $d->status->value,
             'scheduled_for' => $d->scheduled_for?->toISOString(),
             'attempts' => $d->attempts,
             'provider_message_id' => $d->provider_message_id,

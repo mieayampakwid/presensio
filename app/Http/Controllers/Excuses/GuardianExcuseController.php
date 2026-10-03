@@ -84,10 +84,11 @@ class GuardianExcuseController extends Controller
 
         $excuse = Excuse::create($validated);
 
+        /** @var Student|null $student */
         $student = Student::with('currentEnrollment.schoolClass.teacher.user')->find($validated['student_id']);
         $recipients = $this->resolver->forAdmins();
 
-        $schoolClass = $student?->currentEnrollment?->schoolClass;
+        $schoolClass = $student instanceof Student ? $student->currentEnrollment?->schoolClass : null;
         if ($schoolClass !== null) {
             $homeroom = $this->resolver->forHomeroomTeacher($schoolClass);
             if ($homeroom !== null) {
@@ -96,8 +97,7 @@ class GuardianExcuseController extends Controller
         }
 
         $uniqueRecipients = $recipients->unique(fn (Recipient $r) => $r->key())->values();
-        $studentName = $student?->full_name ?? 'Siswa';
-
+        $studentName = $student instanceof Student ? $student->full_name : 'Siswa';
         $message = new Message(
             title: 'Pengajuan Izin Baru',
             body: "Pengajuan izin untuk {$studentName} menunggu peninjauan.",

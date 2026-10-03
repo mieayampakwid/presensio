@@ -30,7 +30,7 @@ class NotificationPreference extends Model
 
     public $incrementing = false;
 
-    protected $primaryKey = ['user_id', 'type_key'];
+    protected $primaryKey = 'user_id';
 
     /**
      * @return array<string, string>
@@ -42,6 +42,9 @@ class NotificationPreference extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -26,11 +26,18 @@ readonly class Recipient
     {
         $user->loadMissing(['guardian', 'teacher']);
 
+        $phone = null;
+        if ($user->guardian !== null) {
+            $phone = $user->guardian->phone_number;
+        } elseif ($user->teacher !== null) {
+            $phone = $user->teacher->phone_number;
+        }
+
         return new self(
             type: 'user',
             id: $user->id,
             user: $user,
-            phone: $user->guardian?->phone_number ?? $user->teacher?->phone_number,
+            phone: $phone,
             email: $user->email,
             customKey: $customKey,
         );

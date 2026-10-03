@@ -61,6 +61,9 @@ class NotificationDelivery extends Model
         ];
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function recipient(): MorphTo
     {
         return $this->morphTo();
