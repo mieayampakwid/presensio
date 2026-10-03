@@ -4,6 +4,7 @@ import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { NotificationBell } from '@/components/notification-bell';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -210,6 +211,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 ))}
                             </div>
                         </div>
+                        <NotificationBell />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

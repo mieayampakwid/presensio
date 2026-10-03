@@ -55,6 +55,15 @@ class HandleInertiaRequests extends Middleware
             'incomplete_class_count' => fn (): int => $user?->hasRole(UserRole::Admin)
                 ? SchoolClass::query()->where('grade_level', 0)->count()
                 : 0,
+            'notifications' => fn (): ?array => $user !== null ? [
+                'unread_count' => $user->unreadNotifications()->count(),
+                'latest10' => $user->notifications()->take(10)->get()->map(fn ($n) => [
+                    'id' => $n->id,
+                    'data' => $n->data,
+                    'read_at' => $n->read_at?->toISOString(),
+                    'created_at' => $n->created_at?->diffForHumans(),
+                ])->all(),
+            ] : null,
             'locale' => app()->getLocale(),
             'locales' => array_map(
                 fn (Locale $locale): array => ['value' => $locale->value, 'label' => $locale->label()],
