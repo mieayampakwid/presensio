@@ -3,6 +3,8 @@
 use App\Http\Controllers\Settings\AttendanceSettingsController;
 use App\Http\Controllers\Settings\GuardianContactController;
 use App\Http\Controllers\Settings\LocaleController;
+use App\Http\Controllers\Settings\NotificationPreferenceController;
+use App\Http\Controllers\Settings\NotificationSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SchoolLogoController;
 use App\Http\Controllers\Settings\SchoolProfileController;
@@ -28,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('settings/contact', [GuardianContactController::class, 'update'])
         ->middleware('role:parent')
         ->name('guardian-contact.update');
+    Route::put('settings/notification-preferences', [NotificationPreferenceController::class, 'update'])
+        ->middleware('role:parent')
+        ->name('notification-preferences.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 
@@ -45,6 +50,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('school-profile.edit');
     Route::put('settings/school', [SchoolProfileController::class, 'update'])
         ->name('school-profile.update');
+    Route::get('settings/notifications', [NotificationSettingsController::class, 'edit'])
+        ->name('notification-settings.edit');
+    Route::put('settings/notifications', [NotificationSettingsController::class, 'update'])
+        ->name('notification-settings.update');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {

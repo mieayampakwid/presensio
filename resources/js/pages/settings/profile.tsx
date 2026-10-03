@@ -1,8 +1,10 @@
-import { Form, Head, usePage } from '@inertiajs/react';
+import { Form, Head, useForm, usePage } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -17,15 +19,20 @@ type Guardian = {
     work: string | null;
     address: string | null;
 };
+type NotificationPreferenceItem = {
+    key: string;
+    label: string;
+    whatsapp_enabled: boolean;
+};
 
 type PageProps = {
     auth: Auth;
     guardian: Guardian | null;
+    notification_preferences: NotificationPreferenceItem[] | null;
 };
-
 export default function Profile() {
-    const { auth, guardian } = usePage<PageProps>().props;
-
+    const { auth, guardian, notification_preferences } =
+        usePage<PageProps>().props;
     return (
         <>
             <Head title="Profile settings" />
@@ -70,6 +77,11 @@ export default function Profile() {
 
                 {guardian && <GuardianContactSection guardian={guardian} />}
 
+                {guardian && notification_preferences && (
+                    <GuardianNotificationPreferencesSection
+                        preferences={notification_preferences}
+                    />
+                )}
                 <p className="text-muted-foreground text-sm">
                     Change your password from the{' '}
                     <span className="text-foreground font-medium">
@@ -140,6 +152,78 @@ function GuardianContactSection({ guardian }: { guardian: Guardian }) {
                 </div>
             )}
         </Form>
+    );
+}
+
+function GuardianNotificationPreferencesSection({
+    preferences,
+}: {
+    preferences: NotificationPreferenceItem[];
+}) {
+    const initialPrefs = Object.fromEntries(
+        preferences.map((p) => [p.key, p.whatsapp_enabled]),
+    );
+
+    const { data, setData, put, processing, recentlySuccessful } = useForm({
+        preferences: initialPrefs,
+    });
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        put('/settings/notification-preferences', {
+            preserveScroll: true,
+        });
+    };
+
+    return (
+        <form onSubmit={submit} className="space-y-6">
+            <Heading
+                variant="small"
+                title="Preferensi Notifikasi WhatsApp"
+                description="Pilih pemberitahuan mana yang ingin Anda terima melalui WhatsApp. Notifikasi dalam aplikasi tetap akan dikirimkan."
+            />
+
+            <div className="border-border divide-border divide-y rounded-lg border">
+                {preferences.map((pref) => (
+                    <div
+                        key={pref.key}
+                        className="flex items-center justify-between p-4"
+                    >
+                        <div className="space-y-0.5">
+                            <Label
+                                htmlFor={`pref-${pref.key}`}
+                                className="cursor-pointer font-medium"
+                            >
+                                {pref.label}
+                            </Label>
+                        </div>
+                        <Checkbox
+                            id={`pref-${pref.key}`}
+                            checked={data.preferences[pref.key] ?? true}
+                            onCheckedChange={(checked) => {
+                                setData('preferences', {
+                                    ...data.preferences,
+                                    [pref.key]: checked === true,
+                                });
+                            }}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            <div className="flex items-center gap-4">
+                <Button type="submit" disabled={processing}>
+                    {processing && <Spinner className="mr-2" />}
+                    Simpan Preferensi
+                </Button>
+
+                {recentlySuccessful && (
+                    <span className="text-muted-foreground text-sm">
+                        Tersimpan.
+                    </span>
+                )}
+            </div>
+        </form>
     );
 }
 
