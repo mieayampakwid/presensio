@@ -36,7 +36,9 @@ export default function EditSubject({ subject, groups }: Props) {
 
                 <SubjectForm
                     action={{
-                        action: SubjectController.update.url({ subject: subject.id }),
+                        action: SubjectController.update.url({
+                            subject: subject.id,
+                        }),
                         method: 'put',
                     }}
                     submitLabel="Save Changes"

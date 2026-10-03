@@ -82,12 +82,18 @@ export default function ClassSubjects({
     teachers,
     defaultPassingThreshold,
 }: Props) {
-    const [editingItem, setEditingItem] = useState<ClassSubjectRow | null>(null);
+    const [editingItem, setEditingItem] = useState<ClassSubjectRow | null>(
+        null,
+    );
 
     const isActiveYear = schoolClass.academic_year?.is_active ?? true;
 
-    const assignedSubjectIds = new Set(classSubjects.map((cs) => cs.subject_id));
-    const unassignedSubjects = subjects.filter((s) => !assignedSubjectIds.has(s.id));
+    const assignedSubjectIds = new Set(
+        classSubjects.map((cs) => cs.subject_id),
+    );
+    const unassignedSubjects = subjects.filter(
+        (s) => !assignedSubjectIds.has(s.id),
+    );
 
     const destroy = (item: ClassSubjectRow) => {
         router.delete(
@@ -123,12 +129,14 @@ export default function ClassSubjects({
 
                 {!isActiveYear && (
                     <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200">
-                        Kelas ini berada pada tahun ajaran yang tidak aktif. Penugasan mata pelajaran bersifat hanya-baca (read-only).
+                        Kelas ini berada pada tahun ajaran yang tidak aktif.
+                        Penugasan mata pelajaran bersifat hanya-baca
+                        (read-only).
                     </div>
                 )}
 
                 {isActiveYear && unassignedSubjects.length > 0 && (
-                    <div className="rounded-lg border bg-card p-4 shadow-xs">
+                    <div className="bg-card rounded-lg border p-4 shadow-xs">
                         <h3 className="mb-4 text-base font-semibold">
                             Tambah Penugasan Mata Pelajaran
                         </h3>
@@ -142,7 +150,9 @@ export default function ClassSubjects({
                             {({ processing, errors }) => (
                                 <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="subject_id">Mata Pelajaran</Label>
+                                        <Label htmlFor="subject_id">
+                                            Mata Pelajaran
+                                        </Label>
                                         <select
                                             id="subject_id"
                                             name="subject_id"
@@ -153,17 +163,27 @@ export default function ClassSubjects({
                                             <option value="" disabled>
                                                 Pilih mata pelajaran
                                             </option>
-                                            {unassignedSubjects.map((subject) => (
-                                                <option key={subject.id} value={subject.id}>
-                                                    {subject.name} ({subject.code})
-                                                </option>
-                                            ))}
+                                            {unassignedSubjects.map(
+                                                (subject) => (
+                                                    <option
+                                                        key={subject.id}
+                                                        value={subject.id}
+                                                    >
+                                                        {subject.name} (
+                                                        {subject.code})
+                                                    </option>
+                                                ),
+                                            )}
                                         </select>
-                                        <InputError message={errors.subject_id} />
+                                        <InputError
+                                            message={errors.subject_id}
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="teacher_id">Guru Pengajar</Label>
+                                        <Label htmlFor="teacher_id">
+                                            Guru Pengajar
+                                        </Label>
                                         <select
                                             id="teacher_id"
                                             name="teacher_id"
@@ -175,12 +195,17 @@ export default function ClassSubjects({
                                                 Pilih guru pengajar
                                             </option>
                                             {teachers.map((teacher) => (
-                                                <option key={teacher.id} value={teacher.id}>
+                                                <option
+                                                    key={teacher.id}
+                                                    value={teacher.id}
+                                                >
                                                     {teacher.name}
                                                 </option>
                                             ))}
                                         </select>
-                                        <InputError message={errors.teacher_id} />
+                                        <InputError
+                                            message={errors.teacher_id}
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
@@ -194,15 +219,25 @@ export default function ClassSubjects({
                                             step="0.01"
                                             min="0"
                                             max="100"
-                                            defaultValue={defaultPassingThreshold}
+                                            defaultValue={
+                                                defaultPassingThreshold
+                                            }
                                             required
                                         />
-                                        <InputError message={errors.passing_threshold} />
+                                        <InputError
+                                            message={errors.passing_threshold}
+                                        />
                                     </div>
 
                                     <div>
-                                        <Button type="submit" disabled={processing} className="w-full">
-                                            {processing && <Spinner className="mr-2" />}
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="w-full"
+                                        >
+                                            {processing && (
+                                                <Spinner className="mr-2" />
+                                            )}
                                             <Plus className="mr-1 h-4 w-4" />
                                             Tugaskan
                                         </Button>
@@ -218,12 +253,20 @@ export default function ClassSubjects({
                         <thead className="bg-muted/50 text-left">
                             <tr>
                                 <th className="px-4 py-3 font-medium">Kode</th>
-                                <th className="px-4 py-3 font-medium">Mata Pelajaran</th>
-                                <th className="px-4 py-3 font-medium">Kelompok</th>
-                                <th className="px-4 py-3 font-medium">Guru Pengajar</th>
+                                <th className="px-4 py-3 font-medium">
+                                    Mata Pelajaran
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Kelompok
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Guru Pengajar
+                                </th>
                                 <th className="px-4 py-3 font-medium">KKTP</th>
                                 {isActiveYear && (
-                                    <th className="px-4 py-3 text-right font-medium">Aksi</th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Aksi
+                                    </th>
                                 )}
                             </tr>
                         </thead>
@@ -251,10 +294,14 @@ export default function ClassSubjects({
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => setEditingItem(item)}
+                                                    onClick={() =>
+                                                        setEditingItem(item)
+                                                    }
                                                 >
                                                     <Pencil className="h-4 w-4" />
-                                                    <span className="sr-only">Edit</span>
+                                                    <span className="sr-only">
+                                                        Edit
+                                                    </span>
                                                 </Button>
 
                                                 <Dialog>
@@ -265,7 +312,9 @@ export default function ClassSubjects({
                                                             className="text-destructive hover:text-destructive"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Hapus</span>
+                                                            <span className="sr-only">
+                                                                Hapus
+                                                            </span>
                                                         </Button>
                                                     </DialogTrigger>
                                                     <DialogContent>
@@ -273,18 +322,29 @@ export default function ClassSubjects({
                                                             Hapus Penugasan
                                                         </DialogTitle>
                                                         <DialogDescription>
-                                                            Hapus penugasan {item.subject?.name} dari {schoolClass.name}?
+                                                            Hapus penugasan{' '}
+                                                            {item.subject?.name}{' '}
+                                                            dari{' '}
+                                                            {schoolClass.name}?
                                                         </DialogDescription>
                                                         <DialogFooter className="gap-2">
-                                                            <DialogClose asChild>
+                                                            <DialogClose
+                                                                asChild
+                                                            >
                                                                 <Button variant="outline">
                                                                     Batal
                                                                 </Button>
                                                             </DialogClose>
-                                                            <DialogClose asChild>
+                                                            <DialogClose
+                                                                asChild
+                                                            >
                                                                 <Button
                                                                     variant="destructive"
-                                                                    onClick={() => destroy(item)}
+                                                                    onClick={() =>
+                                                                        destroy(
+                                                                            item,
+                                                                        )
+                                                                    }
                                                                 >
                                                                     Hapus
                                                                 </Button>
@@ -304,7 +364,8 @@ export default function ClassSubjects({
                                         colSpan={isActiveYear ? 6 : 5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada mata pelajaran yang ditugaskan ke kelas ini.
+                                        Belum ada mata pelajaran yang ditugaskan
+                                        ke kelas ini.
                                     </td>
                                 </tr>
                             )}
@@ -313,13 +374,17 @@ export default function ClassSubjects({
                 </div>
 
                 {editingItem && (
-                    <Dialog open={true} onOpenChange={(open) => !open && setEditingItem(null)}>
+                    <Dialog
+                        open={true}
+                        onOpenChange={(open) => !open && setEditingItem(null)}
+                    >
                         <DialogContent>
                             <DialogTitle>
                                 Edit Penugasan — {editingItem.subject?.name}
                             </DialogTitle>
                             <DialogDescription>
-                                Perbarui guru pengajar atau ambang batas kelulusan (KKTP).
+                                Perbarui guru pengajar atau ambang batas
+                                kelulusan (KKTP).
                             </DialogDescription>
 
                             <Form
@@ -334,21 +399,30 @@ export default function ClassSubjects({
                                 {({ processing, errors }) => (
                                     <div className="space-y-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="edit_teacher_id">Guru Pengajar</Label>
+                                            <Label htmlFor="edit_teacher_id">
+                                                Guru Pengajar
+                                            </Label>
                                             <select
                                                 id="edit_teacher_id"
                                                 name="teacher_id"
                                                 required
-                                                defaultValue={editingItem.teacher_id}
+                                                defaultValue={
+                                                    editingItem.teacher_id
+                                                }
                                                 className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                             >
                                                 {teachers.map((teacher) => (
-                                                    <option key={teacher.id} value={teacher.id}>
+                                                    <option
+                                                        key={teacher.id}
+                                                        value={teacher.id}
+                                                    >
                                                         {teacher.name}
                                                     </option>
                                                 ))}
                                             </select>
-                                            <InputError message={errors.teacher_id} />
+                                            <InputError
+                                                message={errors.teacher_id}
+                                            />
                                         </div>
 
                                         <div className="grid gap-2">
@@ -362,22 +436,35 @@ export default function ClassSubjects({
                                                 step="0.01"
                                                 min="0"
                                                 max="100"
-                                                defaultValue={editingItem.passing_threshold}
+                                                defaultValue={
+                                                    editingItem.passing_threshold
+                                                }
                                                 required
                                             />
-                                            <InputError message={errors.passing_threshold} />
+                                            <InputError
+                                                message={
+                                                    errors.passing_threshold
+                                                }
+                                            />
                                         </div>
 
                                         <DialogFooter className="gap-2">
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={() => setEditingItem(null)}
+                                                onClick={() =>
+                                                    setEditingItem(null)
+                                                }
                                             >
                                                 Batal
                                             </Button>
-                                            <Button type="submit" disabled={processing}>
-                                                {processing && <Spinner className="mr-2" />}
+                                            <Button
+                                                type="submit"
+                                                disabled={processing}
+                                            >
+                                                {processing && (
+                                                    <Spinner className="mr-2" />
+                                                )}
                                                 Simpan
                                             </Button>
                                         </DialogFooter>

@@ -118,18 +118,14 @@ export default function SubjectForm({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <input
-                            type="hidden"
-                            name="is_active"
-                            value="0"
-                        />
+                        <input type="hidden" name="is_active" value="0" />
                         <input
                             type="checkbox"
                             id="is_active"
                             name="is_active"
                             value="1"
                             defaultChecked={defaults.is_active}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
                         />
                         <Label htmlFor="is_active" className="cursor-pointer">
                             Active (Mata pelajaran aktif)

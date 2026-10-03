@@ -44,12 +44,18 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <Badge variant={canWrite ? 'default' : 'secondary'} className="mt-2">
-                            {canWrite ? 'Pengajar Utama' : 'Akses Baca'}
-                        </Badge>
+                    <Badge
+                        variant={canWrite ? 'default' : 'secondary'}
+                        className="mt-2"
+                    >
+                        {canWrite ? 'Pengajar Utama' : 'Akses Baca'}
+                    </Badge>
                     <div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="font-mono text-xs">
+                            <Badge
+                                variant="outline"
+                                className="font-mono text-xs"
+                            >
                                 {course.subject_code}
                             </Badge>
                             <Badge variant="secondary">
@@ -66,7 +72,7 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-muted-foreground" />
+                            <Users className="text-muted-foreground h-5 w-5" />
                             <h3 className="text-base font-semibold">
                                 Daftar Siswa ({students.length})
                             </h3>
@@ -77,16 +83,24 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-left">
                                 <tr>
-                                    <th className="w-12 px-4 py-3 font-medium text-center">No</th>
-                                    <th className="px-4 py-3 font-medium">NISN / No. Induk</th>
-                                    <th className="px-4 py-3 font-medium">Nama Siswa</th>
-                                    <th className="px-4 py-3 font-medium">Jenis Kelamin</th>
+                                    <th className="w-12 px-4 py-3 text-center font-medium">
+                                        No
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        NISN / No. Induk
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Nama Siswa
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Jenis Kelamin
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {students.map((student, idx) => (
                                     <tr key={student.id} className="border-t">
-                                        <td className="px-4 py-3 text-center text-muted-foreground">
+                                        <td className="text-muted-foreground px-4 py-3 text-center">
                                             {idx + 1}
                                         </td>
                                         <td className="px-4 py-3 font-mono">
@@ -95,7 +109,7 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                                         <td className="px-4 py-3 font-medium">
                                             {student.full_name}
                                         </td>
-                                        <td className="px-4 py-3 uppercase text-xs">
+                                        <td className="px-4 py-3 text-xs uppercase">
                                             {student.gender}
                                         </td>
                                     </tr>
@@ -107,7 +121,8 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                                             colSpan={4}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Tidak ada siswa yang terdaftar aktif di kelas ini hari ini.
+                                            Tidak ada siswa yang terdaftar aktif
+                                            di kelas ini hari ini.
                                         </td>
                                     </tr>
                                 )}

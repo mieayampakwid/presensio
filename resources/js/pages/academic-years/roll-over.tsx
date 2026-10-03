@@ -232,6 +232,7 @@ export default function AcademicYearsRollOver({
                                                             new_name:
                                                                 schoolClass.name,
                                                             new_teacher_id: '',
+                                                            copy_subjects: true,
                                                         } satisfies Mapping);
 
                                                     return (
@@ -402,8 +403,9 @@ export default function AcademicYearsRollOver({
                                                                         alumni
                                                                     </span>
                                                                 )}
-                                                                {mapping.mode !== 'none' && (
-                                                                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                                                                {mapping.mode !==
+                                                                    'none' && (
+                                                                    <label className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap">
                                                                         <input
                                                                             type="hidden"
                                                                             name={`mappings[${schoolClass.id}][copy_subjects]`}
@@ -413,15 +415,28 @@ export default function AcademicYearsRollOver({
                                                                             type="checkbox"
                                                                             name={`mappings[${schoolClass.id}][copy_subjects]`}
                                                                             value="1"
-                                                                            defaultChecked={mapping.copy_subjects}
-                                                                            onChange={(e) =>
-                                                                                setMapping(schoolClass.id, {
-                                                                                    copy_subjects: e.target.checked,
-                                                                                })
+                                                                            defaultChecked={
+                                                                                mapping.copy_subjects
+                                                                            }
+                                                                            onChange={(
+                                                                                e,
+                                                                            ) =>
+                                                                                setMapping(
+                                                                                    schoolClass.id,
+                                                                                    {
+                                                                                        copy_subjects:
+                                                                                            e
+                                                                                                .target
+                                                                                                .checked,
+                                                                                    },
+                                                                                )
                                                                             }
                                                                             className="h-3.5 w-3.5 rounded border-gray-300"
                                                                         />
-                                                                        <span>Salin Mapel</span>
+                                                                        <span>
+                                                                            Salin
+                                                                            Mapel
+                                                                        </span>
                                                                     </label>
                                                                 )}
                                                             </td>

@@ -47,15 +47,12 @@ type Props = {
 
 export default function SubjectsIndex({ subjects, filters, groups }: Props) {
     const destroy = (subject: SubjectRow) => {
-        router.delete(
-            SubjectController.destroy.url({ subject: subject.id }),
-            { preserveScroll: true },
-        );
+        router.delete(SubjectController.destroy.url({ subject: subject.id }), {
+            preserveScroll: true,
+        });
     };
 
-    const submitFilters = (
-        event: ChangeEvent<HTMLInputElement>,
-    ) => {
+    const submitFilters = (event: ChangeEvent<HTMLInputElement>) => {
         event.currentTarget.form?.requestSubmit();
     };
 
@@ -102,8 +99,12 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                 <th className="px-4 py-3 font-medium">Name</th>
                                 <th className="px-4 py-3 font-medium">Group</th>
                                 <th className="px-4 py-3 font-medium">Order</th>
-                                <th className="px-4 py-3 font-medium">Status</th>
-                                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                <th className="px-4 py-3 font-medium">
+                                    Status
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,18 +124,19 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
-                                        {groupMap[subject.group] ?? subject.group}
+                                        {groupMap[subject.group] ??
+                                            subject.group}
                                     </td>
                                     <td className="px-4 py-3">
                                         {subject.sort_order}
                                     </td>
                                     <td className="px-4 py-3">
                                         {subject.is_active ? (
-                                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-950/50 dark:text-green-400">
+                                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset dark:bg-green-950/50 dark:text-green-400">
                                                 Active
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-500/20 dark:bg-neutral-800 dark:text-neutral-400">
+                                            <span className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 ring-1 ring-neutral-500/20 ring-inset dark:bg-neutral-800 dark:text-neutral-400">
                                                 Inactive
                                             </span>
                                         )}
@@ -147,11 +149,11 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={
-                                                        SubjectController.edit.url({
+                                                    href={SubjectController.edit.url(
+                                                        {
                                                             subject: subject.id,
-                                                        })
-                                                    }
+                                                        },
+                                                    )}
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
@@ -178,7 +180,10 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                         Delete Subject
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Are you sure you want to delete {subject.name} ({subject.code})? This action cannot be undone.
+                                                        Are you sure you want to
+                                                        delete {subject.name} (
+                                                        {subject.code})? This
+                                                        action cannot be undone.
                                                     </DialogDescription>
                                                     <DialogFooter className="gap-2">
                                                         <DialogClose asChild>
@@ -190,7 +195,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                             <Button
                                                                 variant="destructive"
                                                                 onClick={() =>
-                                                                    destroy(subject)
+                                                                    destroy(
+                                                                        subject,
+                                                                    )
                                                                 }
                                                             >
                                                                 Delete

@@ -33,7 +33,10 @@ type Props = {
     classSubjects: ClassSubjectRow[];
 };
 
-export default function ShowClassSubjects({ schoolClass, classSubjects }: Props) {
+export default function ShowClassSubjects({
+    schoolClass,
+    classSubjects,
+}: Props) {
     return (
         <>
             <Head title={`Mata Pelajaran & Guru — ${schoolClass.name}`} />
@@ -61,21 +64,29 @@ export default function ShowClassSubjects({ schoolClass, classSubjects }: Props)
                         <thead className="bg-muted/50 text-left">
                             <tr>
                                 <th className="px-4 py-3 font-medium">Kode</th>
-                                <th className="px-4 py-3 font-medium">Mata Pelajaran</th>
-                                <th className="px-4 py-3 font-medium">Kelompok</th>
-                                <th className="px-4 py-3 font-medium">Guru Pengajar</th>
+                                <th className="px-4 py-3 font-medium">
+                                    Mata Pelajaran
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Kelompok
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Guru Pengajar
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {classSubjects.map((item) => (
                                 <tr key={item.id} className="border-t">
                                     <td className="px-4 py-3 font-mono font-medium">
-                                        <Badge variant="outline">{item.subject_code}</Badge>
+                                        <Badge variant="outline">
+                                            {item.subject_code}
+                                        </Badge>
                                     </td>
                                     <td className="px-4 py-3 font-medium">
                                         {item.subject_name}
                                     </td>
-                                    <td className="px-4 py-3 text-muted-foreground">
+                                    <td className="text-muted-foreground px-4 py-3">
                                         {item.subject_group}
                                     </td>
                                     <td className="px-4 py-3 font-medium">
@@ -90,7 +101,8 @@ export default function ShowClassSubjects({ schoolClass, classSubjects }: Props)
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada mata pelajaran yang ditugaskan ke kelas ini.
+                                        Belum ada mata pelajaran yang ditugaskan
+                                        ke kelas ini.
                                     </td>
                                 </tr>
                             )}
