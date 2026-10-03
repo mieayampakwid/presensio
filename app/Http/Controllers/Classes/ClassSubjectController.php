@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Classes;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Classes\StoreClassSubjectRequest;
 use App\Http\Requests\Classes\UpdateClassSubjectRequest;
@@ -9,9 +10,11 @@ use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Teacher;
+use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,8 +29,58 @@ class ClassSubjectController extends Controller
     /**
      * Display a listing of subjects assigned to a class.
      */
-    public function index(SchoolClass $schoolClass): Response
+    public function index(Request $request, SchoolClass $schoolClass): Response
     {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
+        $isAdmin = $user->hasRole(UserRole::Admin);
+
+        if (! $isAdmin) {
+            $today = $this->schoolSettings->todayDate();
+            abort_unless($this->canViewClassSubjects($user, $schoolClass, $today), 403);
+
+            $schoolClass->load([
+                'academicYear:id,name,is_active',
+                'teacher:id,name',
+                'classSubjects' => fn ($query) => $query->with([
+                    'subject:id,code,name,group,sort_order',
+                    'teacher:id,name',
+                ])->join('subjects', 'class_subjects.subject_id', '=', 'subjects.id')
+                    ->orderBy('subjects.group')
+                    ->orderBy('subjects.sort_order')
+                    ->orderBy('subjects.name')
+                    ->select('class_subjects.*'),
+            ]);
+
+            $classSubjects = $schoolClass->classSubjects->map(fn (ClassSubject $item) => [
+                'id' => $item->id,
+                'subject_name' => $item->subject->name,
+                'subject_code' => $item->subject->code,
+                'subject_group' => $item->subject->group->value,
+                'teacher_name' => $item->teacher->name,
+            ]);
+
+            return Inertia::render('classes/show-subjects', [
+                'schoolClass' => [
+                    'id' => $schoolClass->id,
+                    'name' => $schoolClass->name,
+                    'grade_level' => $schoolClass->grade_level,
+                    'curriculum' => is_string($schoolClass->curriculum) ? $schoolClass->curriculum : $schoolClass->curriculum->value,
+                    'academic_year' => $schoolClass->academicYear ? [
+                        'id' => $schoolClass->academicYear->id,
+                        'name' => $schoolClass->academicYear->name,
+                        'is_active' => $schoolClass->academicYear->is_active,
+                    ] : null,
+                    'teacher' => $schoolClass->teacher ? [
+                        'id' => $schoolClass->teacher->id,
+                        'name' => $schoolClass->teacher->name,
+                    ] : null,
+                ],
+                'classSubjects' => $classSubjects,
+            ]);
+        }
+
         $schoolClass->load([
             'academicYear:id,name,is_active',
             'teacher:id,name',
@@ -147,5 +200,43 @@ class ClassSubjectController extends Controller
         ]);
 
         return back();
+    }
+
+    /**
+     * Check if a non-admin user can view class subjects.
+     */
+    private function canViewClassSubjects(User $user, SchoolClass $schoolClass, string $today): bool
+    {
+        if ($user->hasAnyRole(UserRole::Admin, UserRole::Principal)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Teacher)) {
+            $teacherId = $user->teacher?->id;
+            if ($teacherId !== null && $schoolClass->teacher_id === $teacherId) {
+                return true;
+            }
+        }
+
+        if ($user->hasRole(UserRole::Parent)) {
+            $guardian = $user->guardian;
+            if ($guardian !== null) {
+                $guardian->loadMissing('students.enrollments');
+                foreach ($guardian->students as $child) {
+                    if ($child->classOn($today)?->id === $schoolClass->id) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($user->hasRole(UserRole::Student)) {
+            $student = $user->student;
+            if ($student !== null && $student->classOn($today)?->id === $schoolClass->id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

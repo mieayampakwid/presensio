@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read SchoolClass $schoolClass
  * @property-read Subject $subject
- * @property-read Teacher $teacher
+ * @property-read Teacher|null $teacher
  */
 #[Fillable(['class_id', 'subject_id', 'teacher_id', 'passing_threshold'])]
 class ClassSubject extends Model

@@ -4,6 +4,11 @@ use App\Http\Controllers\Classes\ClassSubjectController;
 use App\Http\Controllers\Classes\SchoolClassController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('classes/{school_class}/subjects', [ClassSubjectController::class, 'index'])
+        ->name('classes.subjects.index');
+});
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('classes', [SchoolClassController::class, 'index'])->name('classes.index');
     Route::get('classes/create', [SchoolClassController::class, 'create'])->name('classes.create');
@@ -17,8 +22,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('classes/{school_class}', [SchoolClassController::class, 'destroy'])
         ->missing(fn () => to_route('classes.index'))
         ->name('classes.destroy');
-    Route::get('classes/{school_class}/subjects', [ClassSubjectController::class, 'index'])
-        ->name('classes.subjects.index');
     Route::post('classes/{school_class}/subjects', [ClassSubjectController::class, 'store'])
         ->name('classes.subjects.store');
     Route::put('classes/{school_class}/subjects/{class_subject}', [ClassSubjectController::class, 'update'])
