@@ -30,6 +30,7 @@ import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/Pres
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
+import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -101,6 +102,11 @@ export function AppSidebar() {
                       title: 'Classes',
                       href: SchoolClassController.index().url,
                       icon: School,
+                  },
+                  {
+                      title: 'Subjects',
+                      href: SubjectController.index().url,
+                      icon: BookOpen,
                   },
                   {
                       title: 'Academic Years',
