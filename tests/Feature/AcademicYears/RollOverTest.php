@@ -3,9 +3,11 @@
 namespace Tests\Feature\AcademicYears;
 
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Reports\AttendanceReportService;
@@ -213,5 +215,74 @@ class RollOverTest extends TestCase
                 ->has('source_classes', 2)
                 ->has('target_classes', 0)
                 ->where('already_promoted', false));
+    }
+
+    /**
+     * AC-09-07: Roll-over with "copy subject assignments" on maps 5A (2026/2027, 9 assignments)
+     * to 6A (2027/2028) and creates 9 assignments on 6A; an assignment whose teacher is inactive
+     * is skipped and reported.
+     */
+    public function test_ac_09_07_roll_over_copies_subject_assignments_and_reports_inactive(): void
+    {
+        $activeTeachers = Teacher::factory()->count(8)->create();
+        $inactiveUser = User::factory()->teacher()->create(['is_active' => false]);
+        $inactiveTeacher = Teacher::factory()->create(['user_id' => $inactiveUser->id]);
+
+        $subjects = Subject::factory()->count(9)->create();
+
+        // 8 active assignments
+        foreach ($activeTeachers as $index => $teacher) {
+            ClassSubject::factory()->create([
+                'class_id' => $this->class5a->id,
+                'subject_id' => $subjects[$index]->id,
+                'teacher_id' => $teacher->id,
+                'passing_threshold' => '75.00',
+            ]);
+        }
+
+        // 1 assignment with inactive teacher
+        ClassSubject::factory()->create([
+            'class_id' => $this->class5a->id,
+            'subject_id' => $subjects[8]->id,
+            'teacher_id' => $inactiveTeacher->id,
+            'passing_threshold' => '75.00',
+        ]);
+
+        $this->assertSame(9, ClassSubject::where('class_id', $this->class5a->id)->count());
+
+        $existingTarget = SchoolClass::factory()->create([
+            'name' => 'Kelas 6A',
+            'grade_level' => 6,
+            'academic_year_id' => $this->targetYear->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('academic-years.roll-over.apply'), [
+            'target_year_id' => $this->targetYear->id,
+            'effective_on' => '2027-07-01',
+            'mappings' => [
+                $this->class5a->id => [
+                    'mode' => 'existing',
+                    'target_class_id' => $existingTarget->id,
+                    'copy_subjects' => true,
+                ],
+                $this->class5b->id => [
+                    'mode' => 'none',
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('academic-years.index'));
+
+        // 8 copied, 1 skipped
+        $this->assertSame(8, ClassSubject::where('class_id', $existingTarget->id)->count());
+
+        /** @var array{copied: int, skipped: list<array{subject: string, reason: string}>} $summary */
+        $summary = session('roll_over_summary');
+        $this->assertNotNull($summary);
+        $this->assertSame(8, $summary['copied']);
+        $this->assertCount(1, $summary['skipped']);
+        $this->assertSame($subjects[8]->name, $summary['skipped'][0]['subject']);
+        $this->assertSame('Teacher is inactive', $summary['skipped'][0]['reason']);
     }
 }

@@ -34,6 +34,7 @@ class RollOverRequest extends FormRequest
             'mappings.*.target_class_id' => ['nullable', Rule::exists(SchoolClass::class, 'id')],
             'mappings.*.new_name' => ['nullable', 'string', 'max:255'],
             'mappings.*.new_teacher_id' => ['nullable', Rule::exists(Teacher::class, 'id')],
+            'mappings.*.copy_subjects' => ['nullable', 'boolean'],
         ];
     }
 
@@ -48,6 +49,7 @@ class RollOverRequest extends FormRequest
                 'target_class_id' => isset($mapping['target_class_id']) ? (int) $mapping['target_class_id'] : null,
                 'new_name' => $mapping['new_name'] ?? null,
                 'new_teacher_id' => isset($mapping['new_teacher_id']) ? (int) $mapping['new_teacher_id'] : null,
+                'copy_subjects' => (bool) ($mapping['copy_subjects'] ?? false),
             ])
             ->all();
     }

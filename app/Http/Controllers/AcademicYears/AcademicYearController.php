@@ -147,14 +147,24 @@ class AcademicYearController extends Controller
         $target = AcademicYear::query()->findOrFail($request->integer('target_year_id'));
 
         try {
-            $this->rollOverService->rollOver($target, $request->mappings(), $request->effectiveOn());
+            $summary = $this->rollOverService->rollOver($target, $request->mappings(), $request->effectiveOn());
         } catch (InvalidArgumentException $exception) {
             Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
 
             return back();
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Rolled over to {$target->name} — it is now the active year."]);
+        $message = "Rolled over to {$target->name} — it is now the active year.";
+        if ($summary['copied'] > 0 || ! empty($summary['skipped'])) {
+            $message .= " ({$summary['copied']} subject assignments copied";
+            if (! empty($summary['skipped'])) {
+                $message .= ', '.count($summary['skipped']).' skipped';
+            }
+            $message .= ').';
+        }
+        $request->session()->flash('roll_over_summary', $summary);
+        Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
+        Inertia::flash('roll_over_summary', $summary);
 
         return to_route('academic-years.index');
     }

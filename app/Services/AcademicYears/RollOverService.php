@@ -4,6 +4,7 @@ namespace App\Services\AcademicYears;
 
 use App\Enums\Curriculum;
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Services\SchoolSettings;
@@ -23,12 +24,13 @@ class RollOverService
     public function __construct(private readonly SchoolSettings $schoolSettings) {}
 
     /**
-     * @param  array<int, array{mode: 'existing'|'new'|'none', target_class_id?: int|null, new_name?: string|null, new_teacher_id?: int|null}>  $mappings
-     *                                                                                                                                                     Keyed by source class id.
+     * @param  array<int, array{mode: 'existing'|'new'|'none', target_class_id?: int|null, new_name?: string|null, new_teacher_id?: int|null, copy_subjects?: bool|null}>  $mappings
+     *                                                                                                                                                                                Keyed by source class id.
+     * @return array{copied: int, skipped: list<array{subject: string, reason: string}>}
      */
-    public function rollOver(AcademicYear $target, array $mappings, string $effectiveOn): void
+    public function rollOver(AcademicYear $target, array $mappings, string $effectiveOn): array
     {
-        DB::transaction(function () use ($target, $mappings, $effectiveOn): void {
+        return DB::transaction(function () use ($target, $mappings, $effectiveOn): array {
             $source = AcademicYear::active();
 
             if ($source === null || $source->id === $target->id) {
@@ -40,7 +42,7 @@ class RollOverService
                 ->exists();
 
             if ($alreadyPromoted) {
-                return; // idempotent re-apply
+                return ['copied' => 0, 'skipped' => []]; // idempotent re-apply
             }
 
             $targets = $this->resolveTargets($target, $source, $mappings);
@@ -69,9 +71,12 @@ class RollOverService
                     ]);
                 }
             }
+            $subjectSummary = $this->copySubjectAssignments($targets, $mappings);
 
             AcademicYear::query()->whereKeyNot($target->id)->update(['is_active' => false]);
             $target->forceFill(['is_active' => true])->save();
+
+            return $subjectSummary;
         });
     }
 
@@ -122,5 +127,74 @@ class RollOverService
         }
 
         return $targets;
+    }
+
+    /**
+     * Copy subject assignments from source classes to target classes.
+     *
+     * @param  array<int, int|null>  $targets  source class id => target class id
+     * @param  array<int, array<string, mixed>>  $mappings
+     * @return array{copied: int, skipped: list<array{subject: string, reason: string}>}
+     */
+    private function copySubjectAssignments(array $targets, array $mappings): array
+    {
+        $copiedCount = 0;
+        $skipped = [];
+
+        foreach ($targets as $sourceClassId => $targetClassId) {
+            if ($targetClassId === null) {
+                continue;
+            }
+
+            $mapping = $mappings[$sourceClassId] ?? [];
+            if (empty($mapping['copy_subjects'])) {
+                continue;
+            }
+
+            $sourceAssignments = ClassSubject::query()
+                ->where('class_id', $sourceClassId)
+                ->with(['subject', 'teacher.user'])
+                ->get();
+
+            foreach ($sourceAssignments as $assignment) {
+                if (! $assignment->subject->is_active) {
+                    $skipped[] = [
+                        'subject' => $assignment->subject->name,
+                        'reason' => 'Subject is inactive',
+                    ];
+
+                    continue;
+                }
+
+                if ($assignment->teacher === null || ! $assignment->teacher->isActive()) {
+                    $skipped[] = [
+                        'subject' => $assignment->subject->name,
+                        'reason' => 'Teacher is inactive',
+                    ];
+
+                    continue;
+                }
+
+                $alreadyAssigned = ClassSubject::query()
+                    ->where('class_id', $targetClassId)
+                    ->where('subject_id', $assignment->subject_id)
+                    ->exists();
+
+                if (! $alreadyAssigned) {
+                    ClassSubject::create([
+                        'class_id' => $targetClassId,
+                        'subject_id' => $assignment->subject_id,
+                        'teacher_id' => $assignment->teacher_id,
+                        'passing_threshold' => $assignment->passing_threshold,
+                    ]);
+                    $copiedCount++;
+                }
+            }
+        }
+
+        return [
+            'copied' => $copiedCount,
+            'skipped' => $skipped,
+        ];
     }
 }

@@ -58,6 +58,7 @@ type Mapping = {
     target_class_id: string;
     new_name: string;
     new_teacher_id: string;
+    copy_subjects: boolean;
 };
 
 const SELECT_CLASS =
@@ -81,6 +82,7 @@ export default function AcademicYearsRollOver({
                     target_class_id: '',
                     new_name: schoolClass.name,
                     new_teacher_id: '',
+                    copy_subjects: true,
                 },
             ]),
         ),
@@ -399,6 +401,28 @@ export default function AcademicYearsRollOver({
                                                                         become
                                                                         alumni
                                                                     </span>
+                                                                )}
+                                                                {mapping.mode !== 'none' && (
+                                                                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                                                                        <input
+                                                                            type="hidden"
+                                                                            name={`mappings[${schoolClass.id}][copy_subjects]`}
+                                                                            value="0"
+                                                                        />
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            name={`mappings[${schoolClass.id}][copy_subjects]`}
+                                                                            value="1"
+                                                                            defaultChecked={mapping.copy_subjects}
+                                                                            onChange={(e) =>
+                                                                                setMapping(schoolClass.id, {
+                                                                                    copy_subjects: e.target.checked,
+                                                                                })
+                                                                            }
+                                                                            className="h-3.5 w-3.5 rounded border-gray-300"
+                                                                        />
+                                                                        <span>Salin Mapel</span>
+                                                                    </label>
                                                                 )}
                                                             </td>
                                                         </tr>
