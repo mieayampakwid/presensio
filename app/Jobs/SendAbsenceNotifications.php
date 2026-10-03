@@ -5,16 +5,19 @@ namespace App\Jobs;
 use App\Enums\AttendanceStatus;
 use App\Enums\NotificationChannel;
 use App\Enums\NotificationDeliveryStatus;
+use App\Enums\NotificationType;
 use App\Mail\AbsenceAlertMail;
 use App\Models\AbsenceNotification;
 use App\Models\Attendance;
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Notifications\AppNotification;
 use App\Services\Notifications\WhatsAppClient;
 use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -59,6 +62,29 @@ class SendAbsenceNotifications implements ShouldQueue
         // No guardians → nothing to send, no error (spec 05 §Requirements 5).
         if ($student->guardians->isEmpty()) {
             return;
+        }
+
+        // Additional in-app copy for linked guardians with accounts (spec 17 §Decisions)
+        foreach ($student->guardians as $guardian) {
+            $guardian->loadMissing('user');
+            if ($guardian->user !== null) {
+                $dedupeKey = "absence_alert:{$attendance->id}:{$guardian->user->id}";
+                try {
+                    $guardian->user->notify(new AppNotification(
+                        type: NotificationType::AbsenceAlert,
+                        title: 'Pemberitahuan Ketidakhadiran',
+                        body: "Siswa {$student->full_name} tercatat {$this->statusLabel($attendance->status)} pada tanggal {$attendance->date->toDateString()}.",
+                        url: '/my-attendance',
+                        key: $dedupeKey,
+                    ));
+                } catch (UniqueConstraintViolationException) {
+                    // Already written
+                } catch (QueryException $e) {
+                    if ($e->getCode() !== '23505') {
+                        throw $e;
+                    }
+                }
+            }
         }
 
         $text = $this->message($attendance, $student);

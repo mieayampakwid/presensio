@@ -39,4 +39,5 @@ Artisan::command('notifications:release-delayed', function () {
     }
 })->purpose('Release delayed notifications whose quiet hours have ended');
 
+Schedule::command('notifications:prune')->daily();
 Schedule::command('notifications:release-delayed')->everyMinute();

@@ -5,9 +5,13 @@ namespace App\Services\Attendance;
 use App\Enums\AttendanceStatus;
 use App\Enums\ExcuseStatus;
 use App\Enums\ExcuseType;
+use App\Enums\NotificationType;
 use App\Models\Attendance;
 use App\Models\Excuse;
 use App\Models\User;
+use App\Services\Notifications\Message;
+use App\Services\Notifications\NotificationDispatcher;
+use App\Services\Notifications\Recipient;
 use App\Services\SchoolSettings;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Date;
@@ -28,7 +32,10 @@ use Illuminate\Support\Facades\DB;
  */
 class ExcuseApprovalService
 {
-    public function __construct(private readonly SchoolSettings $settings) {}
+    public function __construct(
+        private readonly SchoolSettings $settings,
+        private readonly NotificationDispatcher $dispatcher,
+    ) {}
 
     /**
      * Approve a pending excuse and inject its attendance records.
@@ -80,6 +87,26 @@ class ExcuseApprovalService
                 $this->upsertExcusedDay($pending->student_id, $date, $status);
             }
 
+            if ($pending->submitted_by_guardian_id !== null) {
+                $guardian = $pending->submittedByGuardian;
+                if ($guardian !== null) {
+                    $pending->loadMissing('student');
+                    $studentName = $pending->student?->full_name ?? 'Siswa';
+                    $recipient = Recipient::fromGuardian($guardian);
+                    $message = new Message(
+                        title: 'Pengajuan Izin Disetujui',
+                        body: "Pengajuan izin {$studentName} telah disetujui.",
+                        route: 'excuses.my',
+                    );
+                    $this->dispatcher->dispatch(
+                        type: NotificationType::ExcuseReviewed,
+                        recipients: collect([$recipient]),
+                        message: $message,
+                        dedupeBase: "excuse:{$pending->id}:approved",
+                    );
+                }
+            }
+
             return true;
         });
     }
@@ -91,17 +118,46 @@ class ExcuseApprovalService
      */
     public function reject(Excuse $excuse, User $reviewer, ?string $reviewNote): bool
     {
-        $updated = Excuse::query()
-            ->whereKey($excuse->id)
-            ->where('status', ExcuseStatus::Pending->value)
-            ->update([
+        return DB::transaction(function () use ($excuse, $reviewer, $reviewNote): bool {
+            $pending = Excuse::query()
+                ->whereKey($excuse->id)
+                ->where('status', ExcuseStatus::Pending->value)
+                ->lockForUpdate()
+                ->first();
+
+            if ($pending === null) {
+                return false;
+            }
+
+            $pending->update([
                 'status' => ExcuseStatus::Rejected,
                 'review_note' => $reviewNote,
                 'reviewed_by_user_id' => $reviewer->id,
                 'reviewed_at' => now(),
             ]);
 
-        return $updated === 1;
+            if ($pending->submitted_by_guardian_id !== null) {
+                $guardian = $pending->submittedByGuardian;
+                if ($guardian !== null) {
+                    $pending->loadMissing('student');
+                    $studentName = $pending->student?->full_name ?? 'Siswa';
+                    $recipient = Recipient::fromGuardian($guardian);
+                    $message = new Message(
+                        title: 'Pengajuan Izin Ditolak',
+                        body: "Pengajuan izin {$studentName} ditolak.",
+                        route: 'excuses.my',
+                    );
+                    $this->dispatcher->dispatch(
+                        type: NotificationType::ExcuseReviewed,
+                        recipients: collect([$recipient]),
+                        message: $message,
+                        dedupeBase: "excuse:{$pending->id}:rejected",
+                    );
+                }
+            }
+
+            return true;
+        });
     }
 
     /**

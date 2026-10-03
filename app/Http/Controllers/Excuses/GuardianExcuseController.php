@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\Excuses;
 
 use App\Enums\ExcuseStatus;
+use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Excuses\StoreExcuseRequest;
 use App\Models\Excuse;
 use App\Models\Guardian;
+use App\Models\Student;
+use App\Services\Notifications\Message;
+use App\Services\Notifications\NotificationDispatcher;
+use App\Services\Notifications\Recipient;
+use App\Services\Notifications\RecipientResolver;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +32,11 @@ class GuardianExcuseController extends Controller
 
     private const DIRECTORY = 'excuses';
 
-    public function __construct(private readonly SchoolSettings $settings) {}
+    public function __construct(
+        private readonly SchoolSettings $settings,
+        private readonly NotificationDispatcher $dispatcher,
+        private readonly RecipientResolver $resolver,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -72,8 +82,34 @@ class GuardianExcuseController extends Controller
         $validated['attachment_path'] = $this->storeAttachment($request);
         $validated['status'] = ExcuseStatus::Pending;
 
-        Excuse::create($validated);
+        $excuse = Excuse::create($validated);
 
+        $student = Student::with('currentEnrollment.schoolClass.teacher.user')->find($validated['student_id']);
+        $recipients = $this->resolver->forAdmins();
+
+        $schoolClass = $student?->currentEnrollment?->schoolClass;
+        if ($schoolClass !== null) {
+            $homeroom = $this->resolver->forHomeroomTeacher($schoolClass);
+            if ($homeroom !== null) {
+                $recipients->push($homeroom);
+            }
+        }
+
+        $uniqueRecipients = $recipients->unique(fn (Recipient $r) => $r->key())->values();
+        $studentName = $student?->full_name ?? 'Siswa';
+
+        $message = new Message(
+            title: 'Pengajuan Izin Baru',
+            body: "Pengajuan izin untuk {$studentName} menunggu peninjauan.",
+            route: 'excuses.index',
+        );
+
+        $this->dispatcher->dispatch(
+            type: NotificationType::ExcuseSubmitted,
+            recipients: $uniqueRecipients,
+            message: $message,
+            dedupeBase: "excuse:{$excuse->id}:submitted",
+        );
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Excuse submitted — awaiting review.']);
 
         return to_route('excuses.my');
