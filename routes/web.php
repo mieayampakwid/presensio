@@ -40,3 +40,4 @@ require __DIR__.'/reports.php';
 require __DIR__.'/academic-years.php';
 require __DIR__.'/audit-logs.php';
 require __DIR__.'/subjects.php';
+require __DIR__.'/teacher.php';

@@ -158,6 +158,15 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(activeRole === 'teacher'
+            ? [
+                  {
+                      title: 'My Courses',
+                      href: '/courses',
+                      icon: BookOpen,
+                  },
+              ]
+            : []),
         ...(activeRole === 'teacher' || activeRole === 'admin'
             ? [
                   {
