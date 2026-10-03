@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -63,6 +64,16 @@ class User extends Authenticatable implements PasskeyUser
     public function roleGrants(): HasMany
     {
         return $this->hasMany(UserRoleGrant::class);
+    }
+
+    /**
+     * The entity's notifications with dedupe_key support.
+     *
+     * @return MorphMany<DatabaseNotification, $this>
+     */
+    public function notifications()
+    {
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')->latest();
     }
 
     /**
