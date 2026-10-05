@@ -12,6 +12,7 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -195,6 +196,29 @@ class EmployeeManagementTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertNull($employee->fresh()->working_days);
+    }
+
+    public function test_working_days_posted_as_strings_are_stored_and_served_as_integers(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create(['working_days' => null]);
+
+        // Form posts carry every value as a string.
+        $this->actingAs($admin)
+            ->put(route('employees.update', $employee), [
+                'name' => $employee->name,
+                'employment_type' => $employee->employment_type->value,
+                'is_active' => '1',
+                'working_days_custom' => '1',
+                'working_days' => ['1', '3'],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame([1, 3], $employee->fresh()->working_days);
+
+        $this->actingAs($admin)
+            ->get(route('employees.edit', $employee))
+            ->assertInertia(fn (Assert $page) => $page->where('employee.working_days', [1, 3]));
     }
 
     public function test_custom_working_days_mode_requires_at_least_one_day(): void

@@ -7,6 +7,7 @@ use App\Models\Concerns\Auditable;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,6 +59,21 @@ class Employee extends Model
             'working_days' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Form posts submit days as strings; store them as integers so reads
+     * match the list<int> shape the edit form compares against.
+     *
+     * @return Attribute<list<int>|null, list<int|string>|null>
+     */
+    protected function workingDays(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?array $days): ?string => $days === null
+                ? null
+                : json_encode(array_values(array_map(intval(...), $days)), JSON_THROW_ON_ERROR),
+        );
     }
 
     /**
