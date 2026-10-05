@@ -136,6 +136,25 @@ class ClassSubjectTest extends TestCase
         $this->assertSame($teacher2->id, $log->new_values['teacher_id']);
     }
 
+    public function test_saving_unchanged_assignment_writes_no_audit_log(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $classSubject = ClassSubject::factory()->create(['passing_threshold' => '75.00']);
+
+        $this->actingAs($admin)
+            ->put(route('classes.subjects.update', [$classSubject->class_id, $classSubject]), [
+                'teacher_id' => $classSubject->teacher_id,
+                'passing_threshold' => 75,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertFalse(AuditLog::query()
+            ->where('auditable_type', $classSubject->getMorphClass())
+            ->where('auditable_id', $classSubject->id)
+            ->where('action', 'updated')
+            ->exists());
+    }
+
     /**
      * AC-09-09: Attempting to edit assignments of a class in a non-active academic year returns HTTP 422.
      */

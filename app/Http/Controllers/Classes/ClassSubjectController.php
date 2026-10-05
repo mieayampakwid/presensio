@@ -192,19 +192,22 @@ class ClassSubjectController extends Controller
     ): RedirectResponse {
         abort_unless($classSubject->class_id === $schoolClass->id, 404);
 
-        $old = $classSubject->only(['teacher_id', 'passing_threshold']);
         $validated = $request->validated();
 
         DB::transaction(function () use ($classSubject, $validated) {
-            $classSubject->update($validated);
-        });
+            $old = $classSubject->only(['teacher_id', 'passing_threshold']);
 
-        $this->auditLogger->record(
-            $classSubject,
-            'updated',
-            $old,
-            $classSubject->only(['teacher_id', 'passing_threshold'])
-        );
+            $classSubject->update($validated);
+
+            if ($classSubject->wasChanged(['teacher_id', 'passing_threshold'])) {
+                $this->auditLogger->record(
+                    $classSubject,
+                    'updated',
+                    $old,
+                    $classSubject->only(['teacher_id', 'passing_threshold'])
+                );
+            }
+        });
 
         Inertia::flash('toast', [
             'type' => 'success',
