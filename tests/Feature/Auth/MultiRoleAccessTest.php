@@ -48,7 +48,7 @@ class MultiRoleAccessTest extends TestCase
         $user = User::factory()->teacher()->create();
         $user->roleGrants()->create(['role' => UserRole::Parent]);
 
-        $teacher->update(['user_id' => $user->id]);
+        $teacher->employee->update(['user_id' => $user->id]);
         $guardian->update(['user_id' => $user->id]);
 
         $this->assertTrue(ClassAccess::canWrite($user, $class->id));
@@ -202,7 +202,8 @@ class MultiRoleAccessTest extends TestCase
         $this->assertEquals('08111111111', $user->passwordResetContact());
 
         // Without teacher phone, falls back to guardian
-        $teacher->update(['phone_number' => null]);
+        $teacher->employee->update(['phone_number' => null]);
+        $user->unsetRelation('employee');
         $user->unsetRelation('teacher');
         $this->assertEquals('08222222222', $user->passwordResetContact());
 

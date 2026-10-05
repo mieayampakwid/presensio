@@ -78,7 +78,7 @@ class UserProfileLinkingTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertNull($guardian->fresh()->user_id);
-        $this->assertNull($user->fresh()->teacher()->value('id'));
+        $this->assertNull($user->fresh()->teacher);
     }
 
     public function test_changing_role_and_linking_a_new_profile_in_one_request(): void

@@ -6,6 +6,7 @@ use App\Enums\DeliveryStatus;
 use App\Enums\NotificationType;
 use App\Mail\NotificationMail;
 use App\Models\DatabaseNotification;
+use App\Models\Employee;
 use App\Models\Guardian;
 use App\Models\NotificationDelivery;
 use App\Models\Teacher;
@@ -161,7 +162,8 @@ class DeliverNotification implements ShouldQueue
             $guardian = Guardian::with('user')->find($delivery->recipient_id);
             $email = $guardian?->user?->email;
         } elseif ($delivery->recipient_type === 'employee') {
-            $employee = Teacher::with('user')->find($delivery->recipient_id);
+            $employee = Teacher::with('employee.user')->find($delivery->recipient_id)?->employee
+                ?? Employee::with('user')->find($delivery->recipient_id);
             $email = $employee?->user?->email;
         }
 

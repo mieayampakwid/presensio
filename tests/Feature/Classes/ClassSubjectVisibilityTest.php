@@ -89,7 +89,7 @@ class ClassSubjectVisibilityTest extends TestCase
     public function test_homeroom_teacher_sees_read_only_view_without_thresholds(): void
     {
         $homeroomUser = User::factory()->teacher()->create();
-        $this->class->teacher->update(['user_id' => $homeroomUser->id]);
+        $this->class->teacher->employee->update(['user_id' => $homeroomUser->id]);
 
         $this->actingAs($homeroomUser)
             ->get(route('classes.subjects.index', $this->class))

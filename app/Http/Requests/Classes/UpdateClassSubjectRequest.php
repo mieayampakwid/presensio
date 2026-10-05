@@ -61,7 +61,7 @@ class UpdateClassSubjectRequest extends FormRequest
 
                 $teacherId = $this->integer('teacher_id');
                 if ($teacherId > 0) {
-                    $teacher = Teacher::with('user')->find($teacherId);
+                    $teacher = Teacher::with('employee.user')->find($teacherId);
                     if ($teacher && ! $teacher->isActive()) {
                         $validator->errors()->add('teacher_id', 'The selected teacher is inactive.');
                     }

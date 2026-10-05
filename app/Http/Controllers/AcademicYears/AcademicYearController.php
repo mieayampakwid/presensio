@@ -137,7 +137,15 @@ class AcademicYearController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'source_classes' => $sourceClasses,
-            'teachers' => Teacher::query()->orderBy('name')->get(['id', 'name']),
+            'teachers' => Teacher::query()
+                ->with('employee')
+                ->get()
+                ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+                ->map(fn (Teacher $t) => [
+                    'id' => $t->id,
+                    'name' => $t->employee?->name ?? '',
+                ])
+                ->values(),
             'already_promoted' => $alreadyPromoted,
         ]);
     }

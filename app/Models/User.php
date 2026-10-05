@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -35,6 +36,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Employee|null $employee
  * @property-read Teacher|null $teacher
  * @property-read Guardian|null $guardian
  * @property-read Student|null $student
@@ -134,10 +136,16 @@ class User extends Authenticatable implements PasskeyUser
         return $roles->first() ?? UserRole::Teacher;
     }
 
-    /** @return HasOne<Teacher, $this> */
-    public function teacher(): HasOne
+    /** @return HasOne<Employee, $this> */
+    public function employee(): HasOne
     {
-        return $this->hasOne(Teacher::class);
+        return $this->hasOne(Employee::class);
+    }
+
+    /** @return HasOneThrough<Teacher, Employee, $this> */
+    public function teacher(): HasOneThrough
+    {
+        return $this->hasOneThrough(Teacher::class, Employee::class, 'user_id', 'employee_id');
     }
 
     /** @return HasOne<Guardian, $this> */
@@ -177,9 +185,9 @@ class User extends Authenticatable implements PasskeyUser
      */
     public function passwordResetContact(): ?string
     {
-        $teacher = $this->teacher;
-        if ($teacher instanceof Teacher && $teacher->phone_number !== null) {
-            return $teacher->phone_number;
+        $employee = $this->employee;
+        if ($employee instanceof Employee && $employee->phone_number !== null) {
+            return $employee->phone_number;
         }
 
         $guardian = $this->guardian;

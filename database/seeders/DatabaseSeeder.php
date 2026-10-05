@@ -3,10 +3,12 @@
 namespace Database\Seeders;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\EmploymentType;
 use App\Enums\ScanMethod;
 use App\Enums\UserRole;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\Employee;
 use App\Models\Guardian;
 use App\Models\NonSchoolDay;
 use App\Models\RfidCard;
@@ -64,14 +66,32 @@ class DatabaseSeeder extends Seeder
         $admin->roleGrants()->create(['role' => UserRole::Admin, 'created_at' => now()]);
 
         // --- Teachers + homeroom classes ----------------------------------
-        $budi = Teacher::create(['name' => 'Budi Santoso', 'teacher_number' => '198505052010011001', 'phone_number' => '+628111002001']);
-        $siti = Teacher::create(['name' => 'Siti Aminah', 'teacher_number' => '198703102011012002', 'phone_number' => '+628111002002']);
         $budiUser = User::create(['username' => 'teacher1', 'email' => 'teacher1@presensio.test', 'password' => $password, 'is_active' => true]);
         $budiUser->roleGrants()->create(['role' => UserRole::Teacher, 'created_at' => now()]);
         $sitiUser = User::create(['username' => 'teacher2', 'email' => 'teacher2@presensio.test', 'password' => $password, 'is_active' => true]);
         $sitiUser->roleGrants()->create(['role' => UserRole::Teacher, 'created_at' => now()]);
-        $budi->update(['user_id' => $budiUser->id]);
-        $siti->update(['user_id' => $sitiUser->id]);
+
+        $budiEmployee = Employee::create([
+            'user_id' => $budiUser->id,
+            'name' => 'Budi Santoso',
+            'employee_number' => '198505052010011001',
+            'phone_number' => '+628111002001',
+            'employment_type' => EmploymentType::Permanent,
+            'position' => 'Guru Kelas',
+            'is_active' => true,
+        ]);
+        $budi = Teacher::create(['employee_id' => $budiEmployee->id]);
+
+        $sitiEmployee = Employee::create([
+            'user_id' => $sitiUser->id,
+            'name' => 'Siti Aminah',
+            'employee_number' => '198703102011012002',
+            'phone_number' => '+628111002002',
+            'employment_type' => EmploymentType::Permanent,
+            'position' => 'Guru Kelas',
+            'is_active' => true,
+        ]);
+        $siti = Teacher::create(['employee_id' => $sitiEmployee->id]);
 
         $class5a = SchoolClass::create(['academic_year_id' => AcademicYear::active()->id, 'name' => 'Kelas 5A', 'teacher_id' => $budi->id]);
         $class5b = SchoolClass::create(['academic_year_id' => AcademicYear::active()->id, 'name' => 'Kelas 5B', 'teacher_id' => $siti->id]);

@@ -107,7 +107,7 @@ class CourseController extends Controller
                 'class_name' => $classSubject->schoolClass->name,
                 'subject_name' => $classSubject->subject->name,
                 'subject_code' => $classSubject->subject->code,
-                'teacher_name' => $classSubject->teacher->name,
+                'teacher_name' => $classSubject->teacher?->employee?->name ?? '',
             ],
             'students' => $students,
             'canWrite' => ClassAccess::canWriteCourse($request->user(), $classSubject),

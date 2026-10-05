@@ -104,6 +104,31 @@ class SchoolSettings
         return $this->row()->scan_drift_tolerance_minutes;
     }
 
+    public function staffStartTime(): string
+    {
+        return $this->row()->staff_start_time ?? '07:00';
+    }
+
+    public function staffEndTime(): string
+    {
+        return $this->row()->staff_end_time ?? '14:00';
+    }
+
+    public function staffAbsentSweepTime(): string
+    {
+        return $this->row()->staff_absent_sweep_time ?? '09:00';
+    }
+
+    public function staffStartTimeOn(CarbonInterface $day): CarbonInterface
+    {
+        return $day->setTimeFromTimeString($this->staffStartTime());
+    }
+
+    public function staffEndTimeOn(CarbonInterface $day): CarbonInterface
+    {
+        return $day->setTimeFromTimeString($this->staffEndTime());
+    }
+
     /**
      * Cron sweep time (H:i) for the auto-absent scheduler.
      */
@@ -263,6 +288,9 @@ class SchoolSettings
             'quiet_hours_start' => '21:00:00',
             'quiet_hours_end' => '06:00:00',
             'bill_reminder_days_before' => 3,
+            'staff_start_time' => '07:00',
+            'staff_end_time' => '14:00',
+            'staff_absent_sweep_time' => '09:00',
         ];
     }
 }

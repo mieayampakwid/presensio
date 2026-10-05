@@ -126,7 +126,8 @@ class UserController extends Controller
             ],
             'profiles' => $linker->profileOptions($user),
             'current_profile_ids' => [
-                'teacher' => $user->teacher()->value('id'),
+                'teacher' => $user->teacher?->id,
+                'staff' => $user->employee?->id,
                 'parent' => $user->guardian()->value('id'),
                 'student' => $user->student()->value('id'),
             ],

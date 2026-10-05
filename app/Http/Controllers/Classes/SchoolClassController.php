@@ -30,17 +30,27 @@ class SchoolClassController extends Controller
 
         $classes = SchoolClass::query()
             ->where('academic_year_id', $yearId)
-            ->with('teacher:id,name')
+            ->with('teacher.employee')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('teacher', function (Builder $query) use ($search) {
+                        ->orWhereHas('teacher.employee', function (Builder $query) use ($search) {
                             $query->where('name', 'like', "%{$search}%");
                         });
                 });
             })
             ->orderBy('name')
             ->paginate(15)
+            ->through(fn (SchoolClass $class) => [
+                'id' => $class->id,
+                'name' => $class->name,
+                'grade_level' => $class->grade_level,
+                'curriculum' => is_string($class->curriculum) ? $class->curriculum : $class->curriculum->value,
+                'teacher' => $class->teacher ? [
+                    'id' => $class->teacher->id,
+                    'name' => $class->teacher->employee?->name ?? '',
+                ] : null,
+            ])
             ->withQueryString();
 
         return Inertia::render('classes/index', [
@@ -145,13 +155,19 @@ class SchoolClassController extends Controller
      * Homeroom teacher options for the form select (serializes to
      * `{id, name}` rows for the frontend).
      *
-     * @return Collection<int, Teacher>
+     * @return Collection<int, array{id: int, name: string}>
      */
-    private function teacherOptions()
+    private function teacherOptions(): Collection
     {
         return Teacher::query()
-            ->orderBy('name')
-            ->get(['id', 'name']);
+            ->with('employee')
+            ->get()
+            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->map(fn (Teacher $t) => [
+                'id' => $t->id,
+                'name' => $t->employee?->name ?? '',
+            ])
+            ->values();
     }
 
     /**

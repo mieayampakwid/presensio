@@ -60,10 +60,10 @@ class TeacherManagementTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('teachers.index'));
 
-        $teacher = Teacher::where('name', 'Budi Santoso')->first();
+        $teacher = Teacher::whereHas('employee', fn ($q) => $q->where('name', 'Budi Santoso'))->first();
 
         $this->assertNotNull($teacher);
-        $this->assertSame('197501012000031002', $teacher->teacher_number);
+        $this->assertSame('197501012000031002', $teacher->employee->employee_number);
     }
 
     public function test_teacher_creation_requires_a_name(): void
@@ -83,13 +83,13 @@ class TeacherManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('teachers.update', $teacher), [
                 'name' => 'Budi Santoso',
-                'teacher_number' => $teacher->teacher_number,
-                'phone_number' => $teacher->phone_number,
+                'teacher_number' => $teacher->employee->employee_number,
+                'phone_number' => $teacher->employee->phone_number,
             ])
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('teachers.edit', $teacher));
 
-        $this->assertSame('Budi Santoso', $teacher->fresh()->name);
+        $this->assertSame('Budi Santoso', $teacher->fresh()->employee->name);
     }
 
     public function test_teacher_deletion_is_blocked_while_homerooming_a_class(): void
@@ -112,7 +112,7 @@ class TeacherManagementTest extends TestCase
         $user = User::factory()->teacher()->create();
         Teacher::factory()->create(['user_id' => $user->id]);
 
-        $teacher = Teacher::where('user_id', $user->id)->first();
+        $teacher = Teacher::whereHas('employee', fn ($q) => $q->where('user_id', $user->id))->first();
 
         $this->actingAs($admin)
             ->from(route('teachers.index'))

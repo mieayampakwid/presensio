@@ -42,10 +42,10 @@ class ClassSubjectController extends Controller
 
             $schoolClass->load([
                 'academicYear:id,name,is_active',
-                'teacher:id,name',
+                'teacher.employee:id,name',
                 'classSubjects' => fn ($query) => $query->with([
                     'subject:id,code,name,group,sort_order',
-                    'teacher:id,name',
+                    'teacher.employee:id,name',
                 ])->join('subjects', 'class_subjects.subject_id', '=', 'subjects.id')
                     ->orderBy('subjects.group')
                     ->orderBy('subjects.sort_order')
@@ -58,7 +58,7 @@ class ClassSubjectController extends Controller
                 'subject_name' => $item->subject->name,
                 'subject_code' => $item->subject->code,
                 'subject_group' => $item->subject->group->value,
-                'teacher_name' => $item->teacher->name,
+                'teacher_name' => $item->teacher?->employee?->name ?? '',
             ]);
 
             return Inertia::render('classes/show-subjects', [
@@ -74,7 +74,7 @@ class ClassSubjectController extends Controller
                     ] : null,
                     'teacher' => $schoolClass->teacher ? [
                         'id' => $schoolClass->teacher->id,
-                        'name' => $schoolClass->teacher->name,
+                        'name' => $schoolClass->teacher?->employee?->name ?? '',
                     ] : null,
                 ],
                 'classSubjects' => $classSubjects,
@@ -83,10 +83,10 @@ class ClassSubjectController extends Controller
 
         $schoolClass->load([
             'academicYear:id,name,is_active',
-            'teacher:id,name',
+            'teacher.employee:id,name',
             'classSubjects' => fn ($query) => $query->with([
                 'subject:id,code,name,group,sort_order,is_active',
-                'teacher:id,name',
+                'teacher.employee:id,name',
             ])->join('subjects', 'class_subjects.subject_id', '=', 'subjects.id')
                 ->orderBy('subjects.group')
                 ->orderBy('subjects.sort_order')
@@ -103,12 +103,52 @@ class ClassSubjectController extends Controller
 
         $availableTeachers = Teacher::query()
             ->active()
-            ->orderBy('name')
-            ->get(['id', 'name']);
+            ->with('employee')
+            ->get()
+            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->map(fn (Teacher $t) => [
+                'id' => $t->id,
+                'name' => $t->employee?->name ?? '',
+            ])
+            ->values();
+
+        $classSubjectsPayload = $schoolClass->classSubjects->map(fn (ClassSubject $cs) => [
+            'id' => $cs->id,
+            'class_id' => $cs->class_id,
+            'subject_id' => $cs->subject_id,
+            'teacher_id' => $cs->teacher_id,
+            'passing_threshold' => (string) $cs->passing_threshold,
+            'subject' => $cs->subject ? [
+                'id' => $cs->subject->id,
+                'name' => $cs->subject->name,
+                'code' => $cs->subject->code,
+                'group' => $cs->subject->group->value,
+            ] : null,
+            'teacher' => $cs->teacher ? [
+                'id' => $cs->teacher->id,
+                'name' => $cs->teacher?->employee?->name ?? '',
+            ] : null,
+        ]);
+
+        $schoolClassPayload = [
+            'id' => $schoolClass->id,
+            'name' => $schoolClass->name,
+            'grade_level' => $schoolClass->grade_level,
+            'curriculum' => is_string($schoolClass->curriculum) ? $schoolClass->curriculum : $schoolClass->curriculum->value,
+            'academic_year' => $schoolClass->academicYear ? [
+                'id' => $schoolClass->academicYear->id,
+                'name' => $schoolClass->academicYear->name,
+                'is_active' => $schoolClass->academicYear->is_active,
+            ] : null,
+            'teacher' => $schoolClass->teacher ? [
+                'id' => $schoolClass->teacher->id,
+                'name' => $schoolClass->teacher?->employee?->name ?? '',
+            ] : null,
+        ];
 
         return Inertia::render('classes/subjects', [
-            'schoolClass' => $schoolClass,
-            'classSubjects' => $schoolClass->classSubjects,
+            'schoolClass' => $schoolClassPayload,
+            'classSubjects' => $classSubjectsPayload,
             'subjects' => $availableSubjects,
             'teachers' => $availableTeachers,
             'defaultPassingThreshold' => $this->schoolSettings->defaultPassingThreshold(),
@@ -123,7 +163,16 @@ class ClassSubjectController extends Controller
         $validated = $request->validated();
         $validated['class_id'] = $schoolClass->id;
 
-        ClassSubject::create($validated);
+        $classSubject = DB::transaction(function () use ($validated) {
+            return ClassSubject::create($validated);
+        });
+
+        $this->auditLogger->record(
+            $classSubject,
+            'created',
+            null,
+            $classSubject->only(['class_id', 'subject_id', 'teacher_id', 'passing_threshold'])
+        );
 
         Inertia::flash('toast', [
             'type' => 'success',
@@ -134,7 +183,7 @@ class ClassSubjectController extends Controller
     }
 
     /**
-     * Update an existing class subject assignment.
+     * Update a class subject assignment.
      */
     public function update(
         UpdateClassSubjectRequest $request,
@@ -143,30 +192,19 @@ class ClassSubjectController extends Controller
     ): RedirectResponse {
         abort_unless($classSubject->class_id === $schoolClass->id, 404);
 
+        $old = $classSubject->only(['teacher_id', 'passing_threshold']);
         $validated = $request->validated();
 
         DB::transaction(function () use ($classSubject, $validated) {
-            $old = [
-                'teacher_id' => $classSubject->teacher_id,
-                'passing_threshold' => (string) $classSubject->passing_threshold,
-            ];
-
             $classSubject->update($validated);
-
-            $new = [
-                'teacher_id' => $classSubject->teacher_id,
-                'passing_threshold' => (string) $classSubject->passing_threshold,
-            ];
-
-            if ($old['teacher_id'] !== $new['teacher_id'] || $old['passing_threshold'] !== $new['passing_threshold']) {
-                $this->auditLogger->record(
-                    auditable: $classSubject,
-                    action: 'updated',
-                    old: $old,
-                    new: $new,
-                );
-            }
         });
+
+        $this->auditLogger->record(
+            $classSubject,
+            'updated',
+            $old,
+            $classSubject->only(['teacher_id', 'passing_threshold'])
+        );
 
         Inertia::flash('toast', [
             'type' => 'success',
@@ -177,7 +215,7 @@ class ClassSubjectController extends Controller
     }
 
     /**
-     * Remove a class subject assignment.
+     * Delete a class subject assignment.
      */
     public function destroy(SchoolClass $schoolClass, ClassSubject $classSubject): RedirectResponse
     {
@@ -192,7 +230,18 @@ class ClassSubjectController extends Controller
             abort(422, 'Cannot delete class subject that is in use.');
         }
 
-        $classSubject->delete();
+        $old = $classSubject->only(['class_id', 'subject_id', 'teacher_id', 'passing_threshold']);
+
+        DB::transaction(function () use ($classSubject) {
+            $classSubject->delete();
+        });
+
+        $this->auditLogger->record(
+            $classSubject,
+            'deleted',
+            $old,
+            null
+        );
 
         Inertia::flash('toast', [
             'type' => 'success',

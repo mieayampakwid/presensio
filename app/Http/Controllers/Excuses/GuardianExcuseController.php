@@ -85,7 +85,7 @@ class GuardianExcuseController extends Controller
         $excuse = Excuse::create($validated);
 
         /** @var Student|null $student */
-        $student = Student::with('currentEnrollment.schoolClass.teacher.user')->find($validated['student_id']);
+        $student = Student::with('currentEnrollment.schoolClass.teacher.employee.user')->find($validated['student_id']);
         $recipients = $this->resolver->forAdmins();
 
         $schoolClass = $student instanceof Student ? $student->currentEnrollment?->schoolClass : null;

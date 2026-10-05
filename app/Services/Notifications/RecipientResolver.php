@@ -3,6 +3,7 @@
 namespace App\Services\Notifications;
 
 use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
@@ -39,14 +40,14 @@ class RecipientResolver
         return collect($guardians)->map(fn (Guardian $g) => $this->forGuardian($g));
     }
 
-    public function forEmployee(Teacher $employee, ?string $customKey = null): Recipient
+    public function forEmployee(Teacher|Employee $employee, ?string $customKey = null): Recipient
     {
         return Recipient::fromEmployee($employee, $customKey);
     }
 
     public function forHomeroomTeacher(SchoolClass $class): ?Recipient
     {
-        $class->loadMissing('teacher.user');
+        $class->loadMissing('teacher.employee.user');
 
         if (! $class->teacher) {
             return null;

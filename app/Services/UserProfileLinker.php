@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\Guardian;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -12,17 +13,18 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Sole writer of user↔profile link state: every attach/detach between users
- * and their teacher/guardian/student profile goes through this service.
+ * and their teacher/staff/guardian/student profile goes through this service.
  */
 class UserProfileLinker
 {
     /**
      * Role-to-profile-model map; admins have no profile.
      *
-     * @var array<string, class-string<Teacher|Guardian|Student>>
+     * @var array<string, class-string<Teacher|Employee|Guardian|Student>>
      */
     private const PROFILE_MODELS = [
         UserRole::Teacher->value => Teacher::class,
+        UserRole::Staff->value => Employee::class,
         UserRole::Parent->value => Guardian::class,
         UserRole::Student->value => Student::class,
     ];
@@ -36,19 +38,40 @@ class UserProfileLinker
         DB::transaction(function () use ($user, $role, $profileId): void {
             $userRoles = $user->roles();
 
-            foreach (self::PROFILE_MODELS as $roleValue => $model) {
-                if (! $userRoles->contains(UserRole::from($roleValue))) {
-                    $model::where('user_id', $user->id)->update(['user_id' => null]);
-                }
+            if (! $userRoles->contains(UserRole::Teacher) && ! $userRoles->contains(UserRole::Staff)) {
+                $user->employee?->update(['user_id' => null]);
+            }
+            if (! $userRoles->contains(UserRole::Parent)) {
+                Guardian::where('user_id', $user->id)->update(['user_id' => null]);
+            }
+            if (! $userRoles->contains(UserRole::Student)) {
+                Student::where('user_id', $user->id)->update(['user_id' => null]);
             }
 
-            $model = self::PROFILE_MODELS[$role->value] ?? null;
-
-            if ($model !== null) {
-                $model::where('user_id', $user->id)->update(['user_id' => null]);
+            if ($role === UserRole::Teacher) {
+                $user->employee?->update(['user_id' => null]);
 
                 if ($profileId !== null) {
-                    $model::whereKey($profileId)->update(['user_id' => $user->id]);
+                    $teacher = Teacher::with('employee')->find($profileId);
+                    $teacher?->employee?->update(['user_id' => $user->id]);
+                }
+            } elseif ($role === UserRole::Staff) {
+                $user->employee?->update(['user_id' => null]);
+
+                if ($profileId !== null) {
+                    Employee::whereKey($profileId)->update(['user_id' => $user->id]);
+                }
+            } elseif ($role === UserRole::Parent) {
+                Guardian::where('user_id', $user->id)->update(['user_id' => null]);
+
+                if ($profileId !== null) {
+                    Guardian::whereKey($profileId)->update(['user_id' => $user->id]);
+                }
+            } elseif ($role === UserRole::Student) {
+                Student::where('user_id', $user->id)->update(['user_id' => null]);
+
+                if ($profileId !== null) {
+                    Student::whereKey($profileId)->update(['user_id' => $user->id]);
                 }
             }
         });
@@ -73,7 +96,7 @@ class UserProfileLinker
             return;
         }
 
-        /** @var Teacher|Guardian|Student|null $profile */
+        /** @var Teacher|Employee|Guardian|Student|null $profile */
         $profile = self::PROFILE_MODELS[$role->value]::query()->find($profileId);
 
         if ($profile === null) {
@@ -82,7 +105,15 @@ class UserProfileLinker
             return;
         }
 
-        if ($profile->user_id !== null && $profile->user_id !== $target?->id) {
+        $linkedUserId = match (true) {
+            $profile instanceof Teacher => $profile->employee?->user_id,
+            $profile instanceof Employee => $profile->user_id,
+            $profile instanceof Guardian => $profile->user_id,
+            $profile instanceof Student => $profile->user_id,
+            default => null,
+        };
+
+        if ($linkedUserId !== null && $linkedUserId !== $target?->id) {
             $validator->errors()->add('profile_id', 'The selected profile is already linked to another user.');
         }
     }
@@ -95,42 +126,81 @@ class UserProfileLinker
      */
     public function profileOptions(?User $forUser = null): array
     {
-        $labels = [
-            Teacher::class => fn (Teacher $teacher): string => $teacher->name,
-            Guardian::class => fn (Guardian $guardian): string => $guardian->name,
-            Student::class => fn (Student $student): string => $student->full_name,
-        ];
-
         $options = [];
 
-        foreach (self::PROFILE_MODELS as $roleValue => $model) {
-            $options[$roleValue] = [];
+        // Teacher
+        $options[UserRole::Teacher->value] = [];
+        $unlinkedTeachers = Teacher::with('employee')
+            ->whereHas('employee', fn ($q) => $q->whereNull('user_id'))
+            ->get()
+            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->values();
 
-            $profiles = $model::query()
-                ->whereNull('user_id')
-                ->orderBy($model === Student::class ? 'full_name' : 'name')
-                ->get();
-
-            foreach ($profiles as $profile) {
-                $options[$roleValue][] = [
-                    'id' => $profile->id,
-                    'label' => $labels[$model]($profile),
-                ];
-            }
+        foreach ($unlinkedTeachers as $teacher) {
+            $options[UserRole::Teacher->value][] = [
+                'id' => $teacher->id,
+                'label' => $teacher->employee?->name ?? '',
+            ];
         }
 
-        if ($forUser !== null) {
-            foreach (self::PROFILE_MODELS as $roleValue => $model) {
-                /** @var Teacher|Guardian|Student|null $linked */
-                $linked = $model::query()->where('user_id', $forUser->id)->first();
+        if ($forUser !== null && $forUser->teacher !== null) {
+            $options[UserRole::Teacher->value][] = [
+                'id' => $forUser->teacher->id,
+                'label' => $forUser->teacher->employee?->name ?? '',
+            ];
+        }
 
-                if ($linked !== null) {
-                    $options[$roleValue][] = [
-                        'id' => $linked->id,
-                        'label' => $labels[$model]($linked),
-                    ];
-                }
-            }
+        // Staff
+        $options[UserRole::Staff->value] = [];
+        $unlinkedStaff = Employee::whereNull('user_id')
+            ->whereDoesntHave('teacher')
+            ->orderBy('name')
+            ->get();
+
+        foreach ($unlinkedStaff as $staff) {
+            $options[UserRole::Staff->value][] = [
+                'id' => $staff->id,
+                'label' => $staff->name,
+            ];
+        }
+
+        if ($forUser !== null && $forUser->employee !== null && $forUser->teacher === null) {
+            $options[UserRole::Staff->value][] = [
+                'id' => $forUser->employee->id,
+                'label' => $forUser->employee->name,
+            ];
+        }
+
+        // Parent
+        $options[UserRole::Parent->value] = [];
+        $unlinkedParents = Guardian::whereNull('user_id')->orderBy('name')->get();
+        foreach ($unlinkedParents as $parent) {
+            $options[UserRole::Parent->value][] = [
+                'id' => $parent->id,
+                'label' => $parent->name,
+            ];
+        }
+        if ($forUser !== null && $forUser->guardian !== null) {
+            $options[UserRole::Parent->value][] = [
+                'id' => $forUser->guardian->id,
+                'label' => $forUser->guardian->name,
+            ];
+        }
+
+        // Student
+        $options[UserRole::Student->value] = [];
+        $unlinkedStudents = Student::whereNull('user_id')->orderBy('full_name')->get();
+        foreach ($unlinkedStudents as $student) {
+            $options[UserRole::Student->value][] = [
+                'id' => $student->id,
+                'label' => $student->full_name,
+            ];
+        }
+        if ($forUser !== null && $forUser->student !== null) {
+            $options[UserRole::Student->value][] = [
+                'id' => $forUser->student->id,
+                'label' => $forUser->student->full_name,
+            ];
         }
 
         return $options;

@@ -13,27 +13,25 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int|null $user_id
- * @property string $name
- * @property string|null $teacher_number
- * @property string|null $phone_number
+ * @property int $employee_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Employee|null $employee
  */
-#[Fillable(['user_id', 'name', 'teacher_number', 'phone_number'])]
+#[Fillable(['employee_id'])]
 class Teacher extends Model
 {
     /** @use HasFactory<TeacherFactory> */
     use HasFactory;
 
     /**
-     * The login account linked to this profile, if any.
+     * The employee profile for this teacher.
      *
-     * @return BelongsTo<User, $this>
+     * @return BelongsTo<Employee, $this>
      */
-    public function user(): BelongsTo
+    public function employee(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Employee::class);
     }
 
     /**
@@ -63,9 +61,12 @@ class Teacher extends Model
      */
     public function scopeActive(Builder $query): void
     {
-        $query->where(function (Builder $query) {
-            $query->whereNull('user_id')
-                ->orWhereHas('user', fn (Builder $q) => $q->where('is_active', true));
+        $query->whereHas('employee', function (Builder $query) {
+            $query->where('is_active', true)
+                ->where(function (Builder $q) {
+                    $q->whereNull('user_id')
+                        ->orWhereHas('user', fn (Builder $uq) => $uq->where('is_active', true));
+                });
         });
     }
 
@@ -74,6 +75,18 @@ class Teacher extends Model
      */
     public function isActive(): bool
     {
-        return $this->user === null || $this->user->is_active;
+        if ($this->employee === null) {
+            return true;
+        }
+
+        if (! $this->employee->is_active) {
+            return false;
+        }
+
+        if ($this->employee->user !== null && ! $this->employee->user->is_active) {
+            return false;
+        }
+
+        return true;
     }
 }

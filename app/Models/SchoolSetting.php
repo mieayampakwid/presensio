@@ -36,6 +36,9 @@ use Illuminate\Support\Carbon;
  * @property string $quiet_hours_start
  * @property string $quiet_hours_end
  * @property int $bill_reminder_days_before
+ * @property string $staff_start_time
+ * @property string $staff_end_time
+ * @property string $staff_absent_sweep_time
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -65,6 +68,9 @@ use Illuminate\Support\Carbon;
     'quiet_hours_start',
     'quiet_hours_end',
     'bill_reminder_days_before',
+    'staff_start_time',
+    'staff_end_time',
+    'staff_absent_sweep_time',
 ])]
 class SchoolSetting extends Model
 {

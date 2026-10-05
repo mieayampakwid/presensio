@@ -153,7 +153,7 @@ class RollOverService
 
             $sourceAssignments = ClassSubject::query()
                 ->where('class_id', $sourceClassId)
-                ->with(['subject', 'teacher.user'])
+                ->with(['subject', 'teacher.employee.user'])
                 ->get();
 
             foreach ($sourceAssignments as $assignment) {

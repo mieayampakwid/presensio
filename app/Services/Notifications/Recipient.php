@@ -2,6 +2,7 @@
 
 namespace App\Services\Notifications;
 
+use App\Models\Employee;
 use App\Models\Guardian;
 use App\Models\Teacher;
 use App\Models\User;
@@ -24,13 +25,13 @@ readonly class Recipient
 
     public static function fromUser(User $user, ?string $customKey = null): self
     {
-        $user->loadMissing(['guardian', 'teacher']);
+        $user->loadMissing(['guardian', 'employee']);
 
         $phone = null;
         if ($user->guardian !== null) {
             $phone = $user->guardian->phone_number;
-        } elseif ($user->teacher !== null) {
-            $phone = $user->teacher->phone_number;
+        } elseif ($user->employee !== null) {
+            $phone = $user->employee->phone_number;
         }
 
         return new self(
@@ -58,8 +59,23 @@ readonly class Recipient
         );
     }
 
-    public static function fromEmployee(Teacher $employee, ?string $customKey = null): self
+    public static function fromEmployee(Teacher|Employee $employee, ?string $customKey = null): self
     {
+        if ($employee instanceof Teacher) {
+            $employee->loadMissing('employee.user');
+            $emp = $employee->employee;
+            $user = $emp?->user;
+
+            return new self(
+                type: 'employee',
+                id: $employee->id,
+                user: $user,
+                phone: $emp?->phone_number,
+                email: $user?->email,
+                customKey: $customKey,
+            );
+        }
+
         $employee->loadMissing('user');
         $user = $employee->user;
 
