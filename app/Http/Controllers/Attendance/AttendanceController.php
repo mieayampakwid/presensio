@@ -133,16 +133,18 @@ class AttendanceController extends Controller
                 // A student tapping a scanner between the gap query and this
                 // create loses the (student_id, date) unique insert — the
                 // scanner's record wins and this loop skips them (same
-                // create-once rule as the scan service).
+                // create-once rule as the scan service). The savepoint keeps
+                // the outer transaction usable after the violation on
+                // PostgreSQL.
                 try {
-                    Attendance::create([
+                    DB::transaction(fn () => Attendance::create([
                         'student_id' => $student->id,
                         'date' => $validated['date'],
                         'status' => AttendanceStatus::Present,
                         'scan_method' => ScanMethod::ManualOverride,
                         'override_by_user_id' => auth()->id(),
                         'notes' => 'Bulk marked present',
-                    ]);
+                    ]));
                 } catch (UniqueConstraintViolationException) {
                     continue;
                 }

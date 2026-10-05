@@ -9,8 +9,10 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -201,6 +203,43 @@ class ExceptionDashboardTest extends TestCase
 
         $this->assertTrue($absentRecord->refresh()->status === AttendanceStatus::Absent);
         $this->assertTrue($sickRecord->refresh()->status === AttendanceStatus::Sick);
+    }
+
+    public function test_bulk_present_skips_a_student_whose_scan_wins_the_race(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $class = SchoolClass::factory()->create();
+        $scanned = Student::factory()->enrolledIn($class)->create();
+        $gap = Student::factory()->enrolledIn($class)->create();
+
+        // The first student taps right after the gap query, so bulk's
+        // insert for them hits the unique index; the next one must still
+        // be marked.
+        $raced = false;
+        DB::listen(function (QueryExecuted $query) use ($scanned, &$raced): void {
+            if ($raced || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, 'not exists (select * from "attendances"')) {
+                return;
+            }
+
+            $raced = true;
+            Attendance::factory()->create([
+                'student_id' => $scanned->id,
+                'date' => '2026-09-21',
+                'status' => AttendanceStatus::Present,
+                'scan_method' => ScanMethod::Rfid,
+            ]);
+        });
+
+        $this->actingAs($admin)
+            ->post(route('attendance.bulk-present'), [
+                'class_id' => $class->id,
+                'date' => '2026-09-21',
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($raced);
+        $this->assertTrue($scanned->refresh()->attendances->sole()->scan_method === ScanMethod::Rfid);
+        $this->assertTrue($gap->refresh()->attendances->sole()->scan_method === ScanMethod::ManualOverride);
     }
 
     #[DataProvider('nonStaffRoles')]

@@ -13,8 +13,10 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -92,6 +94,43 @@ class ExcuseApprovalTest extends TestCase
         $wednesday = Attendance::query()->where('date', '2026-09-23')->sole();
         $this->assertTrue($wednesday->status === AttendanceStatus::Sick);
         $this->assertNull($wednesday->scan_method);
+    }
+
+    public function test_approval_racing_a_scan_overwrites_the_row_the_scan_inserted(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $excuse = Excuse::factory()->create([
+            'start_date' => '2026-09-21',
+            'end_date' => '2026-09-21',
+        ]);
+
+        // A scan inserts the day's row right after approval's read found
+        // nothing, so approval's own insert hits the unique index.
+        $raced = false;
+        DB::listen(function (QueryExecuted $query) use ($excuse, &$raced): void {
+            if ($raced || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, 'from "attendances"')) {
+                return;
+            }
+
+            $raced = true;
+            Attendance::factory()->create([
+                'student_id' => $excuse->student_id,
+                'date' => '2026-09-21',
+                'status' => AttendanceStatus::Present,
+                'scan_method' => ScanMethod::Rfid,
+            ]);
+        });
+
+        $this->actingAs($admin)
+            ->put(route('excuses.approve', ['excuse' => $excuse->id]))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue($raced);
+        $this->assertTrue($excuse->refresh()->status === ExcuseStatus::Approved);
+        $record = Attendance::query()->sole();
+        $this->assertTrue($record->status === AttendanceStatus::Sick);
+        $this->assertNull($record->scan_method);
     }
 
     public function test_approval_skips_weekends_and_non_school_days(): void
