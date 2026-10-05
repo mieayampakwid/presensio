@@ -10,8 +10,10 @@ use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Services\Attendance\QrTokenService;
 use App\Services\SchoolSettings;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -155,6 +157,31 @@ class AttendanceScanApiTest extends TestCase
         $this->assertTrue($record->status === AttendanceStatus::Present);
         $this->assertNotNull($record->checked_in_at);
         $this->assertSame('rfid', $record->scan_method->value);
+    }
+
+    public function test_tap_racing_the_sweep_upgrades_the_row_the_sweep_inserted(): void
+    {
+        $student = Student::factory()->create();
+        RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
+
+        // The sweep inserts its absent row right after the scan's read
+        // found nothing, so the scan's own insert hits the unique index.
+        $raced = false;
+        DB::listen(function (QueryExecuted $query) use ($student, &$raced): void {
+            if ($raced || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, '"attendances"')) {
+                return;
+            }
+
+            $raced = true;
+            Attendance::factory()->absent()->create(['student_id' => $student->id, 'date' => '2026-09-21']);
+        });
+
+        $this->scan(['credential_type' => 'rfid', 'credential' => '001234'])
+            ->assertOk()
+            ->assertJson(['outcome' => 'checked_in', 'detail' => 'absent_upgraded']);
+
+        $this->assertTrue($raced);
+        $this->assertTrue(Attendance::query()->sole()->status === AttendanceStatus::Present);
     }
 
     public function test_taps_by_excused_students_are_noops(): void

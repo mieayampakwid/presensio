@@ -140,18 +140,20 @@ class AttendanceScanService
 
     /**
      * Case 1 — first tap of the day creates the record. Returns the created
-     * model, or null when a concurrent scanner won the unique insert.
+     * model, or null when a concurrent scanner won the unique insert. The
+     * savepoint keeps the outer transaction usable after the violation on
+     * PostgreSQL.
      */
     private function createRecord(ScanMethod $method, Student $student, string $date, CarbonInterface $effective): ?Attendance
     {
         try {
-            return Attendance::create([
+            return DB::transaction(fn () => Attendance::create([
                 'student_id' => $student->id,
                 'date' => $date,
                 'status' => $this->settings->isLate($effective) ? 'late' : 'present',
                 'checked_in_at' => $this->utc($effective),
                 'scan_method' => $method,
-            ]);
+            ]));
         } catch (UniqueConstraintViolationException) {
             return null;
         }
