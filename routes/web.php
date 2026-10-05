@@ -43,3 +43,4 @@ require __DIR__.'/audit-logs.php';
 require __DIR__.'/subjects.php';
 require __DIR__.'/teacher.php';
 require __DIR__.'/notifications.php';
+require __DIR__.'/staff.php';
