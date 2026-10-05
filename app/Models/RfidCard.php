@@ -13,10 +13,13 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $rfid_number
  * @property int|null $student_id
+ * @property int|null $employee_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Student|null $student
+ * @property-read Employee|null $employee
  */
-#[Fillable(['rfid_number', 'student_id'])]
+#[Fillable(['rfid_number', 'student_id', 'employee_id'])]
 class RfidCard extends Model
 {
     /** @use HasFactory<RfidCardFactory> */
@@ -30,5 +33,39 @@ class RfidCard extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    /**
+     * Current employee owner, if assigned to an employee.
+     *
+     * @return BelongsTo<Employee, $this>
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * Check if card is currently assigned to a student or employee.
+     */
+    public function isAssigned(): bool
+    {
+        return $this->student_id !== null || $this->employee_id !== null;
+    }
+
+    /**
+     * Check if card is assigned to a student.
+     */
+    public function isStudent(): bool
+    {
+        return $this->student_id !== null;
+    }
+
+    /**
+     * Check if card is assigned to an employee.
+     */
+    public function isEmployee(): bool
+    {
+        return $this->employee_id !== null;
     }
 }

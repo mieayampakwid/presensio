@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services\Attendance;
 
+use App\Models\Employee;
 use App\Models\Student;
 use App\Services\Attendance\QrCodeRenderer;
 use App\Services\Attendance\QrTokenError;
@@ -118,6 +119,46 @@ class QrTokenServiceTest extends TestCase
         config(['attendance.qr.signing_key' => 'another-secret']);
 
         $this->assertSame(QrTokenError::InvalidFormat, $this->service->verify($token->token)->error);
+    }
+
+    public function test_legacy_three_segment_token_resolves_as_student(): void
+    {
+        $student = Student::factory()->create();
+        $now = Date::now()->getTimestamp();
+        $signature = hash_hmac('sha256', "{$student->id}.{$now}", 'test-signing-secret');
+        $legacyToken = "{$student->id}.{$now}.{$signature}";
+
+        $verification = $this->service->verify($legacyToken);
+
+        $this->assertTrue($verification->verified());
+        $this->assertTrue($verification->isStudent());
+        $this->assertTrue($student->is($verification->student));
+        $this->assertNull($verification->employee);
+    }
+
+    public function test_issued_employee_token_verifies_back_to_its_employee(): void
+    {
+        $employee = Employee::factory()->create();
+
+        $token = $this->service->issueForEmployee($employee);
+        $verification = $this->service->verify($token->token);
+
+        $this->assertTrue($verification->verified());
+        $this->assertTrue($verification->isEmployee());
+        $this->assertTrue($employee->is($verification->employee));
+        $this->assertNull($verification->student);
+    }
+
+    public function test_token_for_a_deleted_employee_is_unknown(): void
+    {
+        $employee = Employee::factory()->create();
+        $token = $this->service->issueForEmployee($employee);
+        $employee->delete();
+
+        $verification = $this->service->verify($token->token);
+
+        $this->assertFalse($verification->verified());
+        $this->assertSame(QrTokenError::UnknownSubject, $verification->error);
     }
 
     public function test_renderer_produces_inline_svg_without_prolog(): void

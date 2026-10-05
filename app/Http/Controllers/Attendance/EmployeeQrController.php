@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Student;
+use App\Models\Employee;
 use App\Services\Attendance\QrCodeRenderer;
 use App\Services\Attendance\QrTokenService;
 use App\Services\SchoolSettings;
@@ -11,12 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/**
- * Dynamic QR (spec 03 §Requirements 2, spec 16 §Req 2). The token is bound
- * to the signed-in student's or employee's profile and expires in seconds;
- * the page rotates it via Inertia partial reload.
- */
-class StudentQrController extends Controller
+class EmployeeQrController extends Controller
 {
     public function __construct(
         private readonly QrTokenService $tokens,
@@ -26,31 +21,20 @@ class StudentQrController extends Controller
 
     public function show(Request $request): Response
     {
-        $user = $request->user();
-
-        if ($user->student !== null) {
-            return Inertia::render('attendance/my-qr', [
-                'qr' => $this->qrPayload($user->student),
-                'subject_type' => 'student',
-            ]);
-        }
-
-        if ($user->employee !== null) {
-            return app(EmployeeQrController::class)->show($request);
-        }
+        $employee = $request->user()->employee;
 
         return Inertia::render('attendance/my-qr', [
-            'qr' => null,
-            'subject_type' => null,
+            'qr' => $employee === null ? null : $this->qrPayload($employee),
+            'subject_type' => 'employee',
         ]);
     }
 
     /**
      * @return array{token: string, svg: string, expires_at: string, school_timezone: string}
      */
-    private function qrPayload(Student $student): array
+    public function qrPayload(Employee $employee): array
     {
-        $token = $this->tokens->issue($student);
+        $token = $this->tokens->issueForEmployee($employee);
 
         return [
             'token' => $token->token,

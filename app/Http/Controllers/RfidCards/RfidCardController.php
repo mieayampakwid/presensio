@@ -5,6 +5,7 @@ namespace App\Http\Controllers\RfidCards;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RfidCards\StoreRfidCardRequest;
 use App\Http\Requests\RfidCards\UpdateRfidCardRequest;
+use App\Models\Employee;
 use App\Models\RfidCard;
 use App\Models\Student;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -24,12 +25,15 @@ class RfidCardController extends Controller
         $search = $request->string('search')->toString();
 
         $cards = RfidCard::query()
-            ->with('student:id,full_name')
+            ->with(['student:id,full_name', 'employee:id,name'])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('rfid_number', 'like', "%{$search}%")
                         ->orWhereHas('student', function (Builder $query) use ($search) {
                             $query->where('full_name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('employee', function (Builder $query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
                         });
                 });
             })
@@ -53,6 +57,7 @@ class RfidCardController extends Controller
     {
         return Inertia::render('rfid-cards/create', [
             'students' => $this->studentOptions(),
+            'employees' => $this->employeeOptions(),
         ]);
     }
 
@@ -76,6 +81,7 @@ class RfidCardController extends Controller
         return Inertia::render('rfid-cards/edit', [
             'card' => $rfidCard,
             'students' => $this->studentOptions(),
+            'employees' => $this->employeeOptions(),
         ]);
     }
 
@@ -92,11 +98,11 @@ class RfidCardController extends Controller
     }
 
     /**
-     * Detach the card from its student, returning it to the spare pool.
+     * Detach the card from its student or employee, returning it to the spare pool.
      */
     public function revoke(RfidCard $rfidCard): RedirectResponse
     {
-        $rfidCard->update(['student_id' => null]);
+        $rfidCard->update(['student_id' => null, 'employee_id' => null]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Card revoked.']);
 
@@ -123,5 +129,15 @@ class RfidCardController extends Controller
     private function studentOptions(): Collection
     {
         return Student::query()->orderBy('full_name')->get(['id', 'full_name']);
+    }
+
+    /**
+     * Employee options for the assign select.
+     *
+     * @return Collection<int, Employee>
+     */
+    private function employeeOptions(): Collection
+    {
+        return Employee::query()->active()->orderBy('name')->get(['id', 'name']);
     }
 }

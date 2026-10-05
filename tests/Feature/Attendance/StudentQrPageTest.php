@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Attendance;
 
+use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\Attendance\QrTokenService;
@@ -34,6 +36,29 @@ class StudentQrPageTest extends TestCase
                 ->where('qr.school_timezone', 'Asia/Jakarta'));
     }
 
+    public function test_employee_with_linked_profile_receives_a_fresh_qr_payload(): void
+    {
+        $user = User::factory()->create();
+        $user->roleGrants()->create(['role' => UserRole::Staff]);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user)
+            ->get(route('attendance.my-qr'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('attendance/my-qr')
+                ->has('qr')
+                ->where('subject_type', 'employee')
+                ->where('qr.svg', fn (string $svg) => str_starts_with($svg, '<svg'))
+                ->where('qr.expires_at', fn (string $expiresAt) => Date::parse($expiresAt)->isFuture())
+                ->where('qr.token', function (string $token) use ($employee) {
+                    $verification = (new QrTokenService)->verify($token);
+
+                    return $verification->verified() && $verification->isEmployee() && $verification->employee->id === $employee->id;
+                })
+                ->where('qr.school_timezone', 'Asia/Jakarta'));
+    }
+
     public function test_student_without_linked_profile_gets_an_empty_state(): void
     {
         $user = User::factory()->student()->create();
@@ -60,7 +85,6 @@ class StudentQrPageTest extends TestCase
     {
         return [
             ['admin'],
-            ['teacher'],
             ['parent'],
         ];
     }

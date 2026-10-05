@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Employee;
 use App\Models\RfidCard;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,6 +22,7 @@ class RfidCardFactory extends Factory
         return [
             'rfid_number' => fake()->unique()->numerify('############'),
             'student_id' => null,
+            'employee_id' => null,
         ];
     }
 
@@ -29,7 +31,10 @@ class RfidCardFactory extends Factory
      */
     public function spare(): static
     {
-        return $this->state(fn () => ['student_id' => null]);
+        return $this->state(fn () => [
+            'student_id' => null,
+            'employee_id' => null,
+        ]);
     }
 
     /**
@@ -37,6 +42,20 @@ class RfidCardFactory extends Factory
      */
     public function assigned(Student $student): static
     {
-        return $this->state(fn () => ['student_id' => $student->id]);
+        return $this->state(fn () => [
+            'student_id' => $student->id,
+            'employee_id' => null,
+        ]);
+    }
+
+    /**
+     * Assign the card to the given employee.
+     */
+    public function assignedToEmployee(Employee $employee): static
+    {
+        return $this->state(fn () => [
+            'student_id' => null,
+            'employee_id' => $employee->id,
+        ]);
     }
 }
