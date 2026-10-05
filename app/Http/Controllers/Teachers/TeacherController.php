@@ -66,13 +66,16 @@ class TeacherController extends Controller
     public function store(StoreTeacherRequest $request): RedirectResponse
     {
         DB::transaction(function () use ($request): void {
+            $number = $request->validated('teacher_number') ?? $request->validated('employee_number');
+            $type = $request->validated('employment_type') ? EmploymentType::from($request->validated('employment_type')) : EmploymentType::Permanent;
             $employee = Employee::create([
                 'name' => $request->validated('name'),
-                'employee_number' => $request->validated('teacher_number'),
+                'employee_number' => $number,
                 'phone_number' => $request->validated('phone_number'),
-                'employment_type' => EmploymentType::Permanent,
-                'position' => 'Guru',
-                'is_active' => true,
+                'employment_type' => $type,
+                'position' => $request->validated('position') ?? 'Guru',
+                'working_days' => $request->validated('working_days'),
+                'is_active' => $request->boolean('is_active', true),
             ]);
 
             Teacher::create([
@@ -109,11 +112,25 @@ class TeacherController extends Controller
     {
         DB::transaction(function () use ($request, $teacher): void {
             $teacher->loadMissing('employee');
-            $teacher->employee?->update([
+            $number = $request->validated('teacher_number') ?? $request->validated('employee_number');
+            $updateData = [
                 'name' => $request->validated('name'),
-                'employee_number' => $request->validated('teacher_number'),
+                'employee_number' => $number,
                 'phone_number' => $request->validated('phone_number'),
-            ]);
+            ];
+            if ($request->filled('employment_type')) {
+                $updateData['employment_type'] = EmploymentType::from($request->validated('employment_type'));
+            }
+            if ($request->has('position')) {
+                $updateData['position'] = $request->validated('position');
+            }
+            if ($request->has('working_days')) {
+                $updateData['working_days'] = $request->validated('working_days');
+            }
+            if ($request->has('is_active')) {
+                $updateData['is_active'] = $request->boolean('is_active');
+            }
+            $teacher->employee?->update($updateData);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Teacher updated.']);
