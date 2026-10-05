@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Teachers;
 
+use App\Models\EmployeeAttendance;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use App\Models\User;
@@ -162,6 +163,20 @@ class TeacherManagementTest extends TestCase
             ->assertRedirect(route('teachers.index'));
 
         $this->assertDatabaseMissing('teachers', ['id' => $teacher->id]);
+    }
+
+    public function test_teacher_deletion_is_blocked_while_attendance_history_exists(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $teacher = Teacher::factory()->create();
+        EmployeeAttendance::factory()->create(['employee_id' => $teacher->employee_id]);
+
+        $this->actingAs($admin)
+            ->delete(route('teachers.destroy', $teacher))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('teachers', ['id' => $teacher->id]);
+        $this->assertSame(1, EmployeeAttendance::where('employee_id', $teacher->employee_id)->count());
     }
 
     public static function nonAdminRoles(): array

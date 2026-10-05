@@ -243,6 +243,10 @@ class EmployeeController extends Controller
             $blockers[] = 'Cannot delete: linked to a user account. Unlink it first.';
         }
 
+        if ($employee->attendances()->exists()) {
+            $blockers[] = 'Cannot delete: this employee has attendance history. Deactivate them instead.';
+        }
+
         return $blockers;
     }
 

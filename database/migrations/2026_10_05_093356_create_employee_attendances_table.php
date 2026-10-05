@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('employee_attendances', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
+            // RESTRICT (no cascade): the DB-level mirror of the application
+            // deletion guard — attendance history is never wiped.
+            $table->foreignId('employee_id')->constrained('employees');
             $table->date('date');
             $table->string('status', 20);
             $table->timestamp('checked_in_at')->nullable();

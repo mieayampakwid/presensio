@@ -6,6 +6,7 @@ use App\Enums\EmploymentType;
 use App\Enums\UserRole;
 use App\Models\ClassSubject;
 use App\Models\Employee;
+use App\Models\EmployeeAttendance;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Subject;
@@ -300,6 +301,20 @@ class EmployeeManagementTest extends TestCase
             ->assertRedirect(route('employees.index'));
 
         $this->assertDatabaseMissing('employees', ['id' => $employee->id]);
+    }
+
+    public function test_employee_deletion_is_blocked_while_attendance_history_exists(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create();
+        EmployeeAttendance::factory()->create(['employee_id' => $employee->id]);
+
+        $this->actingAs($admin)
+            ->delete(route('employees.destroy', $employee))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('employees', ['id' => $employee->id]);
+        $this->assertSame(1, EmployeeAttendance::where('employee_id', $employee->id)->count());
     }
 
     public static function nonAdminRoles(): array
