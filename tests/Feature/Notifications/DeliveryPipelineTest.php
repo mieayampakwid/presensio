@@ -33,11 +33,19 @@ class DeliveryPipelineTest extends TestCase
         parent::setUp();
         $this->dispatcher = app(NotificationDispatcher::class);
         $this->schoolSettings = app(SchoolSettings::class);
-
         config([
             'services.waha.base_url' => 'https://waha.test',
             'queue.default' => 'sync',
         ]);
+
+        Date::setTestNow('2026-10-05 10:00:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Date::setTestNow();
+
+        parent::tearDown();
     }
 
     public function test_ac_17_03_guardian_opt_out_skips_whatsapp_but_writes_in_app(): void
