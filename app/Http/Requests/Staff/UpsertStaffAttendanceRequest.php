@@ -31,8 +31,8 @@ class UpsertStaffAttendanceRequest extends FormRequest
             'employee_id' => ['required', 'integer', Rule::exists(Employee::class, 'id')],
             'date' => ['required', 'date_format:Y-m-d'],
             'status' => ['required', Rule::enum(EmployeeAttendanceStatus::class)],
-            'checked_in_at' => ['nullable', 'string'],
-            'checked_out_at' => ['nullable', 'string'],
+            'checked_in_at' => ['nullable', 'date_format:H:i'],
+            'checked_out_at' => ['nullable', 'date_format:H:i', 'after_or_equal:checked_in_at'],
             'notes' => ['nullable', 'string', 'max:255'],
         ];
     }

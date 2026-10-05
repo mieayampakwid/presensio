@@ -32,7 +32,7 @@ class StaffAttendanceController extends Controller
     {
         $tz = $this->settings->timezone();
         $todayDate = $this->settings->todayDate();
-        $date = $request->string('date')->toString() ?: $todayDate;
+        $date = $this->resolveDate($request, $todayDate);
         $filter = $request->string('filter')->toString() ?: 'all';
         $isPastDate = $date < $todayDate;
 
@@ -212,5 +212,19 @@ class StaffAttendanceController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Presensi pegawai berhasil diperbarui.']);
 
         return to_route('staff-attendance.index', ['date' => $date]);
+    }
+
+    /**
+     * The requested Y-m-d date, or today when missing or malformed.
+     */
+    private function resolveDate(Request $request, string $todayDate): string
+    {
+        $value = $request->string('date')->toString();
+
+        if ($value !== '' && Date::hasFormat($value, 'Y-m-d')) {
+            return Date::parse($value)->toDateString();
+        }
+
+        return $todayDate;
     }
 }

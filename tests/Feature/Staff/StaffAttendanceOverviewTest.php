@@ -164,6 +164,38 @@ class StaffAttendanceOverviewTest extends TestCase
         $this->assertSame('created', $audit->action);
     }
 
+    public function test_manual_override_rejects_malformed_or_reversed_times(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create();
+        $payload = [
+            'employee_id' => $employee->id,
+            'date' => '2026-10-05',
+            'status' => EmployeeAttendanceStatus::Present->value,
+        ];
+
+        $this->actingAs($admin)
+            ->put(route('staff-attendance.upsert'), [...$payload, 'checked_in_at' => 'abc'])
+            ->assertSessionHasErrors('checked_in_at');
+
+        $this->actingAs($admin)
+            ->put(route('staff-attendance.upsert'), [...$payload, 'checked_in_at' => '14:00', 'checked_out_at' => '07:00'])
+            ->assertSessionHasErrors('checked_out_at');
+
+        $this->assertSame(0, EmployeeAttendance::count());
+    }
+
+    public function test_malformed_date_filter_falls_back_to_today(): void
+    {
+        Date::setTestNow('2026-10-06 08:00:00', 'Asia/Jakarta');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => 'foo']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('date', '2026-10-06'));
+    }
+
     public function test_principal_cannot_write_manual_override(): void
     {
         $principal = User::factory()->create();
