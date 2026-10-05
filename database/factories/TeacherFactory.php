@@ -39,22 +39,28 @@ class TeacherFactory extends Factory
     /**
      * Pass-through convenience when creating: if caller passes employee-level attributes
      * like name, user_id, phone_number, etc., delegate them to the created employee.
+     *
+     * @param  array<string, mixed>|callable  $attributes
+     * @return mixed
      */
     public function create($attributes = [], ?Model $parent = null)
     {
-        $employeeAttributes = [];
-        foreach (['name', 'user_id', 'employee_number', 'teacher_number', 'phone_number', 'is_active', 'employment_type'] as $key) {
-            if (array_key_exists($key, $attributes)) {
-                $targetKey = $key === 'teacher_number' ? 'employee_number' : $key;
-                $employeeAttributes[$targetKey] = $attributes[$key];
-                unset($attributes[$key]);
+        if (is_array($attributes)) {
+            $employeeAttributes = [];
+            foreach (['name', 'user_id', 'employee_number', 'teacher_number', 'phone_number', 'is_active', 'employment_type'] as $key) {
+                if (array_key_exists($key, $attributes)) {
+                    $targetKey = $key === 'teacher_number' ? 'employee_number' : $key;
+                    $employeeAttributes[$targetKey] = $attributes[$key];
+                    unset($attributes[$key]);
+                }
+            }
+
+            if (! empty($employeeAttributes) && ! isset($attributes['employee_id'])) {
+                $attributes['employee_id'] = Employee::factory()->create($employeeAttributes)->id;
             }
         }
 
-        if (! empty($employeeAttributes) && ! isset($attributes['employee_id'])) {
-            $attributes['employee_id'] = Employee::factory()->create($employeeAttributes)->id;
-        }
-
+        /** @var array<string, mixed>|(callable(array<string, mixed>): array<string, mixed>) $attributes */
         return parent::create($attributes, $parent);
     }
 }

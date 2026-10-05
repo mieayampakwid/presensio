@@ -45,9 +45,12 @@ type Props = {
 
 export default function EmployeesIndex({ employees, filters }: Props) {
     const destroy = (employee: EmployeeRow) => {
-        router.delete(EmployeeController.destroy({ employee: employee.id }).url, {
-            preserveScroll: true,
-        });
+        router.delete(
+            EmployeeController.destroy({ employee: employee.id }).url,
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const submitFilters = (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +67,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
             <Head title="Pegawai & Guru" />
 
             <div className="space-y-6 p-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
                         title="Pegawai & Guru"
                         description="Data induk pendidik (guru) dan tenaga kependidikan (tendik)."
@@ -90,11 +93,21 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
-                                <th className="px-4 py-3 text-left font-medium">Nama / NIP</th>
-                                <th className="px-4 py-3 text-left font-medium">Kontak</th>
-                                <th className="px-4 py-3 text-left font-medium">Jabatan & Status</th>
-                                <th className="px-4 py-3 text-left font-medium">Akun Login</th>
-                                <th className="px-4 py-3 text-right font-medium">Aksi</th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Nama / NIP
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Kontak
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Jabatan & Status
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Akun Login
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,8 +115,10 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                 <tr key={emp.id} className="border-t">
                                     <td className="px-4 py-3 font-medium">
                                         <div className="flex flex-col">
-                                            <span className="font-semibold">{emp.name}</span>
-                                            <span className="text-xs text-muted-foreground">
+                                            <span className="font-semibold">
+                                                {emp.name}
+                                            </span>
+                                            <span className="text-muted-foreground text-xs">
                                                 {emp.employee_number ?? '—'}
                                             </span>
                                         </div>
@@ -112,28 +127,36 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                         {emp.phone_number ?? '—'}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <div className="flex flex-col gap-1 items-start">
-                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                <span>{emp.position ?? '—'}</span>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                <span>
+                                                    {emp.position ?? '—'}
+                                                </span>
                                                 {emp.is_teacher && (
-                                                    <Badge variant="secondary" className="text-xs">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-xs"
+                                                    >
                                                         Guru
                                                     </Badge>
                                                 )}
                                                 {!emp.is_active && (
-                                                    <Badge variant="destructive" className="text-xs">
+                                                    <Badge
+                                                        variant="destructive"
+                                                        className="text-xs"
+                                                    >
                                                         Non-Aktif
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <span className="text-xs text-muted-foreground">
+                                            <span className="text-muted-foreground text-xs">
                                                 {emp.employment_type_label}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="text-muted-foreground px-4 py-3">
                                         {emp.user ? (
-                                            <span className="font-mono text-xs text-foreground">
+                                            <span className="text-foreground font-mono text-xs">
                                                 @{emp.user.username}
                                             </span>
                                         ) : (
@@ -142,16 +165,25 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                            >
                                                 <Link
                                                     href={
-                                                        EmployeeController.edit({
-                                                            employee: emp.id,
-                                                        }).url
+                                                        EmployeeController.edit(
+                                                            {
+                                                                employee:
+                                                                    emp.id,
+                                                            },
+                                                        ).url
                                                     }
                                                 >
                                                     <Pencil className="h-4 w-4" />
-                                                    <span className="sr-only">Edit</span>
+                                                    <span className="sr-only">
+                                                        Edit
+                                                    </span>
                                                 </Link>
                                             </Button>
 
@@ -163,24 +195,36 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">Hapus</span>
+                                                        <span className="sr-only">
+                                                            Hapus
+                                                        </span>
                                                     </Button>
                                                 </DialogTrigger>
                                                 <DialogContent>
-                                                    <DialogTitle>Hapus Pegawai</DialogTitle>
+                                                    <DialogTitle>
+                                                        Hapus Pegawai
+                                                    </DialogTitle>
                                                     <DialogDescription>
-                                                        Apakah Anda yakin ingin menghapus "{emp.name}"?
-                                                        Pegawai yang menjadi wali kelas, mengajar mata pelajaran,
-                                                        atau terhubung ke akun login tidak dapat dihapus.
+                                                        Apakah Anda yakin ingin
+                                                        menghapus "{emp.name}"?
+                                                        Pegawai yang menjadi
+                                                        wali kelas, mengajar
+                                                        mata pelajaran, atau
+                                                        terhubung ke akun login
+                                                        tidak dapat dihapus.
                                                     </DialogDescription>
                                                     <DialogFooter className="gap-2">
                                                         <DialogClose asChild>
-                                                            <Button variant="secondary">Batal</Button>
+                                                            <Button variant="secondary">
+                                                                Batal
+                                                            </Button>
                                                         </DialogClose>
                                                         <DialogClose asChild>
                                                             <Button
                                                                 variant="destructive"
-                                                                onClick={() => destroy(emp)}
+                                                                onClick={() =>
+                                                                    destroy(emp)
+                                                                }
                                                             >
                                                                 Hapus
                                                             </Button>
@@ -195,7 +239,10 @@ export default function EmployeesIndex({ employees, filters }: Props) {
 
                             {employees.data.length === 0 && (
                                 <tr className="border-t">
-                                    <td colSpan={5} className="text-muted-foreground px-4 py-8 text-center">
+                                    <td
+                                        colSpan={5}
+                                        className="text-muted-foreground px-4 py-8 text-center"
+                                    >
                                         Tidak ada data pegawai.
                                     </td>
                                 </tr>
@@ -206,7 +253,8 @@ export default function EmployeesIndex({ employees, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Halaman {employees.current_page} dari {employees.last_page}
+                        Halaman {employees.current_page} dari{' '}
+                        {employees.last_page}
                     </p>
 
                     <div className="flex gap-2">

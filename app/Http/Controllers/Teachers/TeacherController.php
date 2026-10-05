@@ -38,7 +38,7 @@ class TeacherController extends Controller
             ->paginate(15)
             ->through(fn (Teacher $teacher) => [
                 'id' => $teacher->id,
-                'name' => $teacher->employee?->name ?? '',
+                'name' => $teacher->employee->name,
                 'teacher_number' => $teacher->employee?->employee_number,
                 'phone_number' => $teacher->employee?->phone_number,
             ])
@@ -98,7 +98,7 @@ class TeacherController extends Controller
         return Inertia::render('teachers/edit', [
             'teacher' => [
                 'id' => $teacher->id,
-                'name' => $teacher->employee?->name ?? '',
+                'name' => $teacher->employee->name,
                 'teacher_number' => $teacher->employee?->employee_number,
                 'phone_number' => $teacher->employee?->phone_number,
             ],

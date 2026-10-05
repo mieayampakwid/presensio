@@ -106,11 +106,8 @@ class UserProfileLinker
         }
 
         $linkedUserId = match (true) {
-            $profile instanceof Teacher => $profile->employee?->user_id,
-            $profile instanceof Employee => $profile->user_id,
-            $profile instanceof Guardian => $profile->user_id,
-            $profile instanceof Student => $profile->user_id,
-            default => null,
+            $profile instanceof Teacher => $profile->employee->user_id,
+            default => $profile->user_id,
         };
 
         if ($linkedUserId !== null && $linkedUserId !== $target?->id) {
@@ -133,20 +130,20 @@ class UserProfileLinker
         $unlinkedTeachers = Teacher::with('employee')
             ->whereHas('employee', fn ($q) => $q->whereNull('user_id'))
             ->get()
-            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->sortBy(fn (Teacher $t) => $t->employee->name)
             ->values();
 
         foreach ($unlinkedTeachers as $teacher) {
             $options[UserRole::Teacher->value][] = [
                 'id' => $teacher->id,
-                'label' => $teacher->employee?->name ?? '',
+                'label' => $teacher->employee->name,
             ];
         }
 
         if ($forUser !== null && $forUser->teacher !== null) {
             $options[UserRole::Teacher->value][] = [
                 'id' => $forUser->teacher->id,
-                'label' => $forUser->teacher->employee?->name ?? '',
+                'label' => $forUser->teacher->employee->name,
             ];
         }
 

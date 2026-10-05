@@ -43,10 +43,10 @@ class EmployeeCalendar
         $days = $employee->working_days;
 
         if ($days !== null && $days !== []) {
-            return array_values(array_map('intval', $days));
+            return array_map('intval', $days);
         }
 
-        return $this->settings->operationalWeekdays();
+        return array_values($this->settings->operationalWeekdays());
     }
 
     /**

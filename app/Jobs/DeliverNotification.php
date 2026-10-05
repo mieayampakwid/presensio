@@ -162,8 +162,10 @@ class DeliverNotification implements ShouldQueue
             $guardian = Guardian::with('user')->find($delivery->recipient_id);
             $email = $guardian?->user?->email;
         } elseif ($delivery->recipient_type === 'employee') {
-            $employee = Teacher::with('employee.user')->find($delivery->recipient_id)?->employee
-                ?? Employee::with('user')->find($delivery->recipient_id);
+            $teacher = Teacher::with('employee.user')->find($delivery->recipient_id);
+            $employee = $teacher instanceof Teacher
+                ? $teacher->employee
+                : Employee::with('user')->find($delivery->recipient_id);
             $email = $employee?->user?->email;
         }
 

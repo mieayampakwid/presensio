@@ -51,7 +51,11 @@ final class CredentialResolution
 
     public function name(): ?string
     {
-        return $this->student?->full_name ?? $this->employee?->name;
+        if ($this->student !== null) {
+            return $this->student->full_name;
+        }
+
+        return $this->employee?->name;
     }
 }
 

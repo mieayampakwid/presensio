@@ -18,7 +18,6 @@ class EmployeeScanService
     public function __construct(
         private readonly SchoolSettings $settings,
         private readonly CredentialResolver $credentials,
-        private readonly EmployeeCalendar $calendar,
     ) {}
 
     public function scan(ScanMethod $method, string $credential, ?CarbonInterface $deviceScannedAt): ScanResult

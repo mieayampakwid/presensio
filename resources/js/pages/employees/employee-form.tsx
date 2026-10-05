@@ -68,22 +68,25 @@ export default function EmployeeForm({
     const [isTeacher, setIsTeacher] = useState<boolean>(
         lockIsTeacher ? true : (defaults.isTeacher ?? false),
     );
-    const [isActive, setIsActive] = useState<boolean>(defaults.isActive ?? true);
+    const [isActive, setIsActive] = useState<boolean>(
+        defaults.isActive ?? true,
+    );
 
     const toggleDay = (day: number) => {
         if (selectedDays.includes(day)) {
             setSelectedDays(selectedDays.filter((d) => d !== day));
         } else {
-            setSelectedDays([...selectedDays, day].sort());
+            setSelectedDays([...selectedDays, day].sort((a, b) => a - b));
         }
     };
-
     return (
         <Form {...action} className="space-y-6">
             {({ processing, errors }) => (
-                <div className="grid gap-6 max-w-2xl">
+                <div className="grid max-w-2xl gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nama Lengkap (dengan gelar)</Label>
+                        <Label htmlFor="name">
+                            Nama Lengkap (dengan gelar)
+                        </Label>
                         <Input
                             id="name"
                             name="name"
@@ -96,7 +99,7 @@ export default function EmployeeForm({
                         <InputError message={errors.name} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
                             <Label htmlFor="employee_number">
                                 Nomor Identitas Pegawai (NIP / NUPTK / NIY)
@@ -112,7 +115,9 @@ export default function EmployeeForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="phone_number">Nomor Telepon / WhatsApp</Label>
+                            <Label htmlFor="phone_number">
+                                Nomor Telepon / WhatsApp
+                            </Label>
                             <Input
                                 id="phone_number"
                                 name="phone_number"
@@ -124,14 +129,18 @@ export default function EmployeeForm({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="employment_type">Status Kepegawaian</Label>
+                            <Label htmlFor="employment_type">
+                                Status Kepegawaian
+                            </Label>
                             <select
                                 id="employment_type"
                                 name="employment_type"
                                 required
-                                defaultValue={defaults.employmentType ?? 'permanent'}
+                                defaultValue={
+                                    defaults.employmentType ?? 'permanent'
+                                }
                                 className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             >
                                 {employmentTypes.map((type) => (
@@ -158,14 +167,18 @@ export default function EmployeeForm({
 
                     {availableUsers.length > 0 && (
                         <div className="grid gap-2">
-                            <Label htmlFor="user_id">Akun Login Pengguna (Opsional)</Label>
+                            <Label htmlFor="user_id">
+                                Akun Login Pengguna (Opsional)
+                            </Label>
                             <select
                                 id="user_id"
                                 name="user_id"
                                 defaultValue={defaults.userId ?? ''}
                                 className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             >
-                                <option value="">Belum ditautkan ke akun</option>
+                                <option value="">
+                                    Belum ditautkan ke akun
+                                </option>
                                 {availableUsers.map((u) => (
                                     <option key={u.id} value={u.id}>
                                         {u.username}
@@ -192,7 +205,7 @@ export default function EmployeeForm({
                             />
                             <label
                                 htmlFor="all_operational"
-                                className="text-sm cursor-pointer select-none font-medium"
+                                className="cursor-pointer text-sm font-medium select-none"
                             >
                                 Mengikuti semua hari operasional sekolah
                             </label>
@@ -200,22 +213,30 @@ export default function EmployeeForm({
 
                         {!allOperational && (
                             <div className="pt-2">
-                                <p className="text-xs text-muted-foreground mb-2">
+                                <p className="text-muted-foreground mb-2 text-xs">
                                     Pilih hari kerja khusus untuk pegawai ini:
                                 </p>
                                 <div className="flex flex-wrap gap-4">
                                     {operationalDays.map((day) => (
-                                        <div key={day} className="flex items-center gap-2">
+                                        <div
+                                            key={day}
+                                            className="flex items-center gap-2"
+                                        >
                                             <Checkbox
                                                 id={`day_${day}`}
-                                                checked={selectedDays.includes(day)}
-                                                onCheckedChange={() => toggleDay(day)}
+                                                checked={selectedDays.includes(
+                                                    day,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleDay(day)
+                                                }
                                             />
                                             <label
                                                 htmlFor={`day_${day}`}
-                                                className="text-sm cursor-pointer select-none"
+                                                className="cursor-pointer text-sm select-none"
                                             >
-                                                {DAY_NAMES[day] ?? `Hari ${day}`}
+                                                {DAY_NAMES[day] ??
+                                                    `Hari ${day}`}
                                             </label>
                                         </div>
                                     ))}
@@ -244,7 +265,9 @@ export default function EmployeeForm({
                                     <Checkbox
                                         id="is_teacher"
                                         checked={isTeacher}
-                                        onCheckedChange={(checked) => setIsTeacher(Boolean(checked))}
+                                        onCheckedChange={(checked) =>
+                                            setIsTeacher(Boolean(checked))
+                                        }
                                     />
                                     <input
                                         type="hidden"
@@ -253,13 +276,18 @@ export default function EmployeeForm({
                                     />
                                     <label
                                         htmlFor="is_teacher"
-                                        className="text-sm cursor-pointer select-none"
+                                        className="cursor-pointer text-sm select-none"
                                     >
-                                        Pegawai ini adalah Guru / Tenaga Pengajar
+                                        Pegawai ini adalah Guru / Tenaga
+                                        Pengajar
                                     </label>
                                 </div>
                             ) : (
-                                <input type="hidden" name="is_teacher" value="1" />
+                                <input
+                                    type="hidden"
+                                    name="is_teacher"
+                                    value="1"
+                                />
                             )}
                             <InputError message={errors.is_teacher} />
 
@@ -267,7 +295,9 @@ export default function EmployeeForm({
                                 <Checkbox
                                     id="is_active"
                                     checked={isActive}
-                                    onCheckedChange={(checked) => setIsActive(Boolean(checked))}
+                                    onCheckedChange={(checked) =>
+                                        setIsActive(Boolean(checked))
+                                    }
                                 />
                                 <input
                                     type="hidden"
@@ -276,7 +306,7 @@ export default function EmployeeForm({
                                 />
                                 <label
                                     htmlFor="is_active"
-                                    className="text-sm cursor-pointer select-none"
+                                    className="cursor-pointer text-sm select-none"
                                 >
                                     Status Aktif
                                 </label>

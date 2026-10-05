@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Models\Employee;
 use App\Models\User;
 use App\Services\SchoolSettings;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,6 +19,9 @@ class StoreEmployeeRequest extends FormRequest
         return $this->user()?->hasRole(UserRole::Admin) ?? false;
     }
 
+    /**
+     * @return array<string, array<int, ValidationRule|Rule|string>>
+     */
     public function rules(): array
     {
         return [
@@ -34,6 +38,9 @@ class StoreEmployeeRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<int, callable(Validator): void>
+     */
     public function after(): array
     {
         return [
@@ -51,8 +58,8 @@ class StoreEmployeeRequest extends FormRequest
 
                 $userId = $this->input('user_id');
                 if ($userId !== null) {
-                    $targetUser = User::find($userId);
-                    if ($targetUser?->hasRole(UserRole::Student)) {
+                    $targetUser = User::query()->find($userId);
+                    if ($targetUser instanceof User && $targetUser->hasRole(UserRole::Student)) {
                         $validator->errors()->add('user_id', 'A student account cannot be linked to an employee profile.');
                     }
                 }

@@ -88,7 +88,7 @@ class CourseController extends Controller
         $classSubject->load([
             'schoolClass:id,name,academic_year_id,grade_level',
             'subject:id,code,name,group',
-            'teacher:id,name',
+            'teacher.employee:id,name',
         ]);
 
         $today = $this->schoolSettings->todayDate();
@@ -107,7 +107,7 @@ class CourseController extends Controller
                 'class_name' => $classSubject->schoolClass->name,
                 'subject_name' => $classSubject->subject->name,
                 'subject_code' => $classSubject->subject->code,
-                'teacher_name' => $classSubject->teacher?->employee?->name ?? '',
+                'teacher_name' => $classSubject->teacher->employee->name,
             ],
             'students' => $students,
             'canWrite' => ClassAccess::canWriteCourse($request->user(), $classSubject),

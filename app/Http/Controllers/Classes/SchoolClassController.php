@@ -48,7 +48,7 @@ class SchoolClassController extends Controller
                 'curriculum' => is_string($class->curriculum) ? $class->curriculum : $class->curriculum->value,
                 'teacher' => $class->teacher ? [
                     'id' => $class->teacher->id,
-                    'name' => $class->teacher->employee?->name ?? '',
+                    'name' => $class->teacher->employee->name,
                 ] : null,
             ])
             ->withQueryString();
@@ -155,17 +155,17 @@ class SchoolClassController extends Controller
      * Homeroom teacher options for the form select (serializes to
      * `{id, name}` rows for the frontend).
      *
-     * @return Collection<int, array{id: int, name: string}>
+     * @return \Illuminate\Support\Collection<int, array{id: int, name: string}>
      */
-    private function teacherOptions(): Collection
+    private function teacherOptions(): \Illuminate\Support\Collection
     {
         return Teacher::query()
             ->with('employee')
             ->get()
-            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->sortBy(fn (Teacher $t) => $t->employee->name)
             ->map(fn (Teacher $t) => [
                 'id' => $t->id,
-                'name' => $t->employee?->name ?? '',
+                'name' => $t->employee->name,
             ])
             ->values();
     }

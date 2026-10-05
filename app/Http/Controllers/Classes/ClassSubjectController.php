@@ -58,7 +58,7 @@ class ClassSubjectController extends Controller
                 'subject_name' => $item->subject->name,
                 'subject_code' => $item->subject->code,
                 'subject_group' => $item->subject->group->value,
-                'teacher_name' => $item->teacher?->employee?->name ?? '',
+                'teacher_name' => $item->teacher !== null ? $item->teacher->employee->name : '',
             ]);
 
             return Inertia::render('classes/show-subjects', [
@@ -74,7 +74,7 @@ class ClassSubjectController extends Controller
                     ] : null,
                     'teacher' => $schoolClass->teacher ? [
                         'id' => $schoolClass->teacher->id,
-                        'name' => $schoolClass->teacher?->employee?->name ?? '',
+                        'name' => $schoolClass->teacher->employee->name,
                     ] : null,
                 ],
                 'classSubjects' => $classSubjects,
@@ -105,10 +105,10 @@ class ClassSubjectController extends Controller
             ->active()
             ->with('employee')
             ->get()
-            ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+            ->sortBy(fn (Teacher $t) => $t->employee->name)
             ->map(fn (Teacher $t) => [
                 'id' => $t->id,
-                'name' => $t->employee?->name ?? '',
+                'name' => $t->employee->name,
             ])
             ->values();
 
@@ -118,15 +118,15 @@ class ClassSubjectController extends Controller
             'subject_id' => $cs->subject_id,
             'teacher_id' => $cs->teacher_id,
             'passing_threshold' => (string) $cs->passing_threshold,
-            'subject' => $cs->subject ? [
+            'subject' => [
                 'id' => $cs->subject->id,
                 'name' => $cs->subject->name,
                 'code' => $cs->subject->code,
                 'group' => $cs->subject->group->value,
-            ] : null,
+            ],
             'teacher' => $cs->teacher ? [
                 'id' => $cs->teacher->id,
-                'name' => $cs->teacher?->employee?->name ?? '',
+                'name' => $cs->teacher->employee->name,
             ] : null,
         ]);
 
@@ -142,7 +142,7 @@ class ClassSubjectController extends Controller
             ] : null,
             'teacher' => $schoolClass->teacher ? [
                 'id' => $schoolClass->teacher->id,
-                'name' => $schoolClass->teacher?->employee?->name ?? '',
+                'name' => $schoolClass->teacher->employee->name,
             ] : null,
         ];
 

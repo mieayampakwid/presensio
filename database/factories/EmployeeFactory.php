@@ -48,7 +48,7 @@ class EmployeeFactory extends Factory
     public function forUser(?User $user = null): static
     {
         return $this->state(fn () => [
-            'user_id' => $user?->id ?? User::factory()->create()->id,
+            'user_id' => $user !== null ? $user->id : User::factory()->create()->id,
         ]);
     }
 

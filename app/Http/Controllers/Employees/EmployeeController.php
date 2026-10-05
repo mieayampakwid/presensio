@@ -257,7 +257,7 @@ class EmployeeController extends Controller
     /**
      * Available users that can be linked to an employee.
      *
-     * @return list<array{id: int, username: string}>
+     * @return array<int, array{id: int, username: string}>
      */
     private function availableUsers(?int $currentUserId = null): array
     {
@@ -274,6 +274,7 @@ class EmployeeController extends Controller
             ->orderBy('username')
             ->get(['id', 'username'])
             ->map(fn (User $u) => ['id' => $u->id, 'username' => $u->username])
+            ->values()
             ->all();
     }
 }

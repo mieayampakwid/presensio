@@ -140,10 +140,10 @@ class AcademicYearController extends Controller
             'teachers' => Teacher::query()
                 ->with('employee')
                 ->get()
-                ->sortBy(fn (Teacher $t) => $t->employee?->name ?? '')
+                ->sortBy(fn (Teacher $t) => $t->employee->name)
                 ->map(fn (Teacher $t) => [
                     'id' => $t->id,
-                    'name' => $t->employee?->name ?? '',
+                    'name' => $t->employee->name,
                 ])
                 ->values(),
             'already_promoted' => $alreadyPromoted,
