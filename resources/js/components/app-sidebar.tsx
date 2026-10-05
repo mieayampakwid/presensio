@@ -1,7 +1,9 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    Briefcase,
     CalendarCheck,
+    CalendarClock,
     CalendarOff,
     CalendarRange,
     ChevronsUpDown,
@@ -23,6 +25,7 @@ import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
@@ -31,6 +34,7 @@ import StudentReportController from '@/actions/App/Http/Controllers/Reports/Stud
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
+import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -83,6 +87,11 @@ export function AppSidebar() {
         ...(activeRole === 'admin'
             ? [
                   { title: 'Users', href: '/users', icon: Users },
+                  {
+                      title: 'Employees',
+                      href: EmployeeController.index().url,
+                      icon: Briefcase,
+                  },
                   {
                       title: 'Teachers',
                       href: TeacherController.index().url,
@@ -139,6 +148,24 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(['admin', 'principal'].includes(activeRole)
+            ? [
+                  {
+                      title: 'Staff Attendance',
+                      href: StaffAttendanceController.index().url,
+                      icon: CalendarClock,
+                  },
+              ]
+            : []),
+        ...(activeRole === 'staff'
+            ? [
+                  {
+                      title: 'My QR',
+                      href: myQr().url,
+                      icon: QrCode,
+                  },
+              ]
+            : []),
         ...(activeRole === 'student'
             ? [
                   {
@@ -160,6 +187,11 @@ export function AppSidebar() {
             : []),
         ...(activeRole === 'teacher'
             ? [
+                  {
+                      title: 'My QR',
+                      href: myQr().url,
+                      icon: QrCode,
+                  },
                   {
                       title: 'My Courses',
                       href: '/courses',
