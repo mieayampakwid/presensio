@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int|null $student_id
+ * @property int|null $employee_id
  * @property ScanMethod $scan_method
  * @property string|null $identifier
  * @property Carbon $scanned_at
@@ -24,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['student_id', 'scan_method', 'identifier', 'scanned_at', 'outcome'])]
+#[Fillable(['student_id', 'employee_id', 'scan_method', 'identifier', 'scanned_at', 'outcome'])]
 class ScanEvent extends Model
 {
     /** @use HasFactory<ScanEventFactory> */
@@ -38,6 +39,16 @@ class ScanEvent extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    /**
+     * Resolved employee; null when credential is for a student or matched nobody.
+     *
+     * @return BelongsTo<Employee, $this>
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     /**
