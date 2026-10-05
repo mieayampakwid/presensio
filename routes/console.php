@@ -22,6 +22,10 @@ Schedule::command('attendance:mark-absences')
     ->dailyAt($settings->autoAbsentCronTime())
     ->timezone($settings->timezone());
 
+Schedule::command('staff-attendance:mark-absences')
+    ->dailyAt($settings->staffAbsentSweepTime())
+    ->timezone($settings->timezone());
+
 Schedule::command('attendance:sync-holidays')
     ->weeklyOn(0, '03:00')
     ->timezone($settings->timezone());
