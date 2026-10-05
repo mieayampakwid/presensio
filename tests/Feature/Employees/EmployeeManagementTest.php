@@ -180,6 +180,41 @@ class EmployeeManagementTest extends TestCase
         $this->assertDatabaseMissing('teachers', ['employee_id' => $employee->id]);
     }
 
+    public function test_switching_back_to_all_operational_days_clears_custom_working_days(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create(['working_days' => [1, 3]]);
+
+        // "Follow all operational days" submits no working_days at all.
+        $this->actingAs($admin)
+            ->put(route('employees.update', $employee), [
+                'name' => $employee->name,
+                'employment_type' => $employee->employment_type->value,
+                'is_active' => true,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull($employee->fresh()->working_days);
+    }
+
+    public function test_custom_working_days_mode_requires_at_least_one_day(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create(['working_days' => [1, 3]]);
+
+        // Custom mode with every day unchecked submits only the flag.
+        $this->actingAs($admin)
+            ->put(route('employees.update', $employee), [
+                'name' => $employee->name,
+                'employment_type' => $employee->employment_type->value,
+                'is_active' => true,
+                'working_days_custom' => '1',
+            ])
+            ->assertSessionHasErrors(['working_days' => 'Select at least one working day.']);
+
+        $this->assertSame([1, 3], $employee->fresh()->working_days);
+    }
+
     public function test_linking_user_with_student_role_is_rejected(): void
     {
         $admin = User::factory()->admin()->create();

@@ -245,6 +245,13 @@ export default function EmployeeForm({
                         )}
 
                         {/* Hidden inputs for form submit */}
+                        {!allOperational && (
+                            <input
+                                type="hidden"
+                                name="working_days_custom"
+                                value="1"
+                            />
+                        )}
                         {!allOperational &&
                             selectedDays.map((day) => (
                                 <input

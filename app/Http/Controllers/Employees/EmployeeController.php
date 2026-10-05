@@ -163,6 +163,9 @@ class EmployeeController extends Controller
             $isTeacher = $request->boolean('is_teacher');
             unset($validated['is_teacher']);
 
+            // The form omits working_days when following all operational days.
+            $validated['working_days'] = $validated['working_days'] ?? null;
+
             $employee->update($validated);
 
             $wasTeacher = $employee->isTeacher();

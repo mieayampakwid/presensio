@@ -30,11 +30,23 @@ class StoreEmployeeRequest extends FormRequest
             'phone_number' => ['nullable', 'string', 'max:30'],
             'employment_type' => ['required', Rule::enum(EmploymentType::class)],
             'position' => ['nullable', 'string', 'max:100'],
-            'working_days' => ['nullable', 'array'],
+            'working_days' => ['required_if_accepted:working_days_custom', 'nullable', 'array'],
             'working_days.*' => ['integer', 'between:1,7'],
             'is_active' => ['required', 'boolean'],
             'is_teacher' => ['nullable', 'boolean'],
             'user_id' => ['nullable', 'integer', Rule::exists(User::class, 'id'), Rule::unique(Employee::class, 'user_id')],
+        ];
+    }
+
+    /**
+     * Custom mode with no day checked is an error, not "all operational days".
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'working_days.required_if_accepted' => 'Select at least one working day.',
         ];
     }
 
