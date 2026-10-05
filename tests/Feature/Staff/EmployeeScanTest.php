@@ -10,8 +10,10 @@ use App\Models\ScanEvent;
 use App\Models\SchoolSetting;
 use App\Services\Attendance\QrTokenService;
 use App\Services\SchoolSettings;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -163,6 +165,41 @@ class EmployeeScanTest extends TestCase
         $this->assertSame(EmployeeAttendanceStatus::Late, $record->status);
         $this->assertSame(150, $record->late_minutes);
         $this->assertNotNull($record->checked_in_at);
+    }
+
+    public function test_tap_racing_the_sweep_upgrades_the_row_the_sweep_inserted(): void
+    {
+        $employee = Employee::factory()->create(['name' => 'Pak Joko']);
+        RfidCard::factory()->assignedToEmployee($employee)->create(['rfid_number' => 'EMP-03']);
+        Date::setTestNow(Date::parse('2026-10-05 09:30:00', 'Asia/Jakarta'));
+
+        // The sweep inserts its absent row right after the scan's read
+        // found nothing, so the scan's own insert hits the unique index.
+        $raced = false;
+        DB::listen(function (QueryExecuted $query) use ($employee, &$raced): void {
+            if ($raced || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, 'employee_attendances')) {
+                return;
+            }
+
+            $raced = true;
+            EmployeeAttendance::factory()->create([
+                'employee_id' => $employee->id,
+                'date' => '2026-10-05',
+                'status' => EmployeeAttendanceStatus::Absent,
+                'checked_in_at' => null,
+                'checked_out_at' => null,
+                'scan_method' => null,
+            ]);
+        });
+
+        $this->scan(['credential_type' => 'rfid', 'credential' => 'EMP-03'])
+            ->assertOk()
+            ->assertJson(['outcome' => 'checked_in', 'detail' => 'absent_upgraded']);
+
+        $this->assertTrue($raced);
+        $record = EmployeeAttendance::where('employee_id', $employee->id)->sole();
+        $this->assertSame(EmployeeAttendanceStatus::Late, $record->status);
+        $this->assertSame(150, $record->late_minutes);
     }
 
     public function test_ac_16_11_inactive_employee_tap_logs_ignored_inactive_and_creates_no_record(): void

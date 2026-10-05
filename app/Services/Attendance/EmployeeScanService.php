@@ -10,6 +10,8 @@ use App\Models\EmployeeAttendance;
 use App\Models\ScanEvent;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -62,51 +64,45 @@ class EmployeeScanService
         $localTap = $scannedAt->tz($this->settings->timezone());
 
         return DB::transaction(function () use ($method, $identifier, $employee, $date, $scannedAt, $localTap) {
-            $record = EmployeeAttendance::query()
-                ->where('employee_id', $employee->id)
-                ->whereDate('date', $date)
-                ->first();
+            $record = $this->recordQuery($employee, $date)->first();
+
+            // 3a. No record -> check-in. A simultaneous tap or the absence
+            // sweep may win the unique insert; then resolve against the
+            // winner's row below.
+            if ($record === null) {
+                $created = $this->createRecord($method, $employee, $date, $scannedAt, $localTap);
+
+                if ($created !== null) {
+                    $this->log($method, $identifier, $employee, ScanOutcome::CheckIn, $scannedAt);
+
+                    return new ScanResult(ScanOutcome::CheckIn, employee: $employee, employeeAttendance: $created);
+                }
+
+                $record = $this->recordQuery($employee, $date)->firstOrFail();
+            }
 
             // 2. Excused statuses -> ignored_excused (no record updated)
-            if ($record !== null && $record->status->isExcused()) {
+            if ($record->status->isExcused()) {
                 $this->log($method, $identifier, $employee, ScanOutcome::IgnoredExcused, $scannedAt);
 
                 return new ScanResult(ScanOutcome::IgnoredExcused, employee: $employee, employeeAttendance: $record);
             }
 
-            // 3. No record, or an absent record from the sweep -> check-in
-            if ($record === null || ($record->status === EmployeeAttendanceStatus::Absent && $record->checked_in_at === null)) {
-                $staffStartTime = $this->settings->staffStartTimeOn($localTap);
-                $isLate = $localTap->greaterThan($staffStartTime);
-                $status = $isLate ? EmployeeAttendanceStatus::Late : EmployeeAttendanceStatus::Present;
-                $lateMinutes = $isLate ? (int) ceil($staffStartTime->diffInMinutes($localTap, false)) : 0;
+            // 3b. An absent record from the sweep -> check-in
+            if ($record->status === EmployeeAttendanceStatus::Absent && $record->checked_in_at === null) {
+                [$status, $lateMinutes] = $this->checkInStatus($localTap);
 
-                $outcome = $record !== null ? ScanOutcome::AbsentUpgraded : ScanOutcome::CheckIn;
+                $record->update([
+                    'status' => $status,
+                    'checked_in_at' => $this->utc($scannedAt),
+                    'late_minutes' => $lateMinutes,
+                    'scan_method' => $method,
+                ]);
+                $record->refresh();
 
-                if ($record === null) {
-                    $record = EmployeeAttendance::create([
-                        'employee_id' => $employee->id,
-                        'date' => $date,
-                        'status' => $status,
-                        'checked_in_at' => $this->utc($scannedAt),
-                        'checked_out_at' => null,
-                        'late_minutes' => $lateMinutes,
-                        'early_leave_minutes' => 0,
-                        'scan_method' => $method,
-                    ]);
-                } else {
-                    $record->update([
-                        'status' => $status,
-                        'checked_in_at' => $this->utc($scannedAt),
-                        'late_minutes' => $lateMinutes,
-                        'scan_method' => $method,
-                    ]);
-                    $record->refresh();
-                }
+                $this->log($method, $identifier, $employee, ScanOutcome::AbsentUpgraded, $scannedAt);
 
-                $this->log($method, $identifier, $employee, $outcome, $scannedAt);
-
-                return new ScanResult($outcome, employee: $employee, employeeAttendance: $record);
+                return new ScanResult(ScanOutcome::AbsentUpgraded, employee: $employee, employeeAttendance: $record);
             }
 
             // 4. Already checked in, within debounce -> ignored_debounce
@@ -133,6 +129,60 @@ class EmployeeScanService
 
             return new ScanResult(ScanOutcome::CheckOut, employee: $employee, employeeAttendance: $record);
         });
+    }
+
+    /**
+     * First tap of the day creates the record. Returns null when a
+     * concurrent writer won the unique insert. The savepoint keeps the
+     * outer transaction usable after the violation on PostgreSQL.
+     */
+    private function createRecord(
+        ScanMethod $method,
+        Employee $employee,
+        string $date,
+        CarbonInterface $scannedAt,
+        CarbonInterface $localTap
+    ): ?EmployeeAttendance {
+        [$status, $lateMinutes] = $this->checkInStatus($localTap);
+
+        try {
+            return DB::transaction(fn () => EmployeeAttendance::create([
+                'employee_id' => $employee->id,
+                'date' => $date,
+                'status' => $status,
+                'checked_in_at' => $this->utc($scannedAt),
+                'checked_out_at' => null,
+                'late_minutes' => $lateMinutes,
+                'early_leave_minutes' => 0,
+                'scan_method' => $method,
+            ]));
+        } catch (UniqueConstraintViolationException) {
+            return null;
+        }
+    }
+
+    /**
+     * @return Builder<EmployeeAttendance>
+     */
+    private function recordQuery(Employee $employee, string $date): Builder
+    {
+        return EmployeeAttendance::query()
+            ->where('employee_id', $employee->id)
+            ->whereDate('date', $date);
+    }
+
+    /**
+     * @return array{0: EmployeeAttendanceStatus, 1: int}
+     */
+    private function checkInStatus(CarbonInterface $localTap): array
+    {
+        $staffStartTime = $this->settings->staffStartTimeOn($localTap);
+        $isLate = $localTap->greaterThan($staffStartTime);
+
+        return [
+            $isLate ? EmployeeAttendanceStatus::Late : EmployeeAttendanceStatus::Present,
+            $isLate ? (int) ceil($staffStartTime->diffInMinutes($localTap, false)) : 0,
+        ];
     }
 
     private function resolveScanTime(?CarbonInterface $device, CarbonInterface $server): CarbonInterface
