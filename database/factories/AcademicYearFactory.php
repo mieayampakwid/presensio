@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\AcademicYear;
 use App\Services\AcademicYears\SemesterService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<AcademicYear>
@@ -19,9 +20,8 @@ class AcademicYearFactory extends Factory
             'name' => $start.'/'.((int) $start + 1),
             'starts_at' => $start.'-07-01',
             'ends_at' => ((int) $start + 1).'-06-30',
-            // Inactive by default — only the bootstrap migration year is
-            // active, so tests creating extra years never break the
-            // exactly-one-active invariant.
+            // Inactive by default, so tests creating extra years never
+            // break the exactly-one-active invariant.
             'is_active' => false,
         ];
     }
@@ -44,5 +44,22 @@ class AcademicYearFactory extends Factory
     public function active(): static
     {
         return $this->state(fn () => ['is_active' => true]);
+    }
+
+    /**
+     * The active year containing today (school years start 1 July).
+     */
+    public function current(): static
+    {
+        return $this->active()->state(function () {
+            $today = Date::today();
+            $start = $today->month >= 7 ? $today->year : $today->year - 1;
+
+            return [
+                'name' => $start.'/'.($start + 1),
+                'starts_at' => $start.'-07-01',
+                'ends_at' => ($start + 1).'-06-30',
+            ];
+        });
     }
 }

@@ -74,8 +74,8 @@ class StudentImportService
     private function process(RowReader $reader, array $mapping, ImportOptions $options, bool $commit): ImportResult
     {
         $indexes = $this->columnIndexes($reader, $mapping);
-        // The bootstrap migration guarantees an active year; a missing one
-        // is a loud misconfiguration, not an empty import.
+        // Importing before any year is active is a loud misconfiguration,
+        // not an empty import.
         $context = new ImportContext(AcademicYear::query()->where('is_active', true)->firstOrFail());
         $validator = new RowValidator($context, $options);
 

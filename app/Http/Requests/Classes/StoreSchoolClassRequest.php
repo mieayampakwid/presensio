@@ -43,13 +43,22 @@ class StoreSchoolClassRequest extends FormRequest
     }
 
     /**
-     * Homeroom 1:1 is enforced by configuration, not schema (spec 02 §4).
+     * New classes belong to the active year, so one must exist. Homeroom
+     * 1:1 is enforced by configuration, not schema (spec 02 §4).
      *
      * @return array<int, callable(Validator): void>
      */
     public function after(): array
     {
         return [
+            function (Validator $validator): void {
+                if (AcademicYear::active() === null) {
+                    $validator->errors()->add(
+                        'name',
+                        'Create and activate an academic year before adding classes.'
+                    );
+                }
+            },
             function (Validator $validator): void {
                 if (config('school.allow_multiple_homerooms')) {
                     return;

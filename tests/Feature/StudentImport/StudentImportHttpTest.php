@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\StudentImport;
 
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,6 +22,7 @@ class StudentImportHttpTest extends TestCase
         parent::setUp();
 
         Storage::fake('local');
+        AcademicYear::factory()->current()->create();
     }
 
     public function test_fresh_headers_show_the_mapping_screen(): void
@@ -100,6 +102,31 @@ class StudentImportHttpTest extends TestCase
         $this->assertSame(1, Student::count());
         $this->assertSame('Ayu', Student::first()->full_name);
         $this->assertSame(0, collect(Storage::disk('local')->files('student-imports'))->count());
+    }
+
+    public function test_import_requires_an_active_academic_year(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $file = UploadedFile::fake()->createWithContent('students.csv', "Nama;Kelas\nAyu;1A\n");
+
+        $this->actingAs($admin)->post(route('students.import.store'), ['file' => $file]);
+        $token = $this->extractToken('csv');
+
+        AcademicYear::query()->update(['is_active' => false]);
+
+        $this->actingAs($admin)
+            ->post(route('students.import.store'), ['file' => UploadedFile::fake()->createWithContent('students.csv', "Nama;Kelas\nAyu;1A\n")])
+            ->assertSessionHasErrors('file');
+
+        $this->actingAs($admin)
+            ->post(route('students.import.run'), [
+                'token' => $token,
+                'mapping' => ['full_name' => 'Nama', 'class' => 'Kelas'],
+                'auto_create_classes' => '1',
+            ])
+            ->assertSessionHasErrors('mapping.class');
+
+        $this->assertSame(0, Student::count());
     }
 
     #[DataProvider('nonAdminRoles')]

@@ -17,7 +17,10 @@ return new class extends Migration
             // "5A 2027/2028" are different rows (spec 02 v2.0).
             $table->foreignId('academic_year_id')->index()->constrained();
             $table->string('name');
+            $table->unsignedTinyInteger('grade_level')->default(0);
+            $table->string('curriculum', 30)->default('merdeka');
             $table->unique(['name', 'academic_year_id']);
+            $table->index(['academic_year_id', 'grade_level']);
             // Duplicates allowed on purpose; the 1:1 homeroom rule lives in
             // config validation (spec 02 §4), not the schema.
             $table->foreignId('teacher_id')->nullable()->index()->constrained()->nullOnDelete();

@@ -17,6 +17,7 @@ return new class extends Migration
             // Current owner; null = spare (spec 02 §7). Multiple cards may
             // point at one student (replacement while original is lost).
             $table->foreignId('student_id')->nullable()->index()->constrained()->nullOnDelete();
+            $table->foreignId('employee_id')->nullable()->index()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

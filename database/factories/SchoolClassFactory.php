@@ -18,8 +18,8 @@ class SchoolClassFactory extends Factory
         $grade = fake()->numberBetween(1, 12);
 
         return [
-            // The bootstrap migration guarantees an active year exists.
-            'academic_year_id' => fn () => AcademicYear::active()->id,
+            'academic_year_id' => fn () => AcademicYear::active()->id
+                ?? AcademicYear::factory()->current()->create()->id,
             'name' => $grade.' '.fake()->unique()->regexify('[A-C]'),
             'grade_level' => $grade,
             'curriculum' => Curriculum::Merdeka,

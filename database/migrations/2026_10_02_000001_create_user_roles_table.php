@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,8 +19,6 @@ return new class extends Migration
             $table->primary(['user_id', 'role']);
             $table->index(['role', 'user_id']);
         });
-
-        self::backfill();
     }
 
     /**
@@ -30,20 +27,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('user_roles');
-    }
-
-    /**
-     * Backfill user roles from the legacy users.role column.
-     */
-    public static function backfill(): void
-    {
-        if (! Schema::hasColumn('users', 'role')) {
-            return;
-        }
-
-        DB::table('user_roles')->insertUsing(
-            ['user_id', 'role', 'created_at'],
-            DB::table('users')->select('id', 'role', DB::raw('CURRENT_TIMESTAMP'))
-        );
     }
 };

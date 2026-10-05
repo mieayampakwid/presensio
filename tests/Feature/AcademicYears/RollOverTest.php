@@ -34,9 +34,9 @@ class RollOverTest extends TestCase
     {
         parent::setUp();
 
-        // The bootstrap year (2026/2027) is the source; two classes, two
+        // The active 2026/2027 year is the source; two classes, two
         // students each.
-        $this->sourceYear = AcademicYear::active();
+        $this->sourceYear = AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
         $this->admin = User::factory()->admin()->create();
 
         $this->class5a = SchoolClass::factory()->create(['name' => 'Kelas 5A', 'grade_level' => 5, 'academic_year_id' => $this->sourceYear->id]);

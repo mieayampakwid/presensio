@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call([
+            AcademicYearSeeder::class,
             UserSeeder::class,
             EmployeeSeeder::class,
             TeacherSeeder::class,
@@ -50,10 +51,6 @@ class DatabaseSeeder extends Seeder
      */
     private function printSummary(): void
     {
-        if (! $this->command) {
-            return;
-        }
-
         $this->command->table(
             ['Role', 'Username', 'Password', 'Profile'],
             [

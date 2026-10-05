@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\StudentImport;
 
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -22,6 +23,7 @@ class StudentImportServiceTest extends TestCase
     {
         parent::setUp();
 
+        AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
         $this->service = app(StudentImportService::class);
     }
 

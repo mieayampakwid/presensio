@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Students;
 
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStudentImportRequest extends FormRequest
@@ -28,6 +30,25 @@ class StoreStudentImportRequest extends FormRequest
         return [
             'file' => ['required', 'file', 'mimes:csv,txt,xlsx', 'max:10240'],
             'auto_create_classes' => ['nullable', 'boolean'],
+        ];
+    }
+
+    /**
+     * Imported students are enrolled into the active year, so one must exist.
+     *
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if (AcademicYear::active() === null) {
+                    $validator->errors()->add(
+                        'file',
+                        'Create and activate an academic year before importing students.'
+                    );
+                }
+            },
         ];
     }
 

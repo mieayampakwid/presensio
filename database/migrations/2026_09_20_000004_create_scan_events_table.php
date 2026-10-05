@@ -16,6 +16,7 @@ return new class extends Migration
             // Null when the credential resolves to nobody. Deleted students
             // null out too — the append-only audit trail survives.
             $table->foreignId('student_id')->nullable()->index()->constrained()->nullOnDelete();
+            $table->foreignId('employee_id')->nullable()->index()->constrained()->nullOnDelete();
             // rfid | dynamic_qr only (spec 03 §Schema).
             $table->string('scan_method');
             // Raw rfid_number on RFID attempts; always null for QR —

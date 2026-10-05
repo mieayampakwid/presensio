@@ -30,6 +30,7 @@ class YearManagementTest extends TestCase
     public function test_admin_creates_a_year_starting_inactive(): void
     {
         $admin = User::factory()->admin()->create();
+        AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
 
         $this->actingAs($admin)
             ->post(route('academic-years.store'), [
@@ -43,7 +44,7 @@ class YearManagementTest extends TestCase
 
         $this->assertNotNull($year);
         $this->assertFalse($year->is_active);
-        // The bootstrap year stays the single active one.
+        // The existing active year stays the single active one.
         $this->assertSame('2026/2027', AcademicYear::active()->name);
     }
 
@@ -51,14 +52,14 @@ class YearManagementTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $other = AcademicYear::factory()->create(['name' => '2027/2028']);
-        $bootstrap = AcademicYear::active();
+        $current = AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
 
         $this->actingAs($admin)
             ->post(route('academic-years.activate', $other))
             ->assertRedirect(route('academic-years.index'));
 
         $this->assertTrue($other->fresh()->is_active);
-        $this->assertFalse($bootstrap->fresh()->is_active);
+        $this->assertFalse($current->fresh()->is_active);
     }
 
     public function test_admin_updates_a_year(): void
@@ -80,7 +81,7 @@ class YearManagementTest extends TestCase
     public function test_a_year_with_classes_cannot_be_deleted(): void
     {
         $admin = User::factory()->admin()->create();
-        $year = AcademicYear::active();
+        $year = AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
         SchoolClass::factory()->create(['academic_year_id' => $year->id]);
 
         $this->actingAs($admin)
@@ -105,6 +106,7 @@ class YearManagementTest extends TestCase
     public function test_the_index_lists_years_with_the_active_one_flagged(): void
     {
         $admin = User::factory()->admin()->create();
+        AcademicYear::factory()->active()->create(['name' => '2026/2027', 'starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
 
         $this->actingAs($admin)
             ->get(route('academic-years.index'))

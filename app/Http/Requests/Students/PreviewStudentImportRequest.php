@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Students;
 
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Services\StudentImport\ImportOptions;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -36,6 +38,25 @@ class PreviewStudentImportRequest extends FormRequest
             'mapping.class' => ['required', 'string'],
             'mapping.*' => ['nullable', 'string'],
             'auto_create_classes' => ['nullable', 'boolean'],
+        ];
+    }
+
+    /**
+     * Imported students are enrolled into the active year, so one must exist.
+     *
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if (AcademicYear::active() === null) {
+                    $validator->errors()->add(
+                        'mapping.class',
+                        'Create and activate an academic year before importing students.'
+                    );
+                }
+            },
         ];
     }
 

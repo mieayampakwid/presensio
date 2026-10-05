@@ -7,8 +7,6 @@ use App\Models\SchoolClass;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class EmployeeMigrationTest extends TestCase
@@ -58,56 +56,5 @@ class EmployeeMigrationTest extends TestCase
         // Verify teacher 2
         $this->assertSame('Siti Aminah, M.Pd.', $teacher2->fresh()->employee->name);
         $this->assertNull($teacher2->fresh()->employee->user_id);
-    }
-
-    public function test_migrate_data_and_rollback_data_static_methods(): void
-    {
-        $migration = require database_path('migrations/2026_10_05_090349_create_employees_table.php');
-
-        Schema::table('teachers', function ($table) {
-            $table->string('name')->nullable();
-            $table->string('teacher_number')->nullable();
-            $table->string('phone_number')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable();
-        });
-
-        $user = User::factory()->teacher()->create();
-
-        $placeholderEmployee = Employee::factory()->create();
-
-        $teacherId = DB::table('teachers')->insertGetId([
-            'employee_id' => $placeholderEmployee->id,
-            'user_id' => $user->id,
-            'name' => 'Budi Santoso',
-            'teacher_number' => '123456',
-            'phone_number' => '0812345678',
-        ]);
-
-        $class = SchoolClass::factory()->create(['teacher_id' => $teacherId]);
-
-        $migration::migrateData();
-
-        $teacher = DB::table('teachers')->where('id', $teacherId)->first();
-        $this->assertNotEquals($placeholderEmployee->id, $teacher->employee_id);
-
-        $employee = DB::table('employees')->where('id', $teacher->employee_id)->first();
-        $this->assertNotNull($employee);
-        $this->assertSame('Budi Santoso', $employee->name);
-        $this->assertSame('123456', $employee->employee_number);
-        $this->assertSame('0812345678', $employee->phone_number);
-        $this->assertSame($user->id, $employee->user_id);
-        $this->assertSame($teacherId, $class->fresh()->teacher_id);
-
-        $migration::rollbackData();
-
-        $restoredTeacher = DB::table('teachers')->where('id', $teacherId)->first();
-        $this->assertSame('Budi Santoso', $restoredTeacher->name);
-        $this->assertSame('123456', $restoredTeacher->teacher_number);
-        $this->assertSame('0812345678', $restoredTeacher->phone_number);
-        $this->assertSame($user->id, $restoredTeacher->user_id);
-
-        Schema::table('teachers', function ($table) {
-            $table->dropColumn(['name', 'teacher_number', 'phone_number', 'user_id']);
-        });
     }
 }

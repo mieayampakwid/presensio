@@ -3,6 +3,7 @@
 namespace Tests\Feature\Classes;
 
 use App\Enums\Curriculum;
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -54,6 +55,7 @@ class ClassManagementTest extends TestCase
     public function test_admin_can_create_a_class_with_a_homeroom_teacher(): void
     {
         $admin = User::factory()->admin()->create();
+        AcademicYear::factory()->current()->create();
         $teacher = Teacher::factory()->create();
 
         $this->actingAs($admin)
@@ -77,6 +79,7 @@ class ClassManagementTest extends TestCase
     public function test_admin_can_create_a_class_without_a_homeroom_teacher(): void
     {
         $admin = User::factory()->admin()->create();
+        AcademicYear::factory()->current()->create();
 
         $this->actingAs($admin)
             ->post(route('classes.store'), [
@@ -120,6 +123,21 @@ class ClassManagementTest extends TestCase
                 'curriculum' => 'merdeka',
             ])
             ->assertSessionHasErrors('grade_level');
+    }
+
+    public function test_class_creation_requires_an_active_academic_year(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->post(route('classes.store'), [
+                'name' => 'Kelas 1A',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
+            ])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame(0, SchoolClass::count());
     }
 
     public function test_class_creation_rejects_a_teacher_who_already_homerooms_another_class(): void
