@@ -75,6 +75,36 @@ class TeacherManagementTest extends TestCase
             ->assertSessionHasErrors('name');
     }
 
+    public function test_teacher_creation_rejects_a_duplicate_number_and_an_overlong_phone(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Teacher::factory()->create(['teacher_number' => '197501012000031002']);
+
+        $this->actingAs($admin)
+            ->post(route('teachers.store'), [
+                'name' => 'Budi Santoso',
+                'employee_number' => '197501012000031002',
+                'phone_number' => str_repeat('1', 31),
+            ])
+            ->assertSessionHasErrors(['employee_number', 'phone_number']);
+
+        $this->assertSame(1, Teacher::count());
+    }
+
+    public function test_teacher_update_rejects_another_employees_number(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Teacher::factory()->create(['teacher_number' => '197501012000031002']);
+        $teacher = Teacher::factory()->create();
+
+        $this->actingAs($admin)
+            ->put(route('teachers.update', $teacher), [
+                'name' => 'Siti Aminah',
+                'employee_number' => '197501012000031002',
+            ])
+            ->assertSessionHasErrors('employee_number');
+    }
+
     public function test_admin_can_update_a_teacher(): void
     {
         $admin = User::factory()->admin()->create();

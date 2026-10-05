@@ -4,6 +4,7 @@ namespace App\Http\Requests\Teachers;
 
 use App\Enums\EmploymentType;
 use App\Enums\UserRole;
+use App\Models\Employee;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,9 +35,9 @@ class StoreTeacherRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'teacher_number' => ['nullable', 'string', 'max:255'],
-            'employee_number' => ['nullable', 'string', 'max:255'],
-            'phone_number' => ['nullable', 'string', 'max:32'],
+            'teacher_number' => ['nullable', 'string', 'max:50', Rule::unique(Employee::class, 'employee_number')],
+            'employee_number' => ['nullable', 'string', 'max:50', Rule::unique(Employee::class, 'employee_number')],
+            'phone_number' => ['nullable', 'string', 'max:30'],
             'employment_type' => ['nullable', Rule::enum(EmploymentType::class)],
             'position' => ['nullable', 'string', 'max:100'],
             'working_days' => ['nullable', 'array'],
