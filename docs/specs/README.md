@@ -30,6 +30,8 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | **Notification center** | `notifications`, `notification_deliveries`, `notification_preferences` | In-app inbox plus WhatsApp/email per type, idempotent ledger, quota, quiet hours, opt-out; absence alerts stay on spec 05 (spec 17) |
 | **Employees & staff attendance** | `employees` ← `teachers`; `employee_attendances`, `employee_leave_requests` | Teacher and tendik master; scanner check-in/out, lateness, early leave, leave requests, monthly recap (spec 16) |
 | **Interface language** | `users.locale`, `lang/{en,id}` | Per-user locale (id default), strings in Laravel lang files shared to React; user-entered data and stored enum values stay untranslated (spec 18) |
+| **In-app QR scanner** | `scanner_operator` role, `POST /scanner/scan` | Browser webcam scanner for Dynamic QR; dedicated operator role, reuses scan pipeline (spec 19) |
+| **Work shifts** | `shifts`, `shift_roster` | Named shift templates, per-employee default and daily roster, cross-midnight, per-shift sweep (spec 20) |
 
 ## Specs
 
@@ -53,6 +55,8 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | Teacher & Tendik Attendance |
 | 17 | [Notification Center](17-notifications-center.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | In-App, WhatsApp & Email Notifications |
 | 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
+| 19 | [In-App QR Scanner](19-in-app-scanner.md) | Draft v1.0 (2026-10-05) — Ready for planning after 15 | Webcam Scanner & Operator Role |
+| 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 
@@ -65,6 +69,8 @@ Single-school information & attendance system. Each numbered spec is a decision 
 `15 (Foundation) → 09 (Subjects & Assignments) → 10 (Grading & Gradebook) → 11 (Digital Report Cards & PDF)`
 
 Spec 15 is numbered after 14 to avoid renumbering, but is built first. Spec 16 (staff attendance) depends only on 15 and can run in parallel with 09–11. Spec 17 (notification center) depends on 15 and should land before 11/12/14 ship, since they dispatch through it.
+
+Spec 19 (in-app scanner) depends on 15 (new role) and can run in parallel with 16. Spec 20 (work shifts) depends on 16 (employee attendance engine).
 
 ### Wave 3: Campus Communication, Timetables & Tuition (Supporting & Operations 💳)
 `12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees, Receivables & General Ledger)`
