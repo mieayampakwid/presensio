@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\ManualJournalController;
+use App\Http\Controllers\Finance\ReportController;
 use Illuminate\Support\Facades\Route;
 
 // Read routes: Admin, Finance, Principal
@@ -16,6 +17,16 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
     Route::get('finance/journals/{journal}/attachment', [ManualJournalController::class, 'attachment'])
         ->missing(fn () => to_route('finance.journals.index'))
         ->name('finance.journals.attachment');
+
+    // Ledger reports (Read-only for Admin, Finance, Principal)
+    Route::get('finance/reports/general-journal', [ReportController::class, 'generalJournal'])
+        ->name('finance.reports.general-journal');
+    Route::get('finance/reports/general-ledger', [ReportController::class, 'generalLedger'])
+        ->name('finance.reports.general-ledger');
+    Route::get('finance/reports/trial-balance', [ReportController::class, 'trialBalance'])
+        ->name('finance.reports.trial-balance');
+    Route::get('finance/reports/cash-book', [ReportController::class, 'cashBook'])
+        ->name('finance.reports.cash-book');
 });
 
 // Write routes: Admin, Finance only
