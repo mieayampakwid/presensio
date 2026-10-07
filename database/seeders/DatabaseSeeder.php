@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AcademicYearSeeder::class,
             UserSeeder::class,
+            ChartOfAccountsSeeder::class,
             EmployeeSeeder::class,
             TeacherSeeder::class,
             SubjectSeeder::class,
@@ -56,6 +57,7 @@ class DatabaseSeeder extends Seeder
             [
                 ['Admin', 'admin', 'password', '—'],
                 ['Principal', 'principal', 'password', 'Dr. H. Mulyadi, M.Pd.'],
+                ['Finance', 'finance1', 'password', 'Bendahara Sekolah'],
                 ['Teacher', 'teacher1', 'password', 'Budi Santoso'],
                 ['Teacher', 'teacher2', 'password', 'Siti Aminah'],
                 ['Staff', 'staff1', 'password', 'Hendra Setiawan (Tata Usaha)'],

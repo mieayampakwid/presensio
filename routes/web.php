@@ -44,3 +44,4 @@ require __DIR__.'/subjects.php';
 require __DIR__.'/teacher.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/staff.php';
+require __DIR__.'/finance.php';

@@ -31,6 +31,11 @@ class UserSeeder extends Seeder
                 'role' => UserRole::Principal,
             ],
             [
+                'username' => 'finance1',
+                'email' => 'finance1@presensio.test',
+                'role' => UserRole::Finance,
+            ],
+            [
                 'username' => 'teacher1',
                 'email' => 'teacher1@presensio.test',
                 'role' => UserRole::Teacher,
