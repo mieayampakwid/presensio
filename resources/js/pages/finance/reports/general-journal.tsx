@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { Download } from 'lucide-react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,7 +113,7 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                     </tr>
                                 ) : (
                                     report.entries.map((entry) => (
-                                        <React.Fragment key={entry.id}>
+                                        <Fragment key={entry.id}>
                                             <tr className="border-t bg-muted/10 font-medium">
                                                 <td className="px-4 py-2 whitespace-nowrap text-xs text-muted-foreground">
                                                     {entry.entry_date}
@@ -149,7 +149,7 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                                     </td>
                                                 </tr>
                                             ))}
-                                        </React.Fragment>
+                                        </Fragment>
                                     ))
                                 )}
                             </tbody>

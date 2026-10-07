@@ -25,7 +25,7 @@ type Props = {
         total_debit: string;
         total_credit: string;
         difference: string;
-        is_balanced: bool;
+        is_balanced: boolean;
         as_of: string | null;
     };
 };

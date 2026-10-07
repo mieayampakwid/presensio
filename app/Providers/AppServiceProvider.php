@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Authorization\RolePermissions;
 use App\Enums\Ability;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
+use App\Services\Finance\PeriodService;
+use App\Services\Finance\Preconditions\TrialBalanceClosePrecondition;
 use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -27,6 +30,13 @@ class AppServiceProvider extends ServiceProvider
     {
         // Memoizes the settings row per process (spec 03).
         $this->app->singleton(SchoolSettings::class);
+
+        $this->app->bind(PeriodService::class, function ($app) {
+            return new PeriodService(
+                $app->make(AuditLogger::class),
+                $app->make(TrialBalanceClosePrecondition::class),
+            );
+        });
     }
 
     /**

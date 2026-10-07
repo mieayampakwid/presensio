@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\ManualJournalController;
+use App\Http\Controllers\Finance\PeriodController;
 use App\Http\Controllers\Finance\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,9 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
         ->name('finance.reports.trial-balance');
     Route::get('finance/reports/cash-book', [ReportController::class, 'cashBook'])
         ->name('finance.reports.cash-book');
+
+    Route::get('finance/periods', [PeriodController::class, 'index'])
+        ->name('finance.periods.index');
 });
 
 // Write routes: Admin, Finance only
@@ -56,4 +60,9 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::post('finance/journals/{journal}/reverse', [ManualJournalController::class, 'reverse'])
         ->missing(fn () => to_route('finance.journals.index'))
         ->name('finance.journals.reverse');
+
+    Route::post('finance/periods/{period}/close', [PeriodController::class, 'close'])
+        ->name('finance.periods.close');
+    Route::post('finance/periods/{period}/reopen', [PeriodController::class, 'reopen'])
+        ->name('finance.periods.reopen');
 });

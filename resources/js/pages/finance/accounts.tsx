@@ -28,7 +28,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type AccountRow = {
     id: number;
@@ -450,10 +450,10 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
 
                         <div className="grid grid-cols-2 gap-4 pt-2">
                             <div className="flex items-center space-x-2">
-                                <Switch
+                                <Checkbox
                                     id="create-contra"
                                     checked={form.data.is_contra}
-                                    onCheckedChange={(checked) => form.setData('is_contra', checked)}
+                                    onCheckedChange={(checked) => form.setData('is_contra', checked === true)}
                                 />
                                 <Label htmlFor="create-contra" className="cursor-pointer">
                                     Akun Contra
@@ -462,10 +462,10 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
 
                             {form.data.type === 'asset' && (
                                 <div className="flex items-center space-x-2">
-                                    <Switch
+                                    <Checkbox
                                         id="create-cash"
                                         checked={form.data.is_cash}
-                                        onCheckedChange={(checked) => form.setData('is_cash', checked)}
+                                        onCheckedChange={(checked) => form.setData('is_cash', checked === true)}
                                     />
                                     <Label htmlFor="create-cash" className="cursor-pointer">
                                         Kas / Bank
@@ -475,10 +475,10 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
                         </div>
 
                         <div className="flex items-center space-x-2 pt-2">
-                            <Switch
+                            <Checkbox
                                 id="create-postable"
                                 checked={form.data.is_postable}
-                                onCheckedChange={(checked) => form.setData('is_postable', checked)}
+                                onCheckedChange={(checked) => form.setData('is_postable', checked === true)}
                             />
                             <Label htmlFor="create-postable" className="cursor-pointer">
                                 Postable (Dapat menerima jurnal)
@@ -579,10 +579,10 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
                         </div>
 
                         <div className="flex items-center space-x-2 pt-2">
-                            <Switch
+                            <Checkbox
                                 id="edit-active"
                                 checked={form.data.is_active}
-                                onCheckedChange={(checked) => form.setData('is_active', checked)}
+                                onCheckedChange={(checked) => form.setData('is_active', checked === true)}
                             />
                             <Label htmlFor="edit-active" className="cursor-pointer">
                                 Akun Aktif

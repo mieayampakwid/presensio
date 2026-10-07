@@ -26,7 +26,7 @@ class AuditLogger
             'user_id' => Auth::id(),
             'action' => $action,
             'auditable_type' => $auditable->getMorphClass(),
-            'auditable_id' => $auditable->getKey(),
+            'auditable_id' => is_numeric($auditable->getKey()) ? (int) $auditable->getKey() : (int) preg_replace('/\D/', '', (string) $auditable->getKey()),
             'old_values' => $old,
             'new_values' => $new,
             'reason' => $reason,

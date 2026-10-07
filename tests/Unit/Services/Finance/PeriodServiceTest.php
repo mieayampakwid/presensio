@@ -14,7 +14,7 @@ class PeriodServiceTest extends TestCase
 
     public function test_ensure_creates_open_period_lazily(): void
     {
-        $service = new PeriodService;
+        $service = app(PeriodService::class);
 
         $period = $service->ensure('2026-09');
 
@@ -28,7 +28,7 @@ class PeriodServiceTest extends TestCase
 
     public function test_is_open_returns_true_for_open_period_and_false_for_closed(): void
     {
-        $service = new PeriodService;
+        $service = app(PeriodService::class);
 
         $this->assertTrue($service->isOpen('2026-09-15'));
 
@@ -40,7 +40,7 @@ class PeriodServiceTest extends TestCase
 
     public function test_next_open_period_start_returns_same_date_if_already_open(): void
     {
-        $service = new PeriodService;
+        $service = app(PeriodService::class);
 
         $date = Carbon::parse('2026-09-15');
         $resolved = $service->nextOpenPeriodStart($date);
@@ -50,7 +50,7 @@ class PeriodServiceTest extends TestCase
 
     public function test_next_open_period_start_advances_when_periods_are_closed(): void
     {
-        $service = new PeriodService;
+        $service = app(PeriodService::class);
 
         // Close 2026-09 and 2026-10
         AccountingPeriod::create(['period' => '2026-09', 'status' => 'closed']);
