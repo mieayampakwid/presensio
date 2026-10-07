@@ -5,6 +5,9 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
+use App\Services\Finance\Exceptions\ClosedPeriodException;
+use App\Services\Finance\Exceptions\InvalidLineException;
+use App\Services\Finance\Exceptions\UnbalancedEntryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,4 +43,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (UnbalancedEntryException $e) {
+            abort(422, $e->getMessage());
+        });
+
+        $exceptions->render(function (ClosedPeriodException $e) {
+            abort(422, $e->getMessage());
+        });
+
+        $exceptions->render(function (InvalidLineException $e) {
+            abort(422, $e->getMessage());
+        });
     })->create();
