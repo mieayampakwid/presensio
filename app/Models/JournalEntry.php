@@ -59,7 +59,7 @@ class JournalEntry extends Model
             $originalStatus = $entry->getOriginal('status');
             $originalStatusValue = $originalStatus instanceof JournalStatus
                 ? $originalStatus->value
-                : $originalStatus;
+                : (string) $originalStatus;
 
             if ($originalStatusValue === JournalStatus::Posted->value) {
                 throw new RuntimeException('Posted journal entries cannot be modified.');
@@ -67,11 +67,7 @@ class JournalEntry extends Model
         });
 
         static::deleting(function (JournalEntry $entry) {
-            $currentStatus = $entry->status instanceof JournalStatus
-                ? $entry->status->value
-                : $entry->status;
-
-            if ($currentStatus === JournalStatus::Posted->value) {
+            if ($entry->status === JournalStatus::Posted) {
                 throw new RuntimeException('Posted journal entries cannot be deleted.');
             }
         });

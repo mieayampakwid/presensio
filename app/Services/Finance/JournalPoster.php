@@ -186,7 +186,7 @@ class JournalPoster
             sourceId: $original->source_id,
             reversesEntryId: $original->id,
             attachmentPath: null,
-            createdByUserId: auth()->id(),
+            createdByUserId: auth()->id() !== null ? (int) auth()->id() : null,
         );
 
         return $this->post($reversalEntry);

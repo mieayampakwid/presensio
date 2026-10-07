@@ -95,7 +95,7 @@ class GeneralLedgerReport
                     'debit' => $line->debit,
                     'credit' => $line->credit,
                     'running_balance' => $runningBalance,
-                    'student_name' => $line->student?->name,
+                    'student_name' => $line->student?->full_name,
                     'memo' => $line->memo,
                 ];
             }

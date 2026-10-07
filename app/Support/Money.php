@@ -14,6 +14,8 @@ final class Money
 
     /**
      * Normalize amount into a standard 2-decimal-place string.
+     *
+     * @return numeric-string
      */
     public static function toDecimal(string|int|float|null $amount): string
     {
@@ -22,14 +24,16 @@ final class Money
         }
 
         if (is_int($amount)) {
+            /** @var numeric-string */
             return sprintf('%d.00', $amount);
         }
 
         if (is_float($amount)) {
+            /** @var numeric-string */
             return number_format($amount, self::SCALE, '.', '');
         }
 
-        $trimmed = trim($amount);
+        $trimmed = trim((string) $amount);
         if (! is_numeric($trimmed)) {
             throw new InvalidArgumentException("Invalid monetary amount: {$amount}");
         }
@@ -122,9 +126,7 @@ final class Money
      */
     public static function mul(string|int|float|null $amount, string|int|float $factor): string
     {
-        $factorStr = is_string($factor) ? $factor : (string) $factor;
-
-        return bcmul(self::toDecimal($amount), $factorStr, self::SCALE);
+        return bcmul(self::toDecimal($amount), self::toDecimal($factor), self::SCALE);
     }
 
     /**

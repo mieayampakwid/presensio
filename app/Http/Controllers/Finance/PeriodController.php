@@ -52,7 +52,7 @@ class PeriodController extends Controller
     public function close(Request $request, string $period, PeriodService $periodService): RedirectResponse
     {
         try {
-            $periodService->close($period, auth()->id());
+            $periodService->close($period, (int) auth()->id());
         } catch (RuntimeException $e) {
             abort(422, $e->getMessage());
         }
@@ -75,7 +75,7 @@ class PeriodController extends Controller
         ]);
 
         try {
-            $periodService->reopen($period, $validated['reason'], auth()->id());
+            $periodService->reopen($period, $validated['reason'], (int) auth()->id());
         } catch (RuntimeException $e) {
             abort(422, $e->getMessage());
         }

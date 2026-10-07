@@ -14,7 +14,7 @@ class CashBookReport
      *
      * @return array{
      *     account: array<string, mixed>|null,
-     *     cash_accounts: list<array<string, mixed>>,
+     *     cash_accounts: array<int, array<string, mixed>>,
      *     opening_balance: string,
      *     period_debits: string,
      *     period_credits: string,
@@ -110,7 +110,7 @@ class CashBookReport
                 'debit' => $line->debit,
                 'credit' => $line->credit,
                 'running_balance' => $runningBalance,
-                'student_name' => $line->student?->name,
+                'student_name' => $line->student?->full_name,
                 'memo' => $line->memo,
             ];
         }
@@ -121,12 +121,12 @@ class CashBookReport
                 'code' => $account->code,
                 'name' => $account->name,
             ],
-            'cash_accounts' => $cashAccounts->map(fn (Account $acc) => [
+            'cash_accounts' => array_values($cashAccounts->map(fn (Account $acc) => [
                 'id' => $acc->id,
                 'code' => $acc->code,
                 'name' => $acc->name,
                 'label' => "{$acc->code} - {$acc->name}",
-            ])->values()->all(),
+            ])->all()),
             'opening_balance' => $openingBalance,
             'period_debits' => $periodDebits,
             'period_credits' => $periodCredits,

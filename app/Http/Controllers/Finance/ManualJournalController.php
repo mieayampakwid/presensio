@@ -100,14 +100,14 @@ class ManualJournalController extends Controller
             ]);
 
         $students = Student::query()
-            ->orderBy('name')
+            ->orderBy('full_name')
             ->limit(100)
-            ->get(['id', 'name', 'nis'])
+            ->get(['id', 'full_name', 'student_number'])
             ->map(fn (Student $s) => [
                 'id' => $s->id,
-                'name' => $s->name,
-                'nis' => $s->nis,
-                'label' => "{$s->nis} - {$s->name}",
+                'name' => $s->full_name,
+                'nis' => $s->student_number,
+                'label' => "{$s->student_number} - {$s->full_name}",
             ]);
 
         return Inertia::render('finance/journals/form', [
@@ -123,7 +123,9 @@ class ManualJournalController extends Controller
     public function store(SaveJournalRequest $request, JournalPoster $poster): RedirectResponse
     {
         $action = $request->input('action', 'post');
-        $attachmentPath = $request->file('attachment')?->store('journals', 'local');
+        $file = $request->file('attachment');
+        $uploaded = $file?->store('journals', 'local');
+        $attachmentPath = is_string($uploaded) ? $uploaded : null;
 
         if ($action === 'draft') {
             $journal = DB::transaction(function () use ($request, $attachmentPath) {
@@ -134,7 +136,7 @@ class ManualJournalController extends Controller
                     'status' => JournalStatus::Draft,
                     'source_type' => JournalSource::Manual,
                     'attachment_path' => $attachmentPath,
-                    'created_by_user_id' => auth()->id(),
+                    'created_by_user_id' => auth()->id() !== null ? (int) auth()->id() : null,
                     'posted_at' => null,
                 ]);
 
@@ -161,7 +163,7 @@ class ManualJournalController extends Controller
         }
 
         // Post action
-        $lines = array_map(
+        $lines = array_values(array_map(
             fn (array $l) => new PostableLine(
                 accountId: (int) $l['account_id'],
                 debit: $l['debit'],
@@ -170,7 +172,7 @@ class ManualJournalController extends Controller
                 memo: $l['memo'] ?? null,
             ),
             $request->input('lines')
-        );
+        ));
 
         $entry = new PostableEntry(
             entryDate: $request->input('entry_date'),
@@ -178,7 +180,7 @@ class ManualJournalController extends Controller
             sourceType: JournalSource::Manual,
             lines: $lines,
             attachmentPath: $attachmentPath,
-            createdByUserId: auth()->id(),
+            createdByUserId: auth()->id() !== null ? (int) auth()->id() : null,
         );
 
         $journal = DB::transaction(fn () => $poster->post($entry));
@@ -241,7 +243,7 @@ class ManualJournalController extends Controller
                     'debit' => $line->debit,
                     'credit' => $line->credit,
                     'student_id' => $line->student_id,
-                    'student_name' => $line->student?->name,
+                    'student_name' => $line->student?->full_name,
                     'memo' => $line->memo,
                 ]),
             ],
@@ -274,14 +276,14 @@ class ManualJournalController extends Controller
             ]);
 
         $students = Student::query()
-            ->orderBy('name')
+            ->orderBy('full_name')
             ->limit(100)
-            ->get(['id', 'name', 'nis'])
+            ->get(['id', 'full_name', 'student_number'])
             ->map(fn (Student $s) => [
                 'id' => $s->id,
-                'name' => $s->name,
-                'nis' => $s->nis,
-                'label' => "{$s->nis} - {$s->name}",
+                'name' => $s->full_name,
+                'nis' => $s->student_number,
+                'label' => "{$s->student_number} - {$s->full_name}",
             ]);
 
         return Inertia::render('finance/journals/form', [
@@ -318,7 +320,8 @@ class ManualJournalController extends Controller
             if ($journal->attachment_path) {
                 Storage::disk('local')->delete($journal->attachment_path);
             }
-            $attachmentPath = $request->file('attachment')->store('journals', 'local');
+            $uploaded = $request->file('attachment')?->store('journals', 'local');
+            $attachmentPath = is_string($uploaded) ? $uploaded : null;
         } else {
             $attachmentPath = $journal->attachment_path;
         }
@@ -354,7 +357,7 @@ class ManualJournalController extends Controller
         }
 
         // Post action
-        $lines = array_map(
+        $lines = array_values(array_map(
             fn (array $l) => new PostableLine(
                 accountId: (int) $l['account_id'],
                 debit: $l['debit'],
@@ -363,7 +366,7 @@ class ManualJournalController extends Controller
                 memo: $l['memo'] ?? null,
             ),
             $request->input('lines')
-        );
+        ));
 
         $postableEntry = new PostableEntry(
             entryDate: $request->input('entry_date'),
@@ -371,7 +374,7 @@ class ManualJournalController extends Controller
             sourceType: JournalSource::Manual,
             lines: $lines,
             attachmentPath: $attachmentPath,
-            createdByUserId: auth()->id(),
+            createdByUserId: auth()->id() !== null ? (int) auth()->id() : null,
         );
 
         $posted = DB::transaction(function () use ($journal, $poster, $postableEntry) {
@@ -424,7 +427,7 @@ class ManualJournalController extends Controller
 
         $journal->loadMissing('lines');
 
-        $lines = $journal->lines->map(
+        $lines = array_values($journal->lines->map(
             fn (JournalLine $l) => new PostableLine(
                 accountId: $l->account_id,
                 debit: $l->debit,
@@ -433,7 +436,7 @@ class ManualJournalController extends Controller
                 billId: $l->bill_id,
                 memo: $l->memo,
             )
-        )->all();
+        )->all());
 
         $postableEntry = new PostableEntry(
             entryDate: $journal->entry_date,
@@ -441,7 +444,7 @@ class ManualJournalController extends Controller
             sourceType: JournalSource::Manual,
             lines: $lines,
             attachmentPath: $journal->attachment_path,
-            createdByUserId: auth()->id(),
+            createdByUserId: auth()->id() !== null ? (int) auth()->id() : null,
         );
 
         $posted = DB::transaction(function () use ($journal, $poster, $postableEntry) {
@@ -475,7 +478,7 @@ class ManualJournalController extends Controller
 
         $targetDate = ! empty($validated['date'])
             ? Carbon::parse($validated['date'])
-            : $settings->todayDate();
+            : Carbon::parse($settings->todayDate());
 
         $reversal = DB::transaction(fn () => $poster->reverse(
             original: $journal,

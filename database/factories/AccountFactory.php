@@ -25,7 +25,7 @@ class AccountFactory extends Factory
 
         return [
             'code' => "{$prefix}-{$number}",
-            'name' => ucfirst(fake()->words(2, true)),
+            'name' => ucfirst(fake()->word().' '.fake()->word()),
             'type' => AccountType::Asset,
             'is_contra' => false,
             'restriction' => null,

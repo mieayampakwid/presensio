@@ -31,6 +31,8 @@ class ManualJournalTest extends TestCase
     {
         parent::setUp();
 
+        Storage::fake('local');
+
         $this->cashAccount = Account::factory()->create([
             'code' => '1-1100',
             'name' => 'Kas Tunai',

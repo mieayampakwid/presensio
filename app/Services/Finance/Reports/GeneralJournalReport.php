@@ -47,7 +47,7 @@ class GeneralJournalReport
                     'account_name' => $line->account->name,
                     'debit' => $line->debit,
                     'credit' => $line->credit,
-                    'student_name' => $line->student?->name,
+                    'student_name' => $line->student?->full_name,
                     'memo' => $line->memo,
                 ];
             }

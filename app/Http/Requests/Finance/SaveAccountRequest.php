@@ -75,8 +75,9 @@ class SaveAccountRequest extends FormRequest
             }
 
             if ($this->filled('parent_id')) {
-                $parent = Account::find($this->input('parent_id'));
-                if ($parent && $parent->hasPostedLines()) {
+                $parentId = (int) $this->input('parent_id');
+                $parent = Account::query()->find($parentId);
+                if ($parent !== null && $parent->hasPostedLines()) {
                     $validator->errors()->add('parent_id', 'Akun yang telah memiliki transaksi posted tidak dapat dijadikan akun induk.');
                 }
             }
