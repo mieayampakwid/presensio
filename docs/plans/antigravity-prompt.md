@@ -47,6 +47,7 @@ ENVIRONMENT RULES:
 - Business dates use `SchoolSettings` (school timezone); the app runs in UTC. Never keep request state in singletons/statics (Octane).
 - URLs are FLAT (e.g. `courses`, `my-fees`, `classes/{school_class}/grades`), as mapped in the roadmap. Do not introduce `/admin`, `/teacher`, `/parent`, `/student` URL prefixes.
 - Money is handled with bcmath strings, never floats.
+- Sidebar Navigation: Whenever adding new user-facing pages or routes, ALWAYS register their navigation items in `resources/js/components/app-sidebar.tsx` for all applicable roles so users can navigate to them from the sidebar.
 
 HARD LIMITS:
 - Do not add, remove or upgrade any Composer/npm dependency. (`barryvdh/laravel-dompdf` is already installed.) If you believe another dependency is needed, STOP and ask.

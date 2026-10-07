@@ -13,13 +13,17 @@ import {
     FolderGit2,
     GraduationCap,
     IdCard,
+    Landmark,
     LayoutGrid,
     Monitor,
     QrCode,
+    Receipt,
+    Scale,
     School,
     Table2,
     UserRound,
     Users,
+    Wallet,
 } from 'lucide-react';
 import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
@@ -27,6 +31,10 @@ import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonS
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
+import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
+import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
+import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
+import ReportController from '@/actions/App/Http/Controllers/Finance/ReportController';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
@@ -229,34 +237,75 @@ export function AppSidebar() {
             : []),
     ];
 
-    const reportNavItems: NavItem[] = [
-        'admin',
-        'teacher',
-        'principal',
-        'counselor',
-    ].includes(activeRole)
+    const financeNavItems: NavItem[] = ['admin', 'finance', 'principal'].includes(activeRole)
         ? [
               {
-                  title: 'Student Report',
-                  href: StudentReportController.index().url,
-                  icon: FileSpreadsheet,
+                  title: 'Chart of Accounts',
+                  href: AccountController.index().url,
+                  icon: Landmark,
               },
               {
-                  title: 'Class Report',
-                  href: ClassReportController.index().url,
-                  icon: Table2,
+                  title: 'Journals',
+                  href: ManualJournalController.index().url,
+                  icon: Receipt,
               },
-              ...(['admin', 'teacher', 'principal'].includes(activeRole)
-                  ? [
-                        {
-                            title: 'Presence Board',
-                            href: PresenceBoardController.index().url,
-                            icon: Monitor,
-                        },
-                    ]
-                  : []),
+              {
+                  title: 'Accounting Periods',
+                  href: PeriodController.index().url,
+                  icon: CalendarClock,
+              },
           ]
         : [];
+
+    const reportNavItems: NavItem[] = [
+        ...(['admin', 'teacher', 'principal', 'counselor'].includes(activeRole)
+            ? [
+                  {
+                      title: 'Student Report',
+                      href: StudentReportController.index().url,
+                      icon: FileSpreadsheet,
+                  },
+                  {
+                      title: 'Class Report',
+                      href: ClassReportController.index().url,
+                      icon: Table2,
+                  },
+                  ...(['admin', 'teacher', 'principal'].includes(activeRole)
+                      ? [
+                            {
+                                title: 'Presence Board',
+                                href: PresenceBoardController.index().url,
+                                icon: Monitor,
+                            },
+                        ]
+                      : []),
+              ]
+            : []),
+        ...(['admin', 'finance', 'principal'].includes(activeRole)
+            ? [
+                  {
+                      title: 'General Journal',
+                      href: ReportController.generalJournal().url,
+                      icon: FileText,
+                  },
+                  {
+                      title: 'General Ledger',
+                      href: ReportController.generalLedger().url,
+                      icon: BookOpen,
+                  },
+                  {
+                      title: 'Trial Balance',
+                      href: ReportController.trialBalance().url,
+                      icon: Scale,
+                  },
+                  {
+                      title: 'Cash Book',
+                      href: ReportController.cashBook().url,
+                      icon: Wallet,
+                  },
+              ]
+            : []),
+    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -317,7 +366,8 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                <NavMain label="Reports" items={reportNavItems} />
+                {financeNavItems.length > 0 && <NavMain label="Finance" items={financeNavItems} />}
+                {reportNavItems.length > 0 && <NavMain label="Reports" items={reportNavItems} />}
             </SidebarContent>
 
             <SidebarFooter>
