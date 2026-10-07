@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,8 +40,15 @@ use Illuminate\Support\Carbon;
  * @property string $staff_start_time
  * @property string $staff_end_time
  * @property string $staff_absent_sweep_time
+ * @property int $fiscal_year_start_month
+ * @property int|null $prepaid_revenue_account_id
+ * @property int|null $bad_debt_expense_account_id
+ * @property int|null $net_assets_closing_account_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Account|null $prepaidRevenueAccount
+ * @property-read Account|null $badDebtExpenseAccount
+ * @property-read Account|null $netAssetsClosingAccount
  */
 #[Fillable([
     'school_timezone',
@@ -71,10 +79,38 @@ use Illuminate\Support\Carbon;
     'staff_start_time',
     'staff_end_time',
     'staff_absent_sweep_time',
+    'fiscal_year_start_month',
+    'prepaid_revenue_account_id',
+    'bad_debt_expense_account_id',
+    'net_assets_closing_account_id',
 ])]
 class SchoolSetting extends Model
 {
     protected $table = 'settings';
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function prepaidRevenueAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'prepaid_revenue_account_id');
+    }
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function badDebtExpenseAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'bad_debt_expense_account_id');
+    }
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function netAssetsClosingAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'net_assets_closing_account_id');
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -92,6 +128,10 @@ class SchoolSetting extends Model
             'notification_channels' => 'array',
             'whatsapp_daily_quota' => 'integer',
             'bill_reminder_days_before' => 'integer',
+            'fiscal_year_start_month' => 'integer',
+            'prepaid_revenue_account_id' => 'integer',
+            'bad_debt_expense_account_id' => 'integer',
+            'net_assets_closing_account_id' => 'integer',
         ];
     }
 }
