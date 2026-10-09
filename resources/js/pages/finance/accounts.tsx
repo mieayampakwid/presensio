@@ -5,6 +5,7 @@ import {
     FolderTree,
     Pencil,
     Plus,
+    RotateCcw,
     Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -29,6 +30,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type AccountRow = {
     id: number;
@@ -67,12 +73,112 @@ type Props = {
     restrictions: RestrictionOption[];
 };
 
+const TYPE_PREFIX_MAP: Record<string, string> = {
+    asset: '1',
+    liability: '2',
+    net_assets: '3',
+    revenue: '4',
+    expense: '5',
+};
+
+function generateSuggestedAccountCode(
+    accounts: AccountRow[],
+    type: string,
+    parentId: string | number
+): string {
+    const typePrefix = TYPE_PREFIX_MAP[type] ?? '1';
+
+    const existingCodes = new Set(accounts.map((a) => a.code.trim()));
+
+    if (parentId && parentId !== 'none') {
+        const parent = accounts.find((a) => a.id === Number(parentId));
+        if (parent) {
+            const siblings = accounts.filter((a) => a.parent_id === parent.id);
+            const parentParts = parent.code.split('-');
+
+            if (parentParts.length === 2 && !isNaN(Number(parentParts[1]))) {
+                const pPrefix = parentParts[0];
+                const pNum = Number(parentParts[1]);
+
+                if (siblings.length > 0) {
+                    const siblingNums = siblings
+                        .map((s) => s.code.split('-'))
+                        .filter((parts) => parts.length === 2 && parts[0] === pPrefix && !isNaN(Number(parts[1])))
+                        .map((parts) => Number(parts[1]));
+
+                    if (siblingNums.length > 0) {
+                        const maxSibling = Math.max(...siblingNums);
+                        const step = (maxSibling - pNum) % 10 === 0 && maxSibling % 10 === 0 ? 10 : 1;
+                        let nextNum = maxSibling + step;
+                        let candidate = `${pPrefix}-${nextNum}`;
+                        while (existingCodes.has(candidate)) {
+                            nextNum += step;
+                            candidate = `${pPrefix}-${nextNum}`;
+                        }
+                        return candidate;
+                    }
+                }
+
+                let step = 10;
+                if (pNum % 100 === 0) {
+                    step = 10;
+                } else if (pNum % 10 === 0) {
+                    step = 1;
+                } else {
+                    step = 1;
+                }
+
+                let nextNum = pNum + step;
+                let candidate = `${pPrefix}-${nextNum}`;
+                while (existingCodes.has(candidate)) {
+                    nextNum += step;
+                    candidate = `${pPrefix}-${nextNum}`;
+                }
+                return candidate;
+            } else {
+                let idx = siblings.length + 1;
+                let candidate = `${parent.code}.${idx}`;
+                while (existingCodes.has(candidate)) {
+                    idx++;
+                    candidate = `${parent.code}.${idx}`;
+                }
+                return candidate;
+            }
+        }
+    }
+
+    const rootAccountsOfSameType = accounts.filter((a) => a.type === type && !a.parent_id);
+    const rootNums = rootAccountsOfSameType
+        .map((a) => a.code.split('-'))
+        .filter((parts) => parts.length === 2 && parts[0] === typePrefix && !isNaN(Number(parts[1])))
+        .map((parts) => Number(parts[1]));
+
+    if (rootNums.length > 0) {
+        const maxRoot = Math.max(...rootNums);
+        const step = maxRoot % 100 === 0 ? 100 : 10;
+        let nextNum = maxRoot + step;
+        let candidate = `${typePrefix}-${nextNum}`;
+        while (existingCodes.has(candidate)) {
+            nextNum += step;
+            candidate = `${typePrefix}-${nextNum}`;
+        }
+        return candidate;
+    }
+
+    let baseNum = 1000;
+    let candidate = `${typePrefix}-${baseNum}`;
+    while (existingCodes.has(candidate)) {
+        baseNum += 100;
+        candidate = `${typePrefix}-${baseNum}`;
+    }
+    return candidate;
+}
 export default function AccountsIndex({ accounts, types, restrictions }: Props) {
     const [selectedType, setSelectedType] = useState<string>('all');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<AccountRow | null>(null);
     const [deletingAccount, setDeletingAccount] = useState<AccountRow | null>(null);
-
+    const [isCodeTouched, setIsCodeTouched] = useState(false);
     const form = useForm({
         code: '',
         name: '',
@@ -88,8 +194,10 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
     const openCreateModal = () => {
         form.reset();
         form.clearErrors();
+        setIsCodeTouched(false);
+        const initialCode = generateSuggestedAccountCode(accounts, 'asset', '');
         form.setData({
-            code: '',
+            code: initialCode,
             name: '',
             type: 'asset',
             is_contra: false,
@@ -100,6 +208,48 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
             is_active: true,
         });
         setIsCreateOpen(true);
+    };
+
+    const handleClassificationChange = (newType: string) => {
+        let newParentId = form.data.parent_id;
+        if (newParentId && newParentId !== 'none') {
+            const parentAcc = accounts.find((a) => a.id === Number(newParentId));
+            if (!parentAcc || parentAcc.type !== newType) {
+                newParentId = '';
+            }
+        }
+
+        const newCode = isCodeTouched
+            ? form.data.code
+            : generateSuggestedAccountCode(accounts, newType, newParentId);
+
+        form.setData({
+            ...form.data,
+            type: newType,
+            parent_id: newParentId,
+            restriction: newType === 'net_assets' ? form.data.restriction : '',
+            is_cash: newType === 'asset' ? form.data.is_cash : false,
+            code: newCode,
+        });
+    };
+
+    const handleParentChange = (val: string) => {
+        const newParentId = val === 'none' ? '' : Number(val);
+        const newCode = isCodeTouched
+            ? form.data.code
+            : generateSuggestedAccountCode(accounts, form.data.type, newParentId);
+
+        form.setData({
+            ...form.data,
+            parent_id: newParentId,
+            code: newCode,
+        });
+    };
+
+    const handleResetCode = () => {
+        setIsCodeTouched(false);
+        const suggested = generateSuggestedAccountCode(accounts, form.data.type, form.data.parent_id);
+        form.setData('code', suggested);
     };
 
     const openEditModal = (account: AccountRow) => {
@@ -117,6 +267,29 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
             is_active: account.is_active,
         });
         setEditingAccount(account);
+    };
+
+    const handleEditClassificationChange = (newType: string) => {
+        let newParentId = form.data.parent_id;
+        if (newParentId && newParentId !== 'none') {
+            const parentAcc = accounts.find((a) => a.id === Number(newParentId));
+            if (!parentAcc || parentAcc.type !== newType) {
+                newParentId = '';
+            }
+        }
+
+        form.setData({
+            ...form.data,
+            type: newType,
+            parent_id: newParentId,
+            restriction: newType === 'net_assets' ? form.data.restriction : '',
+            is_cash: newType === 'asset' ? form.data.is_cash : false,
+        });
+    };
+
+    const handleEditParentChange = (val: string) => {
+        const newParentId = val === 'none' ? '' : Number(val);
+        form.setData('parent_id', newParentId);
     };
 
     const handleCreateSubmit = (e: React.FormEvent) => {
@@ -154,9 +327,18 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
         ? accounts
         : accounts.filter((acc) => acc.type === selectedType);
 
-    const parentCandidates = accounts.filter(
-        (acc) => !acc.has_posted_lines && (!editingAccount || acc.id !== editingAccount.id)
+    const createParentCandidates = accounts.filter(
+        (acc) => acc.type === form.data.type && !acc.has_posted_lines
     );
+
+    const editParentCandidates = accounts.filter(
+        (acc) =>
+            acc.type === form.data.type &&
+            !acc.has_posted_lines &&
+            (!editingAccount || (acc.id !== editingAccount.id && acc.parent_id !== editingAccount.id))
+    );
+
+    const isEditingLocked = Boolean(editingAccount?.has_posted_lines);
 
     return (
         <>
@@ -333,69 +515,38 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
 
             {/* Create Dialog */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
+                <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background sticky top-0 z-10 pr-12">
                         <DialogTitle>Tambah Akun Baru</DialogTitle>
                         <DialogDescription>
-                            Isi parameter akun untuk ditambahkan ke bagan akun.
+                            Isi parameter akun untuk ditambahkan ke bagan akun (Chart of Accounts).
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleCreateSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="create-code">Kode Akun</Label>
-                                <Input
-                                    id="create-code"
-                                    placeholder="Contoh: 1-1400"
-                                    value={form.data.code}
-                                    onChange={(e) => form.setData('code', e.target.value)}
-                                    required
-                                />
-                                {form.errors.code && (
-                                    <p className="text-xs text-destructive">{form.errors.code}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="create-type">Klasifikasi</Label>
-                                <Select
-                                    value={form.data.type}
-                                    onValueChange={(val) => {
-                                        form.setData('type', val);
-                                        if (val !== 'net_assets') {
-                                            form.setData('restriction', '');
-                                        }
-                                    }}
-                                >
-                                    <SelectTrigger id="create-type">
-                                        <SelectValue placeholder="Pilih tipe" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {types.map((t) => (
-                                            <SelectItem key={t.value} value={t.value}>
-                                                {t.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {form.errors.type && (
-                                    <p className="text-xs text-destructive">{form.errors.type}</p>
-                                )}
-                            </div>
-                        </div>
-
+                    <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        {/* 1. Klasifikasi */}
                         <div className="space-y-2">
-                            <Label htmlFor="create-name">Nama Akun</Label>
-                            <Input
-                                id="create-name"
-                                placeholder="Nama akun..."
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                                required
-                            />
-                            {form.errors.name && (
-                                <p className="text-xs text-destructive">{form.errors.name}</p>
+                            <Label htmlFor="create-type">
+                                Klasifikasi <span className="text-destructive">*</span>
+                            </Label>
+                            <Select
+                                value={form.data.type}
+                                onValueChange={handleClassificationChange}
+                            >
+                                <SelectTrigger id="create-type">
+                                    <SelectValue placeholder="Pilih klasifikasi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {types.map((t) => (
+                                        <SelectItem key={t.value} value={t.value}>
+                                            {t.label} ({t.normal_balance === 'debit' ? 'Normal: Debit' : 'Normal: Kredit'})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.errors.type && (
+                                <p className="text-xs text-destructive">{form.errors.type}</p>
                             )}
                         </div>
 
@@ -423,69 +574,240 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
                             </div>
                         )}
 
+                        {/* 2. Akun Induk (Filtered dari Klasifikasi) */}
                         <div className="space-y-2">
-                            <Label htmlFor="create-parent">Akun Induk (Opsional)</Label>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="create-parent">Akun Induk</Label>
+                                <span className="text-[11px] text-muted-foreground">Opsional</span>
+                            </div>
                             <Select
                                 value={form.data.parent_id ? String(form.data.parent_id) : 'none'}
-                                onValueChange={(val) =>
-                                    form.setData('parent_id', val === 'none' ? '' : Number(val))
-                                }
+                                onValueChange={handleParentChange}
                             >
                                 <SelectTrigger id="create-parent">
                                     <SelectValue placeholder="Tanpa induk (tingkat utama)" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="none">Tanpa induk</SelectItem>
-                                    {parentCandidates.map((parent) => (
+                                    <SelectItem value="none">Tanpa induk (Tingkat Utama)</SelectItem>
+                                    {createParentCandidates.map((parent) => (
                                         <SelectItem key={parent.id} value={String(parent.id)}>
                                             {parent.code} - {parent.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <p className="text-[11px] text-muted-foreground">
+                                {createParentCandidates.length === 0
+                                    ? 'Belum ada akun induk yang tersedia untuk klasifikasi ini.'
+                                    : 'Hanya menampilkan akun dengan klasifikasi yang sama.'}
+                            </p>
                             {form.errors.parent_id && (
                                 <p className="text-xs text-destructive">{form.errors.parent_id}</p>
                             )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="create-contra"
-                                    checked={form.data.is_contra}
-                                    onCheckedChange={(checked) => form.setData('is_contra', checked === true)}
-                                />
-                                <Label htmlFor="create-contra" className="cursor-pointer">
-                                    Akun Contra
+                        {/* 3. Kode Akun (Otomatis & Prefilled, Editable) */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="create-code">
+                                    Kode Akun <span className="text-destructive">*</span>
                                 </Label>
+                                {isCodeTouched && (
+                                    <button
+                                        type="button"
+                                        onClick={handleResetCode}
+                                        className="text-[11px] text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                        <RotateCcw className="h-3 w-3" />
+                                        Reset saran kode
+                                    </button>
+                                )}
                             </div>
-
-                            {form.data.type === 'asset' && (
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="create-cash"
-                                        checked={form.data.is_cash}
-                                        onCheckedChange={(checked) => form.setData('is_cash', checked === true)}
-                                    />
-                                    <Label htmlFor="create-cash" className="cursor-pointer">
-                                        Kas / Bank
-                                    </Label>
-                                </div>
+                            <Input
+                                id="create-code"
+                                placeholder="Contoh: 1-1400"
+                                value={form.data.code}
+                                onChange={(e) => {
+                                    setIsCodeTouched(true);
+                                    form.setData('code', e.target.value);
+                                }}
+                                required
+                            />
+                            <p className="text-[11px] text-muted-foreground">
+                                {isCodeTouched
+                                    ? 'Kode telah diedit manual.'
+                                    : 'Disarankan otomatis berdasarkan klasifikasi & induk (tetap dapat diedit).'}
+                            </p>
+                            {form.errors.code && (
+                                <p className="text-xs text-destructive">{form.errors.code}</p>
                             )}
                         </div>
 
-                        <div className="flex items-center space-x-2 pt-2">
-                            <Checkbox
-                                id="create-postable"
-                                checked={form.data.is_postable}
-                                onCheckedChange={(checked) => form.setData('is_postable', checked === true)}
-                            />
-                            <Label htmlFor="create-postable" className="cursor-pointer">
-                                Postable (Dapat menerima jurnal)
+                        {/* 4. Nama Akun (*) */}
+                        <div className="space-y-2">
+                            <Label htmlFor="create-name">
+                                Nama Akun <span className="text-destructive">*</span>
                             </Label>
+                            <Input
+                                id="create-name"
+                                placeholder="Contoh: Kas Operasional Sekolah"
+                                value={form.data.name}
+                                onChange={(e) => form.setData('name', e.target.value)}
+                                required
+                            />
+                            {form.errors.name && (
+                                <p className="text-xs text-destructive">{form.errors.name}</p>
+                            )}
                         </div>
 
-                        <DialogFooter>
+                        {/* Karakteristik Akun: 5, 6, 7 */}
+                        <div className="space-y-2.5 pt-2">
+                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Karakteristik & Perilaku Akun
+                            </Label>
+
+                            <div className="space-y-2">
+                                {/* 5. Akun Contra */}
+                                <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <Checkbox
+                                        id="create-contra"
+                                        checked={form.data.is_contra}
+                                        onCheckedChange={(checked) => form.setData('is_contra', checked === true)}
+                                        className="mt-0.5"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <Label htmlFor="create-contra" className="cursor-pointer font-medium text-sm">
+                                                Akun Contra
+                                            </Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                        aria-label="Penjelasan Akun Contra"
+                                                    >
+                                                        <AlertCircle className="h-4 w-4" />
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                    <p className="font-semibold text-foreground">Akun Contra</p>
+                                                    <p className="text-muted-foreground">
+                                                        Akun yang mengurangi saldo kelompok akun utamanya dan memiliki saldo normal berlawanan (misal: Aset normalnya di Debit, tetapi akun contra Aset bersaldo normal Kredit).
+                                                    </p>
+                                                    <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                        <span className="font-medium text-foreground">Contoh:</span>
+                                                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                            <li>Akumulasi Penyusutan Gedung</li>
+                                                            <li>Cadangan Kerugian Piutang SPP</li>
+                                                            <li>Potongan &amp; Beasiswa Siswa</li>
+                                                        </ul>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Mengurangi saldo kelompok akun utama (saldo normal berlawanan).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 6. Kas / Bank (Khusus Aset) */}
+                                {form.data.type === 'asset' && (
+                                    <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                        <Checkbox
+                                            id="create-cash"
+                                            checked={form.data.is_cash}
+                                            onCheckedChange={(checked) => form.setData('is_cash', checked === true)}
+                                            className="mt-0.5"
+                                        />
+                                        <div className="flex-1 space-y-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <Label htmlFor="create-cash" className="cursor-pointer font-medium text-sm">
+                                                    Kas / Bank
+                                                </Label>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            type="button"
+                                                            className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                            aria-label="Penjelasan Kas / Bank"
+                                                        >
+                                                            <AlertCircle className="h-4 w-4" />
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                        <p className="font-semibold text-foreground">Kas / Bank</p>
+                                                        <p className="text-muted-foreground">
+                                                            Menandai akun likuid berupa uang tunai fisik atau rekening bank aktif yayasan/sekolah. Menjadi acuan transaksi pada Buku Kas (Cash Book) &amp; Laporan Arus Kas.
+                                                        </p>
+                                                        <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                            <span className="font-medium text-foreground">Contoh:</span>
+                                                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                                <li>Kas Operasional Tata Usaha</li>
+                                                                <li>Kas Kecil (Petty Cash) Bendahara</li>
+                                                                <li>Bank BSI Giro Operasional</li>
+                                                                <li>Bank Mandiri Penampung SPP</li>
+                                                            </ul>
+                                                        </div>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Akun kas tunai fisik atau rekening bank aktif untuk Buku Kas &amp; Arus Kas.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 7. Postable */}
+                                <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <Checkbox
+                                        id="create-postable"
+                                        checked={form.data.is_postable}
+                                        onCheckedChange={(checked) => form.setData('is_postable', checked === true)}
+                                        className="mt-0.5"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <Label htmlFor="create-postable" className="cursor-pointer font-medium text-sm">
+                                                Postable (Dapat Menerima Jurnal)
+                                            </Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                        aria-label="Penjelasan Postable"
+                                                    >
+                                                        <AlertCircle className="h-4 w-4" />
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                    <p className="font-semibold text-foreground">Postable (Akun Posting)</p>
+                                                    <p className="text-muted-foreground">
+                                                        Menentukan apakah akun dapat dipilih langsung saat mencatat transaksi jurnal umum. Jika tidak dicentang (Non-Postable), akun hanya berfungsi sebagai penampung hierarki/kategori (Header).
+                                                    </p>
+                                                    <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                        <span className="font-medium text-foreground">Contoh:</span>
+                                                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                            <li><strong>Postable:</strong> Kas Tunai, Beban ATK &amp; Fotokopi (dapat dijurnal)</li>
+                                                            <li><strong>Non-Postable:</strong> ASET LANCAR, BEBAN OPERASIONAL (hanya judul hierarki)</li>
+                                                        </ul>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Dapat dipilih langsung pada transaksi jurnal harian.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <DialogFooter className="p-6 pt-3 border-t shrink-0 bg-background">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -503,72 +825,134 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
 
             {/* Edit Dialog */}
             <Dialog open={editingAccount !== null} onOpenChange={(open) => !open && setEditingAccount(null)}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
+                <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background sticky top-0 z-10 pr-12">
                         <DialogTitle>Edit Akun</DialogTitle>
                         <DialogDescription>
-                            {editingAccount?.has_posted_lines
-                                ? 'Akun ini telah memiliki transaksi. Hanya nama dan status aktif yang dapat diubah.'
-                                : 'Perbarui informasi akun.'}
+                            {isEditingLocked
+                                ? 'Akun ini telah memiliki transaksi jurnal. Struktur akun terkunci; hanya nama dan status aktif yang dapat diubah.'
+                                : 'Perbarui parameter akun pada bagan akun.'}
                         </DialogDescription>
                     </DialogHeader>
 
-                    {editingAccount?.has_posted_lines && (
-                        <div className="flex items-center gap-2 p-3 text-xs bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 rounded border border-amber-200">
-                            <AlertCircle className="h-4 w-4 shrink-0" />
-                            <span>Struktur akun terkunci karena telah memiliki jurnal posted.</span>
+                    <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            {isEditingLocked && (
+                                <div className="flex items-center gap-2 p-3 text-xs bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 rounded border border-amber-200">
+                                    <AlertCircle className="h-4 w-4 shrink-0" />
+                                    <span>Struktur akun terkunci karena telah memiliki jurnal posted. Hanya nama dan status aktif yang dapat diubah.</span>
+                                </div>
+                            )}
+                        {/* 1. Klasifikasi */}
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-type">
+                                Klasifikasi <span className="text-destructive">*</span>
+                            </Label>
+                            <Select
+                                value={form.data.type}
+                                disabled={isEditingLocked}
+                                onValueChange={handleEditClassificationChange}
+                            >
+                                <SelectTrigger id="edit-type">
+                                    <SelectValue placeholder="Pilih klasifikasi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {types.map((t) => (
+                                        <SelectItem key={t.value} value={t.value}>
+                                            {t.label} ({t.normal_balance === 'debit' ? 'Normal: Debit' : 'Normal: Kredit'})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.errors.type && (
+                                <p className="text-xs text-destructive">{form.errors.type}</p>
+                            )}
                         </div>
-                    )}
 
-                    <form onSubmit={handleEditSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        {form.data.type === 'net_assets' && (
                             <div className="space-y-2">
-                                <Label htmlFor="edit-code">Kode Akun</Label>
-                                <Input
-                                    id="edit-code"
-                                    value={form.data.code}
-                                    onChange={(e) => form.setData('code', e.target.value)}
-                                    disabled={editingAccount?.has_posted_lines}
-                                    required
-                                />
-                                {form.errors.code && (
-                                    <p className="text-xs text-destructive">{form.errors.code}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-type">Klasifikasi</Label>
+                                <Label htmlFor="edit-restriction">Pembatasan (ISAK 35)</Label>
                                 <Select
-                                    value={form.data.type}
-                                    disabled={editingAccount?.has_posted_lines}
-                                    onValueChange={(val) => {
-                                        form.setData('type', val);
-                                        if (val !== 'net_assets') {
-                                            form.setData('restriction', '');
-                                        }
-                                    }}
+                                    value={form.data.restriction}
+                                    disabled={isEditingLocked}
+                                    onValueChange={(val) => form.setData('restriction', val)}
                                 >
-                                    <SelectTrigger id="edit-type">
-                                        <SelectValue placeholder="Pilih tipe" />
+                                    <SelectTrigger id="edit-restriction">
+                                        <SelectValue placeholder="Pilih batasan" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {types.map((t) => (
-                                            <SelectItem key={t.value} value={t.value}>
-                                                {t.label}
+                                        {restrictions.map((r) => (
+                                            <SelectItem key={r.value} value={r.value}>
+                                                {r.label}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {form.errors.type && (
-                                    <p className="text-xs text-destructive">{form.errors.type}</p>
+                                {form.errors.restriction && (
+                                    <p className="text-xs text-destructive">{form.errors.restriction}</p>
                                 )}
                             </div>
+                        )}
+
+                        {/* 2. Akun Induk (Filtered dari Klasifikasi) */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="edit-parent">Akun Induk</Label>
+                                <span className="text-[11px] text-muted-foreground">Opsional</span>
+                            </div>
+                            <Select
+                                value={form.data.parent_id ? String(form.data.parent_id) : 'none'}
+                                disabled={isEditingLocked}
+                                onValueChange={handleEditParentChange}
+                            >
+                                <SelectTrigger id="edit-parent">
+                                    <SelectValue placeholder="Tanpa induk (tingkat utama)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Tanpa induk (Tingkat Utama)</SelectItem>
+                                    {editParentCandidates.map((parent) => (
+                                        <SelectItem key={parent.id} value={String(parent.id)}>
+                                            {parent.code} - {parent.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[11px] text-muted-foreground">
+                                {editParentCandidates.length === 0
+                                    ? 'Belum ada akun induk yang tersedia untuk klasifikasi ini.'
+                                    : 'Hanya menampilkan akun dengan klasifikasi yang sama.'}
+                            </p>
+                            {form.errors.parent_id && (
+                                <p className="text-xs text-destructive">{form.errors.parent_id}</p>
+                            )}
                         </div>
 
+                        {/* 3. Kode Akun */}
                         <div className="space-y-2">
-                            <Label htmlFor="edit-name">Nama Akun</Label>
+                            <Label htmlFor="edit-code">
+                                Kode Akun <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="edit-code"
+                                placeholder="Contoh: 1-1400"
+                                value={form.data.code}
+                                disabled={isEditingLocked}
+                                onChange={(e) => form.setData('code', e.target.value)}
+                                required
+                            />
+                            {form.errors.code && (
+                                <p className="text-xs text-destructive">{form.errors.code}</p>
+                            )}
+                        </div>
+
+                        {/* 4. Nama Akun (*) */}
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-name">
+                                Nama Akun <span className="text-destructive">*</span>
+                            </Label>
                             <Input
                                 id="edit-name"
+                                placeholder="Contoh: Kas Operasional Sekolah"
                                 value={form.data.name}
                                 onChange={(e) => form.setData('name', e.target.value)}
                                 required
@@ -578,18 +962,177 @@ export default function AccountsIndex({ accounts, types, restrictions }: Props) 
                             )}
                         </div>
 
-                        <div className="flex items-center space-x-2 pt-2">
-                            <Checkbox
-                                id="edit-active"
-                                checked={form.data.is_active}
-                                onCheckedChange={(checked) => form.setData('is_active', checked === true)}
-                            />
-                            <Label htmlFor="edit-active" className="cursor-pointer">
-                                Akun Aktif
+                        {/* Karakteristik Akun: 5, 6, 7 & Status Aktif */}
+                        <div className="space-y-2.5 pt-2">
+                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Atribut & Perilaku Akun
                             </Label>
+
+                            <div className="space-y-2">
+                                {/* 5. Akun Contra */}
+                                <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <Checkbox
+                                        id="edit-contra"
+                                        checked={form.data.is_contra}
+                                        disabled={isEditingLocked}
+                                        onCheckedChange={(checked) => form.setData('is_contra', checked === true)}
+                                        className="mt-0.5"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <Label htmlFor="edit-contra" className="cursor-pointer font-medium text-sm">
+                                                Akun Contra
+                                            </Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                        aria-label="Penjelasan Akun Contra"
+                                                    >
+                                                        <AlertCircle className="h-4 w-4" />
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                    <p className="font-semibold text-foreground">Akun Contra</p>
+                                                    <p className="text-muted-foreground">
+                                                        Akun yang mengurangi saldo kelompok akun utamanya dan memiliki saldo normal berlawanan (misal: Aset normalnya di Debit, tetapi akun contra Aset bersaldo normal Kredit).
+                                                    </p>
+                                                    <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                        <span className="font-medium text-foreground">Contoh:</span>
+                                                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                            <li>Akumulasi Penyusutan Gedung</li>
+                                                            <li>Cadangan Kerugian Piutang SPP</li>
+                                                            <li>Potongan &amp; Beasiswa Siswa</li>
+                                                        </ul>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Mengurangi saldo kelompok akun utama (saldo normal berlawanan).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 6. Kas / Bank (Khusus Aset) */}
+                                {form.data.type === 'asset' && (
+                                    <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                        <Checkbox
+                                            id="edit-cash"
+                                            checked={form.data.is_cash}
+                                            disabled={isEditingLocked}
+                                            onCheckedChange={(checked) => form.setData('is_cash', checked === true)}
+                                            className="mt-0.5"
+                                        />
+                                        <div className="flex-1 space-y-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <Label htmlFor="edit-cash" className="cursor-pointer font-medium text-sm">
+                                                    Kas / Bank
+                                                </Label>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            type="button"
+                                                            className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                            aria-label="Penjelasan Kas / Bank"
+                                                        >
+                                                            <AlertCircle className="h-4 w-4" />
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                        <p className="font-semibold text-foreground">Kas / Bank</p>
+                                                        <p className="text-muted-foreground">
+                                                            Menandai akun likuid berupa uang tunai fisik atau rekening bank aktif yayasan/sekolah. Menjadi acuan transaksi pada Buku Kas (Cash Book) &amp; Laporan Arus Kas.
+                                                        </p>
+                                                        <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                            <span className="font-medium text-foreground">Contoh:</span>
+                                                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                                <li>Kas Operasional Tata Usaha</li>
+                                                                <li>Kas Kecil (Petty Cash) Bendahara</li>
+                                                                <li>Bank BSI Giro Operasional</li>
+                                                                <li>Bank Mandiri Penampung SPP</li>
+                                                            </ul>
+                                                        </div>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Akun kas tunai fisik atau rekening bank aktif untuk Buku Kas &amp; Arus Kas.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 7. Postable */}
+                                <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <Checkbox
+                                        id="edit-postable"
+                                        checked={form.data.is_postable}
+                                        disabled={isEditingLocked || (editingAccount?.children_count ?? 0) > 0}
+                                        onCheckedChange={(checked) => form.setData('is_postable', checked === true)}
+                                        className="mt-0.5"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <Label htmlFor="edit-postable" className="cursor-pointer font-medium text-sm">
+                                                Postable (Dapat Menerima Jurnal)
+                                            </Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-full p-0.5 focus:outline-none"
+                                                        aria-label="Penjelasan Postable"
+                                                    >
+                                                        <AlertCircle className="h-4 w-4" />
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top" className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed">
+                                                    <p className="font-semibold text-foreground">Postable (Akun Posting)</p>
+                                                    <p className="text-muted-foreground">
+                                                        Menentukan apakah akun dapat dipilih langsung saat mencatat transaksi jurnal umum. Jika tidak dicentang (Non-Postable), akun hanya berfungsi sebagai penampung hierarki/kategori (Header).
+                                                    </p>
+                                                    <div className="border-t border-border pt-1.5 text-[11px] space-y-1">
+                                                        <span className="font-medium text-foreground">Contoh:</span>
+                                                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                                            <li><strong>Postable:</strong> Kas Tunai, Beban ATK &amp; Fotokopi (dapat dijurnal)</li>
+                                                            <li><strong>Non-Postable:</strong> ASET LANCAR, BEBAN OPERASIONAL (hanya judul hierarki)</li>
+                                                        </ul>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {(editingAccount?.children_count ?? 0) > 0
+                                                ? 'Akun ini memiliki sub-akun/anak, sehingga otomatis menjadi Non-Postable (Header).'
+                                                : 'Dapat dipilih langsung pada transaksi jurnal harian.'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 8. Status Aktif */}
+                                <div className="flex items-start space-x-3 rounded-lg border p-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <Checkbox
+                                        id="edit-active"
+                                        checked={form.data.is_active}
+                                        onCheckedChange={(checked) => form.setData('is_active', checked === true)}
+                                        className="mt-0.5"
+                                    />
+                                    <div className="flex-1 space-y-1">
+                                        <Label htmlFor="edit-active" className="cursor-pointer font-medium text-sm">
+                                            Akun Aktif
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Akun aktif dapat dipilih pada transaksi dan laporan. Nonaktifkan jika akun tidak lagi digunakan.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         </div>
 
-                        <DialogFooter>
+                        <DialogFooter className="p-6 pt-3 border-t shrink-0 bg-background">
                             <Button
                                 type="button"
                                 variant="outline"
