@@ -75,7 +75,7 @@ export default function JournalsIndex({ journals, filters }: Props) {
                 to,
                 ...newFilters,
             },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
@@ -84,7 +84,7 @@ export default function JournalsIndex({ journals, filters }: Props) {
             <Head title="Jurnal Manual" />
 
             <div className="space-y-6 p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
                         title="Jurnal Manual (General Journal)"
                         description="Daftar ayat jurnal umum, pencatatan beban operasional, dan saldo awal buku besar."
@@ -98,7 +98,7 @@ export default function JournalsIndex({ journals, filters }: Props) {
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-lg border bg-card">
+                <div className="bg-card grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-4">
                     <div className="space-y-1">
                         <Label htmlFor="search">Pencarian</Label>
                         <Input
@@ -106,7 +106,9 @@ export default function JournalsIndex({ journals, filters }: Props) {
                             placeholder="Nomor atau deskripsi..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && applyFilters({ search })}
+                            onKeyDown={(e) =>
+                                e.key === 'Enter' && applyFilters({ search })
+                            }
                         />
                     </div>
 
@@ -116,15 +118,21 @@ export default function JournalsIndex({ journals, filters }: Props) {
                             value={status}
                             onValueChange={(val) => {
                                 setStatus(val);
-                                applyFilters({ status: val === 'all' ? '' : val });
+                                applyFilters({
+                                    status: val === 'all' ? '' : val,
+                                });
                             }}
                         >
                             <SelectTrigger id="filter-status">
                                 <SelectValue placeholder="Semua status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Semua Status</SelectItem>
-                                <SelectItem value="posted">Diposting</SelectItem>
+                                <SelectItem value="all">
+                                    Semua Status
+                                </SelectItem>
+                                <SelectItem value="posted">
+                                    Diposting
+                                </SelectItem>
                                 <SelectItem value="draft">Draf</SelectItem>
                             </SelectContent>
                         </Select>
@@ -157,29 +165,49 @@ export default function JournalsIndex({ journals, filters }: Props) {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border bg-card">
+                <div className="bg-card overflow-x-auto rounded-lg border">
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Nomor Jurnal</th>
-                                <th className="px-4 py-3 font-medium">Tanggal</th>
-                                <th className="px-4 py-3 font-medium">Deskripsi</th>
-                                <th className="px-4 py-3 font-medium">Sumber</th>
-                                <th className="px-4 py-3 font-medium">Total Nominal</th>
-                                <th className="px-4 py-3 font-medium">Status</th>
-                                <th className="px-4 py-3 text-right font-medium">Aksi</th>
+                                <th className="px-4 py-3 font-medium">
+                                    Nomor Jurnal
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Tanggal
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Deskripsi
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Sumber
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Total Nominal
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Status
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {journals.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                                    <td
+                                        colSpan={7}
+                                        className="text-muted-foreground px-4 py-8 text-center"
+                                    >
                                         Tidak ada ayat jurnal ditemukan.
                                     </td>
                                 </tr>
                             ) : (
                                 journals.data.map((journal) => (
-                                    <tr key={journal.id} className="border-t hover:bg-muted/20">
+                                    <tr
+                                        key={journal.id}
+                                        className="hover:bg-muted/20 border-t"
+                                    >
                                         <td className="px-4 py-3 font-mono font-medium">
                                             {journal.number ? (
                                                 <Link
@@ -189,10 +217,15 @@ export default function JournalsIndex({ journals, filters }: Props) {
                                                     {journal.number}
                                                 </Link>
                                             ) : (
-                                                <span className="text-muted-foreground italic">(Draf)</span>
+                                                <span className="text-muted-foreground italic">
+                                                    (Draf)
+                                                </span>
                                             )}
                                             {journal.reverses_entry_id && (
-                                                <Badge variant="outline" className="ml-2 text-xs text-amber-600 border-amber-300">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="ml-2 border-amber-300 text-xs text-amber-600"
+                                                >
                                                     Pembalik
                                                 </Badge>
                                             )}
@@ -201,15 +234,22 @@ export default function JournalsIndex({ journals, filters }: Props) {
                                             {journal.entry_date}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="font-medium max-w-md truncate">
+                                            <div className="max-w-md truncate font-medium">
                                                 {journal.description}
                                             </div>
-                                            <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                                                <span>{journal.lines_count} baris</span>
-                                                {journal.author && <span>Oleh: {journal.author}</span>}
+                                            <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
+                                                <span>
+                                                    {journal.lines_count} baris
+                                                </span>
+                                                {journal.author && (
+                                                    <span>
+                                                        Oleh: {journal.author}
+                                                    </span>
+                                                )}
                                                 {journal.has_attachment && (
-                                                    <span className="flex items-center text-primary">
-                                                        <Paperclip className="h-3 w-3 mr-0.5" /> Lampiran
+                                                    <span className="text-primary flex items-center">
+                                                        <Paperclip className="mr-0.5 h-3 w-3" />{' '}
+                                                        Lampiran
                                                     </span>
                                                 )}
                                             </div>
@@ -220,20 +260,34 @@ export default function JournalsIndex({ journals, filters }: Props) {
                                             </Badge>
                                         </td>
                                         <td className="px-4 py-3 font-mono text-xs">
-                                            Rp {Number(journal.total_debit).toLocaleString('id-ID')}
+                                            Rp{' '}
+                                            {Number(
+                                                journal.total_debit,
+                                            ).toLocaleString('id-ID')}
                                         </td>
                                         <td className="px-4 py-3">
                                             {journal.status === 'posted' ? (
-                                                <Badge variant="default" className="bg-emerald-600">
+                                                <Badge
+                                                    variant="default"
+                                                    className="bg-emerald-600"
+                                                >
                                                     Diposting
                                                 </Badge>
                                             ) : (
-                                                <Badge variant="secondary">Draf</Badge>
+                                                <Badge variant="secondary">
+                                                    Draf
+                                                </Badge>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link href={`/finance/journals/${journal.id}`}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={`/finance/journals/${journal.id}`}
+                                                >
                                                     Detail
                                                 </Link>
                                             </Button>
@@ -245,9 +299,10 @@ export default function JournalsIndex({ journals, filters }: Props) {
                     </table>
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-between p-4 border-t">
-                        <span className="text-xs text-muted-foreground">
-                            Menampilkan halaman {journals.current_page} dari {journals.last_page} ({journals.total} total)
+                    <div className="flex items-center justify-between border-t p-4">
+                        <span className="text-muted-foreground text-xs">
+                            Menampilkan halaman {journals.current_page} dari{' '}
+                            {journals.last_page} ({journals.total} total)
                         </span>
 
                         <div className="flex items-center gap-2">

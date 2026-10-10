@@ -44,15 +44,19 @@ export default function GeneralJournalReportPage({ report }: Props) {
     const [to, setTo] = useState(report.to ?? '');
 
     const applyFilter = () => {
-        router.get('/finance/reports/general-journal', { from, to }, { preserveState: true });
+        router.get(
+            '/finance/reports/general-journal',
+            { from, to },
+            { preserveState: true },
+        );
     };
 
     return (
         <>
             <Head title="Laporan Jurnal Umum" />
 
-            <div className="space-y-6 p-4 max-w-6xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mx-auto max-w-6xl space-y-6 p-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
                         title="Jurnal Umum (General Journal)"
                         description="Daftar seluruh ayat jurnal posted secara kronologis dengan debit dan kredit."
@@ -63,13 +67,13 @@ export default function GeneralJournalReportPage({ report }: Props) {
                             href={`/finance/reports/general-journal?format=csv&from=${from}&to=${to}`}
                             download
                         >
-                            <Download className="h-4 w-4 mr-2" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
                         </a>
                     </Button>
                 </div>
 
                 {/* Filter */}
-                <div className="flex flex-wrap items-end gap-4 p-4 rounded-lg border bg-card">
+                <div className="bg-card flex flex-wrap items-end gap-4 rounded-lg border p-4">
                     <div className="space-y-1">
                         <Label htmlFor="from">Dari Tanggal</Label>
                         <Input
@@ -92,59 +96,95 @@ export default function GeneralJournalReportPage({ report }: Props) {
                 </div>
 
                 {/* Table */}
-                <div className="rounded-lg border bg-card overflow-hidden">
+                <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-left">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Tanggal</th>
-                                    <th className="px-4 py-3 font-medium">No. Jurnal & Deskripsi</th>
-                                    <th className="px-4 py-3 font-medium">Akun</th>
-                                    <th className="px-4 py-3 font-medium text-right">Debit (Rp)</th>
-                                    <th className="px-4 py-3 font-medium text-right">Kredit (Rp)</th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Tanggal
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        No. Jurnal & Deskripsi
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Akun
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Debit (Rp)
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Kredit (Rp)
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {report.entries.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                                            Tidak ada transaksi pada periode ini.
+                                        <td
+                                            colSpan={5}
+                                            className="text-muted-foreground px-4 py-8 text-center"
+                                        >
+                                            Tidak ada transaksi pada periode
+                                            ini.
                                         </td>
                                     </tr>
                                 ) : (
                                     report.entries.map((entry) => (
                                         <Fragment key={entry.id}>
-                                            <tr className="border-t bg-muted/10 font-medium">
-                                                <td className="px-4 py-2 whitespace-nowrap text-xs text-muted-foreground">
+                                            <tr className="bg-muted/10 border-t font-medium">
+                                                <td className="text-muted-foreground px-4 py-2 text-xs whitespace-nowrap">
                                                     {entry.entry_date}
                                                 </td>
-                                                <td colSpan={4} className="px-4 py-2">
-                                                    <span className="font-mono text-primary mr-2">
+                                                <td
+                                                    colSpan={4}
+                                                    className="px-4 py-2"
+                                                >
+                                                    <span className="text-primary mr-2 font-mono">
                                                         {entry.number}
                                                     </span>
-                                                    <span>{entry.description}</span>
+                                                    <span>
+                                                        {entry.description}
+                                                    </span>
                                                 </td>
                                             </tr>
                                             {entry.lines.map((line) => (
-                                                <tr key={line.id} className="border-t border-muted/30">
+                                                <tr
+                                                    key={line.id}
+                                                    className="border-muted/30 border-t"
+                                                >
                                                     <td></td>
-                                                    <td className="px-4 py-1.5 text-xs text-muted-foreground">
-                                                        {line.memo && <span>↳ {line.memo}</span>}
+                                                    <td className="text-muted-foreground px-4 py-1.5 text-xs">
+                                                        {line.memo && (
+                                                            <span>
+                                                                ↳ {line.memo}
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-1.5">
-                                                        <span className="font-mono text-xs mr-2 text-muted-foreground">
+                                                        <span className="text-muted-foreground mr-2 font-mono text-xs">
                                                             {line.account_code}
                                                         </span>
-                                                        <span>{line.account_name}</span>
+                                                        <span>
+                                                            {line.account_name}
+                                                        </span>
                                                     </td>
-                                                    <td className="px-4 py-1.5 font-mono text-right text-xs">
+                                                    <td className="px-4 py-1.5 text-right font-mono text-xs">
                                                         {Number(line.debit) > 0
-                                                            ? Number(line.debit).toLocaleString('id-ID')
+                                                            ? Number(
+                                                                  line.debit,
+                                                              ).toLocaleString(
+                                                                  'id-ID',
+                                                              )
                                                             : '-'}
                                                     </td>
-                                                    <td className="px-4 py-1.5 font-mono text-right text-xs">
+                                                    <td className="px-4 py-1.5 text-right font-mono text-xs">
                                                         {Number(line.credit) > 0
-                                                            ? Number(line.credit).toLocaleString('id-ID')
+                                                            ? Number(
+                                                                  line.credit,
+                                                              ).toLocaleString(
+                                                                  'id-ID',
+                                                              )
                                                             : '-'}
                                                     </td>
                                                 </tr>
@@ -153,16 +193,25 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                     ))
                                 )}
                             </tbody>
-                            <tfoot className="border-t-2 bg-muted/50 font-mono font-bold text-sm">
+                            <tfoot className="bg-muted/50 border-t-2 font-mono text-sm font-bold">
                                 <tr>
-                                    <td colSpan={3} className="px-4 py-3 text-right">
+                                    <td
+                                        colSpan={3}
+                                        className="px-4 py-3 text-right"
+                                    >
                                         TOTAL:
                                     </td>
                                     <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400">
-                                        Rp {Number(report.total_debit).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(
+                                            report.total_debit,
+                                        ).toLocaleString('id-ID')}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
-                                        Rp {Number(report.total_credit).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(
+                                            report.total_credit,
+                                        ).toLocaleString('id-ID')}
                                     </td>
                                 </tr>
                             </tfoot>

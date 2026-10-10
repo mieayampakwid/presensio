@@ -237,7 +237,11 @@ export function AppSidebar() {
             : []),
     ];
 
-    const financeNavItems: NavItem[] = ['admin', 'finance', 'principal'].includes(activeRole)
+    const financeNavItems: NavItem[] = [
+        'admin',
+        'finance',
+        'principal',
+    ].includes(activeRole)
         ? [
               {
                   title: 'Chart of Accounts',
@@ -366,8 +370,12 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {financeNavItems.length > 0 && <NavMain label="Finance" items={financeNavItems} />}
-                {reportNavItems.length > 0 && <NavMain label="Reports" items={reportNavItems} />}
+                {financeNavItems.length > 0 && (
+                    <NavMain label="Finance" items={financeNavItems} />
+                )}
+                {reportNavItems.length > 0 && (
+                    <NavMain label="Reports" items={reportNavItems} />
+                )}
             </SidebarContent>
 
             <SidebarFooter>

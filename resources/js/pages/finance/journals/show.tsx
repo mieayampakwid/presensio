@@ -76,9 +76,13 @@ export default function JournalShow({ journal }: Props) {
     });
 
     const handlePostDraft = () => {
-        router.post(`/finance/journals/${journal.id}/post`, {}, {
-            preserveScroll: true,
-        });
+        router.post(
+            `/finance/journals/${journal.id}/post`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleDeleteDraft = () => {
@@ -102,16 +106,26 @@ export default function JournalShow({ journal }: Props) {
         <>
             <Head title={`Jurnal ${journal.number ?? '(Draf)'}`} />
 
-            <div className="space-y-6 p-4 max-w-5xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mx-auto max-w-5xl space-y-6 p-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <Button variant="ghost" size="sm" asChild className="mb-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="mb-2"
+                        >
                             <Link href="/finance/journals">
-                                <ArrowLeft className="h-4 w-4 mr-1" /> Kembali ke Daftar Jurnal
+                                <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
+                                ke Daftar Jurnal
                             </Link>
                         </Button>
                         <Heading
-                            title={journal.number ? `Ayat Jurnal: ${journal.number}` : 'Draf Ayat Jurnal'}
+                            title={
+                                journal.number
+                                    ? `Ayat Jurnal: ${journal.number}`
+                                    : 'Draf Ayat Jurnal'
+                            }
                             description={journal.description}
                         />
                     </div>
@@ -120,8 +134,11 @@ export default function JournalShow({ journal }: Props) {
                         {journal.status === 'draft' ? (
                             <>
                                 <Button variant="outline" size="sm" asChild>
-                                    <Link href={`/finance/journals/${journal.id}/edit`}>
-                                        <Pencil className="h-4 w-4 mr-1" /> Edit Draf
+                                    <Link
+                                        href={`/finance/journals/${journal.id}/edit`}
+                                    >
+                                        <Pencil className="mr-1 h-4 w-4" /> Edit
+                                        Draf
                                     </Link>
                                 </Button>
 
@@ -131,11 +148,12 @@ export default function JournalShow({ journal }: Props) {
                                     className="text-destructive"
                                     onClick={() => setIsDeleteOpen(true)}
                                 >
-                                    <Trash2 className="h-4 w-4 mr-1" /> Hapus
+                                    <Trash2 className="mr-1 h-4 w-4" /> Hapus
                                 </Button>
 
                                 <Button size="sm" onClick={handlePostDraft}>
-                                    <Send className="h-4 w-4 mr-1" /> Posting ke Buku Besar
+                                    <Send className="mr-1 h-4 w-4" /> Posting ke
+                                    Buku Besar
                                 </Button>
                             </>
                         ) : (
@@ -144,54 +162,72 @@ export default function JournalShow({ journal }: Props) {
                                 size="sm"
                                 onClick={() => setIsReverseOpen(true)}
                             >
-                                <RotateCcw className="h-4 w-4 mr-1" /> Buat Jurnal Pembalik
+                                <RotateCcw className="mr-1 h-4 w-4" /> Buat
+                                Jurnal Pembalik
                             </Button>
                         )}
                     </div>
                 </div>
 
                 {/* Metadata Card */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg border bg-card text-sm">
+                <div className="bg-card grid grid-cols-2 gap-4 rounded-lg border p-4 text-sm sm:grid-cols-4">
                     <div>
-                        <span className="text-xs text-muted-foreground block">Tanggal Transaksi</span>
-                        <span className="font-semibold">{journal.entry_date}</span>
+                        <span className="text-muted-foreground block text-xs">
+                            Tanggal Transaksi
+                        </span>
+                        <span className="font-semibold">
+                            {journal.entry_date}
+                        </span>
                     </div>
 
                     <div>
-                        <span className="text-xs text-muted-foreground block">Status</span>
+                        <span className="text-muted-foreground block text-xs">
+                            Status
+                        </span>
                         {journal.status === 'posted' ? (
-                            <Badge variant="default" className="bg-emerald-600">Diposting</Badge>
+                            <Badge variant="default" className="bg-emerald-600">
+                                Diposting
+                            </Badge>
                         ) : (
                             <Badge variant="secondary">Draf</Badge>
                         )}
                     </div>
 
                     <div>
-                        <span className="text-xs text-muted-foreground block">Sumber Transaksi</span>
-                        <span className="font-medium">{journal.source_type_label}</span>
+                        <span className="text-muted-foreground block text-xs">
+                            Sumber Transaksi
+                        </span>
+                        <span className="font-medium">
+                            {journal.source_type_label}
+                        </span>
                     </div>
 
                     <div>
-                        <span className="text-xs text-muted-foreground block">Dibuat Oleh</span>
-                        <span className="font-medium">{journal.author ?? 'Sistem'}</span>
+                        <span className="text-muted-foreground block text-xs">
+                            Dibuat Oleh
+                        </span>
+                        <span className="font-medium">
+                            {journal.author ?? 'Sistem'}
+                        </span>
                     </div>
 
                     {journal.reverses_entry && (
-                        <div className="col-span-2 sm:col-span-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 text-xs">
+                        <div className="col-span-2 rounded border border-amber-200 bg-amber-50 p-3 text-xs sm:col-span-4 dark:bg-amber-950/30">
                             <span className="font-semibold text-amber-800 dark:text-amber-300">
                                 Membalikkan Jurnal:{' '}
                             </span>
                             <Link
                                 href={`/finance/journals/${journal.reverses_entry.id}`}
-                                className="text-primary underline ml-1"
+                                className="text-primary ml-1 underline"
                             >
-                                {journal.reverses_entry.number} ({journal.reverses_entry.description})
+                                {journal.reverses_entry.number} (
+                                {journal.reverses_entry.description})
                             </Link>
                         </div>
                     )}
 
                     {journal.reversal_entries.length > 0 && (
-                        <div className="col-span-2 sm:col-span-4 p-3 bg-rose-50 dark:bg-rose-950/30 rounded border border-rose-200 text-xs">
+                        <div className="col-span-2 rounded border border-rose-200 bg-rose-50 p-3 text-xs sm:col-span-4 dark:bg-rose-950/30">
                             <span className="font-semibold text-rose-800 dark:text-rose-300">
                                 Dibalikkan Oleh Jurnal:{' '}
                             </span>
@@ -199,7 +235,7 @@ export default function JournalShow({ journal }: Props) {
                                 <Link
                                     key={rev.id}
                                     href={`/finance/journals/${rev.id}`}
-                                    className="text-primary underline mr-2"
+                                    className="text-primary mr-2 underline"
                                 >
                                     {rev.number}
                                 </Link>
@@ -208,10 +244,14 @@ export default function JournalShow({ journal }: Props) {
                     )}
 
                     {journal.has_attachment && (
-                        <div className="col-span-2 sm:col-span-4 pt-2">
+                        <div className="col-span-2 pt-2 sm:col-span-4">
                             <Button variant="outline" size="sm" asChild>
-                                <a href={`/finance/journals/${journal.id}/attachment`} download>
-                                    <Download className="h-4 w-4 mr-1.5" /> Unduh Lampiran Nota/Kuitansi
+                                <a
+                                    href={`/finance/journals/${journal.id}/attachment`}
+                                    download
+                                >
+                                    <Download className="mr-1.5 h-4 w-4" />{' '}
+                                    Unduh Lampiran Nota/Kuitansi
                                 </a>
                             </Button>
                         </div>
@@ -219,21 +259,35 @@ export default function JournalShow({ journal }: Props) {
                 </div>
 
                 {/* Journal Lines Table */}
-                <div className="rounded-lg border bg-card overflow-hidden">
-                    <div className="p-4 bg-muted/30 border-b">
-                        <span className="font-semibold text-sm">Ayat Jurnal (Debit & Kredit)</span>
+                <div className="bg-card overflow-hidden rounded-lg border">
+                    <div className="bg-muted/30 border-b p-4">
+                        <span className="text-sm font-semibold">
+                            Ayat Jurnal (Debit & Kredit)
+                        </span>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-left">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Kode</th>
-                                    <th className="px-4 py-3 font-medium">Nama Akun</th>
-                                    <th className="px-4 py-3 font-medium text-right">Debit (Rp)</th>
-                                    <th className="px-4 py-3 font-medium text-right">Kredit (Rp)</th>
-                                    <th className="px-4 py-3 font-medium">Siswa</th>
-                                    <th className="px-4 py-3 font-medium">Catatan / Memo</th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Kode
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Nama Akun
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Debit (Rp)
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Kredit (Rp)
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Siswa
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Catatan / Memo
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -245,28 +299,36 @@ export default function JournalShow({ journal }: Props) {
                                         <td className="px-4 py-3 font-medium">
                                             {line.account_name}
                                         </td>
-                                        <td className="px-4 py-3 font-mono text-right">
+                                        <td className="px-4 py-3 text-right font-mono">
                                             {Number(line.debit) > 0 ? (
                                                 <span className="font-semibold text-blue-700 dark:text-blue-400">
-                                                    {Number(line.debit).toLocaleString('id-ID')}
+                                                    {Number(
+                                                        line.debit,
+                                                    ).toLocaleString('id-ID')}
                                                 </span>
                                             ) : (
-                                                <span className="text-muted-foreground">-</span>
+                                                <span className="text-muted-foreground">
+                                                    -
+                                                </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 font-mono text-right">
+                                        <td className="px-4 py-3 text-right font-mono">
                                             {Number(line.credit) > 0 ? (
                                                 <span className="font-semibold text-amber-700 dark:text-amber-400">
-                                                    {Number(line.credit).toLocaleString('id-ID')}
+                                                    {Number(
+                                                        line.credit,
+                                                    ).toLocaleString('id-ID')}
                                                 </span>
                                             ) : (
-                                                <span className="text-muted-foreground">-</span>
+                                                <span className="text-muted-foreground">
+                                                    -
+                                                </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                                        <td className="text-muted-foreground px-4 py-3 text-xs">
                                             {line.student_name ?? '-'}
                                         </td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                                        <td className="text-muted-foreground px-4 py-3 text-xs">
                                             {line.memo ?? '-'}
                                         </td>
                                     </tr>
@@ -276,30 +338,42 @@ export default function JournalShow({ journal }: Props) {
                     </div>
 
                     {/* Total Footer */}
-                    <div className="p-4 bg-muted/40 border-t flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-sm">
+                    <div className="bg-muted/40 flex flex-col items-center justify-between gap-4 border-t p-4 font-mono text-sm sm:flex-row">
                         <div className="flex items-center gap-2">
                             {journal.is_balanced ? (
-                                <span className="inline-flex items-center text-xs text-emerald-600 font-medium">
-                                    <CheckCircle2 className="h-4 w-4 mr-1" /> Seimbang (Balanced)
+                                <span className="inline-flex items-center text-xs font-medium text-emerald-600">
+                                    <CheckCircle2 className="mr-1 h-4 w-4" />{' '}
+                                    Seimbang (Balanced)
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center text-xs text-destructive font-medium">
-                                    <AlertCircle className="h-4 w-4 mr-1" /> Tidak Seimbang
+                                <span className="text-destructive inline-flex items-center text-xs font-medium">
+                                    <AlertCircle className="mr-1 h-4 w-4" />{' '}
+                                    Tidak Seimbang
                                 </span>
                             )}
                         </div>
 
                         <div className="flex items-center gap-6">
                             <div>
-                                <span className="text-muted-foreground mr-2">Total Debit:</span>
+                                <span className="text-muted-foreground mr-2">
+                                    Total Debit:
+                                </span>
                                 <span className="font-bold">
-                                    Rp {Number(journal.total_debit).toLocaleString('id-ID')}
+                                    Rp{' '}
+                                    {Number(journal.total_debit).toLocaleString(
+                                        'id-ID',
+                                    )}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-muted-foreground mr-2">Total Kredit:</span>
+                                <span className="text-muted-foreground mr-2">
+                                    Total Kredit:
+                                </span>
                                 <span className="font-bold">
-                                    Rp {Number(journal.total_credit).toLocaleString('id-ID')}
+                                    Rp{' '}
+                                    {Number(
+                                        journal.total_credit,
+                                    ).toLocaleString('id-ID')}
                                 </span>
                             </div>
                         </div>
@@ -311,36 +385,52 @@ export default function JournalShow({ journal }: Props) {
             <Dialog open={isReverseOpen} onOpenChange={setIsReverseOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Buat Jurnal Pembalik (Reversal)</DialogTitle>
+                        <DialogTitle>
+                            Buat Jurnal Pembalik (Reversal)
+                        </DialogTitle>
                         <DialogDescription>
-                            Sistem akan membuat ayat jurnal baru yang membalik debit dan kredit dari jurnal{' '}
+                            Sistem akan membuat ayat jurnal baru yang membalik
+                            debit dan kredit dari jurnal{' '}
                             <strong>{journal.number}</strong> secara otomatis.
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleReverseSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="reverse-date">Tanggal Pembalikan</Label>
+                            <Label htmlFor="reverse-date">
+                                Tanggal Pembalikan
+                            </Label>
                             <Input
                                 id="reverse-date"
                                 type="date"
                                 value={reverseForm.data.date}
-                                onChange={(e) => reverseForm.setData('date', e.target.value)}
+                                onChange={(e) =>
+                                    reverseForm.setData('date', e.target.value)
+                                }
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="reverse-reason">Alasan Pembalikan</Label>
+                            <Label htmlFor="reverse-reason">
+                                Alasan Pembalikan
+                            </Label>
                             <Input
                                 id="reverse-reason"
                                 placeholder="Contoh: Koreksi salah catat nominal / pembatalan nota"
                                 value={reverseForm.data.reason}
-                                onChange={(e) => reverseForm.setData('reason', e.target.value)}
+                                onChange={(e) =>
+                                    reverseForm.setData(
+                                        'reason',
+                                        e.target.value,
+                                    )
+                                }
                                 required
                             />
                             {reverseForm.errors.reason && (
-                                <p className="text-xs text-destructive">{reverseForm.errors.reason}</p>
+                                <p className="text-destructive text-xs">
+                                    {reverseForm.errors.reason}
+                                </p>
                             )}
                         </div>
 
@@ -352,7 +442,10 @@ export default function JournalShow({ journal }: Props) {
                             >
                                 Batal
                             </Button>
-                            <Button type="submit" disabled={reverseForm.processing}>
+                            <Button
+                                type="submit"
+                                disabled={reverseForm.processing}
+                            >
                                 Konfirmasi Balikkan Jurnal
                             </Button>
                         </DialogFooter>
@@ -378,7 +471,11 @@ export default function JournalShow({ journal }: Props) {
                         >
                             Batal
                         </Button>
-                        <Button type="button" variant="destructive" onClick={handleDeleteDraft}>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeleteDraft}
+                        >
                             Hapus Draf
                         </Button>
                     </DialogFooter>

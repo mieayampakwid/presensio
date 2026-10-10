@@ -34,29 +34,36 @@ export default function TrialBalanceReportPage({ report }: Props) {
     const [asOf, setAsOf] = useState(report.as_of ?? '');
 
     const applyFilter = () => {
-        router.get('/finance/reports/trial-balance', { as_of: asOf }, { preserveState: true });
+        router.get(
+            '/finance/reports/trial-balance',
+            { as_of: asOf },
+            { preserveState: true },
+        );
     };
 
     return (
         <>
             <Head title="Neraca Saldo (Trial Balance)" />
 
-            <div className="space-y-6 p-4 max-w-5xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mx-auto max-w-5xl space-y-6 p-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
                         title="Neraca Saldo (Trial Balance)"
                         description="Daftar saldo debit dan kredit seluruh akun postable untuk pembuktian keseimbangan buku besar."
                     />
 
                     <Button variant="outline" asChild>
-                        <a href={`/finance/reports/trial-balance?format=csv&as_of=${asOf}`} download>
-                            <Download className="h-4 w-4 mr-2" /> Ekspor CSV
+                        <a
+                            href={`/finance/reports/trial-balance?format=csv&as_of=${asOf}`}
+                            download
+                        >
+                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
                         </a>
                     </Button>
                 </div>
 
                 {/* Filter and Status */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border bg-card">
+                <div className="bg-card flex flex-col justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
                     <div className="flex items-end gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="as_of">Posisi Per Tanggal</Label>
@@ -72,68 +79,107 @@ export default function TrialBalanceReportPage({ report }: Props) {
 
                     <div>
                         {report.is_balanced ? (
-                            <div className="flex items-center text-xs text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-200">
-                                <CheckCircle2 className="h-4 w-4 mr-1.5" /> Neraca Saldo Seimbang (Balanced)
+                            <div className="flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/40">
+                                <CheckCircle2 className="mr-1.5 h-4 w-4" />{' '}
+                                Neraca Saldo Seimbang (Balanced)
                             </div>
                         ) : (
-                            <div className="flex items-center text-xs text-destructive font-semibold bg-destructive/10 px-3 py-1.5 rounded-full border border-destructive/20">
-                                <AlertCircle className="h-4 w-4 mr-1.5" />
-                                Selisih: Rp {Number(report.difference).toLocaleString('id-ID')}
+                            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold">
+                                <AlertCircle className="mr-1.5 h-4 w-4" />
+                                Selisih: Rp{' '}
+                                {Number(report.difference).toLocaleString(
+                                    'id-ID',
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="rounded-lg border bg-card overflow-hidden">
+                <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-left">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Kode Akun</th>
-                                    <th className="px-4 py-3 font-medium">Nama Akun</th>
-                                    <th className="px-4 py-3 font-medium">Klasifikasi</th>
-                                    <th className="px-4 py-3 font-medium">Saldo Normal</th>
-                                    <th className="px-4 py-3 font-medium text-right">Saldo Debit (Rp)</th>
-                                    <th className="px-4 py-3 font-medium text-right">Saldo Kredit (Rp)</th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Kode Akun
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Nama Akun
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Klasifikasi
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Saldo Normal
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Saldo Debit (Rp)
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Saldo Kredit (Rp)
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {report.accounts.map((acc) => (
-                                    <tr key={acc.id} className="border-t hover:bg-muted/20">
-                                        <td className="px-4 py-2 font-mono font-medium">{acc.code}</td>
-                                        <td className="px-4 py-2 font-medium">{acc.name}</td>
+                                    <tr
+                                        key={acc.id}
+                                        className="hover:bg-muted/20 border-t"
+                                    >
+                                        <td className="px-4 py-2 font-mono font-medium">
+                                            {acc.code}
+                                        </td>
+                                        <td className="px-4 py-2 font-medium">
+                                            {acc.name}
+                                        </td>
                                         <td className="px-4 py-2">
-                                            <Badge variant="outline" className="text-xs uppercase">
+                                            <Badge
+                                                variant="outline"
+                                                className="text-xs uppercase"
+                                            >
                                                 {acc.type}
                                             </Badge>
                                         </td>
-                                        <td className="px-4 py-2 text-xs font-mono uppercase">
+                                        <td className="px-4 py-2 font-mono text-xs uppercase">
                                             {acc.normal_balance}
                                         </td>
-                                        <td className="px-4 py-2 font-mono text-right text-xs">
+                                        <td className="px-4 py-2 text-right font-mono text-xs">
                                             {Number(acc.debit_balance) > 0
-                                                ? Number(acc.debit_balance).toLocaleString('id-ID')
+                                                ? Number(
+                                                      acc.debit_balance,
+                                                  ).toLocaleString('id-ID')
                                                 : '-'}
                                         </td>
-                                        <td className="px-4 py-2 font-mono text-right text-xs">
+                                        <td className="px-4 py-2 text-right font-mono text-xs">
                                             {Number(acc.credit_balance) > 0
-                                                ? Number(acc.credit_balance).toLocaleString('id-ID')
+                                                ? Number(
+                                                      acc.credit_balance,
+                                                  ).toLocaleString('id-ID')
                                                 : '-'}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot className="border-t-2 bg-muted/60 font-mono font-bold text-sm">
+                            <tfoot className="bg-muted/60 border-t-2 font-mono text-sm font-bold">
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-3 text-right">
+                                    <td
+                                        colSpan={4}
+                                        className="px-4 py-3 text-right"
+                                    >
                                         TOTAL KESEIMBANGAN:
                                     </td>
                                     <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400">
-                                        Rp {Number(report.total_debit).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(
+                                            report.total_debit,
+                                        ).toLocaleString('id-ID')}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
-                                        Rp {Number(report.total_credit).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(
+                                            report.total_credit,
+                                        ).toLocaleString('id-ID')}
                                     </td>
                                 </tr>
                             </tfoot>
