@@ -72,6 +72,50 @@ class ManualJournalTest extends TestCase
         $response->assertRedirect(route('finance.journals.show', $entry));
     }
 
+    public function test_manual_journal_form_payload_with_empty_unused_side_saves_as_draft(): void
+    {
+        $finance = User::factory()->finance()->create();
+
+        $response = $this->actingAs($finance)->post(route('finance.journals.store'), [
+            'entry_date' => '2026-10-05',
+            'description' => 'Draf dari Formulir Jurnal',
+            'action' => 'draft',
+            'lines' => [
+                ['account_id' => $this->expenseAccount->id, 'debit' => '450000.00', 'credit' => ''],
+                ['account_id' => $this->cashAccount->id, 'debit' => '', 'credit' => '450000.00'],
+            ],
+        ]);
+
+        $entry = JournalEntry::where('description', 'Draf dari Formulir Jurnal')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(JournalStatus::Draft, $entry->status);
+        $response->assertRedirect(route('finance.journals.show', $entry));
+
+        $debitLine = $entry->lines()->where('account_id', $this->expenseAccount->id)->first();
+        $this->assertSame('0.00', (string) $debitLine->credit);
+    }
+
+    public function test_manual_journal_form_payload_with_empty_unused_side_posts_balanced_ac_14_16(): void
+    {
+        $finance = User::factory()->finance()->create();
+
+        $response = $this->actingAs($finance)->post(route('finance.journals.store'), [
+            'entry_date' => '2026-10-05',
+            'description' => 'Posting dari Formulir Jurnal',
+            'action' => 'post',
+            'lines' => [
+                ['account_id' => $this->expenseAccount->id, 'debit' => '450000.00', 'credit' => ''],
+                ['account_id' => $this->cashAccount->id, 'debit' => '', 'credit' => '450000.00'],
+            ],
+        ]);
+
+        $entry = JournalEntry::where('description', 'Posting dari Formulir Jurnal')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(JournalStatus::Posted, $entry->status);
+        $this->assertNotNull($entry->number);
+        $response->assertRedirect(route('finance.journals.show', $entry));
+    }
+
     public function test_finance_can_post_manual_journal_directly(): void
     {
         $finance = User::factory()->finance()->create();

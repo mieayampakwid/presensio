@@ -16,6 +16,33 @@ class SaveJournalRequest extends FormRequest
     }
 
     /**
+     * Prepare inputs for validation: a journal line is one-sided, so the unused
+     * debit/credit arrives as an empty string from the form and is treated as zero.
+     */
+    protected function prepareForValidation(): void
+    {
+        $lines = $this->input('lines');
+
+        if (! is_array($lines)) {
+            return;
+        }
+
+        foreach ($lines as $index => $line) {
+            if (! is_array($line)) {
+                continue;
+            }
+
+            foreach (['debit', 'credit'] as $side) {
+                if (array_key_exists($side, $line) && in_array($line[$side], ['', null], true)) {
+                    $lines[$index][$side] = '0';
+                }
+            }
+        }
+
+        $this->merge(['lines' => $lines]);
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
