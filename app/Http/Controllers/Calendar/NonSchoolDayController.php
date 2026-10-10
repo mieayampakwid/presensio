@@ -29,11 +29,6 @@ class NonSchoolDayController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        return Inertia::render('non-school-days/create');
-    }
-
     public function store(StoreNonSchoolDayRequest $request): RedirectResponse
     {
         NonSchoolDay::create([

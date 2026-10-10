@@ -61,132 +61,6 @@ const STATUS_OPTIONS = [
     { value: 'leave', label: 'Leave' },
 ];
 
-function EditRecordDialog({ row, date }: { row: Row; date: string }) {
-    const [open, setOpen] = useState(false);
-    const record = row.attendance;
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" title="Edit record">
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit record</span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Edit record — {row.full_name}</DialogTitle>
-                    <DialogDescription>
-                        {record
-                            ? 'Manual edits are stamped as overrides and never notify anyone.'
-                            : 'No record exists for this day — saving one now reconstructs it.'}
-                    </DialogDescription>
-                </DialogHeader>
-
-                <Form
-                    {...AttendanceController.updateRecord.form()}
-                    onSuccess={() => setOpen(false)}
-                    className="space-y-4"
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <input
-                                type="hidden"
-                                name="student_id"
-                                value={row.student_id}
-                            />
-                            <input type="hidden" name="date" value={date} />
-
-                            <div className="grid gap-2">
-                                <Label htmlFor={`status-${row.student_id}`}>
-                                    Status
-                                </Label>
-                                <select
-                                    id={`status-${row.student_id}`}
-                                    name="status"
-                                    defaultValue={record?.status ?? 'present'}
-                                    className={SELECT_CLASS}
-                                >
-                                    {STATUS_OPTIONS.map((option) => (
-                                        <option
-                                            key={option.value}
-                                            value={option.value}
-                                        >
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError message={errors.status} />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor={`in-${row.student_id}`}>
-                                        Check-in
-                                    </Label>
-                                    <Input
-                                        id={`in-${row.student_id}`}
-                                        type="time"
-                                        name="checked_in_at"
-                                        defaultValue={
-                                            record?.checked_in_at ?? ''
-                                        }
-                                    />
-                                    <InputError
-                                        message={errors.checked_in_at}
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor={`out-${row.student_id}`}>
-                                        Check-out
-                                    </Label>
-                                    <Input
-                                        id={`out-${row.student_id}`}
-                                        type="time"
-                                        name="checked_out_at"
-                                        defaultValue={
-                                            record?.checked_out_at ?? ''
-                                        }
-                                    />
-                                    <InputError
-                                        message={errors.checked_out_at}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor={`notes-${row.student_id}`}>
-                                    Notes
-                                </Label>
-                                <Input
-                                    id={`notes-${row.student_id}`}
-                                    name="notes"
-                                    defaultValue={record?.notes ?? ''}
-                                    maxLength={255}
-                                    placeholder="Why was this record overridden?"
-                                />
-                                <InputError message={errors.notes} />
-                            </div>
-
-                            <DialogFooter className="gap-2">
-                                <DialogClose asChild>
-                                    <Button variant="secondary" type="button">
-                                        Cancel
-                                    </Button>
-                                </DialogClose>
-                                <Button type="submit" disabled={processing}>
-                                    {processing && <Spinner />}
-                                    Save record
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
-                </Form>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 function BulkPresentDialog({
     classId,
     date,
@@ -250,6 +124,10 @@ function BulkPresentDialog({
 }
 
 export default function AttendanceIndex({ classes, filters, rows }: Props) {
+    const [editingRecord, setEditingRecord] = useState<{
+        row: Row;
+        date: string;
+    } | null>(null);
     const submitFilters = (
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
@@ -384,10 +262,22 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end">
-                                            <EditRecordDialog
-                                                row={row}
-                                                date={filters.date}
-                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                title="Edit record"
+                                                onClick={() =>
+                                                    setEditingRecord({
+                                                        row,
+                                                        date: filters.date,
+                                                    })
+                                                }
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Edit record
+                                                </span>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -407,6 +297,169 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                     </table>
                 </div>
             </div>
+            <Dialog
+                open={editingRecord !== null}
+                onOpenChange={(open) => !open && setEditingRecord(null)}
+            >
+                <DialogContent>
+                    {editingRecord && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Edit record — {editingRecord.row.full_name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {editingRecord.row.attendance
+                                        ? 'Manual edits are stamped as overrides and never notify anyone.'
+                                        : 'No record exists for this day — saving one now reconstructs it.'}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <Form
+                                key={`${editingRecord.row.student_id}-${editingRecord.date}`}
+                                {...AttendanceController.updateRecord.form()}
+                                onSuccess={() => setEditingRecord(null)}
+                                className="space-y-4"
+                            >
+                                {({ processing, errors }) => (
+                                    <>
+                                        <input
+                                            type="hidden"
+                                            name="student_id"
+                                            value={editingRecord.row.student_id}
+                                        />
+                                        <input
+                                            type="hidden"
+                                            name="date"
+                                            value={editingRecord.date}
+                                        />
+
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor={`status-${editingRecord.row.student_id}`}
+                                            >
+                                                Status
+                                            </Label>
+                                            <select
+                                                id={`status-${editingRecord.row.student_id}`}
+                                                name="status"
+                                                defaultValue={
+                                                    editingRecord.row.attendance
+                                                        ?.status ?? 'present'
+                                                }
+                                                className={SELECT_CLASS}
+                                            >
+                                                {STATUS_OPTIONS.map(
+                                                    (option) => (
+                                                        <option
+                                                            key={option.value}
+                                                            value={option.value}
+                                                        >
+                                                            {option.label}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                            <InputError
+                                                message={errors.status}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label
+                                                    htmlFor={`in-${editingRecord.row.student_id}`}
+                                                >
+                                                    Check-in
+                                                </Label>
+                                                <Input
+                                                    id={`in-${editingRecord.row.student_id}`}
+                                                    type="time"
+                                                    name="checked_in_at"
+                                                    defaultValue={
+                                                        editingRecord.row
+                                                            .attendance
+                                                            ?.checked_in_at ??
+                                                        ''
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.checked_in_at
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label
+                                                    htmlFor={`out-${editingRecord.row.student_id}`}
+                                                >
+                                                    Check-out
+                                                </Label>
+                                                <Input
+                                                    id={`out-${editingRecord.row.student_id}`}
+                                                    type="time"
+                                                    name="checked_out_at"
+                                                    defaultValue={
+                                                        editingRecord.row
+                                                            .attendance
+                                                            ?.checked_out_at ??
+                                                        ''
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.checked_out_at
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor={`notes-${editingRecord.row.student_id}`}
+                                            >
+                                                Notes
+                                            </Label>
+                                            <Input
+                                                id={`notes-${editingRecord.row.student_id}`}
+                                                name="notes"
+                                                defaultValue={
+                                                    editingRecord.row.attendance
+                                                        ?.notes ?? ''
+                                                }
+                                                maxLength={255}
+                                                placeholder="Why was this record overridden?"
+                                            />
+                                            <InputError
+                                                message={errors.notes}
+                                            />
+                                        </div>
+
+                                        <DialogFooter className="gap-2">
+                                            <Button
+                                                variant="secondary"
+                                                type="button"
+                                                onClick={() =>
+                                                    setEditingRecord(null)
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={processing}
+                                            >
+                                                {processing && <Spinner />}
+                                                Save record
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                )}
+                            </Form>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

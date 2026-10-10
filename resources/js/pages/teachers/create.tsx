@@ -16,6 +16,7 @@ export default function CreateTeacher() {
 
                 <TeacherForm
                     action={TeacherController.store.form()}
+                    cancelUrl={TeacherController.index().url}
                     submitLabel="Create teacher"
                     defaults={{
                         name: '',

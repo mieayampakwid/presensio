@@ -1,11 +1,20 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/hooks/use-translation';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import UserForm from './user-form';
 
 type UserRow = {
     id: number;
@@ -14,6 +23,14 @@ type UserRow = {
     role: string;
     roles?: string[];
     is_active: boolean;
+};
+
+type ProfileOption = { id: number; label: string };
+
+type ProfileOptions = {
+    teacher: ProfileOption[];
+    parent: ProfileOption[];
+    student: ProfileOption[];
 };
 
 type Paginator = {
@@ -27,9 +44,18 @@ type Paginator = {
 type Props = {
     users: Paginator;
     filters: { search: string };
+    profiles?: ProfileOptions;
 };
 
-export default function UsersIndex({ users, filters }: Props) {
+export default function UsersIndex({ users, filters, profiles }: Props) {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+    const openCreate = () => {
+        if (!profiles) {
+            router.reload({ only: ['profiles'] });
+        }
+        setIsCreateOpen(true);
+    };
     const { t } = useTranslation();
 
     return (
@@ -43,10 +69,8 @@ export default function UsersIndex({ users, filters }: Props) {
                         description={t('users.index.description')}
                     />
 
-                    <Button asChild>
-                        <Link href={UserController.create().url}>
-                            {t('users.index.create')}
-                        </Link>
+                    <Button onClick={openCreate}>
+                        {t('users.index.create')}
                     </Button>
                 </div>
 
@@ -187,6 +211,48 @@ export default function UsersIndex({ users, filters }: Props) {
                     </div>
                 </div>
             </div>
+
+            <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <SheetContent side="right" className="sm:max-w-lg">
+                    <SheetHeader>
+                        <SheetTitle>{t('users.create.title')}</SheetTitle>
+                        <SheetDescription>
+                            {t('users.create.description')}
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="flex-1 overflow-y-auto px-4">
+                        <UserForm
+                            action={UserController.store.form()}
+                            submitLabel={t('users.form.create_submit')}
+                            defaults={{
+                                username: '',
+                                email: null,
+                                roles: ['teacher'],
+                                role: 'teacher',
+                            }}
+                            profiles={
+                                profiles ?? {
+                                    teacher: [],
+                                    parent: [],
+                                    student: [],
+                                }
+                            }
+                            showPassword
+                            showActive={false}
+                            onSuccess={() => setIsCreateOpen(false)}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
+
+UsersIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Users',
+        },
+    ],
+};

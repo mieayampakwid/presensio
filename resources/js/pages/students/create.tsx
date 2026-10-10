@@ -32,6 +32,7 @@ export default function CreateStudent({ classes, guardians }: Props) {
 
                 <StudentForm
                     action={StudentController.store.form()}
+                    cancelUrl={StudentController.index().url}
                     submitLabel="Create student"
                     defaults={{
                         fullName: '',

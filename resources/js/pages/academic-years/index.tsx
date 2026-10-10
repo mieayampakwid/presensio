@@ -34,6 +34,7 @@ type Props = {
 };
 
 export default function AcademicYearsIndex({ years }: Props) {
+    const [editingYear, setEditingYear] = useState<Year | null>(null);
     return (
         <>
             <Head title="Academic Years" />
@@ -129,7 +130,19 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                     <CalendarDays className="h-4 w-4" />
                                                 </Link>
                                             </Button>
-                                            <EditYearDialog year={year} />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                title="Edit year"
+                                                onClick={() =>
+                                                    setEditingYear(year)
+                                                }
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Edit year
+                                                </span>
+                                            </Button>
                                             {!year.is_active && (
                                                 <Form
                                                     {...AcademicYearController.destroy.form(
@@ -184,6 +197,110 @@ export default function AcademicYearsIndex({ years }: Props) {
                     <CreateYearDialog />
                 </div>
             </div>
+            <Dialog
+                open={editingYear !== null}
+                onOpenChange={(open) => !open && setEditingYear(null)}
+            >
+                <DialogContent>
+                    {editingYear && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Edit — {editingYear.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Date bounds seed roll-over defaults;
+                                    changing them never rewrites existing
+                                    enrollments.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <Form
+                                key={editingYear.id}
+                                {...AcademicYearController.update.form({
+                                    academic_year: editingYear.id,
+                                })}
+                                onSuccess={() => setEditingYear(null)}
+                                className="space-y-4"
+                            >
+                                {({ processing, errors }) => (
+                                    <>
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor={`name-${editingYear.id}`}
+                                            >
+                                                Name
+                                            </Label>
+                                            <Input
+                                                id={`name-${editingYear.id}`}
+                                                name="name"
+                                                defaultValue={editingYear.name}
+                                            />
+                                            <InputError message={errors.name} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label
+                                                    htmlFor={`starts-${editingYear.id}`}
+                                                >
+                                                    Starts
+                                                </Label>
+                                                <Input
+                                                    id={`starts-${editingYear.id}`}
+                                                    type="date"
+                                                    name="starts_at"
+                                                    defaultValue={
+                                                        editingYear.starts_at
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.starts_at}
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label
+                                                    htmlFor={`ends-${editingYear.id}`}
+                                                >
+                                                    Ends
+                                                </Label>
+                                                <Input
+                                                    id={`ends-${editingYear.id}`}
+                                                    type="date"
+                                                    name="ends_at"
+                                                    defaultValue={
+                                                        editingYear.ends_at
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.ends_at}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <DialogFooter className="gap-2">
+                                            <Button
+                                                variant="secondary"
+                                                type="button"
+                                                onClick={() =>
+                                                    setEditingYear(null)
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={processing}
+                                            >
+                                                Save
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                )}
+                            </Form>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
@@ -250,89 +367,6 @@ function CreateYearDialog() {
                                 </DialogClose>
                                 <Button type="submit" disabled={processing}>
                                     Create
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
-                </Form>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function EditYearDialog({ year }: { year: Year }) {
-    const [open, setOpen] = useState(false);
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" title="Edit year">
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit year</span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Edit — {year.name}</DialogTitle>
-                    <DialogDescription>
-                        Date bounds seed roll-over defaults; changing them never
-                        rewrites existing enrollments.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <Form
-                    {...AcademicYearController.update.form({
-                        academic_year: year.id,
-                    })}
-                    onSuccess={() => setOpen(false)}
-                    className="space-y-4"
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor={`name-${year.id}`}>Name</Label>
-                                <Input
-                                    id={`name-${year.id}`}
-                                    name="name"
-                                    defaultValue={year.name}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor={`starts-${year.id}`}>
-                                        Starts
-                                    </Label>
-                                    <Input
-                                        id={`starts-${year.id}`}
-                                        type="date"
-                                        name="starts_at"
-                                        defaultValue={year.starts_at}
-                                    />
-                                    <InputError message={errors.starts_at} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor={`ends-${year.id}`}>
-                                        Ends
-                                    </Label>
-                                    <Input
-                                        id={`ends-${year.id}`}
-                                        type="date"
-                                        name="ends_at"
-                                        defaultValue={year.ends_at}
-                                    />
-                                    <InputError message={errors.ends_at} />
-                                </div>
-                            </div>
-
-                            <DialogFooter className="gap-2">
-                                <DialogClose asChild>
-                                    <Button variant="secondary" type="button">
-                                        Cancel
-                                    </Button>
-                                </DialogClose>
-                                <Button type="submit" disabled={processing}>
-                                    Save
                                 </Button>
                             </DialogFooter>
                         </>

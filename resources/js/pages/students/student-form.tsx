@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ type GuardianOption = {
 
 type StudentFormProps = {
     action: Record<string, unknown>;
+    cancelUrl: string;
     submitLabel: string;
     defaults: {
         fullName: string;
@@ -38,6 +39,7 @@ type StudentFormProps = {
 
 export default function StudentForm({
     action,
+    cancelUrl,
     submitLabel,
     defaults,
     classes,
@@ -257,10 +259,15 @@ export default function StudentForm({
                         <InputError message={errors.guardian_ids} />
                     </div>
 
-                    <Button type="submit" disabled={processing}>
-                        {processing && <Spinner />}
-                        {submitLabel}
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button variant="outline" asChild>
+                            <Link href={cancelUrl}>Cancel</Link>
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            {processing && <Spinner />}
+                            {submitLabel}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>

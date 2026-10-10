@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -37,6 +37,8 @@ type UserFormProps = {
     currentProfileIds?: CurrentProfileIds;
     showPassword: boolean;
     showActive: boolean;
+    cancelUrl?: string;
+    onSuccess?: () => void;
 };
 
 const SELECT_CLASS =
@@ -61,6 +63,8 @@ export default function UserForm({
     currentProfileIds,
     showPassword,
     showActive,
+    cancelUrl,
+    onSuccess,
 }: UserFormProps) {
     const { t } = useTranslation();
 
@@ -126,6 +130,7 @@ export default function UserForm({
             {...action}
             className="space-y-6"
             resetOnSuccess={showPassword ? ['password'] : undefined}
+            onSuccess={onSuccess}
         >
             {({ processing, errors }) => (
                 <div className="grid gap-6">
@@ -251,10 +256,17 @@ export default function UserForm({
                         </div>
                     )}
 
-                    <Button type="submit" disabled={processing}>
-                        {processing && <Spinner />}
-                        {submitLabel}
-                    </Button>
+                    <div className="flex gap-3">
+                        {cancelUrl && (
+                            <Button variant="outline" asChild>
+                                <Link href={cancelUrl}>Cancel</Link>
+                            </Button>
+                        )}
+                        <Button type="submit" disabled={processing}>
+                            {processing && <Spinner />}
+                            {submitLabel}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>

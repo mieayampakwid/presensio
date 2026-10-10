@@ -56,6 +56,7 @@ export default function EditStudent({
                     action={StudentController.update.form({
                         student: student.id,
                     })}
+                    cancelUrl={StudentController.index().url}
                     submitLabel="Save changes"
                     defaults={{
                         fullName: student.full_name,

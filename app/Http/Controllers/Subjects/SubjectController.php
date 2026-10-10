@@ -46,16 +46,6 @@ class SubjectController extends Controller
     }
 
     /**
-     * Show the form for creating a new subject.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('subjects/create', [
-            'groups' => $this->groupOptions(),
-        ]);
-    }
-
-    /**
      * Store a newly created subject in storage.
      */
     public function store(StoreSubjectRequest $request): RedirectResponse
@@ -68,17 +58,6 @@ class SubjectController extends Controller
         ]);
 
         return to_route('subjects.index');
-    }
-
-    /**
-     * Show the form for editing the specified subject.
-     */
-    public function edit(Subject $subject): Response
-    {
-        return Inertia::render('subjects/edit', [
-            'subject' => $subject,
-            'groups' => $this->groupOptions(),
-        ]);
     }
 
     /**

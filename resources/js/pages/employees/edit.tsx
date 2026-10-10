@@ -46,6 +46,7 @@ export default function EditEmployee({
                     action={EmployeeController.update({
                         employee: employee.id,
                     })}
+                    cancelUrl={EmployeeController.index().url}
                     submitLabel="Simpan Perubahan"
                     defaults={{
                         name: employee.name,

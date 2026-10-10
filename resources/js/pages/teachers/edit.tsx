@@ -29,6 +29,7 @@ export default function EditTeacher({ teacher }: Props) {
                     action={TeacherController.update.form({
                         teacher: teacher.id,
                     })}
+                    cancelUrl={TeacherController.index().url}
                     submitLabel="Save changes"
                     defaults={{
                         name: teacher.name,

@@ -56,6 +56,7 @@ export default function EditUser({
                 <UserForm
                     action={UserController.update.form({ user: user.id })}
                     submitLabel={t('users.edit.submit')}
+                    cancelUrl={UserController.index().url}
                     defaults={{
                         username: user.username,
                         email: user.email,
@@ -114,3 +115,15 @@ export default function EditUser({
         </>
     );
 }
+
+EditUser.layout = {
+    breadcrumbs: [
+        {
+            title: 'Users',
+            href: UserController.index().url,
+        },
+        {
+            title: 'Edit',
+        },
+    ],
+};

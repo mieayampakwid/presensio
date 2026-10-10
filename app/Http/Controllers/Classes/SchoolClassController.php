@@ -56,20 +56,11 @@ class SchoolClassController extends Controller
         return Inertia::render('classes/index', [
             'classes' => $classes,
             'years' => $years,
+            'teachers' => Inertia::optional(fn () => $this->teacherOptions()),
             'filters' => [
                 'search' => $search,
                 'year_id' => $yearId,
             ],
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new class.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('classes/create', [
-            'teachers' => $this->teacherOptions(),
         ]);
     }
 
@@ -90,17 +81,6 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Show the form for editing the specified class.
-     */
-    public function edit(SchoolClass $schoolClass): Response
-    {
-        return Inertia::render('classes/edit', [
-            'class' => $schoolClass,
-            'teachers' => $this->teacherOptions(),
-        ]);
-    }
-
-    /**
      * Update the specified class.
      */
     public function update(UpdateSchoolClassRequest $request, SchoolClass $schoolClass): RedirectResponse
@@ -109,7 +89,7 @@ class SchoolClassController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Class updated.']);
 
-        return to_route('classes.edit', $schoolClass);
+        return to_route('classes.index');
     }
 
     /**

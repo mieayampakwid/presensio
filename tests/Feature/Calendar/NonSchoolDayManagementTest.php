@@ -96,7 +96,6 @@ class NonSchoolDayManagementTest extends TestCase
         $day = NonSchoolDay::factory()->create();
 
         $this->actingAs($user)->get(route('non-school-days.index'))->assertForbidden();
-        $this->actingAs($user)->get(route('non-school-days.create'))->assertForbidden();
         $this->actingAs($user)
             ->post(route('non-school-days.store'), ['date' => '2026-10-10', 'name' => 'Nope'])
             ->assertForbidden();

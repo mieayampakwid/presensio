@@ -45,7 +45,7 @@ class EmployeeCardTest extends TestCase
                 'employee_id' => $employee->id,
             ])
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('rfid-cards.edit', $card));
+            ->assertRedirect(route('rfid-cards.index'));
 
         $this->assertSame($employee->id, $card->fresh()->employee_id);
     }

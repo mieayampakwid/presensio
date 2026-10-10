@@ -22,7 +22,7 @@ class UserController extends Controller
     /**
      * Display a listing of the users.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, UserProfileLinker $linker): Response
     {
         $search = $request->string('search')->toString();
 
@@ -49,19 +49,10 @@ class UserController extends Controller
 
         return Inertia::render('users/index', [
             'users' => $users,
+            'profiles' => Inertia::optional(fn () => $linker->profileOptions()),
             'filters' => [
                 'search' => $search,
             ],
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new user.
-     */
-    public function create(UserProfileLinker $linker): Response
-    {
-        return Inertia::render('users/create', [
-            'profiles' => $linker->profileOptions(),
         ]);
     }
 

@@ -43,14 +43,6 @@ class GuardianController extends Controller
     }
 
     /**
-     * Show the form for creating a new guardian.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('guardians/create');
-    }
-
-    /**
      * Store a newly created guardian.
      */
     public function store(StoreGuardianRequest $request): RedirectResponse
@@ -63,20 +55,6 @@ class GuardianController extends Controller
     }
 
     /**
-     * Show the form for editing the specified guardian.
-     */
-    public function edit(Guardian $guardian): Response
-    {
-        return Inertia::render('guardians/edit', [
-            'guardian' => $guardian,
-            // Relations stay admin-managed; shown read-only on this side.
-            'students' => $guardian->students()
-                ->orderBy('full_name')
-                ->get(['students.id', 'full_name']),
-        ]);
-    }
-
-    /**
      * Update the specified guardian.
      */
     public function update(UpdateGuardianRequest $request, Guardian $guardian): RedirectResponse
@@ -85,7 +63,7 @@ class GuardianController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Guardian updated.']);
 
-        return to_route('guardians.edit', $guardian);
+        return to_route('guardians.index');
     }
 
     /**

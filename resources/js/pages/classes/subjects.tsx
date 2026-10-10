@@ -8,12 +8,10 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -83,6 +81,9 @@ export default function ClassSubjects({
     defaultPassingThreshold,
 }: Props) {
     const [editingItem, setEditingItem] = useState<ClassSubjectRow | null>(
+        null,
+    );
+    const [deletingItem, setDeletingItem] = useState<ClassSubjectRow | null>(
         null,
     );
 
@@ -304,54 +305,19 @@ export default function ClassSubjects({
                                                     </span>
                                                 </Button>
 
-                                                <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-destructive hover:text-destructive"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">
-                                                                Hapus
-                                                            </span>
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogTitle>
-                                                            Hapus Penugasan
-                                                        </DialogTitle>
-                                                        <DialogDescription>
-                                                            Hapus penugasan{' '}
-                                                            {item.subject?.name}{' '}
-                                                            dari{' '}
-                                                            {schoolClass.name}?
-                                                        </DialogDescription>
-                                                        <DialogFooter className="gap-2">
-                                                            <DialogClose
-                                                                asChild
-                                                            >
-                                                                <Button variant="outline">
-                                                                    Batal
-                                                                </Button>
-                                                            </DialogClose>
-                                                            <DialogClose
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="destructive"
-                                                                    onClick={() =>
-                                                                        destroy(
-                                                                            item,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Hapus
-                                                                </Button>
-                                                            </DialogClose>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-destructive hover:text-destructive"
+                                                    onClick={() =>
+                                                        setDeletingItem(item)
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        Hapus
+                                                    </span>
+                                                </Button>
                                             </div>
                                         </td>
                                     )}
@@ -474,6 +440,38 @@ export default function ClassSubjects({
                         </DialogContent>
                     </Dialog>
                 )}
+
+                <Dialog
+                    open={deletingItem !== null}
+                    onOpenChange={(open) => !open && setDeletingItem(null)}
+                >
+                    <DialogContent>
+                        <DialogTitle>Hapus Penugasan</DialogTitle>
+                        <DialogDescription>
+                            Hapus penugasan {deletingItem?.subject?.name} dari{' '}
+                            {schoolClass.name}?
+                        </DialogDescription>
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeletingItem(null)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={() => {
+                                    if (deletingItem) {
+                                        destroy(deletingItem);
+                                        setDeletingItem(null);
+                                    }
+                                }}
+                            >
+                                Hapus
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );

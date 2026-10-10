@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     BookOpen,
     ChevronLeft,
@@ -6,22 +6,23 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-react';
-import { type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
+    DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 
 type ClassRow = {
     id: number;
@@ -37,6 +38,11 @@ type YearOption = {
     is_active: boolean;
 };
 
+type TeacherOption = {
+    id: number;
+    name: string;
+};
+
 type Paginator = {
     data: ClassRow[];
     prev_page_url: string | null;
@@ -49,9 +55,32 @@ type Props = {
     classes: Paginator;
     years: YearOption[];
     filters: { search: string; year_id: number | null };
+    teachers?: TeacherOption[];
 };
 
-export default function ClassesIndex({ classes, years, filters }: Props) {
+export default function ClassesIndex({
+    classes,
+    years,
+    filters,
+    teachers,
+}: Props) {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editingClass, setEditingClass] = useState<ClassRow | null>(null);
+    const [deleting, setDeleting] = useState<ClassRow | null>(null);
+
+    const openCreate = () => {
+        if (!teachers) {
+            router.reload({ only: ['teachers'] });
+        }
+        setIsCreateOpen(true);
+    };
+
+    const openEdit = (cls: ClassRow) => {
+        if (!teachers) {
+            router.reload({ only: ['teachers'] });
+        }
+        setEditingClass(cls);
+    };
     const destroy = (schoolClass: ClassRow) => {
         router.delete(
             SchoolClassController.destroy({ school_class: schoolClass.id }).url,
@@ -76,11 +105,7 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                         description="Year-scoped class instances; homeroom teachers link to master data."
                     />
 
-                    <Button asChild>
-                        <Link href={SchoolClassController.create().url}>
-                            Create class
-                        </Link>
-                    </Button>
+                    <Button onClick={openCreate}>Create class</Button>
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
@@ -183,71 +208,29 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                asChild
+                                                onClick={() =>
+                                                    openEdit(schoolClass)
+                                                }
                                             >
-                                                <Link
-                                                    href={
-                                                        SchoolClassController.edit(
-                                                            {
-                                                                school_class:
-                                                                    schoolClass.id,
-                                                            },
-                                                        ).url
-                                                    }
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                    <span className="sr-only">
-                                                        Edit
-                                                    </span>
-                                                </Link>
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Edit
+                                                </span>
                                             </Button>
 
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            Delete
-                                                        </span>
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogTitle>
-                                                        Delete class
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Are you sure you want to
-                                                        delete "
-                                                        {schoolClass.name}"?
-                                                        Classes with enrolled
-                                                        students cannot be
-                                                        deleted.
-                                                    </DialogDescription>
-                                                    <DialogFooter className="gap-2">
-                                                        <DialogClose asChild>
-                                                            <Button variant="secondary">
-                                                                Cancel
-                                                            </Button>
-                                                        </DialogClose>
-                                                        <DialogClose asChild>
-                                                            <Button
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    destroy(
-                                                                        schoolClass,
-                                                                    )
-                                                                }
-                                                            >
-                                                                Delete
-                                                            </Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() =>
+                                                    setDeleting(schoolClass)
+                                                }
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Delete
+                                                </span>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -298,6 +281,319 @@ export default function ClassesIndex({ classes, years, filters }: Props) {
                     </div>
                 </div>
             </div>
+            <Dialog
+                open={deleting !== null}
+                onOpenChange={(open) => !open && setDeleting(null)}
+            >
+                <DialogContent>
+                    <DialogTitle>Delete class</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete "{deleting?.name}"?
+                        Classes with enrolled students cannot be deleted.
+                    </DialogDescription>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setDeleting(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (deleting) {
+                                    destroy(deleting);
+                                    setDeleting(null);
+                                }
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create class</DialogTitle>
+                        <DialogDescription>
+                            Create a new class for the active academic year.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <Form
+                        {...SchoolClassController.store.form()}
+                        onSuccess={() => setIsCreateOpen(false)}
+                        className="space-y-4"
+                    >
+                        {({ processing, errors }) => (
+                            <>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="create-name">Name</Label>
+                                    <Input
+                                        id="create-name"
+                                        name="name"
+                                        required
+                                        autoFocus
+                                        autoComplete="off"
+                                        placeholder="e.g. Kelas 1A"
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="create-grade_level">
+                                            Grade Level (1–12)
+                                        </Label>
+                                        <select
+                                            id="create-grade_level"
+                                            name="grade_level"
+                                            required
+                                            defaultValue=""
+                                            className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        >
+                                            <option value="" disabled>
+                                                Pilih tingkat kelas
+                                            </option>
+                                            {Array.from(
+                                                { length: 12 },
+                                                (_, i) => i + 1,
+                                            ).map((lvl) => (
+                                                <option key={lvl} value={lvl}>
+                                                    Kelas {lvl}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError
+                                            message={errors.grade_level}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="create-curriculum">
+                                            Curriculum
+                                        </Label>
+                                        <select
+                                            id="create-curriculum"
+                                            name="curriculum"
+                                            defaultValue="merdeka"
+                                            required
+                                            className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        >
+                                            <option value="merdeka">
+                                                Kurikulum Merdeka
+                                            </option>
+                                        </select>
+                                        <InputError
+                                            message={errors.curriculum}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="create-teacher_id">
+                                        Homeroom teacher (optional)
+                                    </Label>
+                                    <select
+                                        id="create-teacher_id"
+                                        name="teacher_id"
+                                        defaultValue=""
+                                        className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                    >
+                                        <option value="">
+                                            No homeroom teacher
+                                        </option>
+                                        {(teachers ?? []).map((teacher) => (
+                                            <option
+                                                key={teacher.id}
+                                                value={teacher.id}
+                                            >
+                                                {teacher.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError message={errors.teacher_id} />
+                                </div>
+
+                                <DialogFooter className="gap-2">
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={() => setIsCreateOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing && <Spinner />}
+                                        Create class
+                                    </Button>
+                                </DialogFooter>
+                            </>
+                        )}
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={editingClass !== null}
+                onOpenChange={(open) => !open && setEditingClass(null)}
+            >
+                <DialogContent>
+                    {editingClass && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Edit {editingClass.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Update class details and homeroom teacher.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <Form
+                                key={editingClass.id}
+                                {...SchoolClassController.update.form({
+                                    school_class: editingClass.id,
+                                })}
+                                onSuccess={() => setEditingClass(null)}
+                                className="space-y-4"
+                            >
+                                {({ processing, errors }) => (
+                                    <>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-name">
+                                                Name
+                                            </Label>
+                                            <Input
+                                                id="edit-name"
+                                                name="name"
+                                                defaultValue={editingClass.name}
+                                                required
+                                                autoComplete="off"
+                                            />
+                                            <InputError message={errors.name} />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="edit-grade_level">
+                                                    Grade Level (1–12)
+                                                </Label>
+                                                <select
+                                                    id="edit-grade_level"
+                                                    name="grade_level"
+                                                    required
+                                                    defaultValue={
+                                                        editingClass.grade_level >
+                                                        0
+                                                            ? editingClass.grade_level
+                                                            : ''
+                                                    }
+                                                    className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                                >
+                                                    <option value="" disabled>
+                                                        Pilih tingkat kelas
+                                                    </option>
+                                                    {Array.from(
+                                                        { length: 12 },
+                                                        (_, i) => i + 1,
+                                                    ).map((lvl) => (
+                                                        <option
+                                                            key={lvl}
+                                                            value={lvl}
+                                                        >
+                                                            Kelas {lvl}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <InputError
+                                                    message={errors.grade_level}
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="edit-curriculum">
+                                                    Curriculum
+                                                </Label>
+                                                <select
+                                                    id="edit-curriculum"
+                                                    name="curriculum"
+                                                    defaultValue={
+                                                        editingClass.curriculum ||
+                                                        'merdeka'
+                                                    }
+                                                    required
+                                                    className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                                >
+                                                    <option value="merdeka">
+                                                        Kurikulum Merdeka
+                                                    </option>
+                                                </select>
+                                                <InputError
+                                                    message={errors.curriculum}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-teacher_id">
+                                                Homeroom teacher (optional)
+                                            </Label>
+                                            <select
+                                                id="edit-teacher_id"
+                                                name="teacher_id"
+                                                defaultValue={
+                                                    editingClass.teacher?.id ??
+                                                    ''
+                                                }
+                                                className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                            >
+                                                <option value="">
+                                                    No homeroom teacher
+                                                </option>
+                                                {(teachers ?? []).map(
+                                                    (teacher) => (
+                                                        <option
+                                                            key={teacher.id}
+                                                            value={teacher.id}
+                                                        >
+                                                            {teacher.name}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                            <InputError
+                                                message={errors.teacher_id}
+                                            />
+                                        </div>
+
+                                        <DialogFooter className="gap-2">
+                                            <Button
+                                                variant="secondary"
+                                                type="button"
+                                                onClick={() =>
+                                                    setEditingClass(null)
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={processing}
+                                            >
+                                                {processing && <Spinner />}
+                                                Save changes
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                )}
+                            </Form>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

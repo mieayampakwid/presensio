@@ -44,20 +44,11 @@ class RfidCardController extends Controller
 
         return Inertia::render('rfid-cards/index', [
             'cards' => $cards,
+            'students' => Inertia::optional(fn () => $this->studentOptions()),
+            'employees' => Inertia::optional(fn () => $this->employeeOptions()),
             'filters' => [
                 'search' => $search,
             ],
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new RFID card.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('rfid-cards/create', [
-            'students' => $this->studentOptions(),
-            'employees' => $this->employeeOptions(),
         ]);
     }
 
@@ -74,18 +65,6 @@ class RfidCardController extends Controller
     }
 
     /**
-     * Show the form for editing the specified RFID card.
-     */
-    public function edit(RfidCard $rfidCard): Response
-    {
-        return Inertia::render('rfid-cards/edit', [
-            'card' => $rfidCard,
-            'students' => $this->studentOptions(),
-            'employees' => $this->employeeOptions(),
-        ]);
-    }
-
-    /**
      * Update the specified RFID card.
      */
     public function update(UpdateRfidCardRequest $request, RfidCard $rfidCard): RedirectResponse
@@ -94,7 +73,7 @@ class RfidCardController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Card updated.']);
 
-        return to_route('rfid-cards.edit', $rfidCard);
+        return to_route('rfid-cards.index');
     }
 
     /**

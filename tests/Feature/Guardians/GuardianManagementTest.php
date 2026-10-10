@@ -97,17 +97,14 @@ class GuardianManagementTest extends TestCase
         $this->assertSame('Slamet Riyadi', $guardian->fresh()->name);
     }
 
-    public function test_edit_page_lists_linked_students(): void
+    public function test_edit_route_is_not_available(): void
     {
         $admin = User::factory()->admin()->create();
         $guardian = Guardian::factory()->create();
-        $student = Student::factory()->create(['full_name' => 'Ayu Lestari']);
-        $student->guardians()->attach($guardian->id);
 
         $this->actingAs($admin)
-            ->get(route('guardians.edit', $guardian))
-            ->assertOk()
-            ->assertSee('Ayu Lestari');
+            ->get("/guardians/{$guardian->id}/edit")
+            ->assertNotFound();
     }
 
     public function test_guardian_deletion_detaches_the_student_pivot(): void

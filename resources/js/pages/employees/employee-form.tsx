@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ type EmployeeFormProps = {
     operationalDays?: number[];
     availableUsers?: UserOption[];
     lockIsTeacher?: boolean;
+    cancelUrl: string;
 };
 
 const DAY_NAMES: Record<number, string> = {
@@ -52,6 +53,7 @@ const DEFAULT_EMPLOYMENT_TYPES: Option[] = [
 
 export default function EmployeeForm({
     action,
+    cancelUrl,
     submitLabel,
     defaults,
     employmentTypes = DEFAULT_EMPLOYMENT_TYPES,
@@ -322,10 +324,15 @@ export default function EmployeeForm({
                         </div>
                     </div>
 
-                    <Button type="submit" disabled={processing}>
-                        {processing && <Spinner />}
-                        {submitLabel}
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button variant="outline" asChild>
+                            <Link href={cancelUrl}>Cancel</Link>
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            {processing && <Spinner />}
+                            {submitLabel}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Form>

@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import StudentImportController from '@/actions/App/Http/Controllers/Students/StudentImportController';
 import Heading from '@/components/heading';
@@ -8,12 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 
 type StudentRow = {
@@ -37,6 +36,7 @@ type Props = {
 };
 
 export default function StudentsIndex({ students, filters }: Props) {
+    const [deleting, setDeleting] = useState<StudentRow | null>(null);
     const destroy = (student: StudentRow) => {
         router.delete(StudentController.destroy({ student: student.id }).url, {
             preserveScroll: true,
@@ -133,53 +133,19 @@ export default function StudentsIndex({ students, filters }: Props) {
                                                 </Link>
                                             </Button>
 
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            Delete
-                                                        </span>
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogTitle>
-                                                        Delete student
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Are you sure you want to
-                                                        delete "
-                                                        {student.full_name}"?
-                                                        Their guardian links are
-                                                        removed and any RFID
-                                                        card returns to the
-                                                        spare pool.
-                                                    </DialogDescription>
-                                                    <DialogFooter className="gap-2">
-                                                        <DialogClose asChild>
-                                                            <Button variant="secondary">
-                                                                Cancel
-                                                            </Button>
-                                                        </DialogClose>
-                                                        <DialogClose asChild>
-                                                            <Button
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    destroy(
-                                                                        student,
-                                                                    )
-                                                                }
-                                                            >
-                                                                Delete
-                                                            </Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() =>
+                                                    setDeleting(student)
+                                                }
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Delete
+                                                </span>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -230,6 +196,38 @@ export default function StudentsIndex({ students, filters }: Props) {
                     </div>
                 </div>
             </div>
+            <Dialog
+                open={deleting !== null}
+                onOpenChange={(open) => !open && setDeleting(null)}
+            >
+                <DialogContent>
+                    <DialogTitle>Delete student</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete "{deleting?.full_name}"?
+                        Their guardian links are removed and any RFID card
+                        returns to the spare pool.
+                    </DialogDescription>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setDeleting(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (deleting) {
+                                    destroy(deleting);
+                                    setDeleting(null);
+                                }
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

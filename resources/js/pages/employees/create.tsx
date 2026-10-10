@@ -29,6 +29,7 @@ export default function CreateEmployee({
 
                 <EmployeeForm
                     action={EmployeeController.store()}
+                    cancelUrl={EmployeeController.index().url}
                     submitLabel="Simpan Pegawai"
                     defaults={{
                         name: '',

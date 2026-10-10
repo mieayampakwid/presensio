@@ -1,18 +1,22 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
+    DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 
 type Day = {
     id: number;
@@ -30,6 +34,8 @@ type Paginator = {
 };
 
 export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [deleting, setDeleting] = useState<Day | null>(null);
     const destroy = (day: Day) => {
         router.delete(
             NonSchoolDayController.destroy({ non_school_day: day.id }).url,
@@ -48,10 +54,8 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                         description="Holidays and school closures — the sweep and scanner respect these."
                     />
 
-                    <Button asChild>
-                        <Link href={NonSchoolDayController.create().url}>
-                            Add date
-                        </Link>
+                    <Button onClick={() => setIsCreateOpen(true)}>
+                        Add date
                     </Button>
                 </div>
 
@@ -90,50 +94,17 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-right">
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                    <span className="sr-only">
-                                                        Delete
-                                                    </span>
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogTitle>
-                                                    Delete non-school day
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Remove {day.date} — "
-                                                    {day.name}"? Note: a synced
-                                                    date deleted while the
-                                                    national feed still lists it
-                                                    will re-import at the next
-                                                    weekly sync.
-                                                </DialogDescription>
-                                                <DialogFooter className="gap-2">
-                                                    <DialogClose asChild>
-                                                        <Button variant="secondary">
-                                                            Cancel
-                                                        </Button>
-                                                    </DialogClose>
-                                                    <DialogClose asChild>
-                                                        <Button
-                                                            variant="destructive"
-                                                            onClick={() =>
-                                                                destroy(day)
-                                                            }
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </DialogClose>
-                                                </DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                            onClick={() => setDeleting(day)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">
+                                                Delete
+                                            </span>
+                                        </Button>
                                     </td>
                                 </tr>
                             ))}
@@ -183,6 +154,98 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                     </div>
                 </div>
             </div>
+            <Dialog
+                open={deleting !== null}
+                onOpenChange={(open) => !open && setDeleting(null)}
+            >
+                <DialogContent>
+                    <DialogTitle>Delete non-school day</DialogTitle>
+                    <DialogDescription>
+                        Remove {deleting?.date} — "{deleting?.name}"? Note: a
+                        synced date deleted while the national feed still lists
+                        it will re-import at the next weekly sync.
+                    </DialogDescription>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setDeleting(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (deleting) {
+                                    destroy(deleting);
+                                    setDeleting(null);
+                                }
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add non-school day</DialogTitle>
+                        <DialogDescription>
+                            Declare a school closure. Only one entry per date is
+                            allowed.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <Form
+                        {...NonSchoolDayController.store.form()}
+                        onSuccess={() => setIsCreateOpen(false)}
+                        className="space-y-4"
+                    >
+                        {({ processing, errors }) => (
+                            <>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="create-date">Date</Label>
+                                    <Input
+                                        id="create-date"
+                                        type="date"
+                                        name="date"
+                                        required
+                                        autoFocus
+                                    />
+                                    <InputError message={errors.date} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="create-name">Name</Label>
+                                    <Input
+                                        id="create-name"
+                                        name="name"
+                                        required
+                                        maxLength={255}
+                                        placeholder="e.g. Teacher training day"
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
+
+                                <DialogFooter className="gap-2">
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={() => setIsCreateOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing && <Spinner />}
+                                        Add date
+                                    </Button>
+                                </DialogFooter>
+                            </>
+                        )}
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

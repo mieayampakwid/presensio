@@ -2,6 +2,7 @@ import EmployeeForm from '@/pages/employees/employee-form';
 
 type TeacherFormProps = {
     action: Record<string, unknown>;
+    cancelUrl: string;
     submitLabel: string;
     defaults: {
         name: string;
@@ -12,6 +13,7 @@ type TeacherFormProps = {
 
 export default function TeacherForm({
     action,
+    cancelUrl,
     submitLabel,
     defaults,
 }: TeacherFormProps) {
@@ -19,6 +21,7 @@ export default function TeacherForm({
         <EmployeeForm
             action={action}
             submitLabel={submitLabel}
+            cancelUrl={cancelUrl}
             defaults={{
                 name: defaults.name,
                 employeeNumber: defaults.teacherNumber,

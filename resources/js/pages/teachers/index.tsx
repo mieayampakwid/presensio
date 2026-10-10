@@ -1,17 +1,16 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 
 type TeacherRow = {
@@ -35,6 +34,7 @@ type Props = {
 };
 
 export default function TeachersIndex({ teachers, filters }: Props) {
+    const [deleting, setDeleting] = useState<TeacherRow | null>(null);
     const destroy = (teacher: TeacherRow) => {
         router.delete(TeacherController.destroy({ teacher: teacher.id }).url, {
             preserveScroll: true,
@@ -116,52 +116,19 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                                 </Link>
                                             </Button>
 
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            Delete
-                                                        </span>
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogTitle>
-                                                        Delete teacher
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Are you sure you want to
-                                                        delete "{teacher.name}"?
-                                                        Teachers homerooming a
-                                                        class or linked to a
-                                                        login account cannot be
-                                                        deleted.
-                                                    </DialogDescription>
-                                                    <DialogFooter className="gap-2">
-                                                        <DialogClose asChild>
-                                                            <Button variant="secondary">
-                                                                Cancel
-                                                            </Button>
-                                                        </DialogClose>
-                                                        <DialogClose asChild>
-                                                            <Button
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    destroy(
-                                                                        teacher,
-                                                                    )
-                                                                }
-                                                            >
-                                                                Delete
-                                                            </Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() =>
+                                                    setDeleting(teacher)
+                                                }
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Delete
+                                                </span>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -212,6 +179,38 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                     </div>
                 </div>
             </div>
+            <Dialog
+                open={deleting !== null}
+                onOpenChange={(open) => !open && setDeleting(null)}
+            >
+                <DialogContent>
+                    <DialogTitle>Delete teacher</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete "{deleting?.name}"?
+                        Teachers homerooming a class or linked to a login
+                        account cannot be deleted.
+                    </DialogDescription>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setDeleting(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (deleting) {
+                                    destroy(deleting);
+                                    setDeleting(null);
+                                }
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

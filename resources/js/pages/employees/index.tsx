@@ -1,18 +1,16 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
-import { ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
@@ -44,6 +42,7 @@ type Props = {
 };
 
 export default function EmployeesIndex({ employees, filters }: Props) {
+    const [deleting, setDeleting] = useState<EmployeeRow | null>(null);
     const destroy = (employee: EmployeeRow) => {
         router.delete(
             EmployeeController.destroy({ employee: employee.id }).url,
@@ -187,51 +186,17 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                                 </Link>
                                             </Button>
 
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            Hapus
-                                                        </span>
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogTitle>
-                                                        Hapus Pegawai
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Apakah Anda yakin ingin
-                                                        menghapus "{emp.name}"?
-                                                        Pegawai yang menjadi
-                                                        wali kelas, mengajar
-                                                        mata pelajaran, atau
-                                                        terhubung ke akun login
-                                                        tidak dapat dihapus.
-                                                    </DialogDescription>
-                                                    <DialogFooter className="gap-2">
-                                                        <DialogClose asChild>
-                                                            <Button variant="secondary">
-                                                                Batal
-                                                            </Button>
-                                                        </DialogClose>
-                                                        <DialogClose asChild>
-                                                            <Button
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    destroy(emp)
-                                                                }
-                                                            >
-                                                                Hapus
-                                                            </Button>
-                                                        </DialogClose>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() => setDeleting(emp)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Hapus
+                                                </span>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -284,6 +249,39 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                     </div>
                 </div>
             </div>
+            <Dialog
+                open={deleting !== null}
+                onOpenChange={(open) => !open && setDeleting(null)}
+            >
+                <DialogContent>
+                    <DialogTitle>Hapus Pegawai</DialogTitle>
+                    <DialogDescription>
+                        Apakah Anda yakin ingin menghapus "{deleting?.name}"?
+                        Pegawai yang menjadi wali kelas, mengajar mata
+                        pelajaran, atau terhubung ke akun login tidak dapat
+                        dihapus.
+                    </DialogDescription>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setDeleting(null)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (deleting) {
+                                    destroy(deleting);
+                                    setDeleting(null);
+                                }
+                            }}
+                        >
+                            Hapus
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
