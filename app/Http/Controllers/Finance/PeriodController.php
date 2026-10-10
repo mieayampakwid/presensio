@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccountingPeriod;
 use App\Services\Finance\PeriodService;
 use App\Services\SchoolSettings;
+use App\Support\Finance\RejectionResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -54,7 +55,7 @@ class PeriodController extends Controller
         try {
             $periodService->close($period, (int) auth()->id());
         } catch (RuntimeException $e) {
-            abort(422, $e->getMessage());
+            return RejectionResponse::make($request, $e->getMessage());
         }
 
         Inertia::flash('toast', [
@@ -77,7 +78,7 @@ class PeriodController extends Controller
         try {
             $periodService->reopen($period, $validated['reason'], (int) auth()->id());
         } catch (RuntimeException $e) {
-            abort(422, $e->getMessage());
+            return RejectionResponse::make($request, $e->getMessage());
         }
 
         Inertia::flash('toast', [
