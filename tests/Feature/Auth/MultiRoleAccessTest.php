@@ -6,6 +6,7 @@ use App\Enums\Ability;
 use App\Enums\AttendanceStatus;
 use App\Enums\UserRole;
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
@@ -177,6 +178,16 @@ class MultiRoleAccessTest extends TestCase
         $finance = User::factory()->finance()->create();
 
         $this->assertFalse(Gate::forUser($finance)->allows(Ability::EnterGrades->value));
+
+        $classSubject = ClassSubject::factory()->create();
+
+        $this->actingAs($finance)
+            ->get(route('courses.gradebook', $classSubject))
+            ->assertForbidden();
+
+        $this->actingAs($finance)
+            ->postJson(route('courses.scores.store', $classSubject), ['scores' => []])
+            ->assertForbidden();
     }
 
     /**
