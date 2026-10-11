@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Teacher\AssessmentController;
 use App\Http\Controllers\Teacher\CourseController;
+use App\Http\Controllers\Teacher\GradebookController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,5 @@ Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
     Route::post('courses/{class_subject}/assessments', [AssessmentController::class, 'store'])->name('courses.assessments.store');
     Route::put('courses/{class_subject}/assessments/{assessment}', [AssessmentController::class, 'update'])->name('courses.assessments.update');
     Route::delete('courses/{class_subject}/assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('courses.assessments.destroy');
+    Route::get('courses/{class_subject}/gradebook', [GradebookController::class, 'show'])->name('courses.gradebook');
 });
