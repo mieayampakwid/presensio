@@ -1,12 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import {
-    AlertCircle,
-    CheckCircle2,
-    Info,
-    Paperclip,
-    Plus,
-    Trash2,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';

@@ -1,13 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    FileText,
-    Paperclip,
-    Plus,
-    RotateCcw,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Paperclip, Plus } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';

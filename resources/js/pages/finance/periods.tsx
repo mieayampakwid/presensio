@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertCircle, Check, Info, Lock, Unlock } from 'lucide-react';
+import { Info, Lock, Unlock } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
