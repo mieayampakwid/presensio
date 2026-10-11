@@ -21,6 +21,7 @@ import {
     Scale,
     School,
     Table2,
+    Target,
     UserRound,
     Users,
     Wallet,
@@ -126,6 +127,11 @@ export function AppSidebar() {
                       icon: BookOpen,
                   },
                   {
+                      title: 'Learning Objectives',
+                      href: '/objectives',
+                      icon: Target,
+                  },
+                  {
                       title: 'Academic Years',
                       href: AcademicYearController.index().url,
                       icon: CalendarRange,
@@ -204,6 +210,11 @@ export function AppSidebar() {
                       title: 'My Courses',
                       href: '/courses',
                       icon: BookOpen,
+                  },
+                  {
+                      title: 'Learning Objectives',
+                      href: '/objectives',
+                      icon: Target,
                   },
               ]
             : []),

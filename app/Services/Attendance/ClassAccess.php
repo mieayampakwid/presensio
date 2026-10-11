@@ -85,6 +85,27 @@ class ClassAccess
         return false;
     }
 
+    /**
+     * Determine if the user can manage learning objectives for a (year, subject, grade_level) scope.
+     * Teacher must hold a class_subjects row for that subject in a class of that grade level in that year; admin all.
+     */
+    public static function canManageObjectives(User $user, int $yearId, int $subjectId, int $gradeLevel): bool
+    {
+        if ($user->hasRole(UserRole::Admin)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Teacher) && $user->teacher !== null) {
+            return ClassSubject::query()
+                ->where('teacher_id', $user->teacher->id)
+                ->where('subject_id', $subjectId)
+                ->whereHas('schoolClass', fn ($q) => $q->where('academic_year_id', $yearId)->where('grade_level', $gradeLevel))
+                ->exists();
+        }
+
+        return false;
+    }
+
     public static function canAccess(User $user, int $classId): bool
     {
         return self::classIds($user)->contains($classId);
