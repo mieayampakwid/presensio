@@ -68,9 +68,6 @@ class UpdateAssessmentRequest extends FormRequest
                 $assessment = $this->route('assessment');
 
                 $semester = $assessment->semester;
-                if (! $semester) {
-                    return;
-                }
 
                 // Finalization check
                 $courseSemester = CourseSemester::forCourse($classSubject, $semester);

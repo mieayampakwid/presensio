@@ -31,8 +31,8 @@ class ScoreRecorder
                 $assessmentId = (int) $row['assessment_id'];
                 $studentId = (int) $row['student_id'];
 
-                $newScore = isset($row['score']) && $row['score'] !== null ? (float) $row['score'] : null;
-                $newRemedial = isset($row['remedial_score']) && $row['remedial_score'] !== null ? (float) $row['remedial_score'] : null;
+                $newScore = isset($row['score']) ? (float) $row['score'] : null;
+                $newRemedial = isset($row['remedial_score']) ? (float) $row['remedial_score'] : null;
                 $newNotes = isset($row['notes']) && $row['notes'] !== '' ? (string) $row['notes'] : null;
 
                 /** @var Score|null $existing */

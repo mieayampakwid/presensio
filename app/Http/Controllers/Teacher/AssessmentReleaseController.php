@@ -26,15 +26,16 @@ class AssessmentReleaseController extends Controller
         abort_if($assessment->class_subject_id !== $classSubject->id, 404);
 
         if ($assessment->released_at === null) {
+            $now = now();
             $assessment->update([
-                'released_at' => now(),
+                'released_at' => $now,
             ]);
 
             $this->auditLogger->record(
                 $assessment,
                 'released',
                 null,
-                ['released_at' => $assessment->released_at->toIso8601String()]
+                ['released_at' => $now->toIso8601String()]
             );
         }
 

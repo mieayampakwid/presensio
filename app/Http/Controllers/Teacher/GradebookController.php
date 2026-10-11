@@ -36,7 +36,7 @@ class GradebookController extends Controller
 
         $semesterId = $request->filled('semester')
             ? (int) $request->input('semester')
-            : (int) ($semesters->first()?->id ?? 0);
+            : (int) ($semesters->first()->id ?? 0);
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();

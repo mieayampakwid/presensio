@@ -60,13 +60,14 @@ class StoreScoresRequest extends FormRequest
             function (Validator $validator): void {
                 /** @var ClassSubject $classSubject */
                 $classSubject = $this->route('class_subject');
-                $scoresInput = $this->input('scores', []);
+                /** @var array<int, array{assessment_id?: int, student_id?: int, score?: float|int|string|null, remedial_score?: float|int|string|null, notes?: string|null}> $scoresInput */
+                $scoresInput = (array) $this->input('scores', []);
 
-                $assessmentIds = collect($scoresInput)->pluck('assessment_id')->unique()->all();
+                $assessmentIds = array_values(array_unique(array_filter(array_column($scoresInput, 'assessment_id'))));
                 /** @var Collection<int, Assessment> $assessments */
                 $assessments = Assessment::whereIn('id', $assessmentIds)->with('semester')->get()->keyBy('id');
 
-                $studentIds = collect($scoresInput)->pluck('student_id')->unique()->all();
+                $studentIds = array_values(array_unique(array_filter(array_column($scoresInput, 'student_id'))));
                 /** @var Collection<int, Enrollment> $enrollments */
                 $enrollments = Enrollment::where('class_id', $classSubject->class_id)
                     ->whereIn('student_id', $studentIds)
@@ -75,9 +76,8 @@ class StoreScoresRequest extends FormRequest
                 foreach ($scoresInput as $index => $row) {
                     $assessmentId = $row['assessment_id'] ?? null;
                     $studentId = $row['student_id'] ?? null;
-                    $score = isset($row['score']) && $row['score'] !== null ? (float) $row['score'] : null;
-                    $remedial = isset($row['remedial_score']) && $row['remedial_score'] !== null ? (float) $row['remedial_score'] : null;
-
+                    $score = array_key_exists('score', $row) && $row['score'] !== null ? (float) $row['score'] : null;
+                    $remedial = array_key_exists('remedial_score', $row) && $row['remedial_score'] !== null ? (float) $row['remedial_score'] : null;
                     $assessment = $assessments->get($assessmentId);
                     if (! $assessment) {
                         continue;

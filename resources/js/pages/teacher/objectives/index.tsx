@@ -68,7 +68,9 @@ export default function ObjectivesIndex({
     hasPreviousYear,
 }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
+    const [editingObjective, setEditingObjective] = useState<Objective | null>(
+        null,
+    );
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const createForm = useForm({
@@ -86,15 +88,21 @@ export default function ObjectivesIndex({
         sort_order: 0,
     });
 
-    const handleFilterChange = (key: 'academic_year_id' | 'subject_id' | 'grade_level', value: string) => {
+    const handleFilterChange = (
+        key: 'academic_year_id' | 'subject_id' | 'grade_level',
+        value: string,
+    ) => {
         router.get(
             '/objectives',
             {
-                academic_year_id: key === 'academic_year_id' ? value : (selectedYearId ?? ''),
-                subject_id: key === 'subject_id' ? value : (selectedSubjectId ?? ''),
-                grade_level: key === 'grade_level' ? value : (selectedGradeLevel ?? ''),
+                academic_year_id:
+                    key === 'academic_year_id' ? value : (selectedYearId ?? ''),
+                subject_id:
+                    key === 'subject_id' ? value : (selectedSubjectId ?? ''),
+                grade_level:
+                    key === 'grade_level' ? value : (selectedGradeLevel ?? ''),
             },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
@@ -137,7 +145,12 @@ export default function ObjectivesIndex({
     };
 
     const handleCopyPreviousYear = () => {
-        if (!confirm('Salin tujuan pembelajaran dari tahun ajaran sebelumnya? Kode yang sudah ada akan dilewati.')) return;
+        if (
+            !confirm(
+                'Salin tujuan pembelajaran dari tahun ajaran sebelumnya? Kode yang sudah ada akan dilewati.',
+            )
+        )
+            return;
 
         router.post(
             '/objectives/copy',
@@ -149,9 +162,11 @@ export default function ObjectivesIndex({
             {
                 onError: (errors) => {
                     const msg = Object.values(errors)[0] as string;
-                    setErrorMessage(msg || 'Gagal menyalin tujuan pembelajaran.');
+                    setErrorMessage(
+                        msg || 'Gagal menyalin tujuan pembelajaran.',
+                    );
                 },
-            }
+            },
         );
     };
 
@@ -162,17 +177,30 @@ export default function ObjectivesIndex({
             <div className="space-y-6 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <Heading title="Tujuan Pembelajaran (TP)" description="Kelola tujuan pembelajaran Kurikulum Merdeka per mata pelajaran dan tingkat kelas" />
+                        <Heading
+                            title="Tujuan Pembelajaran (TP)"
+                            description="Kelola tujuan pembelajaran Kurikulum Merdeka per mata pelajaran dan tingkat kelas"
+                        />
                     </div>
                     {canManage && (
                         <div className="flex items-center gap-2">
                             {hasPreviousYear && (
-                                <Button variant="outline" onClick={handleCopyPreviousYear}>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleCopyPreviousYear}
+                                >
                                     <Copy className="mr-2 h-4 w-4" />
                                     Salin dari Tahun Lalu
                                 </Button>
                             )}
-                            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedYearId || !selectedSubjectId || !selectedGradeLevel}>
+                            <Button
+                                onClick={() => setIsCreateOpen(true)}
+                                disabled={
+                                    !selectedYearId ||
+                                    !selectedSubjectId ||
+                                    !selectedGradeLevel
+                                }
+                            >
                                 <Plus className="mr-2 h-4 w-4" />
                                 Tambah TP
                             </Button>
@@ -184,7 +212,12 @@ export default function ObjectivesIndex({
                     <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-300">
                         <AlertCircle className="h-5 w-5 shrink-0" />
                         <p>{errorMessage}</p>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setErrorMessage(null)}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto"
+                            onClick={() => setErrorMessage(null)}
+                        >
                             Tutup
                         </Button>
                     </div>
@@ -196,7 +229,9 @@ export default function ObjectivesIndex({
                         <Label>Tahun Ajaran</Label>
                         <Select
                             value={selectedYearId ? String(selectedYearId) : ''}
-                            onValueChange={(val) => handleFilterChange('academic_year_id', val)}
+                            onValueChange={(val) =>
+                                handleFilterChange('academic_year_id', val)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih Tahun Ajaran" />
@@ -214,8 +249,14 @@ export default function ObjectivesIndex({
                     <div className="space-y-1.5">
                         <Label>Mata Pelajaran</Label>
                         <Select
-                            value={selectedSubjectId ? String(selectedSubjectId) : ''}
-                            onValueChange={(val) => handleFilterChange('subject_id', val)}
+                            value={
+                                selectedSubjectId
+                                    ? String(selectedSubjectId)
+                                    : ''
+                            }
+                            onValueChange={(val) =>
+                                handleFilterChange('subject_id', val)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih Mata Pelajaran" />
@@ -233,8 +274,14 @@ export default function ObjectivesIndex({
                     <div className="space-y-1.5">
                         <Label>Tingkat Kelas</Label>
                         <Select
-                            value={selectedGradeLevel ? String(selectedGradeLevel) : ''}
-                            onValueChange={(val) => handleFilterChange('grade_level', val)}
+                            value={
+                                selectedGradeLevel
+                                    ? String(selectedGradeLevel)
+                                    : ''
+                            }
+                            onValueChange={(val) =>
+                                handleFilterChange('grade_level', val)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih Tingkat" />
@@ -251,15 +298,20 @@ export default function ObjectivesIndex({
                 </div>
 
                 {/* Content */}
-                {!selectedYearId || !selectedSubjectId || !selectedGradeLevel ? (
-                    <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-                        Pilih tahun ajaran, mata pelajaran, dan tingkat kelas untuk melihat tujuan pembelajaran.
+                {!selectedYearId ||
+                !selectedSubjectId ||
+                !selectedGradeLevel ? (
+                    <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
+                        Pilih tahun ajaran, mata pelajaran, dan tingkat kelas
+                        untuk melihat tujuan pembelajaran.
                     </div>
                 ) : objectives.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
-                        <Target className="mx-auto h-12 w-12 text-muted-foreground/60" />
-                        <h3 className="mt-4 text-base font-semibold">Belum Ada Tujuan Pembelajaran</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <Target className="text-muted-foreground/60 mx-auto h-12 w-12" />
+                        <h3 className="mt-4 text-base font-semibold">
+                            Belum Ada Tujuan Pembelajaran
+                        </h3>
+                        <p className="text-muted-foreground mt-1 text-sm">
                             {canManage
                                 ? 'Tambahkan tujuan pembelajaran untuk lingkup mata pelajaran dan tingkat kelas ini.'
                                 : 'Anda tidak memiliki hak mengelola tujuan pembelajaran untuk lingkup ini.'}
@@ -268,22 +320,41 @@ export default function ObjectivesIndex({
                 ) : (
                     <div className="overflow-hidden rounded-lg border">
                         <table className="w-full text-left text-sm">
-                            <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">
+                            <thead className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Urutan</th>
-                                    <th className="px-4 py-3 font-medium">Kode</th>
-                                    <th className="px-4 py-3 font-medium">Deskripsi Tujuan Pembelajaran</th>
-                                    {canManage && <th className="px-4 py-3 text-right font-medium">Aksi</th>}
+                                    <th className="px-4 py-3 font-medium">
+                                        Urutan
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Kode
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Deskripsi Tujuan Pembelajaran
+                                    </th>
+                                    {canManage && (
+                                        <th className="px-4 py-3 text-right font-medium">
+                                            Aksi
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
                                 {objectives.map((tp) => (
-                                    <tr key={tp.id} className="hover:bg-muted/50">
-                                        <td className="px-4 py-3 text-muted-foreground">{tp.sort_order}</td>
-                                        <td className="px-4 py-3 font-semibold">
-                                            <Badge variant="outline">{tp.code}</Badge>
+                                    <tr
+                                        key={tp.id}
+                                        className="hover:bg-muted/50"
+                                    >
+                                        <td className="text-muted-foreground px-4 py-3">
+                                            {tp.sort_order}
                                         </td>
-                                        <td className="max-w-xl px-4 py-3">{tp.description}</td>
+                                        <td className="px-4 py-3 font-semibold">
+                                            <Badge variant="outline">
+                                                {tp.code}
+                                            </Badge>
+                                        </td>
+                                        <td className="max-w-xl px-4 py-3">
+                                            {tp.description}
+                                        </td>
                                         {canManage && (
                                             <td className="px-4 py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
@@ -291,11 +362,15 @@ export default function ObjectivesIndex({
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => {
-                                                            setEditingObjective(tp);
+                                                            setEditingObjective(
+                                                                tp,
+                                                            );
                                                             editForm.setData({
                                                                 code: tp.code,
-                                                                description: tp.description,
-                                                                sort_order: tp.sort_order,
+                                                                description:
+                                                                    tp.description,
+                                                                sort_order:
+                                                                    tp.sort_order,
                                                             });
                                                         }}
                                                     >
@@ -305,7 +380,9 @@ export default function ObjectivesIndex({
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-red-600 hover:text-red-700"
-                                                        onClick={() => handleDelete(tp)}
+                                                        onClick={() =>
+                                                            handleDelete(tp)
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -326,7 +403,8 @@ export default function ObjectivesIndex({
                     <DialogHeader>
                         <DialogTitle>Tambah Tujuan Pembelajaran</DialogTitle>
                         <DialogDescription>
-                            Tujuan pembelajaran digunakan dalam asesmen lingkup materi dan deskripsi capaian rapor.
+                            Tujuan pembelajaran digunakan dalam asesmen lingkup
+                            materi dan deskripsi capaian rapor.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -336,29 +414,44 @@ export default function ObjectivesIndex({
                             <Input
                                 id="create-code"
                                 value={createForm.data.code}
-                                onChange={(e) => createForm.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    createForm.setData('code', e.target.value)
+                                }
                                 placeholder="Contoh: TP 1"
                                 required
                             />
                             {createForm.errors.code && (
-                                <p className="text-xs text-red-500">{createForm.errors.code}</p>
+                                <p className="text-xs text-red-500">
+                                    {createForm.errors.code}
+                                </p>
                             )}
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="create-description">Deskripsi</Label>
+                            <Label htmlFor="create-description">
+                                Deskripsi
+                            </Label>
                             <textarea
                                 id="create-description"
                                 className="border-input placeholder:text-muted-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                 value={createForm.data.description}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => createForm.setData('description', e.target.value)}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLTextAreaElement>,
+                                ) =>
+                                    createForm.setData(
+                                        'description',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Contoh: Memahami konsep pecahan dan representasinya"
                                 maxLength={500}
                                 rows={4}
                                 required
                             />
                             {createForm.errors.description && (
-                                <p className="text-xs text-red-500">{createForm.errors.description}</p>
+                                <p className="text-xs text-red-500">
+                                    {createForm.errors.description}
+                                </p>
                             )}
                         </div>
 
@@ -368,15 +461,27 @@ export default function ObjectivesIndex({
                                 id="create-sort"
                                 type="number"
                                 value={createForm.data.sort_order}
-                                onChange={(e) => createForm.setData('sort_order', parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    createForm.setData(
+                                        'sort_order',
+                                        parseInt(e.target.value) || 0,
+                                    )
+                                }
                             />
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsCreateOpen(false)}
+                            >
                                 Batal
                             </Button>
-                            <Button type="submit" disabled={createForm.processing}>
+                            <Button
+                                type="submit"
+                                disabled={createForm.processing}
+                            >
                                 Simpan
                             </Button>
                         </DialogFooter>
@@ -385,7 +490,10 @@ export default function ObjectivesIndex({
             </Dialog>
 
             {/* Edit Dialog */}
-            <Dialog open={!!editingObjective} onOpenChange={(open) => !open && setEditingObjective(null)}>
+            <Dialog
+                open={!!editingObjective}
+                onOpenChange={(open) => !open && setEditingObjective(null)}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Ubah Tujuan Pembelajaran</DialogTitle>
@@ -400,11 +508,15 @@ export default function ObjectivesIndex({
                             <Input
                                 id="edit-code"
                                 value={editForm.data.code}
-                                onChange={(e) => editForm.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    editForm.setData('code', e.target.value)
+                                }
                                 required
                             />
                             {editForm.errors.code && (
-                                <p className="text-xs text-red-500">{editForm.errors.code}</p>
+                                <p className="text-xs text-red-500">
+                                    {editForm.errors.code}
+                                </p>
                             )}
                         </div>
 
@@ -414,13 +526,22 @@ export default function ObjectivesIndex({
                                 id="edit-description"
                                 className="border-input placeholder:text-muted-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                 value={editForm.data.description}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => editForm.setData('description', e.target.value)}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLTextAreaElement>,
+                                ) =>
+                                    editForm.setData(
+                                        'description',
+                                        e.target.value,
+                                    )
+                                }
                                 maxLength={500}
                                 rows={4}
                                 required
                             />
                             {editForm.errors.description && (
-                                <p className="text-xs text-red-500">{editForm.errors.description}</p>
+                                <p className="text-xs text-red-500">
+                                    {editForm.errors.description}
+                                </p>
                             )}
                         </div>
 
@@ -430,15 +551,27 @@ export default function ObjectivesIndex({
                                 id="edit-sort"
                                 type="number"
                                 value={editForm.data.sort_order}
-                                onChange={(e) => editForm.setData('sort_order', parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    editForm.setData(
+                                        'sort_order',
+                                        parseInt(e.target.value) || 0,
+                                    )
+                                }
                             />
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setEditingObjective(null)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditingObjective(null)}
+                            >
                                 Batal
                             </Button>
-                            <Button type="submit" disabled={editForm.processing}>
+                            <Button
+                                type="submit"
+                                disabled={editForm.processing}
+                            >
                                 Perbarui
                             </Button>
                         </DialogFooter>

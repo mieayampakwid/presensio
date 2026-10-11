@@ -169,6 +169,7 @@ class LearningObjectiveController extends Controller
             403
         );
 
+        /** @var AcademicYear $targetYear */
         $targetYear = AcademicYear::findOrFail($data['academic_year_id']);
 
         $prevYear = AcademicYear::query()

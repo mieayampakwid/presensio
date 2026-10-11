@@ -2,14 +2,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
-    CheckCircle2,
     Clock,
     Save,
     Sliders,
-    AlertCircle,
     Info,
     Check,
-    X,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import Heading from '@/components/heading';
@@ -42,7 +39,11 @@ type AssessmentItem = {
     max_score: number;
     released_at: string | null;
     sort_order: number;
-    learning_objectives: Array<{ id: number; code: string; description: string }>;
+    learning_objectives: Array<{
+        id: number;
+        code: string;
+        description: string;
+    }>;
 };
 
 type CellData = {
@@ -104,7 +105,9 @@ export default function GradebookShow({
     const threshold = parseFloat(course.passing_threshold) || 75;
 
     // Local score edit state: studentId -> assessmentId -> { score, remedial, notes }
-    const [localCells, setLocalCells] = useState<Record<number, Record<number, CellData>>>(() => {
+    const [localCells, setLocalCells] = useState<
+        Record<number, Record<number, CellData>>
+    >(() => {
         const initial: Record<number, Record<number, CellData>> = {};
         for (const student of students) {
             initial[student.id] = {};
@@ -125,8 +128,12 @@ export default function GradebookShow({
     const groupedAssessments = useMemo(() => {
         return {
             formative: assessments.filter((a) => a.kind === 'formative'),
-            summativeScope: assessments.filter((a) => a.kind === 'summative_scope'),
-            summativeFinal: assessments.filter((a) => a.kind === 'summative_final'),
+            summativeScope: assessments.filter(
+                (a) => a.kind === 'summative_scope',
+            ),
+            summativeFinal: assessments.filter(
+                (a) => a.kind === 'summative_final',
+            ),
         };
     }, [assessments]);
 
@@ -139,13 +146,16 @@ export default function GradebookShow({
     }, [groupedAssessments]);
 
     // Grid navigation hook
-    const { handleKeyDown } = useGridNavigation(students.length, orderedAssessments.length * 2);
+    const { handleKeyDown } = useGridNavigation(
+        students.length,
+        orderedAssessments.length * 2,
+    );
 
     const handleSemesterChange = (semesterId: string) => {
         router.get(
             `/courses/${course.id}/gradebook`,
             { semester: semesterId },
-            { preserveState: false }
+            { preserveState: false },
         );
     };
 
@@ -153,11 +163,15 @@ export default function GradebookShow({
         studentId: number,
         assessmentId: number,
         field: 'score' | 'remedial' | 'notes',
-        value: string
+        value: string,
     ) => {
         setLocalCells((prev) => {
             const studentMap = prev[studentId] ? { ...prev[studentId] } : {};
-            const existingCell = studentMap[assessmentId] || { score: null, remedial: null, notes: null };
+            const existingCell = studentMap[assessmentId] || {
+                score: null,
+                remedial: null,
+                notes: null,
+            };
 
             let parsed: number | null = null;
             if (field === 'notes') {
@@ -165,9 +179,13 @@ export default function GradebookShow({
             } else {
                 parsed = value === '' ? null : parseFloat(value);
                 if (field === 'score') {
-                    existingCell.score = isNaN(parsed as number) ? null : parsed;
+                    existingCell.score = isNaN(parsed as number)
+                        ? null
+                        : parsed;
                 } else if (field === 'remedial') {
-                    existingCell.remedial = isNaN(parsed as number) ? null : parsed;
+                    existingCell.remedial = isNaN(parsed as number)
+                        ? null
+                        : parsed;
                 }
             }
 
@@ -215,7 +233,7 @@ export default function GradebookShow({
                     const msg = Object.values(err)[0] as string;
                     setSaveMessage(msg || 'Gagal menyimpan nilai.');
                 },
-            }
+            },
         );
     };
 
@@ -232,7 +250,7 @@ export default function GradebookShow({
                 onSuccess: () => {
                     setIsWeightsOpen(false);
                 },
-            }
+            },
         );
     };
 
@@ -242,25 +260,33 @@ export default function GradebookShow({
         router.post(
             `/courses/${course.id}/assessments/${assessmentId}/release`,
             {},
-            { preserveScroll: true }
+            { preserveScroll: true },
         );
     };
 
     return (
         <>
-            <Head title={`Buku Nilai - ${course.subject_name} (${course.class_name})`} />
+            <Head
+                title={`Buku Nilai - ${course.subject_name} (${course.class_name})`}
+            />
 
             <div className="space-y-6 p-4">
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Link href="/courses" className="flex items-center gap-1 hover:underline">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <Link
+                                href="/courses"
+                                className="flex items-center gap-1 hover:underline"
+                            >
                                 <ArrowLeft className="h-4 w-4" />
                                 Kembali
                             </Link>
                             <span>•</span>
-                            <Link href={`/courses/${course.id}/assessments?semester=${semester.id}`} className="hover:underline">
+                            <Link
+                                href={`/courses/${course.id}/assessments?semester=${semester.id}`}
+                                className="hover:underline"
+                            >
                                 Kelola Asesmen
                             </Link>
                             <span>•</span>
@@ -268,7 +294,10 @@ export default function GradebookShow({
                             <span>•</span>
                             <span>KKTP: {course.passing_threshold}</span>
                             <span>•</span>
-                            <span>Bobot: Lingkup {weights.scope}% / Akhir {weights.final}%</span>
+                            <span>
+                                Bobot: Lingkup {weights.scope}% / Akhir{' '}
+                                {weights.final}%
+                            </span>
                         </div>
                         <Heading
                             title={`Buku Nilai: ${course.subject_name}`}
@@ -279,18 +308,31 @@ export default function GradebookShow({
                     <div className="flex flex-wrap items-center gap-2">
                         {canWrite && !is_finalized && (
                             <>
-                                <Button variant="outline" size="sm" onClick={() => setIsWeightsOpen(true)}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsWeightsOpen(true)}
+                                >
                                     <Sliders className="mr-2 h-4 w-4" />
                                     Atur Bobot
                                 </Button>
-                                <Button size="sm" onClick={handleSaveBatch} disabled={isSaving}>
+                                <Button
+                                    size="sm"
+                                    onClick={handleSaveBatch}
+                                    disabled={isSaving}
+                                >
                                     <Save className="mr-2 h-4 w-4" />
-                                    {isSaving ? 'Menyimpan...' : 'Simpan Semua Nilai'}
+                                    {isSaving
+                                        ? 'Menyimpan...'
+                                        : 'Simpan Semua Nilai'}
                                 </Button>
                             </>
                         )}
                         {is_finalized && (
-                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                            <Badge
+                                variant="secondary"
+                                className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"
+                            >
                                 Sudah Difinalisasi (Terkunci)
                             </Badge>
                         )}
@@ -301,20 +343,28 @@ export default function GradebookShow({
                     <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-300">
                         <Info className="h-4 w-4" />
                         <p>{saveMessage}</p>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setSaveMessage(null)}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto"
+                            onClick={() => setSaveMessage(null)}
+                        >
                             Tutup
                         </Button>
                     </div>
                 )}
 
                 {/* Filter and stats banner */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <Calendar className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-sm font-medium">Semester {semester.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                                {students.length} Siswa • {assessments.length} Asesmen
+                            <p className="text-sm font-medium">
+                                Semester {semester.name}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                                {students.length} Siswa • {assessments.length}{' '}
+                                Asesmen
                             </p>
                         </div>
                     </div>
@@ -330,7 +380,10 @@ export default function GradebookShow({
                                 </SelectTrigger>
                                 <SelectContent>
                                     {semesters.map((s) => (
-                                        <SelectItem key={s.id} value={String(s.id)}>
+                                        <SelectItem
+                                            key={s.id}
+                                            value={String(s.id)}
+                                        >
                                             {s.name}
                                         </SelectItem>
                                     ))}
@@ -342,11 +395,16 @@ export default function GradebookShow({
 
                 {/* Spreadsheet Gradebook Grid */}
                 {orderedAssessments.length === 0 ? (
-                    <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-                        Belum ada asesmen untuk semester ini. Tambahkan asesmen terlebih dahulu di menu{' '}
-                        <Link href={`/courses/${course.id}/assessments?semester=${semester.id}`} className="font-semibold text-primary underline">
+                    <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
+                        Belum ada asesmen untuk semester ini. Tambahkan asesmen
+                        terlebih dahulu di menu{' '}
+                        <Link
+                            href={`/courses/${course.id}/assessments?semester=${semester.id}`}
+                            className="text-primary font-semibold underline"
+                        >
                             Kelola Asesmen
-                        </Link>.
+                        </Link>
+                        .
                     </div>
                 ) : (
                     <div className="overflow-x-auto rounded-lg border">
@@ -354,63 +412,102 @@ export default function GradebookShow({
                             <thead className="bg-muted/70">
                                 {/* Top header: Groups */}
                                 <tr className="border-b">
-                                    <th className="sticky left-0 z-20 bg-muted/90 px-3 py-2 border-r font-semibold" colSpan={2}>
+                                    <th
+                                        className="bg-muted/90 sticky left-0 z-20 border-r px-3 py-2 font-semibold"
+                                        colSpan={2}
+                                    >
                                         Data Siswa
                                     </th>
 
-                                    {groupedAssessments.summativeScope.length > 0 && (
+                                    {groupedAssessments.summativeScope.length >
+                                        0 && (
                                         <th
-                                            className="bg-purple-50/50 px-3 py-2 text-center font-semibold text-purple-700 border-r dark:bg-purple-950/20 dark:text-purple-300"
-                                            colSpan={groupedAssessments.summativeScope.length * 2}
+                                            className="border-r bg-purple-50/50 px-3 py-2 text-center font-semibold text-purple-700 dark:bg-purple-950/20 dark:text-purple-300"
+                                            colSpan={
+                                                groupedAssessments
+                                                    .summativeScope.length * 2
+                                            }
                                         >
-                                            Sumatif Lingkup Materi ({weights.scope}%)
+                                            Sumatif Lingkup Materi (
+                                            {weights.scope}%)
                                         </th>
                                     )}
 
-                                    {groupedAssessments.summativeFinal.length > 0 && (
+                                    {groupedAssessments.summativeFinal.length >
+                                        0 && (
                                         <th
-                                            className="bg-emerald-50/50 px-3 py-2 text-center font-semibold text-emerald-700 border-r dark:bg-emerald-950/20 dark:text-emerald-300"
-                                            colSpan={groupedAssessments.summativeFinal.length * 2}
+                                            className="border-r bg-emerald-50/50 px-3 py-2 text-center font-semibold text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300"
+                                            colSpan={
+                                                groupedAssessments
+                                                    .summativeFinal.length * 2
+                                            }
                                         >
-                                            Sumatif Akhir Semester ({weights.final}%)
+                                            Sumatif Akhir Semester (
+                                            {weights.final}%)
                                         </th>
                                     )}
 
-                                    {groupedAssessments.formative.length > 0 && (
+                                    {groupedAssessments.formative.length >
+                                        0 && (
                                         <th
-                                            className="bg-blue-50/50 px-3 py-2 text-center font-semibold text-blue-700 border-r dark:bg-blue-950/20 dark:text-blue-300"
-                                            colSpan={groupedAssessments.formative.length}
+                                            className="border-r bg-blue-50/50 px-3 py-2 text-center font-semibold text-blue-700 dark:bg-blue-950/20 dark:text-blue-300"
+                                            colSpan={
+                                                groupedAssessments.formative
+                                                    .length
+                                            }
                                         >
                                             Formatif (Umpan Balik)
                                         </th>
                                     )}
 
-                                    <th className="px-3 py-2 text-center font-semibold" colSpan={3}>
+                                    <th
+                                        className="px-3 py-2 text-center font-semibold"
+                                        colSpan={3}
+                                    >
                                         Ringkasan Nilai
                                     </th>
                                 </tr>
 
                                 {/* Second header: Individual assessments */}
-                                <tr className="border-b text-muted-foreground">
-                                    <th className="sticky left-0 z-20 bg-muted/90 px-3 py-2 font-medium w-12 border-r">NIS</th>
-                                    <th className="sticky left-12 z-20 bg-muted/90 px-3 py-2 font-medium min-w-[160px] border-r">Nama Lengkap</th>
+                                <tr className="text-muted-foreground border-b">
+                                    <th className="bg-muted/90 sticky left-0 z-20 w-12 border-r px-3 py-2 font-medium">
+                                        NIS
+                                    </th>
+                                    <th className="bg-muted/90 sticky left-12 z-20 min-w-[160px] border-r px-3 py-2 font-medium">
+                                        Nama Lengkap
+                                    </th>
 
                                     {orderedAssessments.map((a) => {
-                                        const isSummative = a.kind !== 'formative';
+                                        const isSummative =
+                                            a.kind !== 'formative';
                                         return isSummative ? (
-                                            <th key={a.id} colSpan={2} className="px-2 py-2 border-r min-w-[140px]">
+                                            <th
+                                                key={a.id}
+                                                colSpan={2}
+                                                className="min-w-[140px] border-r px-2 py-2"
+                                            >
                                                 <div className="flex flex-col gap-0.5">
-                                                    <span className="font-semibold text-foreground truncate">{a.name}</span>
+                                                    <span className="text-foreground truncate font-semibold">
+                                                        {a.name}
+                                                    </span>
                                                     <div className="flex items-center justify-between text-[10px]">
-                                                        <span>Maks: {a.max_score}</span>
+                                                        <span>
+                                                            Maks: {a.max_score}
+                                                        </span>
                                                         {a.released_at ? (
-                                                            <span className="text-emerald-600 font-medium">Dirilis</span>
+                                                            <span className="font-medium text-emerald-600">
+                                                                Dirilis
+                                                            </span>
                                                         ) : (
                                                             canWrite && (
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => handleReleaseAssessment(a.id)}
-                                                                    className="text-primary hover:underline font-medium"
+                                                                    onClick={() =>
+                                                                        handleReleaseAssessment(
+                                                                            a.id,
+                                                                        )
+                                                                    }
+                                                                    className="text-primary font-medium hover:underline"
                                                                 >
                                                                     Rilis
                                                                 </button>
@@ -420,18 +517,31 @@ export default function GradebookShow({
                                                 </div>
                                             </th>
                                         ) : (
-                                            <th key={a.id} className="px-2 py-2 border-r min-w-[70px]">
+                                            <th
+                                                key={a.id}
+                                                className="min-w-[70px] border-r px-2 py-2"
+                                            >
                                                 <div className="flex flex-col gap-0.5">
-                                                    <span className="font-semibold text-foreground truncate">{a.name}</span>
-                                                    <span className="text-[10px]">Maks: {a.max_score}</span>
+                                                    <span className="text-foreground truncate font-semibold">
+                                                        {a.name}
+                                                    </span>
+                                                    <span className="text-[10px]">
+                                                        Maks: {a.max_score}
+                                                    </span>
                                                 </div>
                                             </th>
                                         );
                                     })}
 
-                                    <th className="px-2 py-2 text-center font-medium border-r min-w-[70px]">Nilai Rapor</th>
-                                    <th className="px-2 py-2 text-center font-medium border-r min-w-[80px]">Status</th>
-                                    <th className="px-2 py-2 text-center font-medium min-w-[80px]">Kelengkapan</th>
+                                    <th className="min-w-[70px] border-r px-2 py-2 text-center font-medium">
+                                        Nilai Rapor
+                                    </th>
+                                    <th className="min-w-[80px] border-r px-2 py-2 text-center font-medium">
+                                        Status
+                                    </th>
+                                    <th className="min-w-[80px] px-2 py-2 text-center font-medium">
+                                        Kelengkapan
+                                    </th>
                                 </tr>
                             </thead>
 
@@ -439,29 +549,51 @@ export default function GradebookShow({
                                 {students.map((student, rowIndex) => {
                                     let colIndex = 0;
                                     return (
-                                        <tr key={student.id} className="hover:bg-muted/40">
-                                            <td className="sticky left-0 z-10 bg-background px-3 py-1.5 font-mono text-[11px] border-r">
+                                        <tr
+                                            key={student.id}
+                                            className="hover:bg-muted/40"
+                                        >
+                                            <td className="bg-background sticky left-0 z-10 border-r px-3 py-1.5 font-mono text-[11px]">
                                                 {student.student_number}
                                             </td>
-                                            <td className="sticky left-12 z-10 bg-background px-3 py-1.5 font-medium border-r truncate max-w-[200px]">
+                                            <td className="bg-background sticky left-12 z-10 max-w-[200px] truncate border-r px-3 py-1.5 font-medium">
                                                 {student.name}
                                             </td>
 
                                             {orderedAssessments.map((a) => {
-                                                const isEligible = a.id in student.cells;
-                                                const cellData = localCells[student.id]?.[a.id] || { score: null, remedial: null, notes: null };
+                                                const isEligible =
+                                                    a.id in student.cells;
+                                                const cellData = localCells[
+                                                    student.id
+                                                ]?.[a.id] || {
+                                                    score: null,
+                                                    remedial: null,
+                                                    notes: null,
+                                                };
                                                 const scoreVal = cellData.score;
-                                                const showRemedial = isEligible && a.kind !== 'formative' && scoreVal !== null && scoreVal < threshold;
+                                                const showRemedial =
+                                                    isEligible &&
+                                                    a.kind !== 'formative' &&
+                                                    scoreVal !== null &&
+                                                    scoreVal < threshold;
 
                                                 const colIdxCurrent = colIndex;
-                                                colIndex += (a.kind !== 'formative' ? 2 : 1);
+                                                colIndex +=
+                                                    a.kind !== 'formative'
+                                                        ? 2
+                                                        : 1;
 
                                                 if (!isEligible) {
                                                     return (
                                                         <td
                                                             key={a.id}
-                                                            colSpan={a.kind !== 'formative' ? 2 : 1}
-                                                            className="px-2 py-1.5 text-center text-muted-foreground/50 bg-muted/20 border-r"
+                                                            colSpan={
+                                                                a.kind !==
+                                                                'formative'
+                                                                    ? 2
+                                                                    : 1
+                                                            }
+                                                            className="text-muted-foreground/50 bg-muted/20 border-r px-2 py-1.5 text-center"
                                                         >
                                                             -
                                                         </td>
@@ -470,49 +602,126 @@ export default function GradebookShow({
 
                                                 if (a.kind === 'formative') {
                                                     return (
-                                                        <td key={a.id} className="p-1 border-r">
+                                                        <td
+                                                            key={a.id}
+                                                            className="border-r p-1"
+                                                        >
                                                             <Input
                                                                 type="number"
                                                                 step="any"
-                                                                data-row={rowIndex}
-                                                                data-col={colIdxCurrent}
-                                                                onKeyDown={handleKeyDown}
-                                                                disabled={!canWrite || is_finalized}
-                                                                className="h-7 text-xs text-center px-1"
-                                                                value={cellData.score !== null ? cellData.score : ''}
-                                                                onChange={(e) => handleCellChange(student.id, a.id, 'score', e.target.value)}
+                                                                data-row={
+                                                                    rowIndex
+                                                                }
+                                                                data-col={
+                                                                    colIdxCurrent
+                                                                }
+                                                                onKeyDown={
+                                                                    handleKeyDown
+                                                                }
+                                                                disabled={
+                                                                    !canWrite ||
+                                                                    is_finalized
+                                                                }
+                                                                className="h-7 px-1 text-center text-xs"
+                                                                value={
+                                                                    cellData.score !==
+                                                                    null
+                                                                        ? cellData.score
+                                                                        : ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleCellChange(
+                                                                        student.id,
+                                                                        a.id,
+                                                                        'score',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
                                                             />
                                                         </td>
                                                     );
                                                 }
 
                                                 return (
-                                                    <td key={a.id} colSpan={2} className="p-1 border-r">
+                                                    <td
+                                                        key={a.id}
+                                                        colSpan={2}
+                                                        className="border-r p-1"
+                                                    >
                                                         <div className="flex items-center gap-1">
                                                             <Input
                                                                 type="number"
                                                                 step="any"
-                                                                data-row={rowIndex}
-                                                                data-col={colIdxCurrent}
-                                                                onKeyDown={handleKeyDown}
-                                                                disabled={!canWrite || is_finalized}
-                                                                className="h-7 text-xs text-center px-1 flex-1"
+                                                                data-row={
+                                                                    rowIndex
+                                                                }
+                                                                data-col={
+                                                                    colIdxCurrent
+                                                                }
+                                                                onKeyDown={
+                                                                    handleKeyDown
+                                                                }
+                                                                disabled={
+                                                                    !canWrite ||
+                                                                    is_finalized
+                                                                }
+                                                                className="h-7 flex-1 px-1 text-center text-xs"
                                                                 placeholder="Nilai"
-                                                                value={cellData.score !== null ? cellData.score : ''}
-                                                                onChange={(e) => handleCellChange(student.id, a.id, 'score', e.target.value)}
+                                                                value={
+                                                                    cellData.score !==
+                                                                    null
+                                                                        ? cellData.score
+                                                                        : ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleCellChange(
+                                                                        student.id,
+                                                                        a.id,
+                                                                        'score',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
                                                             />
                                                             {showRemedial && (
                                                                 <Input
                                                                     type="number"
                                                                     step="any"
-                                                                    data-row={rowIndex}
-                                                                    data-col={colIdxCurrent + 1}
-                                                                    onKeyDown={handleKeyDown}
-                                                                    disabled={!canWrite || is_finalized}
-                                                                    className="h-7 text-xs text-center px-1 w-14 bg-amber-50/50 border-amber-300 dark:bg-amber-950/20 dark:border-amber-800"
+                                                                    data-row={
+                                                                        rowIndex
+                                                                    }
+                                                                    data-col={
+                                                                        colIdxCurrent +
+                                                                        1
+                                                                    }
+                                                                    onKeyDown={
+                                                                        handleKeyDown
+                                                                    }
+                                                                    disabled={
+                                                                        !canWrite ||
+                                                                        is_finalized
+                                                                    }
+                                                                    className="h-7 w-14 border-amber-300 bg-amber-50/50 px-1 text-center text-xs dark:border-amber-800 dark:bg-amber-950/20"
                                                                     placeholder="Remedial"
-                                                                    value={cellData.remedial !== null ? cellData.remedial : ''}
-                                                                    onChange={(e) => handleCellChange(student.id, a.id, 'remedial', e.target.value)}
+                                                                    value={
+                                                                        cellData.remedial !==
+                                                                        null
+                                                                            ? cellData.remedial
+                                                                            : ''
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        handleCellChange(
+                                                                            student.id,
+                                                                            a.id,
+                                                                            'remedial',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
                                                                 />
                                                             )}
                                                         </div>
@@ -521,25 +730,45 @@ export default function GradebookShow({
                                             })}
 
                                             {/* Summary */}
-                                            <td className="px-2 py-1.5 text-center font-bold border-r text-sm">
-                                                {student.live_score !== null ? student.live_score : '-'}
+                                            <td className="border-r px-2 py-1.5 text-center text-sm font-bold">
+                                                {student.live_score !== null
+                                                    ? student.live_score
+                                                    : '-'}
                                             </td>
-                                            <td className="px-2 py-1.5 text-center border-r">
+                                            <td className="border-r px-2 py-1.5 text-center">
                                                 <Badge
-                                                    variant={student.status === 'Tuntas' ? 'default' : 'secondary'}
-                                                    className={student.status === 'Tuntas' ? 'bg-emerald-600 text-white' : ''}
+                                                    variant={
+                                                        student.status ===
+                                                        'Tuntas'
+                                                            ? 'default'
+                                                            : 'secondary'
+                                                    }
+                                                    className={
+                                                        student.status ===
+                                                        'Tuntas'
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : ''
+                                                    }
                                                 >
                                                     {student.status}
                                                 </Badge>
                                             </td>
                                             <td className="px-2 py-1.5 text-center">
                                                 {student.complete ? (
-                                                    <Badge variant="outline" className="border-emerald-500 text-emerald-600">
-                                                        <Check className="mr-1 h-3 w-3" /> Lengkap
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-emerald-500 text-emerald-600"
+                                                    >
+                                                        <Check className="mr-1 h-3 w-3" />{' '}
+                                                        Lengkap
                                                     </Badge>
                                                 ) : (
-                                                    <Badge variant="outline" className="border-amber-400 text-amber-600">
-                                                        <Clock className="mr-1 h-3 w-3" /> Belum
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-amber-400 text-amber-600"
+                                                    >
+                                                        <Clock className="mr-1 h-3 w-3" />{' '}
+                                                        Belum
                                                     </Badge>
                                                 )}
                                             </td>
@@ -558,13 +787,16 @@ export default function GradebookShow({
                     <DialogHeader>
                         <DialogTitle>Atur Bobot Penilaian Semester</DialogTitle>
                         <DialogDescription>
-                            Tentukan proporsi nilai sumatif lingkup materi dan sumatif akhir semester.
+                            Tentukan proporsi nilai sumatif lingkup materi dan
+                            sumatif akhir semester.
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSaveWeights} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="weight-scope">Bobot Sumatif Lingkup Materi (%)</Label>
+                            <Label htmlFor="weight-scope">
+                                Bobot Sumatif Lingkup Materi (%)
+                            </Label>
                             <Input
                                 id="weight-scope"
                                 type="number"
@@ -577,7 +809,9 @@ export default function GradebookShow({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="weight-final">Bobot Sumatif Akhir Semester (%)</Label>
+                            <Label htmlFor="weight-final">
+                                Bobot Sumatif Akhir Semester (%)
+                            </Label>
                             <Input
                                 id="weight-final"
                                 type="number"
@@ -590,7 +824,11 @@ export default function GradebookShow({
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsWeightsOpen(false)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsWeightsOpen(false)}
+                            >
                                 Batal
                             </Button>
                             <Button type="submit">Simpan Bobot</Button>

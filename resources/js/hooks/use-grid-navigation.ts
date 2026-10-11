@@ -51,7 +51,7 @@ export function useGridNavigation(totalRows: number, totalCols: number) {
 
             if (nextRow !== row || nextCol !== col) {
                 const nextInput = document.querySelector<HTMLInputElement>(
-                    `input[data-row="${nextRow}"][data-col="${nextCol}"]`
+                    `input[data-row="${nextRow}"][data-col="${nextCol}"]`,
                 );
                 if (nextInput) {
                     nextInput.focus();
@@ -59,7 +59,7 @@ export function useGridNavigation(totalRows: number, totalCols: number) {
                 }
             }
         },
-        [totalRows, totalCols]
+        [totalRows, totalCols],
     );
 
     return { handleKeyDown };

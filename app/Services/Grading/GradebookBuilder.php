@@ -162,20 +162,31 @@ class GradebookBuilder
                 'scope' => $wScope,
                 'final' => $wFinal,
             ],
-            'assessments' => $assessments->map(fn (Assessment $a) => [
-                'id' => $a->id,
-                'name' => $a->name,
-                'kind' => $a->kind->value,
-                'assessed_on' => $a->assessed_on->toDateString(),
-                'max_score' => (float) $a->max_score,
-                'released_at' => $a->released_at?->toIso8601String(),
-                'sort_order' => $a->sort_order,
-                'learning_objectives' => $a->learningObjectives->map(fn ($tp) => [
-                    'id' => $tp->id,
-                    'code' => $tp->code,
-                    'description' => $tp->description,
-                ])->all(),
-            ])->values()->all(),
+            'assessments' => (function () use ($assessments): array {
+                $rows = [];
+                foreach ($assessments as $a) {
+                    $tps = [];
+                    foreach ($a->learningObjectives as $tp) {
+                        $tps[] = [
+                            'id' => $tp->id,
+                            'code' => $tp->code,
+                            'description' => $tp->description,
+                        ];
+                    }
+                    $rows[] = [
+                        'id' => $a->id,
+                        'name' => $a->name,
+                        'kind' => $a->kind->value,
+                        'assessed_on' => $a->assessed_on->toDateString(),
+                        'max_score' => (float) $a->max_score,
+                        'released_at' => $a->released_at?->toIso8601String(),
+                        'sort_order' => $a->sort_order,
+                        'learning_objectives' => $tps,
+                    ];
+                }
+
+                return $rows;
+            })(),
             'students' => $studentRows,
         ];
     }

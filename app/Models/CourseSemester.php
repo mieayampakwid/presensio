@@ -36,7 +36,7 @@ class CourseSemester extends Model
     /**
      * Lazily get or create course semester settings prefilled from school settings.
      */
-    public static function forCourse(ClassSubject $classSubject, Semester $semester): static
+    public static function forCourse(ClassSubject $classSubject, Semester $semester): self
     {
         /** @var SchoolSettings $settings */
         $settings = app(SchoolSettings::class);

@@ -90,7 +90,8 @@ export default function AssessmentsIndex({
     canWrite,
 }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingAssessment, setEditingAssessment] = useState<AssessmentItem | null>(null);
+    const [editingAssessment, setEditingAssessment] =
+        useState<AssessmentItem | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const createForm = useForm({
@@ -116,7 +117,7 @@ export default function AssessmentsIndex({
         router.get(
             `/courses/${course.id}/assessments`,
             { semester: semesterId },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
@@ -125,7 +126,12 @@ export default function AssessmentsIndex({
         createForm.post(`/courses/${course.id}/assessments`, {
             onSuccess: () => {
                 setIsCreateOpen(false);
-                createForm.reset('name', 'assessed_on', 'sort_order', 'objective_ids');
+                createForm.reset(
+                    'name',
+                    'assessed_on',
+                    'sort_order',
+                    'objective_ids',
+                );
             },
             onError: (err) => {
                 const first = Object.values(err)[0] as string;
@@ -138,21 +144,28 @@ export default function AssessmentsIndex({
         e.preventDefault();
         if (!editingAssessment) return;
 
-        editForm.put(`/courses/${course.id}/assessments/${editingAssessment.id}`, {
-            onSuccess: () => {
-                setEditingAssessment(null);
+        editForm.put(
+            `/courses/${course.id}/assessments/${editingAssessment.id}`,
+            {
+                onSuccess: () => {
+                    setEditingAssessment(null);
+                },
+                onError: (err) => {
+                    const first = Object.values(err)[0] as string;
+                    setErrorMessage(first || 'Gagal memperbarui asesmen.');
+                },
             },
-            onError: (err) => {
-                const first = Object.values(err)[0] as string;
-                setErrorMessage(first || 'Gagal memperbarui asesmen.');
-            },
-        });
+        );
     };
 
     const handleDelete = (assessment: AssessmentItem) => {
         let confirmFlag = false;
         if (assessment.scores_count > 0) {
-            if (!confirm(`Asesmen ini sudah memiliki ${assessment.scores_count} nilai tersimpan. Tetap hapus seluruh nilai dan asesmen?`)) {
+            if (
+                !confirm(
+                    `Asesmen ini sudah memiliki ${assessment.scores_count} nilai tersimpan. Tetap hapus seluruh nilai dan asesmen?`,
+                )
+            ) {
                 return;
             }
             confirmFlag = true;
@@ -171,7 +184,7 @@ export default function AssessmentsIndex({
 
     const toggleObjective = (
         form: typeof createForm | typeof editForm,
-        objectiveId: number
+        objectiveId: number,
     ) => {
         const current = [...form.data.objective_ids];
         const idx = current.indexOf(objectiveId);
@@ -180,30 +193,59 @@ export default function AssessmentsIndex({
         } else {
             current.push(objectiveId);
         }
-        form.setData('objective_ids', current);
+        form.setData((prev) => ({
+            ...prev,
+            objective_ids: current,
+        }));
     };
 
     const renderKindBadge = (kind: AssessmentItem['kind']) => {
         switch (kind) {
             case 'formative':
-                return <Badge variant="outline" className="border-blue-400 text-blue-600 dark:text-blue-400">Formatif</Badge>;
+                return (
+                    <Badge
+                        variant="outline"
+                        className="border-blue-400 text-blue-600 dark:text-blue-400"
+                    >
+                        Formatif
+                    </Badge>
+                );
             case 'summative_scope':
-                return <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">Sumatif Lingkup Materi</Badge>;
+                return (
+                    <Badge
+                        variant="secondary"
+                        className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                    >
+                        Sumatif Lingkup Materi
+                    </Badge>
+                );
             case 'summative_final':
-                return <Badge variant="default" className="bg-emerald-600 text-white">Sumatif Akhir</Badge>;
+                return (
+                    <Badge
+                        variant="default"
+                        className="bg-emerald-600 text-white"
+                    >
+                        Sumatif Akhir
+                    </Badge>
+                );
         }
     };
 
     return (
         <>
-            <Head title={`Asesmen - ${course.subject_name} (${course.class_name})`} />
+            <Head
+                title={`Asesmen - ${course.subject_name} (${course.class_name})`}
+            />
 
             <div className="space-y-6 p-4">
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Link href="/courses" className="flex items-center gap-1 hover:underline">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <Link
+                                href="/courses"
+                                className="flex items-center gap-1 hover:underline"
+                            >
                                 <ArrowLeft className="h-4 w-4" />
                                 Kembali ke Kursus
                             </Link>
@@ -219,7 +261,9 @@ export default function AssessmentsIndex({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Link href={`/courses/${course.id}/gradebook?semester=${currentSemester.id}`}>
+                        <Link
+                            href={`/courses/${course.id}/gradebook?semester=${currentSemester.id}`}
+                        >
                             <Button variant="outline">
                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                                 Buku Nilai
@@ -238,7 +282,12 @@ export default function AssessmentsIndex({
                     <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-300">
                         <AlertCircle className="h-5 w-5 shrink-0" />
                         <p>{errorMessage}</p>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setErrorMessage(null)}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto"
+                            onClick={() => setErrorMessage(null)}
+                        >
                             Tutup
                         </Button>
                     </div>
@@ -247,11 +296,14 @@ export default function AssessmentsIndex({
                 {/* Semester filter */}
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <Calendar className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-sm font-medium">Semester Aktif</p>
-                            <p className="text-xs text-muted-foreground">
-                                {currentSemester.starts_at} s.d. {currentSemester.ends_at}
+                            <p className="text-sm font-medium">
+                                Semester Aktif
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                                {currentSemester.starts_at} s.d.{' '}
+                                {currentSemester.ends_at}
                             </p>
                         </div>
                     </div>
@@ -277,9 +329,11 @@ export default function AssessmentsIndex({
                 {/* Table */}
                 {assessments.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
-                        <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/60" />
-                        <h3 className="mt-4 text-base font-semibold">Belum Ada Asesmen</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <BookOpen className="text-muted-foreground/60 mx-auto h-12 w-12" />
+                        <h3 className="mt-4 text-base font-semibold">
+                            Belum Ada Asesmen
+                        </h3>
+                        <p className="text-muted-foreground mt-1 text-sm">
                             {canWrite
                                 ? 'Tambahkan asesmen baru untuk mencatat nilai formatif atau sumatif pada semester ini.'
                                 : 'Belum ada asesmen yang dibuat untuk semester ini.'}
@@ -288,36 +342,76 @@ export default function AssessmentsIndex({
                 ) : (
                     <div className="overflow-hidden rounded-lg border">
                         <table className="w-full text-left text-sm">
-                            <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">
+                            <thead className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Urutan</th>
-                                    <th className="px-4 py-3 font-medium">Nama Asesmen</th>
-                                    <th className="px-4 py-3 font-medium">Jenis</th>
-                                    <th className="px-4 py-3 font-medium">Tanggal</th>
-                                    <th className="px-4 py-3 font-medium">Skor Maks</th>
-                                    <th className="px-4 py-3 font-medium">Tujuan Pembelajaran</th>
-                                    <th className="px-4 py-3 font-medium">Status Rilis</th>
-                                    {canWrite && <th className="px-4 py-3 text-right font-medium">Aksi</th>}
+                                    <th className="px-4 py-3 font-medium">
+                                        Urutan
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Nama Asesmen
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Jenis
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Tanggal
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Skor Maks
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Tujuan Pembelajaran
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        Status Rilis
+                                    </th>
+                                    {canWrite && (
+                                        <th className="px-4 py-3 text-right font-medium">
+                                            Aksi
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
                                 {assessments.map((a) => (
-                                    <tr key={a.id} className="hover:bg-muted/50">
-                                        <td className="px-4 py-3 text-muted-foreground">{a.sort_order}</td>
-                                        <td className="px-4 py-3 font-semibold">{a.name}</td>
-                                        <td className="px-4 py-3">{renderKindBadge(a.kind)}</td>
-                                        <td className="px-4 py-3 text-muted-foreground">{a.assessed_on}</td>
-                                        <td className="px-4 py-3">{a.max_score}</td>
+                                    <tr
+                                        key={a.id}
+                                        className="hover:bg-muted/50"
+                                    >
+                                        <td className="text-muted-foreground px-4 py-3">
+                                            {a.sort_order}
+                                        </td>
+                                        <td className="px-4 py-3 font-semibold">
+                                            {a.name}
+                                        </td>
                                         <td className="px-4 py-3">
-                                            {a.learning_objectives.length === 0 ? (
-                                                <span className="text-xs text-muted-foreground">-</span>
+                                            {renderKindBadge(a.kind)}
+                                        </td>
+                                        <td className="text-muted-foreground px-4 py-3">
+                                            {a.assessed_on}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {a.max_score}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {a.learning_objectives.length ===
+                                            0 ? (
+                                                <span className="text-muted-foreground text-xs">
+                                                    -
+                                                </span>
                                             ) : (
                                                 <div className="flex flex-wrap gap-1">
-                                                    {a.learning_objectives.map((tp) => (
-                                                        <Badge key={tp.id} variant="outline" className="text-xs">
-                                                            {tp.code}
-                                                        </Badge>
-                                                    ))}
+                                                    {a.learning_objectives.map(
+                                                        (tp) => (
+                                                            <Badge
+                                                                key={tp.id}
+                                                                variant="outline"
+                                                                className="text-xs"
+                                                            >
+                                                                {tp.code}
+                                                            </Badge>
+                                                        ),
+                                                    )}
                                                 </div>
                                             )}
                                         </td>
@@ -341,14 +435,23 @@ export default function AssessmentsIndex({
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => {
-                                                            setEditingAssessment(a);
+                                                            setEditingAssessment(
+                                                                a,
+                                                            );
                                                             editForm.setData({
                                                                 name: a.name,
                                                                 kind: a.kind,
-                                                                assessed_on: a.assessed_on,
-                                                                max_score: a.max_score,
-                                                                sort_order: a.sort_order,
-                                                                objective_ids: a.learning_objectives.map((tp) => tp.id),
+                                                                assessed_on:
+                                                                    a.assessed_on,
+                                                                max_score:
+                                                                    a.max_score,
+                                                                sort_order:
+                                                                    a.sort_order,
+                                                                objective_ids:
+                                                                    a.learning_objectives.map(
+                                                                        (tp) =>
+                                                                            tp.id,
+                                                                    ),
                                                             });
                                                         }}
                                                     >
@@ -358,7 +461,9 @@ export default function AssessmentsIndex({
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-red-600 hover:text-red-700"
-                                                        onClick={() => handleDelete(a)}
+                                                        onClick={() =>
+                                                            handleDelete(a)
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -379,7 +484,8 @@ export default function AssessmentsIndex({
                     <DialogHeader>
                         <DialogTitle>Tambah Asesmen Baru</DialogTitle>
                         <DialogDescription>
-                            Tentukan jenis asesmen dan tautkan tujuan pembelajaran yang dinilai.
+                            Tentukan jenis asesmen dan tautkan tujuan
+                            pembelajaran yang dinilai.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -389,12 +495,16 @@ export default function AssessmentsIndex({
                             <Input
                                 id="create-name"
                                 value={createForm.data.name}
-                                onChange={(e) => createForm.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    createForm.setData('name', e.target.value)
+                                }
                                 placeholder="Contoh: Sumatif Lingkup Materi: Bilangan Cacah"
                                 required
                             />
                             {createForm.errors.name && (
-                                <p className="text-xs text-red-500">{createForm.errors.name}</p>
+                                <p className="text-xs text-red-500">
+                                    {createForm.errors.name}
+                                </p>
                             )}
                         </div>
 
@@ -403,61 +513,95 @@ export default function AssessmentsIndex({
                                 <Label>Jenis Asesmen</Label>
                                 <Select
                                     value={createForm.data.kind}
-                                    onValueChange={(val: 'formative' | 'summative_scope' | 'summative_final') =>
-                                        createForm.setData('kind', val)
-                                    }
+                                    onValueChange={(
+                                        val:
+                                            | 'formative'
+                                            | 'summative_scope'
+                                            | 'summative_final',
+                                    ) => createForm.setData('kind', val)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="formative">Formatif (Umpan Balik)</SelectItem>
-                                        <SelectItem value="summative_scope">Sumatif Lingkup Materi</SelectItem>
-                                        <SelectItem value="summative_final">Sumatif Akhir Semester</SelectItem>
+                                        <SelectItem value="formative">
+                                            Formatif (Umpan Balik)
+                                        </SelectItem>
+                                        <SelectItem value="summative_scope">
+                                            Sumatif Lingkup Materi
+                                        </SelectItem>
+                                        <SelectItem value="summative_final">
+                                            Sumatif Akhir Semester
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="create-date">Tanggal Asesmen</Label>
+                                <Label htmlFor="create-date">
+                                    Tanggal Asesmen
+                                </Label>
                                 <Input
                                     id="create-date"
                                     type="date"
                                     value={createForm.data.assessed_on}
                                     min={currentSemester.starts_at}
                                     max={currentSemester.ends_at}
-                                    onChange={(e) => createForm.setData('assessed_on', e.target.value)}
+                                    onChange={(e) =>
+                                        createForm.setData(
+                                            'assessed_on',
+                                            e.target.value,
+                                        )
+                                    }
                                     required
                                 />
                                 {createForm.errors.assessed_on && (
-                                    <p className="text-xs text-red-500">{createForm.errors.assessed_on}</p>
+                                    <p className="text-xs text-red-500">
+                                        {createForm.errors.assessed_on}
+                                    </p>
                                 )}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="create-max">Skor Maksimal</Label>
+                                <Label htmlFor="create-max">
+                                    Skor Maksimal
+                                </Label>
                                 <Input
                                     id="create-max"
                                     type="number"
                                     step="0.01"
                                     value={createForm.data.max_score}
-                                    onChange={(e) => createForm.setData('max_score', e.target.value)}
+                                    onChange={(e) =>
+                                        createForm.setData(
+                                            'max_score',
+                                            e.target.value,
+                                        )
+                                    }
                                     required
                                 />
                                 {createForm.errors.max_score && (
-                                    <p className="text-xs text-red-500">{createForm.errors.max_score}</p>
+                                    <p className="text-xs text-red-500">
+                                        {createForm.errors.max_score}
+                                    </p>
                                 )}
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="create-sort">Urutan Tampilan</Label>
+                                <Label htmlFor="create-sort">
+                                    Urutan Tampilan
+                                </Label>
                                 <Input
                                     id="create-sort"
                                     type="number"
                                     value={createForm.data.sort_order}
-                                    onChange={(e) => createForm.setData('sort_order', parseInt(e.target.value) || 0)}
+                                    onChange={(e) =>
+                                        createForm.setData(
+                                            'sort_order',
+                                            parseInt(e.target.value) || 0,
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -467,42 +611,67 @@ export default function AssessmentsIndex({
                             <div className="flex items-center justify-between">
                                 <Label>Tautkan Tujuan Pembelajaran (TP)</Label>
                                 {createForm.data.kind === 'summative_scope' && (
-                                    <span className="text-xs text-amber-600 font-medium">*Wajib untuk sumatif lingkup materi</span>
+                                    <span className="text-xs font-medium text-amber-600">
+                                        *Wajib untuk sumatif lingkup materi
+                                    </span>
                                 )}
                             </div>
                             {objectives.length === 0 ? (
-                                <p className="text-xs text-muted-foreground">
-                                    Belum ada TP yang dibuat untuk mata pelajaran dan tingkat kelas ini.
+                                <p className="text-muted-foreground text-xs">
+                                    Belum ada TP yang dibuat untuk mata
+                                    pelajaran dan tingkat kelas ini.
                                 </p>
                             ) : (
-                                <div className="max-h-48 overflow-y-auto space-y-2 rounded-md border p-3">
+                                <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
                                     {objectives.map((tp) => (
-                                        <div key={tp.id} className="flex items-start gap-2">
+                                        <div
+                                            key={tp.id}
+                                            className="flex items-start gap-2"
+                                        >
                                             <Checkbox
                                                 id={`create-tp-${tp.id}`}
-                                                checked={createForm.data.objective_ids.includes(tp.id)}
-                                                onCheckedChange={() => toggleObjective(createForm, tp.id)}
+                                                checked={createForm.data.objective_ids.includes(
+                                                    tp.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleObjective(
+                                                        createForm,
+                                                        tp.id,
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor={`create-tp-${tp.id}`}
-                                                className="text-xs leading-none cursor-pointer flex-1"
+                                                className="flex-1 cursor-pointer text-xs leading-none"
                                             >
-                                                <span className="font-semibold">{tp.code}:</span> {tp.description}
+                                                <span className="font-semibold">
+                                                    {tp.code}:
+                                                </span>{' '}
+                                                {tp.description}
                                             </label>
                                         </div>
                                     ))}
                                 </div>
                             )}
                             {createForm.errors.objective_ids && (
-                                <p className="text-xs text-red-500">{createForm.errors.objective_ids}</p>
+                                <p className="text-xs text-red-500">
+                                    {createForm.errors.objective_ids}
+                                </p>
                             )}
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsCreateOpen(false)}
+                            >
                                 Batal
                             </Button>
-                            <Button type="submit" disabled={createForm.processing}>
+                            <Button
+                                type="submit"
+                                disabled={createForm.processing}
+                            >
                                 Simpan Asesmen
                             </Button>
                         </DialogFooter>
@@ -511,12 +680,16 @@ export default function AssessmentsIndex({
             </Dialog>
 
             {/* Edit Dialog */}
-            <Dialog open={!!editingAssessment} onOpenChange={(open) => !open && setEditingAssessment(null)}>
+            <Dialog
+                open={!!editingAssessment}
+                onOpenChange={(open) => !open && setEditingAssessment(null)}
+            >
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
                         <DialogTitle>Ubah Asesmen</DialogTitle>
                         <DialogDescription>
-                            Perbarui detail atau tautan tujuan pembelajaran asesmen ini.
+                            Perbarui detail atau tautan tujuan pembelajaran
+                            asesmen ini.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -526,11 +699,15 @@ export default function AssessmentsIndex({
                             <Input
                                 id="edit-name"
                                 value={editForm.data.name}
-                                onChange={(e) => editForm.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    editForm.setData('name', e.target.value)
+                                }
                                 required
                             />
                             {editForm.errors.name && (
-                                <p className="text-xs text-red-500">{editForm.errors.name}</p>
+                                <p className="text-xs text-red-500">
+                                    {editForm.errors.name}
+                                </p>
                             )}
                         </div>
 
@@ -539,34 +716,52 @@ export default function AssessmentsIndex({
                                 <Label>Jenis Asesmen</Label>
                                 <Select
                                     value={editForm.data.kind}
-                                    onValueChange={(val: 'formative' | 'summative_scope' | 'summative_final') =>
-                                        editForm.setData('kind', val)
-                                    }
+                                    onValueChange={(
+                                        val:
+                                            | 'formative'
+                                            | 'summative_scope'
+                                            | 'summative_final',
+                                    ) => editForm.setData('kind', val)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="formative">Formatif (Umpan Balik)</SelectItem>
-                                        <SelectItem value="summative_scope">Sumatif Lingkup Materi</SelectItem>
-                                        <SelectItem value="summative_final">Sumatif Akhir Semester</SelectItem>
+                                        <SelectItem value="formative">
+                                            Formatif (Umpan Balik)
+                                        </SelectItem>
+                                        <SelectItem value="summative_scope">
+                                            Sumatif Lingkup Materi
+                                        </SelectItem>
+                                        <SelectItem value="summative_final">
+                                            Sumatif Akhir Semester
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="edit-date">Tanggal Asesmen</Label>
+                                <Label htmlFor="edit-date">
+                                    Tanggal Asesmen
+                                </Label>
                                 <Input
                                     id="edit-date"
                                     type="date"
                                     value={editForm.data.assessed_on}
                                     min={currentSemester.starts_at}
                                     max={currentSemester.ends_at}
-                                    onChange={(e) => editForm.setData('assessed_on', e.target.value)}
+                                    onChange={(e) =>
+                                        editForm.setData(
+                                            'assessed_on',
+                                            e.target.value,
+                                        )
+                                    }
                                     required
                                 />
                                 {editForm.errors.assessed_on && (
-                                    <p className="text-xs text-red-500">{editForm.errors.assessed_on}</p>
+                                    <p className="text-xs text-red-500">
+                                        {editForm.errors.assessed_on}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -579,21 +774,35 @@ export default function AssessmentsIndex({
                                     type="number"
                                     step="0.01"
                                     value={editForm.data.max_score}
-                                    onChange={(e) => editForm.setData('max_score', e.target.value)}
+                                    onChange={(e) =>
+                                        editForm.setData(
+                                            'max_score',
+                                            e.target.value,
+                                        )
+                                    }
                                     required
                                 />
                                 {editForm.errors.max_score && (
-                                    <p className="text-xs text-red-500">{editForm.errors.max_score}</p>
+                                    <p className="text-xs text-red-500">
+                                        {editForm.errors.max_score}
+                                    </p>
                                 )}
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="edit-sort">Urutan Tampilan</Label>
+                                <Label htmlFor="edit-sort">
+                                    Urutan Tampilan
+                                </Label>
                                 <Input
                                     id="edit-sort"
                                     type="number"
                                     value={editForm.data.sort_order}
-                                    onChange={(e) => editForm.setData('sort_order', parseInt(e.target.value) || 0)}
+                                    onChange={(e) =>
+                                        editForm.setData(
+                                            'sort_order',
+                                            parseInt(e.target.value) || 0,
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -603,42 +812,67 @@ export default function AssessmentsIndex({
                             <div className="flex items-center justify-between">
                                 <Label>Tautkan Tujuan Pembelajaran (TP)</Label>
                                 {editForm.data.kind === 'summative_scope' && (
-                                    <span className="text-xs text-amber-600 font-medium">*Wajib untuk sumatif lingkup materi</span>
+                                    <span className="text-xs font-medium text-amber-600">
+                                        *Wajib untuk sumatif lingkup materi
+                                    </span>
                                 )}
                             </div>
                             {objectives.length === 0 ? (
-                                <p className="text-xs text-muted-foreground">
-                                    Belum ada TP yang dibuat untuk mata pelajaran dan tingkat kelas ini.
+                                <p className="text-muted-foreground text-xs">
+                                    Belum ada TP yang dibuat untuk mata
+                                    pelajaran dan tingkat kelas ini.
                                 </p>
                             ) : (
-                                <div className="max-h-48 overflow-y-auto space-y-2 rounded-md border p-3">
+                                <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
                                     {objectives.map((tp) => (
-                                        <div key={tp.id} className="flex items-start gap-2">
+                                        <div
+                                            key={tp.id}
+                                            className="flex items-start gap-2"
+                                        >
                                             <Checkbox
                                                 id={`edit-tp-${tp.id}`}
-                                                checked={editForm.data.objective_ids.includes(tp.id)}
-                                                onCheckedChange={() => toggleObjective(editForm, tp.id)}
+                                                checked={editForm.data.objective_ids.includes(
+                                                    tp.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleObjective(
+                                                        editForm,
+                                                        tp.id,
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor={`edit-tp-${tp.id}`}
-                                                className="text-xs leading-none cursor-pointer flex-1"
+                                                className="flex-1 cursor-pointer text-xs leading-none"
                                             >
-                                                <span className="font-semibold">{tp.code}:</span> {tp.description}
+                                                <span className="font-semibold">
+                                                    {tp.code}:
+                                                </span>{' '}
+                                                {tp.description}
                                             </label>
                                         </div>
                                     ))}
                                 </div>
                             )}
                             {editForm.errors.objective_ids && (
-                                <p className="text-xs text-red-500">{editForm.errors.objective_ids}</p>
+                                <p className="text-xs text-red-500">
+                                    {editForm.errors.objective_ids}
+                                </p>
                             )}
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setEditingAssessment(null)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditingAssessment(null)}
+                            >
                                 Batal
                             </Button>
-                            <Button type="submit" disabled={editForm.processing}>
+                            <Button
+                                type="submit"
+                                disabled={editForm.processing}
+                            >
                                 Perbarui
                             </Button>
                         </DialogFooter>

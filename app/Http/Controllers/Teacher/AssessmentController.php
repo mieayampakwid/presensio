@@ -47,7 +47,7 @@ class AssessmentController extends Controller
         $semesters = $classSubject->schoolClass->academicYear->semesters;
         $semesterId = $request->filled('semester')
             ? (int) $request->input('semester')
-            : (int) ($semesters->first()?->id ?? 0);
+            : (int) ($semesters->first()->id ?? 0);
 
         $currentSemester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
 

@@ -70,7 +70,7 @@ class StoreAssessmentRequest extends FormRequest
                 }
 
                 $semester = Semester::find($semesterId);
-                if (! $semester) {
+                if (! $semester instanceof Semester) {
                     return;
                 }
 
