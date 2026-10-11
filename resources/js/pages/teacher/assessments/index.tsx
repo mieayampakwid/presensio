@@ -182,21 +182,26 @@ export default function AssessmentsIndex({
         });
     };
 
-    const toggleObjective = (
-        form: typeof createForm | typeof editForm,
-        objectiveId: number,
-    ) => {
-        const current = [...form.data.objective_ids];
+    const toggleCreateObjective = (objectiveId: number) => {
+        const current = [...createForm.data.objective_ids];
         const idx = current.indexOf(objectiveId);
         if (idx > -1) {
             current.splice(idx, 1);
         } else {
             current.push(objectiveId);
         }
-        form.setData((prev) => ({
-            ...prev,
-            objective_ids: current,
-        }));
+        createForm.setData('objective_ids', current);
+    };
+
+    const toggleEditObjective = (objectiveId: number) => {
+        const current = [...editForm.data.objective_ids];
+        const idx = current.indexOf(objectiveId);
+        if (idx > -1) {
+            current.splice(idx, 1);
+        } else {
+            current.push(objectiveId);
+        }
+        editForm.setData('objective_ids', current);
     };
 
     const renderKindBadge = (kind: AssessmentItem['kind']) => {
@@ -634,10 +639,7 @@ export default function AssessmentsIndex({
                                                     tp.id,
                                                 )}
                                                 onCheckedChange={() =>
-                                                    toggleObjective(
-                                                        createForm,
-                                                        tp.id,
-                                                    )
+                                                    toggleCreateObjective(tp.id)
                                                 }
                                             />
                                             <label
@@ -835,10 +837,7 @@ export default function AssessmentsIndex({
                                                     tp.id,
                                                 )}
                                                 onCheckedChange={() =>
-                                                    toggleObjective(
-                                                        editForm,
-                                                        tp.id,
-                                                    )
+                                                    toggleEditObjective(tp.id)
                                                 }
                                             />
                                             <label
