@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Database\Factories\ClassSubjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A teaching assignment of a subject to a class by a teacher.
@@ -22,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property-read SchoolClass $schoolClass
  * @property-read Subject $subject
  * @property-read Teacher|null $teacher
+ * @property-read Collection<int, Assessment> $assessments
+ * @property-read Collection<int, CourseSemester> $courseSemesters
  */
 #[Fillable(['class_id', 'subject_id', 'teacher_id', 'passing_threshold'])]
 class ClassSubject extends Model
@@ -60,12 +63,32 @@ class ClassSubject extends Model
     }
 
     /**
+     * Assessments belonging to this course.
+     *
+     * @return HasMany<Assessment, $this>
+     */
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
+    /**
+     * Course semester settings/records for this course.
+     *
+     * @return HasMany<CourseSemester, $this>
+     */
+    public function courseSemesters(): HasMany
+    {
+        return $this->hasMany(CourseSemester::class);
+    }
+
+    /**
      * Check if this class subject assignment has downstream usage
      * (assessments in plan 5, timetable slots in plan 11).
      */
     public function isInUse(): bool
     {
-        return false;
+        return $this->assessments()->exists();
     }
 
     /**

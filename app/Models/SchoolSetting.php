@@ -44,6 +44,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $prepaid_revenue_account_id
  * @property int|null $bad_debt_expense_account_id
  * @property int|null $net_assets_closing_account_id
+ * @property string $default_scope_weight
+ * @property string $default_final_weight
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Account|null $prepaidRevenueAccount
@@ -83,6 +85,8 @@ use Illuminate\Support\Carbon;
     'prepaid_revenue_account_id',
     'bad_debt_expense_account_id',
     'net_assets_closing_account_id',
+    'default_scope_weight',
+    'default_final_weight',
 ])]
 class SchoolSetting extends Model
 {
@@ -132,6 +136,8 @@ class SchoolSetting extends Model
             'prepaid_revenue_account_id' => 'integer',
             'bad_debt_expense_account_id' => 'integer',
             'net_assets_closing_account_id' => 'integer',
+            'default_scope_weight' => 'decimal:2',
+            'default_final_weight' => 'decimal:2',
         ];
     }
 }

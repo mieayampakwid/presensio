@@ -21,7 +21,12 @@ class SemesterFactory extends Factory
     public function definition(): array
     {
         return [
-            'academic_year_id' => AcademicYear::factory(),
+            'academic_year_id' => function () {
+                $year = AcademicYear::factory()->create();
+                $year->semesters()->delete();
+
+                return $year->id;
+            },
             'number' => 1,
             'name' => 'Semester Ganjil',
             'starts_at' => '2026-07-01',

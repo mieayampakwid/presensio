@@ -260,6 +260,22 @@ class SchoolSettings
     }
 
     /**
+     * Default scope weight (pre-fill for course_semesters.scope_weight).
+     */
+    public function defaultScopeWeight(): string
+    {
+        return (string) ($this->row()->default_scope_weight ?? '50.00');
+    }
+
+    /**
+     * Default final weight (pre-fill for course_semesters.final_weight).
+     */
+    public function defaultFinalWeight(): string
+    {
+        return (string) ($this->row()->default_final_weight ?? '50.00');
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function defaults(): array
@@ -291,6 +307,8 @@ class SchoolSettings
             'staff_start_time' => '07:00',
             'staff_end_time' => '14:00',
             'staff_absent_sweep_time' => '09:00',
+            'default_scope_weight' => '50.00',
+            'default_final_weight' => '50.00',
         ];
     }
 }
