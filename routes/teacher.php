@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Teacher\AssessmentController;
+use App\Http\Controllers\Teacher\AssessmentReleaseController;
 use App\Http\Controllers\Teacher\CourseController;
+use App\Http\Controllers\Teacher\CourseWeightController;
 use App\Http\Controllers\Teacher\GradebookController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
+use App\Http\Controllers\Teacher\ScoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:teacher'])->group(function () {
@@ -23,4 +26,7 @@ Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
     Route::put('courses/{class_subject}/assessments/{assessment}', [AssessmentController::class, 'update'])->name('courses.assessments.update');
     Route::delete('courses/{class_subject}/assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('courses.assessments.destroy');
     Route::get('courses/{class_subject}/gradebook', [GradebookController::class, 'show'])->name('courses.gradebook');
+    Route::post('courses/{class_subject}/scores', [ScoreController::class, 'store'])->name('courses.scores.store');
+    Route::put('courses/{class_subject}/weights', [CourseWeightController::class, 'update'])->name('courses.weights.update');
+    Route::post('courses/{class_subject}/assessments/{assessment}/release', [AssessmentReleaseController::class, 'release'])->name('courses.assessments.release');
 });
