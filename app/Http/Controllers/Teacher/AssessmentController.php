@@ -96,9 +96,11 @@ class AssessmentController extends Controller
         $data = $request->validated();
         $objectiveIds = $data['objective_ids'] ?? [];
         unset($data['objective_ids']);
+        $semester = Semester::findOrFail($data['semester_id']);
+        $courseSemester = CourseSemester::forCourse($classSubject, $semester);
+        $courseSemester->assertOpen();
 
         $data['class_subject_id'] = $classSubject->id;
-
         DB::transaction(function () use ($data, $objectiveIds, &$assessment) {
             /** @var Assessment $assessment */
             $assessment = Assessment::create($data);

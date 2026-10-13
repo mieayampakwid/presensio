@@ -3,6 +3,7 @@
 use App\Http\Controllers\Teacher\AssessmentController;
 use App\Http\Controllers\Teacher\AssessmentReleaseController;
 use App\Http\Controllers\Teacher\CourseController;
+use App\Http\Controllers\Teacher\CourseFinalizationController;
 use App\Http\Controllers\Teacher\CourseResultController;
 use App\Http\Controllers\Teacher\CourseWeightController;
 use App\Http\Controllers\Teacher\GradebookController;
@@ -30,4 +31,6 @@ Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
     Route::get('courses/{class_subject}/results', [CourseResultController::class, 'show'])->name('courses.results.show');
     Route::put('courses/{class_subject}/results/{student}', [CourseResultController::class, 'updateDescription'])->name('courses.results.description.update');
     Route::put('courses/{class_subject}/results', [CourseResultController::class, 'updateDescription'])->name('courses.results.update');
+    Route::post('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'finalize'])->name('courses.finalize');
+    Route::delete('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'undo'])->name('courses.unfinalize');
 });

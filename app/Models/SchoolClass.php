@@ -106,11 +106,13 @@ class SchoolClass extends Model
 
     /**
      * Check if curriculum is locked (editable until the class has finalized grades).
-     * Plan 6 replaces this when course_semesters.finalized_at exists.
      */
     public function curriculumLocked(): bool
     {
-        return false;
+        return CourseSemester::query()
+            ->whereHas('classSubject', fn ($q) => $q->where('class_id', $this->id))
+            ->whereNotNull('finalized_at')
+            ->exists();
     }
 
     /**
