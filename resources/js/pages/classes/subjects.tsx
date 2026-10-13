@@ -1,5 +1,12 @@
 import { Head, Link, router, Form } from '@inertiajs/react';
-import { ChevronLeft, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+    ChevronLeft,
+    ExternalLink,
+    FileSpreadsheet,
+    Pencil,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
@@ -264,11 +271,9 @@ export default function ClassSubjects({
                                     Guru Pengajar
                                 </th>
                                 <th className="px-4 py-3 font-medium">KKTP</th>
-                                {isActiveYear && (
-                                    <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
-                                    </th>
-                                )}
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -289,45 +294,78 @@ export default function ClassSubjects({
                                     <td className="px-4 py-3">
                                         {item.passing_threshold}
                                     </td>
-                                    {isActiveYear && (
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        setEditingItem(item)
-                                                    }
+                                    <td className="px-4 py-3 text-right">
+                                        <div className="flex justify-end gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                                title="Buku Nilai (Gradebook)"
+                                            >
+                                                <Link
+                                                    href={`/courses/${item.id}/gradebook`}
                                                 >
-                                                    <Pencil className="h-4 w-4" />
+                                                    <FileSpreadsheet className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Edit
+                                                        Buku Nilai
                                                     </span>
-                                                </Button>
-
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="text-destructive hover:text-destructive"
-                                                    onClick={() =>
-                                                        setDeletingItem(item)
-                                                    }
+                                                </Link>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                                title="Detail Kelas"
+                                            >
+                                                <Link
+                                                    href={`/courses/${item.id}`}
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <ExternalLink className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Hapus
+                                                        Detail Kelas
                                                     </span>
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    )}
+                                                </Link>
+                                            </Button>
+                                            {isActiveYear && (
+                                                <>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            setEditingItem(item)
+                                                        }
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Edit
+                                                        </span>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive hover:text-destructive"
+                                                        onClick={() =>
+                                                            setDeletingItem(
+                                                                item,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Hapus
+                                                        </span>
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
 
                             {classSubjects.length === 0 && (
                                 <tr className="border-t">
                                     <td
-                                        colSpan={isActiveYear ? 6 : 5}
+                                        colSpan={6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
                                         Belum ada mata pelajaran yang ditugaskan

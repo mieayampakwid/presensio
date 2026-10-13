@@ -190,4 +190,70 @@ class CourseTest extends TestCase
             ->assertOk()
             ->assertSee('Kimia');
     }
+
+    public function test_admin_can_view_course_workspace(): void
+    {
+        $activeYear = AcademicYear::active() ?? AcademicYear::factory()->create(['is_active' => true]);
+        $adminUser = User::factory()->admin()->create();
+
+        $class = SchoolClass::factory()->create(['academic_year_id' => $activeYear->id]);
+        $teacher = Teacher::factory()->create();
+        $subject = Subject::factory()->create(['name' => 'Biologi']);
+
+        $course = ClassSubject::factory()->create([
+            'class_id' => $class->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+        ]);
+
+        $this->actingAs($adminUser)
+            ->get(route('courses.show', $course))
+            ->assertOk()
+            ->assertSee('Biologi');
+    }
+
+    public function test_admin_can_view_all_courses_at_courses_page(): void
+    {
+        $activeYear = AcademicYear::active() ?? AcademicYear::factory()->create(['is_active' => true]);
+        $adminUser = User::factory()->admin()->create();
+
+        $classA = SchoolClass::factory()->create(['academic_year_id' => $activeYear->id, 'name' => 'Kelas 1A']);
+        $classB = SchoolClass::factory()->create(['academic_year_id' => $activeYear->id, 'name' => 'Kelas 2B']);
+
+        $teacherA = Teacher::factory()->create(['name' => 'Guru A']);
+        $teacherB = Teacher::factory()->create(['name' => 'Guru B']);
+
+        $matematika = Subject::factory()->create(['name' => 'Matematika', 'code' => 'MAT']);
+        $ipa = Subject::factory()->create(['name' => 'IPA', 'code' => 'IPA']);
+
+        ClassSubject::factory()->create([
+            'class_id' => $classA->id,
+            'subject_id' => $matematika->id,
+            'teacher_id' => $teacherA->id,
+        ]);
+
+        ClassSubject::factory()->create([
+            'class_id' => $classB->id,
+            'subject_id' => $ipa->id,
+            'teacher_id' => $teacherB->id,
+        ]);
+
+        $this->actingAs($adminUser)
+            ->get(route('courses.index'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('teacher/courses/index')
+                ->has('courses', 2)
+                ->where('isAdmin', true)
+            );
+    }
+
+    public function test_student_cannot_view_courses_page(): void
+    {
+        $studentUser = User::factory()->student()->create();
+
+        $this->actingAs($studentUser)
+            ->get(route('courses.index'))
+            ->assertForbidden();
+    }
 }

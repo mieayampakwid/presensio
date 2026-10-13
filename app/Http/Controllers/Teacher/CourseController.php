@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
 use App\Models\ClassSubject;
-use App\Models\Enrollment;
-use App\Models\Student;
 use App\Services\Attendance\ClassAccess;
-use App\Services\SchoolSettings;
+use App\Services\Courses\CourseViewService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,63 +13,20 @@ use Inertia\Response;
 class CourseController extends Controller
 {
     public function __construct(
-        private readonly SchoolSettings $schoolSettings,
+        private readonly CourseViewService $courseViewService,
     ) {}
 
     /**
-     * Display a listing of courses taught by the authenticated teacher in the active year.
+     * Display a listing of courses in the active year.
      */
     public function index(Request $request): Response
     {
-        $teacher = $request->user()?->teacher;
-        $activeYear = AcademicYear::active();
+        $user = $request->user();
+        abort_if($user === null, 401);
 
-        if ($teacher === null || $activeYear === null) {
-            return Inertia::render('teacher/courses/index', [
-                'courses' => [],
-                'activeYear' => $activeYear,
-            ]);
-        }
+        $data = $this->courseViewService->listForUser($user);
 
-        $courses = ClassSubject::query()
-            ->where('teacher_id', $teacher->id)
-            ->whereHas('schoolClass', fn ($q) => $q->where('academic_year_id', $activeYear->id))
-            ->with([
-                'schoolClass:id,name,academic_year_id,grade_level',
-                'subject:id,code,name,group',
-            ])
-            ->get();
-
-        $classIds = $courses->pluck('class_id')->unique()->all();
-        $today = $this->schoolSettings->todayDate();
-
-        /** @var array<int, int> $rosterCounts */
-        $rosterCounts = Enrollment::query()
-            ->whereIn('class_id', $classIds)
-            ->activeOn($today)
-            ->groupBy('class_id')
-            ->selectRaw('class_id, count(*) as count')
-            ->pluck('count', 'class_id')
-            ->all();
-
-        $coursesPayload = $courses->map(fn (ClassSubject $course) => [
-            'id' => $course->id,
-            'class_id' => $course->class_id,
-            'subject_id' => $course->subject_id,
-            'teacher_id' => $course->teacher_id,
-            'passing_threshold' => (string) $course->passing_threshold,
-            'class_name' => $course->schoolClass->name,
-            'grade_level' => $course->schoolClass->grade_level,
-            'subject_name' => $course->subject->name,
-            'subject_code' => $course->subject->code,
-            'subject_group' => $course->subject->group->value,
-            'students_count' => (int) ($rosterCounts[$course->class_id] ?? 0),
-        ]);
-
-        return Inertia::render('teacher/courses/index', [
-            'courses' => $coursesPayload,
-            'activeYear' => $activeYear,
-        ]);
+        return Inertia::render('teacher/courses/index', $data);
     }
 
     /**
@@ -80,37 +34,16 @@ class CourseController extends Controller
      */
     public function show(Request $request, ClassSubject $classSubject): Response
     {
+        $user = $request->user();
+        abort_if($user === null, 401);
+
         abort_unless(
-            ClassAccess::academicClassIds($request->user())->contains($classSubject->class_id),
+            ClassAccess::academicClassIds($user)->contains($classSubject->class_id),
             403
         );
 
-        $classSubject->load([
-            'schoolClass:id,name,academic_year_id,grade_level',
-            'subject:id,code,name,group',
-            'teacher.employee:id,name',
-        ]);
+        $data = $this->courseViewService->buildWorkspace($classSubject, $user);
 
-        $today = $this->schoolSettings->todayDate();
-
-        $students = Student::query()
-            ->whereHas('enrollments', fn ($q) => $q->where('class_id', $classSubject->class_id)->activeOn($today))
-            ->orderBy('full_name')
-            ->get(['id', 'full_name', 'student_number', 'gender']);
-
-        return Inertia::render('teacher/courses/show', [
-            'course' => [
-                'id' => $classSubject->id,
-                'class_id' => $classSubject->class_id,
-                'subject_id' => $classSubject->subject_id,
-                'passing_threshold' => (string) $classSubject->passing_threshold,
-                'class_name' => $classSubject->schoolClass->name,
-                'subject_name' => $classSubject->subject->name,
-                'subject_code' => $classSubject->subject->code,
-                'teacher_name' => $classSubject->teacher->employee->name,
-            ],
-            'students' => $students,
-            'canWrite' => ClassAccess::canWriteCourse($request->user(), $classSubject),
-        ]);
+        return Inertia::render('teacher/courses/show', $data);
     }
 }

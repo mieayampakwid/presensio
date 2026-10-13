@@ -1,5 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, ChevronRight, GraduationCap, Users } from 'lucide-react';
+import {
+    BookOpen,
+    ChevronRight,
+    FileSpreadsheet,
+    GraduationCap,
+    UserRound,
+    Users,
+} from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +23,7 @@ type CourseRow = {
     subject_code: string;
     subject_group: string;
     students_count: number;
+    teacher_name?: string;
 };
 
 type Props = {
@@ -25,20 +33,23 @@ type Props = {
         name: string;
         is_active: boolean;
     } | null;
+    isAdmin?: boolean;
 };
 
-export default function CoursesIndex({ courses, activeYear }: Props) {
+export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
+    const title = isAdmin ? 'Courses' : 'My Courses';
+    const description = isAdmin
+        ? `Daftar seluruh mata pelajaran dan penugasan kelas pada Tahun Ajaran ${activeYear?.name ?? '-'}.`
+        : `Mata pelajaran yang Anda ampu pada Tahun Ajaran ${activeYear?.name ?? '-'}.`;
+
     return (
         <>
-            <Head title="My Courses" />
+            <Head title={title} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <Heading
-                            title="My Courses"
-                            description={`Mata pelajaran yang Anda ampu pada Tahun Ajaran ${activeYear?.name ?? '-'}.`}
-                        />
+                        <Heading title={title} description={description} />
                     </div>
                 </div>
 
@@ -49,8 +60,9 @@ export default function CoursesIndex({ courses, activeYear }: Props) {
                             Belum Ada Mata Pelajaran
                         </h3>
                         <p className="text-muted-foreground mt-1 text-sm">
-                            Anda belum ditugaskan mengajar mata pelajaran apapun
-                            pada tahun ajaran aktif ini.
+                            {isAdmin
+                                ? 'Belum ada mata pelajaran yang ditugaskan ke kelas manapun pada tahun ajaran aktif ini.'
+                                : 'Anda belum ditugaskan mengajar mata pelajaran apapun pada tahun ajaran aktif ini.'}
                         </p>
                     </div>
                 ) : (
@@ -80,6 +92,15 @@ export default function CoursesIndex({ courses, activeYear }: Props) {
 
                                     <div className="text-muted-foreground space-y-1 text-xs">
                                         <div className="flex items-center gap-1.5">
+                                            <UserRound className="h-4 w-4" />
+                                            <span>
+                                                Guru:{' '}
+                                                <strong className="text-foreground">
+                                                    {course.teacher_name ?? '-'}
+                                                </strong>
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
                                             <GraduationCap className="h-4 w-4" />
                                             <span>
                                                 KKTP:{' '}
@@ -98,16 +119,23 @@ export default function CoursesIndex({ courses, activeYear }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="mt-5 border-t pt-3">
+                                <div className="mt-5 flex items-center gap-2 border-t pt-3">
                                     <Button
                                         asChild
-                                        variant="outline"
                                         size="sm"
-                                        className="w-full justify-between"
+                                        className="flex-1"
                                     >
+                                        <Link
+                                            href={`/courses/${course.id}/gradebook`}
+                                        >
+                                            <FileSpreadsheet className="mr-1.5 h-4 w-4" />
+                                            <span>Buku Nilai</span>
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="sm">
                                         <Link href={`/courses/${course.id}`}>
                                             <span>Buka Kelas</span>
-                                            <ChevronRight className="h-4 w-4" />
+                                            <ChevronRight className="ml-1 h-3.5 w-3.5" />
                                         </Link>
                                     </Button>
                                 </div>
@@ -123,7 +151,7 @@ export default function CoursesIndex({ courses, activeYear }: Props) {
 CoursesIndex.layout = {
     breadcrumbs: [
         {
-            title: 'My Courses',
+            title: 'Courses',
             href: '/courses',
         },
     ],

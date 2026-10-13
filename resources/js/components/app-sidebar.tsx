@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BookMarked,
     BookOpen,
     Briefcase,
     CalendarCheck,
@@ -125,6 +126,11 @@ export function AppSidebar() {
                       title: 'Subjects',
                       href: SubjectController.index().url,
                       icon: BookOpen,
+                  },
+                  {
+                      title: 'Courses',
+                      href: '/courses',
+                      icon: BookMarked,
                   },
                   {
                       title: 'Learning Objectives',

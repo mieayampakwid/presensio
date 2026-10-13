@@ -1,5 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft, Users } from 'lucide-react';
+import {
+    ChevronLeft,
+    ClipboardList,
+    FileSpreadsheet,
+    Users,
+} from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,15 +48,9 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                     </Button>
                 </div>
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <Badge
-                        variant={canWrite ? 'default' : 'secondary'}
-                        className="mt-2"
-                    >
-                        {canWrite ? 'Pengajar Utama' : 'Akses Baca'}
-                    </Badge>
-                    <div>
-                        <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Badge
                                 variant="outline"
                                 className="font-mono text-xs"
@@ -61,11 +60,29 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                             <Badge variant="secondary">
                                 {course.class_name}
                             </Badge>
+                            <Badge variant={canWrite ? 'default' : 'secondary'}>
+                                {canWrite ? 'Pengajar Utama' : 'Akses Baca'}
+                            </Badge>
                         </div>
                         <Heading
                             title={course.subject_name}
                             description={`Guru: ${course.teacher_name} | KKTP: ${course.passing_threshold}`}
                         />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={`/courses/${course.id}/assessments`}>
+                                <ClipboardList className="mr-1.5 h-4 w-4" />
+                                <span>Kelola Asesmen</span>
+                            </Link>
+                        </Button>
+                        <Button size="sm" asChild>
+                            <Link href={`/courses/${course.id}/gradebook`}>
+                                <FileSpreadsheet className="mr-1.5 h-4 w-4" />
+                                <span>Buku Nilai (Gradebook)</span>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 
