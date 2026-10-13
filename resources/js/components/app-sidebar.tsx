@@ -203,6 +203,11 @@ export function AppSidebar() {
                       href: StudentReportController.index().url,
                       icon: ClipboardList,
                   },
+                  {
+                      title: 'My Grades',
+                      href: '/my-grades',
+                      icon: FileSpreadsheet,
+                  },
               ]
             : []),
         ...(activeRole === 'teacher'
