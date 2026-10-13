@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Teacher\AssessmentController;
 use App\Http\Controllers\Teacher\AssessmentReleaseController;
+use App\Http\Controllers\Teacher\ClassGradeLedgerController;
 use App\Http\Controllers\Teacher\CourseController;
 use App\Http\Controllers\Teacher\CourseFinalizationController;
 use App\Http\Controllers\Teacher\CourseResultController;
@@ -11,7 +12,7 @@ use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\ScoreController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
+Route::middleware(['auth', 'role:teacher,admin,principal'])->group(function () {
     Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
     Route::get('courses/{class_subject}', [CourseController::class, 'show'])->name('courses.show');
     Route::get('objectives', [LearningObjectiveController::class, 'index'])->name('objectives.index');
@@ -33,4 +34,5 @@ Route::middleware(['auth', 'role:teacher,admin'])->group(function () {
     Route::put('courses/{class_subject}/results', [CourseResultController::class, 'updateDescription'])->name('courses.results.update');
     Route::post('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'finalize'])->name('courses.finalize');
     Route::delete('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'undo'])->name('courses.unfinalize');
+    Route::get('classes/{school_class}/grades', [ClassGradeLedgerController::class, 'index'])->name('classes.grades.index');
 });
