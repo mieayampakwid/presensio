@@ -145,12 +145,14 @@ class SubjectResultBuilder
 
             /** @var SubjectResult|null $existing */
             $existing = $existingResults->get($student->id);
-            $isEdited = $existing?->description_edited ?? false;
-            $description = ($isEdited || $courseSemester->isFinalized()) && $existing?->description !== null
+            $isEdited = $existing !== null ? $existing->description_edited : false;
+            $description = ($isEdited || $courseSemester->isFinalized()) && $existing !== null && $existing->description !== null
                 ? $existing->description
                 : $draftDescription;
 
-            $finalScore = $existing?->final_score ?? ($courseSemester->isFinalized() ? $roundedScore : null);
+            $finalScore = $existing !== null && $existing->final_score !== null
+                ? $existing->final_score
+                : ($courseSemester->isFinalized() ? $roundedScore : null);
 
             $studentRows[] = [
                 'id' => $student->id,
@@ -169,8 +171,8 @@ class SubjectResultBuilder
         return [
             'course' => [
                 'id' => $classSubject->id,
-                'name' => $classSubject->subject?->name ?? 'Course',
-                'code' => $classSubject->subject?->code ?? '',
+                'name' => $classSubject->subject->name,
+                'code' => $classSubject->subject->code,
                 'class_id' => $classSubject->class_id,
                 'class_name' => $schoolClass->name,
                 'passing_threshold' => $threshold,

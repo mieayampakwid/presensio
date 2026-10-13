@@ -96,6 +96,7 @@ class AssessmentController extends Controller
         $data = $request->validated();
         $objectiveIds = $data['objective_ids'] ?? [];
         unset($data['objective_ids']);
+        /** @var Semester $semester */
         $semester = Semester::findOrFail($data['semester_id']);
         $courseSemester = CourseSemester::forCourse($classSubject, $semester);
         $courseSemester->assertOpen();

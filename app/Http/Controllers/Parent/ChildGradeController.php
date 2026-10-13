@@ -99,8 +99,8 @@ class ChildGradeController extends Controller
 
                 $subjects[] = [
                     'id' => $cs->id,
-                    'name' => $cs->subject?->name ?? 'Mata Pelajaran',
-                    'code' => $cs->subject?->code ?? '',
+                    'name' => $cs->subject->name,
+                    'code' => $cs->subject->code,
                     'teacher_name' => $cs->teacher?->employee?->name,
                     'passing_threshold' => (float) $cs->passing_threshold,
                     'assessments' => $assessmentRows,

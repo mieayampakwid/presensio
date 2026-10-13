@@ -74,8 +74,8 @@ class ClassGradeLedgerController extends Controller
             $courseSemester = CourseSemester::forCourse($cs, $semester);
             $subjectData[] = [
                 'id' => $cs->id,
-                'name' => $cs->subject?->name ?? 'Mata Pelajaran',
-                'code' => $cs->subject?->code ?? '',
+                'name' => $cs->subject->name,
+                'code' => $cs->subject->code,
                 'teacher_name' => $cs->teacher?->employee?->name,
                 'passing_threshold' => (float) $cs->passing_threshold,
                 'is_finalized' => $courseSemester->isFinalized(),
