@@ -31,6 +31,7 @@ import {
     show,
     updateEntry,
 } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
+import ReportCardPublicationController from '@/actions/App/Http/Controllers/Teacher/ReportCardPublicationController';
 
 type ChecklistItem = {
     subject: string;
@@ -63,6 +64,7 @@ type Props = {
     semesters: SemesterInfo[];
     checklist: ChecklistItem[];
     students: StudentEntry[];
+    publication: { version: number; published_at: string } | null;
     can: { edit: boolean };
 };
 
@@ -91,12 +93,56 @@ type PreviewPayload = {
     complete: boolean;
 };
 
+/**
+ * The encrypted XSRF cookie is URL-encoded; Laravel expects the decoded
+ * value back in the X-XSRF-TOKEN header for native fetch requests.
+ */
+const xsrfToken = (): string => {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+
+    return match ? decodeURIComponent(match[1]) : '';
+};
+
+const describePublishErrors = (errors: Record<string, unknown>): string[] => {
+    const messages: string[] = [];
+    for (const [key, value] of Object.entries(errors)) {
+        if (!Array.isArray(value)) {
+            if (typeof value === 'string') {
+                messages.push(value);
+            }
+            continue;
+        }
+        for (const item of value) {
+            if (typeof item === 'string') {
+                messages.push(item);
+            } else if (item !== null && typeof item === 'object') {
+                const entry = item as Record<string, unknown>;
+                if (typeof entry.subject === 'string') {
+                    const teacher =
+                        typeof entry.teacher === 'string' ? entry.teacher : '—';
+                    messages.push(
+                        `${entry.subject} — ${teacher} belum difinalisasi.`,
+                    );
+                } else if (typeof entry.student === 'string') {
+                    const label =
+                        key === 'missing_decisions'
+                            ? 'belum mengisi keputusan kenaikan.'
+                            : 'belum memiliki nilai lengkap.';
+                    messages.push(`${entry.student} ${label}`);
+                }
+            }
+        }
+    }
+    return messages;
+};
+
 export default function ReportCards({
     school_class,
     semester,
     semesters,
     checklist,
     students,
+    publication,
     can,
 }: Props) {
     const [entryStudent, setEntryStudent] = useState<StudentEntry | null>(null);
@@ -105,6 +151,15 @@ export default function ReportCards({
     );
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
+    const [publishErrors, setPublishErrors] = useState<string[]>([]);
+    const [publishWarnings, setPublishWarnings] = useState<
+        { student: string }[]
+    >([]);
+    const [publishing, setPublishing] = useState(false);
+    const [retractOpen, setRetractOpen] = useState(false);
+    const [retractReason, setRetractReason] = useState('');
+    const [retractError, setRetractError] = useState<string | null>(null);
+    const [retracting, setRetracting] = useState(false);
 
     const entryForm = useForm({
         semester_id: semester.id,
@@ -180,6 +235,106 @@ export default function ReportCards({
         }
     };
 
+    const handlePublish = async () => {
+        setPublishing(true);
+        setPublishErrors([]);
+        setPublishWarnings([]);
+        try {
+            const response = await fetch(
+                ReportCardPublicationController.publish.url({
+                    school_class: school_class.id,
+                }),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        semester_id: semester.id,
+                    }),
+                },
+            );
+            const body = (await response.json()) as {
+                version?: number;
+                warnings?: { student: string }[];
+                errors?: Record<string, unknown>;
+            };
+            if (response.status === 422 && body.errors) {
+                setPublishErrors(describePublishErrors(body.errors));
+                return;
+            }
+            if (!response.ok) {
+                setPublishErrors([
+                    `Gagal menerbitkan rapor (HTTP ${response.status}).`,
+                ]);
+                return;
+            }
+            setPublishWarnings(body.warnings ?? []);
+            // Inertia v3 reload keeps component state by default, so the
+            // publish warnings above survive the refreshed publication prop.
+            router.reload();
+        } catch {
+            setPublishErrors([
+                'Tidak dapat terhubung ke server. Periksa koneksi dan coba lagi.',
+            ]);
+        } finally {
+            setPublishing(false);
+        }
+    };
+
+    const handleRetract = async () => {
+        if (retractReason.trim() === '') {
+            setRetractError('Alasan penarikan wajib diisi.');
+            return;
+        }
+        setRetracting(true);
+        setRetractError(null);
+        try {
+            const response = await fetch(
+                ReportCardPublicationController.retract.url({
+                    school_class: school_class.id,
+                }),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        semester_id: semester.id,
+                        reason: retractReason.trim(),
+                    }),
+                },
+            );
+            const body = (await response.json()) as {
+                errors?: Record<string, unknown>;
+            };
+            if (response.status === 422) {
+                const messages = describePublishErrors(body.errors ?? {});
+                setRetractError(messages[0] ?? 'Penarikan gagal.');
+                return;
+            }
+            if (!response.ok) {
+                setRetractError(
+                    `Gagal menarik rapor (HTTP ${response.status}).`,
+                );
+                return;
+            }
+            setRetractOpen(false);
+            setRetractReason('');
+            router.reload();
+        } catch {
+            setRetractError(
+                'Tidak dapat terhubung ke server. Periksa koneksi dan coba lagi.',
+            );
+        } finally {
+            setRetracting(false);
+        }
+    };
+
     return (
         <>
             <Head
@@ -203,22 +358,77 @@ export default function ReportCards({
                             description={`Ceklis kelulusan mata pelajaran dan catatan wali kelas untuk ${semester.name}`}
                         />
                     </div>
-                    <Select
-                        value={String(semester.id)}
-                        onValueChange={handleSemesterChange}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Pilih Semester" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {semesters.map((s) => (
-                                <SelectItem key={s.id} value={String(s.id)}>
-                                    {s.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-3">
+                        <Select
+                            value={String(semester.id)}
+                            onValueChange={handleSemesterChange}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Pilih Semester" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {semesters.map((s) => (
+                                    <SelectItem key={s.id} value={String(s.id)}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {can.edit && publication !== null && (
+                            <Badge variant="default">
+                                Versi {publication.version} · diterbitkan{' '}
+                                {publication.published_at}
+                            </Badge>
+                        )}
+                        {can.edit && publication === null && (
+                            <Button
+                                onClick={handlePublish}
+                                disabled={publishing}
+                            >
+                                {publishing ? (
+                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ClipboardCheck className="h-4 w-4" />
+                                )}
+                                Terbitkan
+                            </Button>
+                        )}
+                        {can.edit && publication !== null && (
+                            <Button
+                                variant="outline"
+                                onClick={() => setRetractOpen(true)}
+                            >
+                                Tarik
+                            </Button>
+                        )}
+                    </div>
                 </div>
+
+                {publishErrors.length > 0 && (
+                    <div className="border-destructive bg-destructive/10 text-destructive rounded-md border p-4 text-sm">
+                        <p className="font-medium">
+                            Rapor belum dapat diterbitkan:
+                        </p>
+                        <ul className="list-disc pl-5">
+                            {publishErrors.map((message) => (
+                                <li key={message}>{message}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                {publishWarnings.length > 0 && (
+                    <div className="rounded-md border p-4 text-sm">
+                        <p className="font-medium">
+                            Diterbitkan dengan catatan (nilai catatan wali kelas
+                            belum lengkap):
+                        </p>
+                        <ul className="text-muted-foreground list-disc pl-5">
+                            {publishWarnings.map((warning) => (
+                                <li key={warning.student}>{warning.student}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 {/* Finalization checklist */}
                 <div className="rounded-md border">
@@ -587,6 +797,61 @@ export default function ReportCards({
                             )}
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+            {/* Retract dialog */}
+            <Dialog
+                open={retractOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setRetractOpen(false);
+                        setRetractError(null);
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Tarik Rapor</DialogTitle>
+                        <DialogDescription>
+                            Versi terbit akan disembunyikan dari orang tua dan
+                            siswa. Alasan wajib diisi dan dicatat audit.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        <Label htmlFor="retract_reason">Alasan</Label>
+                        <textarea
+                            id="retract_reason"
+                            value={retractReason}
+                            onChange={(e) => setRetractReason(e.target.value)}
+                            rows={3}
+                            maxLength={255}
+                            className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        />
+                        {retractError && (
+                            <p className="text-destructive text-sm">
+                                {retractError}
+                            </p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setRetractOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleRetract}
+                            disabled={retracting}
+                        >
+                            {retracting && (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            )}
+                            Tarik Rapor
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>

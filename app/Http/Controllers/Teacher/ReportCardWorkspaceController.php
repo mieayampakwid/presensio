@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Semester;
 use App\Models\Student;
 use App\Services\Attendance\ClassAccess;
+use App\Services\ReportCards\ReportCardPublisher;
 use App\Services\ReportCards\ReportCardWorkspaceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ class ReportCardWorkspaceController extends Controller
 {
     public function __construct(
         private readonly ReportCardWorkspaceService $workspace,
+        private readonly ReportCardPublisher $publisher,
     ) {}
 
     /**
@@ -61,6 +63,7 @@ class ReportCardWorkspaceController extends Controller
                 ->all(),
             'checklist' => $this->workspace->checklist($schoolClass, $semester),
             'students' => $this->workspace->students($schoolClass, $semester),
+            'publication' => $this->publisher->currentPublication($schoolClass, $semester),
             'can' => [
                 'edit' => $user !== null && ClassAccess::canWrite($user, $schoolClass->id),
             ],
