@@ -27,7 +27,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    pdf,
     preview,
+    previewPdf,
     show,
     updateEntry,
 } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
@@ -151,6 +153,9 @@ export default function ReportCards({
     );
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
+    const [previewStudentId, setPreviewStudentId] = useState<number | null>(
+        null,
+    );
     const [publishErrors, setPublishErrors] = useState<string[]>([]);
     const [publishWarnings, setPublishWarnings] = useState<
         { student: string }[]
@@ -210,6 +215,7 @@ export default function ReportCards({
         setPreviewLoading(true);
         setPreviewPayload(null);
         setPreviewError(null);
+        setPreviewStudentId(student.id);
         try {
             const response = await fetch(
                 preview.url(
@@ -540,6 +546,35 @@ export default function ReportCards({
                                                 <FileText className="h-4 w-4" />
                                                 Pratinjau
                                             </Button>
+                                            {publication !== null && (
+                                                <a
+                                                    href={pdf.url(
+                                                        {
+                                                            school_class:
+                                                                school_class.id,
+                                                            student: student.id,
+                                                        },
+                                                        {
+                                                            query: {
+                                                                semester:
+                                                                    String(
+                                                                        semester.id,
+                                                                    ),
+                                                            },
+                                                        },
+                                                    )}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <FileText className="h-4 w-4" />
+                                                        PDF
+                                                    </Button>
+                                                </a>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -695,6 +730,7 @@ export default function ReportCards({
                     if (!open) {
                         setPreviewPayload(null);
                         setPreviewError(null);
+                        setPreviewStudentId(null);
                     }
                 }}
             >
@@ -708,6 +744,30 @@ export default function ReportCards({
                             Cuplikan rapor yang akan diterbitkan.
                         </DialogDescription>
                     </DialogHeader>
+                    {previewStudentId !== null && publication !== null && (
+                        <div className="flex justify-end">
+                            <a
+                                href={previewPdf.url(
+                                    {
+                                        school_class: school_class.id,
+                                        student: previewStudentId,
+                                    },
+                                    {
+                                        query: {
+                                            semester: String(semester.id),
+                                        },
+                                    },
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button variant="outline" size="sm">
+                                    <FileText className="h-4 w-4" />
+                                    Unduh PDF
+                                </Button>
+                            </a>
+                        </div>
+                    )}
                     {previewLoading && (
                         <p className="text-muted-foreground text-sm">
                             Memuat pratinjau…

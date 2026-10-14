@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\ReportCardEntry;
 use App\Models\Semester;
 use App\Models\Student;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<ReportCardEntry>

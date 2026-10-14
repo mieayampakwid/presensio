@@ -24,7 +24,9 @@ class ReportCardPublicationFactory extends Factory
             'semester_id' => Semester::factory(),
             // The class must belong to the same academic year as the semester.
             'class_id' => function (array $attributes) {
-                $academicYearId = Semester::find($attributes['semester_id'])->academic_year_id;
+                /** @var Semester $semester */
+                $semester = Semester::query()->findOrFail($attributes['semester_id']);
+                $academicYearId = $semester->academic_year_id;
 
                 return SchoolClass::factory()->create(['academic_year_id' => $academicYearId])->id;
             },

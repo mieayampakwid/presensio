@@ -25,7 +25,8 @@ class ReportCardFactory extends Factory
             'student_id' => Student::factory(),
             // Match the curriculum of the publication's class.
             'curriculum' => function (array $attributes) {
-                $publication = ReportCardPublication::find($attributes['report_card_publication_id']);
+                /** @var ReportCardPublication $publication */
+                $publication = ReportCardPublication::query()->findOrFail($attributes['report_card_publication_id']);
                 /** @var Curriculum $curriculum */
                 $curriculum = $publication->schoolClass->curriculum;
 

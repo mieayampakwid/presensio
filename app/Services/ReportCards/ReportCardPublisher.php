@@ -2,6 +2,7 @@
 
 namespace App\Services\ReportCards;
 
+use App\Enums\Curriculum;
 use App\Models\CourseSemester;
 use App\Models\ReportCard;
 use App\Models\ReportCardEntry;
@@ -92,10 +93,14 @@ class ReportCardPublisher
                     $warnings[] = ['student' => $student->full_name];
                 }
 
+                $curriculum = $class->curriculum instanceof Curriculum
+                    ? $class->curriculum
+                    : Curriculum::from((string) $class->curriculum);
+
                 ReportCard::create([
                     'report_card_publication_id' => $publication->id,
                     'student_id' => $student->id,
-                    'curriculum' => $class->curriculum->value,
+                    'curriculum' => $curriculum->value,
                     'payload' => $payload,
                 ]);
             }

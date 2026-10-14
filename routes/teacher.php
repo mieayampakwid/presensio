@@ -42,6 +42,8 @@ Route::middleware(['auth', 'role:teacher,admin,principal'])->group(function () {
     Route::get('classes/{school_class}/report-cards', [ReportCardWorkspaceController::class, 'show'])->name('classes.report-cards.show');
     Route::put('classes/{school_class}/report-cards/entries/{student}', [ReportCardWorkspaceController::class, 'updateEntry'])->name('classes.report-cards.entries.update');
     Route::get('classes/{school_class}/report-cards/preview/{student}', [ReportCardWorkspaceController::class, 'preview'])->name('classes.report-cards.preview');
+    Route::get('classes/{school_class}/report-cards/pdf/{student}', [ReportCardWorkspaceController::class, 'pdf'])->name('classes.report-cards.pdf');
+    Route::get('classes/{school_class}/report-cards/preview-pdf/{student}', [ReportCardWorkspaceController::class, 'previewPdf'])->name('classes.report-cards.preview-pdf');
     Route::post('classes/{school_class}/report-cards/publish', [ReportCardPublicationController::class, 'publish'])->name('classes.report-cards.publish');
     Route::post('classes/{school_class}/report-cards/retract', [ReportCardPublicationController::class, 'retract'])->name('classes.report-cards.retract');
 });

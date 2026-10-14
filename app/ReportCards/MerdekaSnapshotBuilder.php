@@ -120,7 +120,7 @@ class MerdekaSnapshotBuilder implements ReportCardSnapshotBuilder
      * student actually attended during the semester (labelled with that
      * class). Rows without any result stay empty.
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     private function subjectRows(SchoolClass $class, Semester $semester, Student $student, string $asOf): array
     {

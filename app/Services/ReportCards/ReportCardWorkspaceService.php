@@ -20,7 +20,7 @@ class ReportCardWorkspaceService
      * Finalization checklist: one row per class subject with the course's
      * finalization state for the semester.
      *
-     * @return list<array{subject: string, teacher: string|null, finalized: bool}>
+     * @return array<int, array{subject: string, teacher: string|null, finalized: bool}>
      */
     public function checklist(SchoolClass $class, Semester $semester): array
     {
@@ -44,7 +44,7 @@ class ReportCardWorkspaceService
      * Roster as of min(today, semester.ends_at) with per-student entries and
      * result completeness for this class's courses in this semester only.
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     public function students(SchoolClass $class, Semester $semester): array
     {
@@ -64,7 +64,10 @@ class ReportCardWorkspaceService
                 // Completeness mirrors the snapshot source of truth: rows with
                 // an actual score, including previous-class fallbacks.
                 $payload = $builder->build($class, $semester, $student, 0, $this->settings->now());
-                $withResults = collect($payload['subjects'])
+
+                /** @var array<int, array<string, mixed>> $subjects */
+                $subjects = $payload['subjects'];
+                $withResults = collect($subjects)
                     ->filter(fn (array $row) => $row['final_score'] !== null)
                     ->count();
                 $entry = $entries->get($student->id);
@@ -95,6 +98,8 @@ class ReportCardWorkspaceService
 
     /**
      * Save (or update) the homeroom entry of one student for the semester.
+     *
+     * @param  array{homeroom_notes?: string|null, extracurricular_notes?: string|null, promotion_decision?: string|null}  $data
      */
     public function saveEntry(SchoolClass $class, Semester $semester, Student $student, array $data): ReportCardEntry
     {
