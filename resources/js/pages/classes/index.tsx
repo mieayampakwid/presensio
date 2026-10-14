@@ -3,12 +3,14 @@ import {
     BookOpen,
     ChevronLeft,
     ChevronRight,
+    GraduationCap,
     Pencil,
     Trash2,
 } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import ReportCardWorkspaceController from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -202,6 +204,28 @@ export default function ClassesIndex({
                                                     <BookOpen className="h-4 w-4" />
                                                     <span className="sr-only">
                                                         Mata Pelajaran
+                                                    </span>
+                                                </Link>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                                title="Rapor Kelas"
+                                            >
+                                                <Link
+                                                    href={
+                                                        ReportCardWorkspaceController.show(
+                                                            {
+                                                                school_class:
+                                                                    schoolClass.id,
+                                                            },
+                                                        ).url
+                                                    }
+                                                >
+                                                    <GraduationCap className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        Rapor Kelas
                                                     </span>
                                                 </Link>
                                             </Button>

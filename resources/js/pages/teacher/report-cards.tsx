@@ -75,6 +75,7 @@ type Props = {
     publication: { version: number; published_at: string } | null;
     bundle_available: boolean;
     can: { edit: boolean };
+    accessible_classes?: { id: number; name: string }[];
 };
 
 /**
@@ -129,6 +130,7 @@ export default function ReportCards({
     publication,
     bundle_available,
     can,
+    accessible_classes,
 }: Props) {
     const [entryStudent, setEntryStudent] = useState<StudentEntry | null>(null);
     const [previewPayload, setPreviewPayload] =
@@ -395,6 +397,43 @@ export default function ReportCards({
                         />
                     </div>
                     <div className="flex items-center gap-3">
+                        {accessible_classes &&
+                            accessible_classes.length > 1 && (
+                                <Select
+                                    value={String(school_class.id)}
+                                    onValueChange={(newClassId) => {
+                                        router.get(
+                                            show.url(
+                                                {
+                                                    school_class:
+                                                        Number(newClassId),
+                                                },
+                                                {
+                                                    query: {
+                                                        semester: semester.id,
+                                                    },
+                                                },
+                                            ),
+                                            {},
+                                            { preserveState: false },
+                                        );
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Pilih Kelas" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {accessible_classes.map((cls) => (
+                                            <SelectItem
+                                                key={cls.id}
+                                                value={String(cls.id)}
+                                            >
+                                                {cls.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
                         <Select
                             value={String(semester.id)}
                             onValueChange={handleSemesterChange}

@@ -3,6 +3,7 @@ import {
     ChevronLeft,
     ExternalLink,
     FileSpreadsheet,
+    GraduationCap,
     Pencil,
     Plus,
     Trash2,
@@ -10,6 +11,7 @@ import {
 import { useState } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import ReportCardWorkspaceController from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -132,6 +134,20 @@ export default function ClassSubjects({
                             title={`Mata Pelajaran & Guru — ${schoolClass.name}`}
                             description={`Tahun Ajaran: ${schoolClass.academic_year?.name ?? '-'} | Wali Kelas: ${schoolClass.teacher?.name ?? 'Belum ditentukan'}`}
                         />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link
+                                href={
+                                    ReportCardWorkspaceController.show({
+                                        school_class: schoolClass.id,
+                                    }).url
+                                }
+                            >
+                                <GraduationCap className="mr-1.5 h-4 w-4" />
+                                Rapor Kelas
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 

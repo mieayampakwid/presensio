@@ -140,6 +140,11 @@ export function AppSidebar() {
                       icon: Target,
                   },
                   {
+                      title: 'Rapor Kelas',
+                      href: reportCardsIndex().url,
+                      icon: GraduationCap,
+                  },
+                  {
                       title: 'Academic Years',
                       href: AcademicYearController.index().url,
                       icon: CalendarRange,
@@ -250,9 +255,7 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(activeRole === 'teacher' ||
-        activeRole === 'admin' ||
-        activeRole === 'principal'
+        ...(activeRole === 'teacher' || activeRole === 'principal'
             ? [
                   {
                       title: 'Rapor Kelas',

@@ -69,6 +69,12 @@ class ReportCardWorkspaceController extends Controller
             'semesters' => $schoolClass->academicYear->semesters
                 ->map(fn (Semester $s) => ['id' => $s->id, 'name' => $s->name, 'number' => $s->number])
                 ->all(),
+            'accessible_classes' => SchoolClass::query()
+                ->whereIn('id', ClassAccess::academicClassIds($user))
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (SchoolClass $c) => ['id' => $c->id, 'name' => $c->name])
+                ->all(),
             'checklist' => $this->workspace->checklist($schoolClass, $semester),
             'students' => $this->workspace->students($schoolClass, $semester),
             'publication' => $this->publisher->currentPublication($schoolClass, $semester),
