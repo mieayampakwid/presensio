@@ -190,9 +190,9 @@ class CourseFinalizer
                     ->where('student_id', $student->id)
                     ->first();
 
-                $description = ($existing && $existing->description_edited)
+                $description = $existing !== null && $existing->description_edited
                     ? $existing->description
-                    : ($existing?->description ?: $draftDescription);
+                    : $draftDescription;
 
                 SubjectResult::updateOrCreate(
                     [

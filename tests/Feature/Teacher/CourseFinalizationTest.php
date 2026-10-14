@@ -487,4 +487,165 @@ class CourseFinalizationTest extends TestCase
             'final_score' => 80,
         ]);
     }
+
+    public function test_refinalization_refreshes_automatic_description_after_score_changes(): void
+    {
+        $tp = LearningObjective::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'subject_id' => $this->subject->id,
+            'grade_level' => 5,
+            'code' => 'TP 1',
+            'description' => 'operasi pecahan',
+        ]);
+
+        $assessment = Assessment::factory()->create([
+            'class_subject_id' => $this->classSubject->id,
+            'semester_id' => $this->semester->id,
+            'name' => 'Sumatif 1',
+            'kind' => AssessmentKind::SummativeScope,
+            'assessed_on' => '2026-08-10',
+            'max_score' => '100.00',
+        ]);
+        $assessment->learningObjectives()->attach($tp->id);
+
+        $score = Score::factory()->create([
+            'assessment_id' => $assessment->id,
+            'student_id' => $this->student->id,
+            'score' => '90.00',
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.finalize', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+            ])
+            ->assertRedirect();
+
+        $courseSemester = CourseSemester::forCourse($this->classSubject, $this->semester);
+        $this->assertTrue($courseSemester->isFinalized());
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 90,
+            'description' => 'Menunjukkan penguasaan yang baik dalam operasi pecahan.',
+            'description_edited' => false,
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->delete(route('courses.unfinalize', [
+                'class_subject' => $this->classSubject->id,
+                'semester_id' => $this->semester->id,
+            ]))
+            ->assertRedirect();
+
+        $this->assertFalse($courseSemester->fresh()->isFinalized());
+
+        $score->update(['score' => '50.00']);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.finalize', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($courseSemester->fresh()->isFinalized());
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 50,
+            'description' => 'Perlu bantuan dalam operasi pecahan.',
+            'description_edited' => false,
+        ]);
+    }
+
+    public function test_refinalization_preserves_teacher_edited_description_after_score_changes(): void
+    {
+        $tp = LearningObjective::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'subject_id' => $this->subject->id,
+            'grade_level' => 5,
+            'code' => 'TP 1',
+            'description' => 'operasi pecahan',
+        ]);
+
+        $assessment = Assessment::factory()->create([
+            'class_subject_id' => $this->classSubject->id,
+            'semester_id' => $this->semester->id,
+            'name' => 'Sumatif 1',
+            'kind' => AssessmentKind::SummativeScope,
+            'assessed_on' => '2026-08-10',
+            'max_score' => '100.00',
+        ]);
+        $assessment->learningObjectives()->attach($tp->id);
+
+        $score = Score::factory()->create([
+            'assessment_id' => $assessment->id,
+            'student_id' => $this->student->id,
+            'score' => '90.00',
+        ]);
+
+        $customDescription = 'Deskripsi catatan guru khusus untuk Budi.';
+        $this->actingAs($this->teacherUser)
+            ->put(route('courses.results.description.update', [
+                'class_subject' => $this->classSubject->id,
+                'student' => $this->student->id,
+            ]), [
+                'semester_id' => $this->semester->id,
+                'description' => $customDescription,
+            ])
+            ->assertRedirect();
+
+        $courseSemester = CourseSemester::forCourse($this->classSubject, $this->semester);
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'description' => $customDescription,
+            'description_edited' => true,
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.finalize', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($courseSemester->fresh()->isFinalized());
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 90,
+            'description' => $customDescription,
+            'description_edited' => true,
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->delete(route('courses.unfinalize', [
+                'class_subject' => $this->classSubject->id,
+                'semester_id' => $this->semester->id,
+            ]))
+            ->assertRedirect();
+
+        $this->assertFalse($courseSemester->fresh()->isFinalized());
+
+        $score->update(['score' => '50.00']);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.finalize', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($courseSemester->fresh()->isFinalized());
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 50,
+            'description' => $customDescription,
+            'description_edited' => true,
+        ]);
+    }
 }
