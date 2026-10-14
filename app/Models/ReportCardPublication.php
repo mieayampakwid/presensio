@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\ReportCardPublicationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property-read SchoolClass $schoolClass
  * @property-read User $publishedBy
  * @property-read User|null $retractedBy
- * @property-read HasMany<ReportCard, $this> $reportCards
+ * @property-read Collection<int, ReportCard> $reportCards
  */
 #[Fillable(['semester_id', 'class_id', 'version', 'published_at', 'published_by_user_id', 'retracted_at', 'retracted_by_user_id', 'retract_reason'])]
 class ReportCardPublication extends Model

@@ -12,6 +12,7 @@ use App\Models\Semester;
 use App\Models\Student;
 use App\ReportCards\SnapshotBuilderResolver;
 use App\Services\Audit\AuditLogger;
+use App\Services\Notifications\ReportCardNotifier;
 use App\Services\SchoolSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,7 @@ class ReportCardPublisher
     public function __construct(
         private readonly SchoolSettings $settings,
         private readonly AuditLogger $auditLogger,
+        private readonly ReportCardNotifier $notifier,
     ) {}
 
     /**
@@ -115,6 +117,10 @@ class ReportCardPublisher
                 'students' => $roster->count(),
             ]);
 
+            // Dispatches after commit (the dispatcher defers while a
+            // transaction is open).
+            $this->notifier->published($publication);
+
             return ['version' => $version, 'warnings' => $warnings];
         });
     }
@@ -153,6 +159,8 @@ class ReportCardPublisher
             $this->auditLogger->record($publication, 'retracted', null, [
                 'retracted_at' => $publication->retracted_at->toIso8601String(),
             ], $reason);
+
+            $this->notifier->retracted($publication);
         });
     }
 
