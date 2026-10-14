@@ -37,6 +37,21 @@ class ReportCardPdf
     }
 
     /**
+     * Render one combined PDF with every student snapshot of a class, one
+     * page each.
+     *
+     * @param  array<int, array<string, mixed>>  $payloads
+     */
+    public function bundle(array $payloads, ?string $curriculum = null): string
+    {
+        $dompdf = Pdf::loadHtml($this->bundleView($payloads, $curriculum)->render())
+            ->setPaper('a4', 'portrait');
+        $dompdf->getDomPDF()->getOptions()->setIsRemoteEnabled(false);
+
+        return (string) $dompdf->output();
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      */
     private function view(array $payload, ?string $curriculum): View
@@ -47,5 +62,18 @@ class ReportCardPdf
         };
 
         return view($template, ['payload' => $payload]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $payloads
+     */
+    private function bundleView(array $payloads, ?string $curriculum): View
+    {
+        $template = match ($curriculum ?? Curriculum::Merdeka->value) {
+            Curriculum::Merdeka->value => 'pdf.report-card-bundle',
+            default => throw new InvalidArgumentException("Unsupported curriculum: {$curriculum}"),
+        };
+
+        return view($template, ['payloads' => $payloads]);
     }
 }

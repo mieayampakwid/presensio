@@ -9,6 +9,7 @@ use App\Http\Controllers\Teacher\CourseResultController;
 use App\Http\Controllers\Teacher\CourseWeightController;
 use App\Http\Controllers\Teacher\GradebookController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
+use App\Http\Controllers\Teacher\ReportCardBundleController;
 use App\Http\Controllers\Teacher\ReportCardPublicationController;
 use App\Http\Controllers\Teacher\ReportCardWorkspaceController;
 use App\Http\Controllers\Teacher\ScoreController;
@@ -46,4 +47,6 @@ Route::middleware(['auth', 'role:teacher,admin,principal'])->group(function () {
     Route::get('classes/{school_class}/report-cards/preview-pdf/{student}', [ReportCardWorkspaceController::class, 'previewPdf'])->name('classes.report-cards.preview-pdf');
     Route::post('classes/{school_class}/report-cards/publish', [ReportCardPublicationController::class, 'publish'])->name('classes.report-cards.publish');
     Route::post('classes/{school_class}/report-cards/retract', [ReportCardPublicationController::class, 'retract'])->name('classes.report-cards.retract');
+    Route::post('classes/{school_class}/report-cards/bundle', [ReportCardBundleController::class, 'store'])->name('classes.report-cards.bundle.store');
+    Route::get('classes/{school_class}/report-cards/bundle/download', [ReportCardBundleController::class, 'download'])->name('classes.report-cards.bundle.download');
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Enums\Curriculum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\UpdateReportCardEntryRequest;
+use App\Jobs\BuildClassReportCardPdf;
 use App\Models\ReportCard;
 use App\Models\ReportCardPublication;
 use App\Models\SchoolClass;
@@ -18,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -70,6 +72,7 @@ class ReportCardWorkspaceController extends Controller
             'checklist' => $this->workspace->checklist($schoolClass, $semester),
             'students' => $this->workspace->students($schoolClass, $semester),
             'publication' => $this->publisher->currentPublication($schoolClass, $semester),
+            'bundle_available' => $this->bundleAvailable($schoolClass, $semester),
             'can' => [
                 'edit' => ClassAccess::canWrite($user, $schoolClass->id),
             ],
@@ -170,6 +173,21 @@ class ReportCardWorkspaceController extends Controller
             sprintf('pratinjau-rapor-%s-%s.pdf', $schoolClass->name, str_replace(' ', '-', $student->full_name)),
             'inline',
         );
+    }
+
+    /**
+     * Whether a combined PDF exists for the class's current publication.
+     */
+    private function bundleAvailable(SchoolClass $schoolClass, Semester $semester): bool
+    {
+        $publication = ReportCardPublication::query()
+            ->where('class_id', $schoolClass->id)
+            ->where('semester_id', $semester->id)
+            ->current()
+            ->first();
+
+        return $publication !== null
+            && Storage::disk('local')->exists(BuildClassReportCardPdf::path($publication));
     }
 
     private function pdfResponse(string $bytes, string $filename, string $disposition): Response

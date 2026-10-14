@@ -2,8 +2,10 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     ClipboardCheck,
+    Download,
     FileText,
     LoaderCircle,
+    Printer,
     Users,
 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
@@ -37,6 +39,7 @@ import {
     updateEntry,
 } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import ReportCardPublicationController from '@/actions/App/Http/Controllers/Teacher/ReportCardPublicationController';
+import ReportCardBundleController from '@/actions/App/Http/Controllers/Teacher/ReportCardBundleController';
 
 type ChecklistItem = {
     subject: string;
@@ -70,6 +73,7 @@ type Props = {
     checklist: ChecklistItem[];
     students: StudentEntry[];
     publication: { version: number; published_at: string } | null;
+    bundle_available: boolean;
     can: { edit: boolean };
 };
 
@@ -123,6 +127,7 @@ export default function ReportCards({
     checklist,
     students,
     publication,
+    bundle_available,
     can,
 }: Props) {
     const [entryStudent, setEntryStudent] = useState<StudentEntry | null>(null);
@@ -142,6 +147,8 @@ export default function ReportCards({
     const [retractReason, setRetractReason] = useState('');
     const [retractError, setRetractError] = useState<string | null>(null);
     const [retracting, setRetracting] = useState(false);
+    const [bundleBuilding, setBundleBuilding] = useState(false);
+    const [bundleError, setBundleError] = useState<string | null>(null);
 
     const entryForm = useForm({
         semester_id: semester.id,
@@ -318,6 +325,52 @@ export default function ReportCards({
         }
     };
 
+    const handleBuildBundle = async () => {
+        setBundleBuilding(true);
+        setBundleError(null);
+        try {
+            const response = await fetch(
+                ReportCardBundleController.store.url({
+                    school_class: school_class.id,
+                }),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken(),
+                    },
+                    body: JSON.stringify({ semester_id: semester.id }),
+                },
+            );
+            if (!response.ok) {
+                setBundleError(
+                    `Gagal menyiapkan cetak semua (HTTP ${response.status}).`,
+                );
+                return;
+            }
+            // The queued job lands on the private disk; refresh a few times
+            // until the download link appears.
+            let attempts = 0;
+            const poll = window.setInterval(() => {
+                attempts += 1;
+                router.reload({
+                    onFinish: () => {
+                        if (attempts >= 10) {
+                            window.clearInterval(poll);
+                        }
+                    },
+                });
+            }, 2000);
+        } catch {
+            setBundleError(
+                'Tidak dapat terhubung ke server. Periksa koneksi dan coba lagi.',
+            );
+        } finally {
+            setBundleBuilding(false);
+        }
+    };
+
     return (
         <>
             <Head
@@ -384,8 +437,51 @@ export default function ReportCards({
                                 Tarik
                             </Button>
                         )}
+                        {can.edit &&
+                            publication !== null &&
+                            bundle_available && (
+                                <Button asChild variant="outline">
+                                    <a
+                                        href={ReportCardBundleController.download.url(
+                                            { school_class: school_class.id },
+                                            {
+                                                query: {
+                                                    semester: String(
+                                                        semester.id,
+                                                    ),
+                                                },
+                                            },
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        Unduh Cetak Semua
+                                    </a>
+                                </Button>
+                            )}
+                        {can.edit &&
+                            publication !== null &&
+                            !bundle_available && (
+                                <Button
+                                    variant="outline"
+                                    onClick={handleBuildBundle}
+                                    disabled={bundleBuilding}
+                                >
+                                    {bundleBuilding ? (
+                                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Printer className="h-4 w-4" />
+                                    )}
+                                    Cetak Semua
+                                </Button>
+                            )}
                     </div>
                 </div>
+
+                {bundleError !== null && (
+                    <p className="text-destructive text-sm">{bundleError}</p>
+                )}
 
                 {publishErrors.length > 0 && (
                     <div className="border-destructive bg-destructive/10 text-destructive rounded-md border p-4 text-sm">
