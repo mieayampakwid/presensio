@@ -104,7 +104,7 @@ class ScoreEntryTest extends TestCase
         ]);
     }
 
-    public function test_ac_10_01_saving_score_outside_max_score_returns_422(): void
+    public function test_saving_score_outside_max_score_returns_422(): void
     {
         // AC-10-01: Saving a score of 105 or -5 on max_score = 100 returns HTTP 422
         $response1 = $this->actingAs($this->teacherUser)
@@ -176,7 +176,7 @@ class ScoreEntryTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_teacher_can_batch_save_scores_and_records_audit_log_ac_10_14(): void
+    public function test_teacher_can_batch_save_scores_and_records_audit_log(): void
     {
         // First entry: create score
         $response = $this->actingAs($this->teacherUser)
@@ -236,7 +236,7 @@ class ScoreEntryTest extends TestCase
         ]);
     }
 
-    public function test_ac_15_10_score_recording_atomicity_rolls_back_if_audit_fails(): void
+    public function test_score_recording_atomicity_rolls_back_if_audit_fails(): void
     {
         // Mock AuditLogger to throw exception
         $mockAudit = Mockery::mock(AuditLogger::class);

@@ -86,7 +86,7 @@ class SubjectManagementTest extends TestCase
     /**
      * AC-09-01: Creating a second subject with an existing code or name returns HTTP 422.
      */
-    public function test_ac_09_01_duplicate_code_or_name_rejected_with_422(): void
+    public function test_duplicate_code_or_name_rejected_with_422(): void
     {
         $admin = User::factory()->admin()->create();
         Subject::factory()->create([
@@ -157,7 +157,7 @@ class SubjectManagementTest extends TestCase
     /**
      * AC-09-06: Deleting a subject referenced by any class_subjects row returns HTTP 422.
      */
-    public function test_ac_09_06_deleting_a_subject_referenced_by_class_subjects_returns_422(): void
+    public function test_deleting_a_subject_referenced_by_class_subjects_returns_422(): void
     {
         $admin = User::factory()->admin()->create();
         $subject = Subject::factory()->create();

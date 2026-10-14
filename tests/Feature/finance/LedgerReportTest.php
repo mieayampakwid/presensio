@@ -37,7 +37,7 @@ class LedgerReportTest extends TestCase
         $this->expenseAccount = Account::where('code', '5-1300')->firstOrFail();
     }
 
-    public function test_principal_and_finance_and_admin_can_read_all_reports_ac_14_24(): void
+    public function test_principal_and_finance_and_admin_can_read_all_reports(): void
     {
         $principal = User::factory()->principal()->create();
         $finance = User::factory()->finance()->create();

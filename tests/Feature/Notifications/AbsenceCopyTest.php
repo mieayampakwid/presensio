@@ -23,7 +23,7 @@ class AbsenceCopyTest extends TestCase
         config(['services.waha.base_url' => 'https://waha.test']);
     }
 
-    public function test_ac_17_08_absence_alert_writes_in_app_notification_for_guardian_with_account(): void
+    public function test_absence_alert_writes_in_app_notification_for_guardian_with_account(): void
     {
         Http::fake();
 

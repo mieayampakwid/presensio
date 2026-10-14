@@ -13,7 +13,7 @@ class EmployeeMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_ac_16_01_migration_moves_teacher_profiles_to_employees_and_resolves_classes(): void
+    public function test_migration_moves_teacher_profiles_to_employees_and_resolves_classes(): void
     {
         $user = User::factory()->teacher()->create();
 

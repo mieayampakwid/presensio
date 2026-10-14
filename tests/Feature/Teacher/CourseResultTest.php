@@ -92,7 +92,7 @@ class CourseResultTest extends TestCase
         ]);
     }
 
-    public function test_ac_10_06_draft_description_generated_from_scored_assessments(): void
+    public function test_draft_description_generated_from_scored_assessments(): void
     {
         $tp1 = LearningObjective::factory()->create([
             'academic_year_id' => $this->academicYear->id,

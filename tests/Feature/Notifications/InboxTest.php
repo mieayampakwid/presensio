@@ -82,7 +82,7 @@ class InboxTest extends TestCase
         );
     }
 
-    public function test_ac_17_09_user_cannot_read_another_users_notification(): void
+    public function test_user_cannot_read_another_users_notification(): void
     {
         $userA = User::factory()->create();
         $userB = User::factory()->create();

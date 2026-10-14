@@ -92,7 +92,7 @@ class ChildGradeTest extends TestCase
         ]);
     }
 
-    public function test_ac_10_07_unreleased_assessment_absent_and_appears_after_release(): void
+    public function test_unreleased_assessment_absent_and_appears_after_release(): void
     {
         // Unreleased assessment
         $unreleased = Assessment::factory()->create([
@@ -158,7 +158,7 @@ class ChildGradeTest extends TestCase
         );
     }
 
-    public function test_ac_10_12_unlinked_child_returns_403(): void
+    public function test_unlinked_child_returns_403(): void
     {
         $response = $this->actingAs($this->otherGuardianUser)
             ->get(route('children.grades.index', [

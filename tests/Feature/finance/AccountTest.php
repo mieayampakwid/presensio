@@ -140,7 +140,7 @@ class AccountTest extends TestCase
         ]);
     }
 
-    public function test_cannot_delete_account_with_posted_lines_ac_14_23(): void
+    public function test_cannot_delete_account_with_posted_lines(): void
     {
         $finance = User::factory()->finance()->create();
         $account = Account::factory()->create(['code' => '1-1100']);

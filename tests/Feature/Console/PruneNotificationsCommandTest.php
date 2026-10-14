@@ -14,7 +14,7 @@ class PruneNotificationsCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_ac_17_11_prune_removes_read_notifications_older_than_180_days(): void
+    public function test_prune_removes_read_notifications_older_than_180_days(): void
     {
         $user = User::factory()->create();
 

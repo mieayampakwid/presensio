@@ -93,7 +93,7 @@ class CourseFinalizationTest extends TestCase
         ]);
     }
 
-    public function test_ac_10_08_finalizing_with_missing_scores_fails_and_succeeds_when_complete(): void
+    public function test_finalizing_with_missing_scores_fails_and_succeeds_when_complete(): void
     {
         $tp = LearningObjective::factory()->create([
             'academic_year_id' => $this->academicYear->id,
@@ -177,7 +177,7 @@ class CourseFinalizationTest extends TestCase
         ]);
     }
 
-    public function test_ac_10_09_editing_score_in_finalized_course_returns_422(): void
+    public function test_editing_score_in_finalized_course_returns_422(): void
     {
         $a1 = Assessment::factory()->create([
             'class_subject_id' => $this->classSubject->id,
@@ -215,7 +215,7 @@ class CourseFinalizationTest extends TestCase
         $res->assertStatus(422);
     }
 
-    public function test_ac_10_10_undoing_finalization_blocked_when_report_cards_published(): void
+    public function test_undoing_finalization_blocked_when_report_cards_published(): void
     {
         $courseSemester = CourseSemester::forCourse($this->classSubject, $this->semester);
         $courseSemester->update([
@@ -392,5 +392,99 @@ class CourseFinalizationTest extends TestCase
             ->assertRedirect();
 
         $this->assertFalse(CourseSemester::forCourse($this->classSubject, $this->semester)->isFinalized());
+    }
+
+    public function test_finalization_freezes_http_entered_scores_and_rejects_updates_with_422(): void
+    {
+        $objective = LearningObjective::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'subject_id' => $this->subject->id,
+            'grade_level' => 5,
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.assessments.store', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+                'name' => 'Sumatif Lingkup 1',
+                'kind' => AssessmentKind::SummativeScope->value,
+                'assessed_on' => '2026-08-15',
+                'max_score' => 100,
+                'objective_ids' => [$objective->id],
+            ])
+            ->assertRedirect();
+
+        /** @var Assessment $assessment */
+        $assessment = Assessment::query()
+            ->where('class_subject_id', $this->classSubject->id)
+            ->where('semester_id', $this->semester->id)
+            ->firstOrFail();
+
+        $this->actingAs($this->teacherUser)
+            ->postJson(route('courses.scores.store', $this->classSubject), [
+                'scores' => [
+                    [
+                        'assessment_id' => $assessment->id,
+                        'student_id' => $this->student->id,
+                        'score' => 80,
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('scores', [
+            'assessment_id' => $assessment->id,
+            'student_id' => $this->student->id,
+            'score' => '80.00',
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('courses.finalize', $this->classSubject), [
+                'semester_id' => $this->semester->id,
+            ])
+            ->assertRedirect();
+
+        $courseSemester = CourseSemester::forCourse($this->classSubject, $this->semester);
+        $this->assertTrue($courseSemester->isFinalized());
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 80,
+        ]);
+
+        $this->actingAs($this->teacherUser)
+            ->get(route('courses.gradebook', [
+                'class_subject' => $this->classSubject->id,
+                'semester' => $this->semester->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('teacher/gradebook')
+                ->where('is_finalized', true)
+            );
+
+        $this->actingAs($this->teacherUser)
+            ->postJson(route('courses.scores.store', $this->classSubject), [
+                'scores' => [
+                    [
+                        'assessment_id' => $assessment->id,
+                        'student_id' => $this->student->id,
+                        'score' => 99,
+                    ],
+                ],
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('scores', [
+            'assessment_id' => $assessment->id,
+            'student_id' => $this->student->id,
+            'score' => '80.00',
+        ]);
+
+        $this->assertDatabaseHas('subject_results', [
+            'course_semester_id' => $courseSemester->id,
+            'student_id' => $this->student->id,
+            'final_score' => 80,
+        ]);
     }
 }

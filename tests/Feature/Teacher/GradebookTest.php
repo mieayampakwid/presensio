@@ -131,7 +131,7 @@ class GradebookTest extends TestCase
         );
     }
 
-    public function test_ac_10_13_transferred_in_student_absent_from_pre_transfer_assessment_cells(): void
+    public function test_transferred_in_student_absent_from_pre_transfer_assessment_cells(): void
     {
         // Student A enrolled from day 1
         $studentA = Student::factory()->create(['full_name' => 'Anisa']);

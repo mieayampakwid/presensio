@@ -95,7 +95,7 @@ class ManualJournalTest extends TestCase
         $this->assertSame('0.00', (string) $debitLine->credit);
     }
 
-    public function test_manual_journal_form_payload_with_empty_unused_side_posts_balanced_ac_14_16(): void
+    public function test_manual_journal_form_payload_with_empty_unused_side_posts_balanced(): void
     {
         $finance = User::factory()->finance()->create();
 
@@ -137,7 +137,7 @@ class ManualJournalTest extends TestCase
         $response->assertRedirect(route('finance.journals.show', $entry));
     }
 
-    public function test_posting_unbalanced_manual_journal_returns_422_ac_14_16(): void
+    public function test_posting_unbalanced_manual_journal_returns_422(): void
     {
         $finance = User::factory()->finance()->create();
 
@@ -157,7 +157,7 @@ class ManualJournalTest extends TestCase
         ]);
     }
 
-    public function test_posting_manual_journal_in_closed_period_returns_422_ac_14_18(): void
+    public function test_posting_manual_journal_in_closed_period_returns_422(): void
     {
         $finance = User::factory()->finance()->create();
         AccountingPeriod::create(['period' => '2026-09', 'status' => 'closed']);
@@ -241,7 +241,7 @@ class ManualJournalTest extends TestCase
         $this->assertStringContainsString('Koreksi kesalahan input', $reversal->description);
     }
 
-    public function test_principal_can_view_journals_but_cannot_post_or_create_ac_14_24(): void
+    public function test_principal_can_view_journals_but_cannot_post_or_create(): void
     {
         $principal = User::factory()->principal()->create();
 

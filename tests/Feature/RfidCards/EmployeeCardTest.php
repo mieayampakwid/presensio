@@ -50,7 +50,7 @@ class EmployeeCardTest extends TestCase
         $this->assertSame($employee->id, $card->fresh()->employee_id);
     }
 
-    public function test_ac_16_04_card_cannot_be_assigned_to_an_employee_while_assigned_to_a_student(): void
+    public function test_card_cannot_be_assigned_to_an_employee_while_assigned_to_a_student(): void
     {
         $admin = User::factory()->admin()->create();
         $student = Student::factory()->create();

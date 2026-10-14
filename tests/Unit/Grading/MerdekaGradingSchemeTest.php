@@ -20,7 +20,7 @@ class MerdekaGradingSchemeTest extends TestCase
         $this->scheme = new MerdekaGradingScheme;
     }
 
-    public function test_ac_10_02_semester_score_with_scope_and_final_weights(): void
+    public function test_semester_score_with_scope_and_final_weights(): void
     {
         // AC-10-02: scope 80 & 70 (avg 75), final 90, 50/50 -> 82.5 -> report value 83
         $inputs = [
@@ -35,7 +35,7 @@ class MerdekaGradingSchemeTest extends TestCase
         $this->assertSame(83, $this->scheme->roundedScore($score));
     }
 
-    public function test_ac_10_03_formative_assessments_are_ignored_in_semester_score(): void
+    public function test_formative_assessments_are_ignored_in_semester_score(): void
     {
         // AC-10-03: formative 20 ignored
         $inputs = [
@@ -51,7 +51,7 @@ class MerdekaGradingSchemeTest extends TestCase
         $this->assertSame(83, $this->scheme->roundedScore($score));
     }
 
-    public function test_ac_10_04_remedial_policy(): void
+    public function test_remedial_policy(): void
     {
         // Threshold 75:
         // 60 + remedial 90 -> 75 (capped at threshold)
@@ -134,7 +134,7 @@ class MerdekaGradingSchemeTest extends TestCase
         $this->assertEquals(80.0, $results[2]);
     }
 
-    public function test_ac_10_06_draft_description_with_lowest_below_threshold(): void
+    public function test_draft_description_with_lowest_below_threshold(): void
     {
         // TP 1 result 92, TP 3 result 64, threshold 75
         $tpResults = [

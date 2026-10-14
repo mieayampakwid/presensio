@@ -80,7 +80,7 @@ class ExcuseNotificationTest extends TestCase
         $this->assertSame('Pengajuan Izin Baru', $teacherNotif->data['title']);
     }
 
-    public function test_ac_17_01_approving_excuse_creates_in_app_notification_for_submitting_guardian(): void
+    public function test_approving_excuse_creates_in_app_notification_for_submitting_guardian(): void
     {
         $admin = User::factory()->admin()->create();
         $parentUser = User::factory()->parent()->create();

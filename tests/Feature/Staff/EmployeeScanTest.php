@@ -51,7 +51,7 @@ class EmployeeScanTest extends TestCase
         return $this->postJson(route('attendance.scan'), $payload, ['X-Scanner-Key' => self::KEY]);
     }
 
-    public function test_ac_16_02_on_time_tap_at_0650_is_present_and_late_tap_at_0720_is_late_with_20_minutes(): void
+    public function test_on_time_tap_at_0650_is_present_and_late_tap_at_0720_is_late_with_20_minutes(): void
     {
         $employee1 = Employee::factory()->create(['name' => 'Pak Budi']);
         $card1 = RfidCard::factory()->assignedToEmployee($employee1)->create(['rfid_number' => 'EMP-01']);
@@ -98,7 +98,7 @@ class EmployeeScanTest extends TestCase
         $this->assertSame(20, $record2->late_minutes);
     }
 
-    public function test_ac_16_03_checkout_tap_at_1330_records_early_leave_30_and_tap_at_1410_resets_to_0(): void
+    public function test_checkout_tap_at_1330_records_early_leave_30_and_tap_at_1410_resets_to_0(): void
     {
         $employee = Employee::factory()->create(['name' => 'Pak Budi']);
         $card = RfidCard::factory()->assignedToEmployee($employee)->create(['rfid_number' => 'EMP-01']);
@@ -134,7 +134,7 @@ class EmployeeScanTest extends TestCase
         $this->assertSame(0, $record->fresh()->early_leave_minutes);
     }
 
-    public function test_ac_16_06_absent_employee_from_sweep_tapping_at_0930_is_upgraded_to_late(): void
+    public function test_absent_employee_from_sweep_tapping_at_0930_is_upgraded_to_late(): void
     {
         $employee = Employee::factory()->create(['name' => 'Pak Joko']);
         $card = RfidCard::factory()->assignedToEmployee($employee)->create(['rfid_number' => 'EMP-03']);
@@ -202,7 +202,7 @@ class EmployeeScanTest extends TestCase
         $this->assertSame(150, $record->late_minutes);
     }
 
-    public function test_ac_16_11_inactive_employee_tap_logs_ignored_inactive_and_creates_no_record(): void
+    public function test_inactive_employee_tap_logs_ignored_inactive_and_creates_no_record(): void
     {
         $employee = Employee::factory()->inactive()->create(['name' => 'Pak Nonaktif']);
         $card = RfidCard::factory()->assignedToEmployee($employee)->create(['rfid_number' => 'EMP-INACTIVE']);

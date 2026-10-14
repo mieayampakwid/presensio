@@ -113,7 +113,7 @@ class AssessmentTest extends TestCase
         );
     }
 
-    public function test_ac_10_05_summative_scope_without_tps_returns_422(): void
+    public function test_summative_scope_without_tps_returns_422(): void
     {
         // AC-10-05: Creating a summative_scope assessment without any linked TP returns HTTP 422
         $response = $this->actingAs($this->teacherUser)
@@ -191,7 +191,7 @@ class AssessmentTest extends TestCase
         $response->assertJsonValidationErrors('assessed_on');
     }
 
-    public function test_ac_10_11_unassigned_teacher_cannot_manage_assessments_returns_403(): void
+    public function test_unassigned_teacher_cannot_manage_assessments_returns_403(): void
     {
         // AC-10-11: Teacher Siti saving scores/assessments for 5A IPAS receives HTTP 403
         $response = $this->actingAs($this->otherTeacherUser)

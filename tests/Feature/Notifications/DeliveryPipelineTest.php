@@ -48,7 +48,7 @@ class DeliveryPipelineTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_ac_17_03_guardian_opt_out_skips_whatsapp_but_writes_in_app(): void
+    public function test_guardian_opt_out_skips_whatsapp_but_writes_in_app(): void
     {
         Http::fake();
 
@@ -88,7 +88,7 @@ class DeliveryPipelineTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_ac_17_04_quota_skips_after_limit_but_payment_rejected_is_sent(): void
+    public function test_quota_skips_after_limit_but_payment_rejected_is_sent(): void
     {
         Http::fake([
             'https://waha.test/*' => Http::response(['id' => 'msg-123'], 200),
@@ -134,7 +134,7 @@ class DeliveryPipelineTest extends TestCase
         ]);
     }
 
-    public function test_ac_17_05_quiet_hours_delays_quota_bound_but_not_critical(): void
+    public function test_quiet_hours_delays_quota_bound_but_not_critical(): void
     {
         // Freeze time at 22:00 WIB
         Date::setTestNow(Date::parse('2026-10-03 22:00:00', 'Asia/Jakarta'));
@@ -172,7 +172,7 @@ class DeliveryPipelineTest extends TestCase
         $this->assertNull($payDelivery->scheduled_for);
     }
 
-    public function test_ac_17_07_wa_failure_falls_back_to_email_when_enabled(): void
+    public function test_wa_failure_falls_back_to_email_when_enabled(): void
     {
         Http::fake([
             'https://waha.test/*' => Http::response([], 500),
@@ -220,7 +220,7 @@ class DeliveryPipelineTest extends TestCase
         ]);
     }
 
-    public function test_ac_17_07_wa_failure_ends_failed_when_email_disabled(): void
+    public function test_wa_failure_ends_failed_when_email_disabled(): void
     {
         Http::fake([
             'https://waha.test/*' => Http::response([], 500),

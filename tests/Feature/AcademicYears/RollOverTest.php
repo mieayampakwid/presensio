@@ -222,7 +222,7 @@ class RollOverTest extends TestCase
      * to 6A (2027/2028) and creates 9 assignments on 6A; an assignment whose teacher is inactive
      * is skipped and reported.
      */
-    public function test_ac_09_07_roll_over_copies_subject_assignments_and_reports_inactive(): void
+    public function test_roll_over_copies_subject_assignments_and_reports_inactive(): void
     {
         $activeTeachers = Teacher::factory()->count(8)->create();
         $inactiveUser = User::factory()->teacher()->create(['is_active' => false]);

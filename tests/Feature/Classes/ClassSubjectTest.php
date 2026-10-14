@@ -43,7 +43,7 @@ class ClassSubjectTest extends TestCase
      * AC-09-02: Assigning "Matematika" to Class 5A (active year) with Teacher Budi
      * and threshold 75 creates a class_subjects row.
      */
-    public function test_ac_09_02_assigning_subject_to_class_in_active_year_creates_row(): void
+    public function test_assigning_subject_to_class_in_active_year_creates_row(): void
     {
         $admin = User::factory()->admin()->create();
         $class = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
@@ -70,7 +70,7 @@ class ClassSubjectTest extends TestCase
     /**
      * AC-09-03: Assigning "Matematika" a second time to Class 5A returns HTTP 422.
      */
-    public function test_ac_09_03_duplicate_assignment_to_same_class_rejected_with_422(): void
+    public function test_duplicate_assignment_to_same_class_rejected_with_422(): void
     {
         $admin = User::factory()->admin()->create();
         $class = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
@@ -98,7 +98,7 @@ class ClassSubjectTest extends TestCase
     /**
      * AC-09-08: Changing the teacher of an assignment writes an audit log row with old and new teacher_id.
      */
-    public function test_ac_09_08_changing_teacher_writes_audit_log_with_old_and_new_teacher_id(): void
+    public function test_changing_teacher_writes_audit_log_with_old_and_new_teacher_id(): void
     {
         $admin = User::factory()->admin()->create();
         $class = SchoolClass::factory()->create(['name' => 'Kelas 5A']);
@@ -158,7 +158,7 @@ class ClassSubjectTest extends TestCase
     /**
      * AC-09-09: Attempting to edit assignments of a class in a non-active academic year returns HTTP 422.
      */
-    public function test_ac_09_09_modifying_assignments_in_inactive_year_returns_422(): void
+    public function test_modifying_assignments_in_inactive_year_returns_422(): void
     {
         $admin = User::factory()->admin()->create();
         $inactiveYear = AcademicYear::factory()->create(['is_active' => false]);

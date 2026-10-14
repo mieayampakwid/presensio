@@ -21,7 +21,7 @@ class CourseTest extends TestCase
     /**
      * AC-09-04: Teacher Budi sees Class 5A Matematika at /courses.
      */
-    public function test_ac_09_04_teacher_sees_assigned_courses_with_roster_count_at_courses_page(): void
+    public function test_teacher_sees_assigned_courses_with_roster_count_at_courses_page(): void
     {
         $activeYear = AcademicYear::active() ?? AcademicYear::factory()->create(['is_active' => true]);
 
@@ -99,7 +99,7 @@ class CourseTest extends TestCase
      * AC-09-05: Teacher Siti (neither 5A's homeroom teacher nor holding any 5A assignment)
      * requesting 5A course data receives HTTP 403.
      */
-    public function test_ac_09_05_teacher_siti_without_homeroom_or_assignment_receives_403(): void
+    public function test_teacher_siti_without_homeroom_or_assignment_receives_403(): void
     {
         $activeYear = AcademicYear::active() ?? AcademicYear::factory()->create(['is_active' => true]);
 

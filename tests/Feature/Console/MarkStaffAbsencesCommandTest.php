@@ -36,7 +36,7 @@ class MarkStaffAbsencesCommandTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_ac_16_05_sweep_marks_expected_active_employees_absent_and_skips_inapplicable_ones(): void
+    public function test_sweep_marks_expected_active_employees_absent_and_skips_inapplicable_ones(): void
     {
         // Monday 2026-10-05, 09:00 Jakarta (02:00 UTC)
         Date::setTestNow('2026-10-05 02:00:00', 'UTC');

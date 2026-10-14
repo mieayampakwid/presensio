@@ -200,7 +200,7 @@ class JournalPosterTest extends TestCase
         DB::transaction(fn () => $this->poster->post($entry));
     }
 
-    public function test_reversal_mirrors_lines_and_leaves_original_unchanged_ac_14_17(): void
+    public function test_reversal_mirrors_lines_and_leaves_original_unchanged(): void
     {
         $original = DB::transaction(function () {
             return $this->poster->post(new PostableEntry(
@@ -242,7 +242,7 @@ class JournalPosterTest extends TestCase
         $this->assertSame('0.00', $reversalRevenueLine->credit);
     }
 
-    public function test_reversal_into_closed_period_lands_in_next_open_period_ac_14_18(): void
+    public function test_reversal_into_closed_period_lands_in_next_open_period(): void
     {
         $original = DB::transaction(function () {
             return $this->poster->post(new PostableEntry(
