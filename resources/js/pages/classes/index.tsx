@@ -58,6 +58,7 @@ type Props = {
     years: YearOption[];
     filters: { search: string; year_id: number | null };
     teachers?: TeacherOption[];
+    can?: { manage: boolean };
 };
 
 export default function ClassesIndex({
@@ -65,6 +66,7 @@ export default function ClassesIndex({
     years,
     filters,
     teachers,
+    can = { manage: false },
 }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassRow | null>(null);
@@ -107,7 +109,9 @@ export default function ClassesIndex({
                         description="Year-scoped class instances; homeroom teachers link to master data."
                     />
 
-                    <Button onClick={openCreate}>Create class</Button>
+                    {can.manage && (
+                        <Button onClick={openCreate}>Create class</Button>
+                    )}
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
@@ -229,32 +233,40 @@ export default function ClassesIndex({
                                                     </span>
                                                 </Link>
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    openEdit(schoolClass)
-                                                }
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                                <span className="sr-only">
-                                                    Edit
-                                                </span>
-                                            </Button>
+                                            {can.manage && (
+                                                <>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            openEdit(
+                                                                schoolClass,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Edit
+                                                        </span>
+                                                    </Button>
 
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                onClick={() =>
-                                                    setDeleting(schoolClass)
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">
-                                                    Delete
-                                                </span>
-                                            </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                        onClick={() =>
+                                                            setDeleting(
+                                                                schoolClass,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Delete
+                                                        </span>
+                                                    </Button>
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

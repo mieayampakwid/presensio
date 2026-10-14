@@ -42,7 +42,6 @@ import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassR
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
-import { index as reportCardsIndex } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
@@ -140,11 +139,6 @@ export function AppSidebar() {
                       icon: Target,
                   },
                   {
-                      title: 'Rapor Kelas',
-                      href: reportCardsIndex().url,
-                      icon: GraduationCap,
-                  },
-                  {
                       title: 'Academic Years',
                       href: AcademicYearController.index().url,
                       icon: CalendarRange,
@@ -168,6 +162,11 @@ export function AppSidebar() {
             : []),
         ...(activeRole === 'principal'
             ? [
+                  {
+                      title: 'Classes',
+                      href: SchoolClassController.index().url,
+                      icon: School,
+                  },
                   {
                       title: 'Audit Logs',
                       href: '/admin/audit-logs',
@@ -230,6 +229,11 @@ export function AppSidebar() {
                       icon: QrCode,
                   },
                   {
+                      title: 'Classes',
+                      href: SchoolClassController.index().url,
+                      icon: School,
+                  },
+                  {
                       title: 'My Courses',
                       href: '/courses',
                       icon: BookOpen,
@@ -252,15 +256,6 @@ export function AppSidebar() {
                       title: 'Excuses',
                       href: ExcuseReviewController.index().url,
                       icon: FileText,
-                  },
-              ]
-            : []),
-        ...(activeRole === 'teacher' || activeRole === 'principal'
-            ? [
-                  {
-                      title: 'Rapor Kelas',
-                      href: reportCardsIndex().url,
-                      icon: GraduationCap,
                   },
               ]
             : []),
