@@ -52,6 +52,8 @@ class MerdekaSnapshotBuilder implements ReportCardSnapshotBuilder
     ): array {
         $asOfDate = $this->asOf($semester);
         $asOf = $asOfDate->toDateString();
+        $semester->loadMissing('academicYear');
+        $class->loadMissing('teacher.employee');
         $rows = $this->subjectRows($class, $semester, $student, $asOf);
 
         $principal = $this->settings->principal();

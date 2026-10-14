@@ -9,6 +9,7 @@ use App\Http\Controllers\Teacher\CourseResultController;
 use App\Http\Controllers\Teacher\CourseWeightController;
 use App\Http\Controllers\Teacher\GradebookController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
+use App\Http\Controllers\Teacher\ReportCardWorkspaceController;
 use App\Http\Controllers\Teacher\ScoreController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +36,9 @@ Route::middleware(['auth', 'role:teacher,admin,principal'])->group(function () {
     Route::post('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'finalize'])->name('courses.finalize');
     Route::delete('courses/{class_subject}/finalize', [CourseFinalizationController::class, 'undo'])->name('courses.unfinalize');
     Route::get('classes/{school_class}/grades', [ClassGradeLedgerController::class, 'index'])->name('classes.grades.index');
+
+    Route::get('classes/report-cards', [ReportCardWorkspaceController::class, 'index'])->name('classes.report-cards.index');
+    Route::get('classes/{school_class}/report-cards', [ReportCardWorkspaceController::class, 'show'])->name('classes.report-cards.show');
+    Route::put('classes/{school_class}/report-cards/entries/{student}', [ReportCardWorkspaceController::class, 'updateEntry'])->name('classes.report-cards.entries.update');
+    Route::get('classes/{school_class}/report-cards/preview/{student}', [ReportCardWorkspaceController::class, 'preview'])->name('classes.report-cards.preview');
 });

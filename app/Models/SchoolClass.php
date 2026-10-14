@@ -78,6 +78,16 @@ class SchoolClass extends Model
     }
 
     /**
+     * Versioned report card publications of this class.
+     *
+     * @return HasMany<ReportCardPublication, $this>
+     */
+    public function reportCardPublications(): HasMany
+    {
+        return $this->hasMany(ReportCardPublication::class, 'class_id');
+    }
+
+    /**
      * Students currently enrolled (open enrollment only) — today-rosters
      * for boards and pickers; historical attribution goes through
      * enrollments instead (spec 07).

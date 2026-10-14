@@ -41,6 +41,7 @@ import GuardianController from '@/actions/App/Http/Controllers/Guardians/Guardia
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
+import { index as reportCardsIndex } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
@@ -240,6 +241,17 @@ export function AppSidebar() {
                       title: 'Excuses',
                       href: ExcuseReviewController.index().url,
                       icon: FileText,
+                  },
+              ]
+            : []),
+        ...(activeRole === 'teacher' ||
+        activeRole === 'admin' ||
+        activeRole === 'principal'
+            ? [
+                  {
+                      title: 'Rapor Kelas',
+                      href: reportCardsIndex().url,
+                      icon: GraduationCap,
                   },
               ]
             : []),
