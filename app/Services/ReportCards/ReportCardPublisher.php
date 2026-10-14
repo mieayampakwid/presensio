@@ -36,26 +36,29 @@ class ReportCardPublisher
     public function publish(SchoolClass $class, Semester $semester): array
     {
         $builder = SnapshotBuilderResolver::for($class);
-        $roster = $builder->roster($class, $semester);
 
-        $this->assertPublishable($class, $semester, $roster);
-
-        $entries = ReportCardEntry::query()
-            ->where('semester_id', $semester->id)
-            ->whereIn('student_id', $roster->pluck('id'))
-            ->get()
-            ->keyBy('student_id');
-
-        $publishedAt = $this->settings->now();
-
-        return DB::transaction(function () use ($class, $semester, $roster, $entries, $builder, $publishedAt) {
+        return DB::transaction(function () use ($class, $semester, $builder) {
             // Serialize writers per class: an empty publication set locks
             // nothing, so the parent class row is the lock anchor (conservative
-            // across the class's semesters). All precondition reads and the
-            // current/max checks happen after acquiring it.
+            // across the class's semesters). Roster, entries, preconditions,
+            // and the issue timestamp are all captured after acquiring it so
+            // nothing publication-bound is stale.
             SchoolClass::query()->whereKey($class->id)->lockForUpdate()->firstOrFail();
 
+            $roster = $builder->roster($class, $semester);
+
             $this->assertPublishable($class, $semester, $roster);
+
+            $entries = ReportCardEntry::query()
+                ->where('semester_id', $semester->id)
+                ->whereIn('student_id', $roster->pluck('id'))
+                ->get()
+                ->keyBy('student_id');
+
+            // UTC instant for persisted timestamps; the school-calendar Carbon is
+            // kept for the snapshot's issue date.
+            $publishedAt = $this->settings->now();
+            $publishedAtUtc = $publishedAt->copy()->utc();
 
             $existing = ReportCardPublication::query()
                 ->where('semester_id', $semester->id)
@@ -76,7 +79,7 @@ class ReportCardPublisher
                 'semester_id' => $semester->id,
                 'class_id' => $class->id,
                 'version' => $version,
-                'published_at' => $publishedAt,
+                'published_at' => $publishedAtUtc,
                 'published_by_user_id' => auth()->id(),
             ]);
 
@@ -142,7 +145,7 @@ class ReportCardPublisher
             }
 
             $publication->update([
-                'retracted_at' => $this->settings->now(),
+                'retracted_at' => $this->settings->now()->copy()->utc(),
                 'retracted_by_user_id' => auth()->id(),
                 'retract_reason' => $reason,
             ]);
@@ -167,9 +170,22 @@ class ReportCardPublisher
             ->current()
             ->first();
 
-        return $publication === null ? null : [
+        if ($publication === null) {
+            return null;
+        }
+
+        // The issue date is frozen business data: prefer the snapshot's date
+        // so a later school-timezone change never rewrites the archive;
+        // publications without cards fall back to the school-timezone
+        // conversion of the stored UTC instant.
+        $publication->loadMissing('reportCards');
+        $frozenDate = $publication->reportCards->first()?->payload['published_at'];
+
+        return [
             'version' => $publication->version,
-            'published_at' => $publication->published_at->toDateString(),
+            'published_at' => is_string($frozenDate)
+                ? $frozenDate
+                : $publication->published_at->copy()->timezone($this->settings->timezone())->toDateString(),
         ];
     }
 

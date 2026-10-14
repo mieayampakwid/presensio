@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import Heading from '@/components/heading';
+import ReportCardView, {
+    type ReportCardPayload,
+} from '@/components/report-card-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -70,31 +73,6 @@ type Props = {
     can: { edit: boolean };
 };
 
-type PreviewPayload = {
-    school: {
-        name: string;
-        logo: { path: string | null; content_base64: string | null };
-    };
-    homeroom_teacher: string | null;
-    class: { name: string; phase: string | null };
-    student: {
-        name: string;
-        student_number: string | null;
-        address: string | null;
-    };
-    subjects: {
-        name: string;
-        group_label: string;
-        final_score: number | null;
-        description: string | null;
-        from_class: string | null;
-    }[];
-    attendance: { sick: number; leave: number; absent: number };
-    notes: { homeroom: string | null; extracurricular: string | null };
-    decision: { value: string; label: string } | null;
-    complete: boolean;
-};
-
 /**
  * The encrypted XSRF cookie is URL-encoded; Laravel expects the decoded
  * value back in the X-XSRF-TOKEN header for native fetch requests.
@@ -148,9 +126,8 @@ export default function ReportCards({
     can,
 }: Props) {
     const [entryStudent, setEntryStudent] = useState<StudentEntry | null>(null);
-    const [previewPayload, setPreviewPayload] = useState<PreviewPayload | null>(
-        null,
-    );
+    const [previewPayload, setPreviewPayload] =
+        useState<ReportCardPayload | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [previewStudentId, setPreviewStudentId] = useState<number | null>(
@@ -231,7 +208,7 @@ export default function ReportCards({
                 );
                 return;
             }
-            setPreviewPayload((await response.json()) as PreviewPayload);
+            setPreviewPayload((await response.json()) as ReportCardPayload);
         } catch {
             setPreviewError(
                 'Tidak dapat terhubung ke server. Periksa koneksi dan coba lagi.',
@@ -547,33 +524,35 @@ export default function ReportCards({
                                                 Pratinjau
                                             </Button>
                                             {publication !== null && (
-                                                <a
-                                                    href={pdf.url(
-                                                        {
-                                                            school_class:
-                                                                school_class.id,
-                                                            student: student.id,
-                                                        },
-                                                        {
-                                                            query: {
-                                                                semester:
-                                                                    String(
-                                                                        semester.id,
-                                                                    ),
-                                                            },
-                                                        },
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
                                                 >
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
+                                                    <a
+                                                        href={pdf.url(
+                                                            {
+                                                                school_class:
+                                                                    school_class.id,
+                                                                student:
+                                                                    student.id,
+                                                            },
+                                                            {
+                                                                query: {
+                                                                    semester:
+                                                                        String(
+                                                                            semester.id,
+                                                                        ),
+                                                                },
+                                                            },
+                                                        )}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
                                                     >
                                                         <FileText className="h-4 w-4" />
                                                         PDF
-                                                    </Button>
-                                                </a>
+                                                    </a>
+                                                </Button>
                                             )}
                                         </div>
                                     </td>
@@ -746,26 +725,26 @@ export default function ReportCards({
                     </DialogHeader>
                     {previewStudentId !== null && publication !== null && (
                         <div className="flex justify-end">
-                            <a
-                                href={previewPdf.url(
-                                    {
-                                        school_class: school_class.id,
-                                        student: previewStudentId,
-                                    },
-                                    {
-                                        query: {
-                                            semester: String(semester.id),
+                            <Button asChild variant="outline" size="sm">
+                                <a
+                                    href={previewPdf.url(
+                                        {
+                                            school_class: school_class.id,
+                                            student: previewStudentId,
                                         },
-                                    },
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Button variant="outline" size="sm">
+                                        {
+                                            query: {
+                                                semester: String(semester.id),
+                                            },
+                                        },
+                                    )}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     <FileText className="h-4 w-4" />
                                     Unduh PDF
-                                </Button>
-                            </a>
+                                </a>
+                            </Button>
                         </div>
                     )}
                     {previewLoading && (
@@ -779,83 +758,7 @@ export default function ReportCards({
                         </p>
                     )}
                     {previewPayload && (
-                        <div className="space-y-4 text-sm">
-                            <div>
-                                <p className="font-medium">
-                                    {previewPayload.school.name}
-                                </p>
-                                <p className="text-muted-foreground">
-                                    Kelas {previewPayload.class.name} · Fase{' '}
-                                    {previewPayload.class.phase ?? '—'} ·{' '}
-                                    {previewPayload.homeroom_teacher ?? '—'}
-                                </p>
-                            </div>
-                            <table className="w-full text-left">
-                                <thead className="bg-muted text-muted-foreground">
-                                    <tr>
-                                        <th className="px-2 py-1">
-                                            Mata Pelajaran
-                                        </th>
-                                        <th className="px-2 py-1 text-center">
-                                            Nilai
-                                        </th>
-                                        <th className="px-2 py-1">
-                                            Capaian Kompetensi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {previewPayload.subjects.map((subject) => (
-                                        <tr
-                                            key={subject.name}
-                                            className="border-b"
-                                        >
-                                            <td className="px-2 py-1">
-                                                {subject.name}
-                                                {subject.from_class && (
-                                                    <span className="text-muted-foreground">
-                                                        {' '}
-                                                        (dari kelas{' '}
-                                                        {subject.from_class})
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-1 text-center">
-                                                {subject.final_score ?? '—'}
-                                            </td>
-                                            <td className="px-2 py-1">
-                                                {subject.description ?? '—'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <p className="text-muted-foreground">
-                                Sakit {previewPayload.attendance.sick} · Izin{' '}
-                                {previewPayload.attendance.leave} · Tanpa
-                                Keterangan {previewPayload.attendance.absent}
-                            </p>
-                            {previewPayload.notes.homeroom && (
-                                <p>Catatan: {previewPayload.notes.homeroom}</p>
-                            )}
-                            {previewPayload.notes.extracurricular && (
-                                <p>
-                                    Ekstrakurikuler:{' '}
-                                    {previewPayload.notes.extracurricular}
-                                </p>
-                            )}
-                            {previewPayload.decision && (
-                                <p>
-                                    Keputusan: {previewPayload.decision.label}
-                                </p>
-                            )}
-                            {!previewPayload.complete && (
-                                <p className="text-destructive">
-                                    Rapor belum lengkap — ada nilai yang belum
-                                    ada.
-                                </p>
-                            )}
-                        </div>
+                        <ReportCardView payload={previewPayload} />
                     )}
                 </DialogContent>
             </Dialog>

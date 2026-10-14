@@ -41,6 +41,7 @@ import GuardianController from '@/actions/App/Http/Controllers/Guardians/Guardia
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
+import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 import { index as reportCardsIndex } from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
@@ -209,6 +210,11 @@ export function AppSidebar() {
                       href: '/my-grades',
                       icon: FileSpreadsheet,
                   },
+                  {
+                      title: 'Rapor Saya',
+                      href: '/my-report-cards',
+                      icon: GraduationCap,
+                  },
               ]
             : []),
         ...(activeRole === 'teacher'
@@ -261,6 +267,11 @@ export function AppSidebar() {
                       title: 'My Excuses',
                       href: my().url,
                       icon: FileText,
+                  },
+                  {
+                      title: 'Rapor Anak',
+                      href: ChildReportCardController.landing().url,
+                      icon: GraduationCap,
                   },
                   {
                       title: 'Child Report',

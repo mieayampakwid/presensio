@@ -15,8 +15,10 @@ use App\Models\Subject;
 use App\Models\SubjectResult;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\ReportCards\ReportCardPublisher;
 use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -299,6 +301,40 @@ class ReportCardPublicationTest extends TestCase
 
         $res->assertStatus(422);
         $this->assertDatabaseCount('report_card_publications', 0);
+    }
+
+    public function test_publication_timestamps_stored_as_utc_instant(): void
+    {
+        // App runs UTC; school is Asia/Jakarta (+07). 18:30 UTC = 01:30 next
+        // day locally: stored instants stay UTC, displayed issue dates follow
+        // the school calendar.
+        Date::setTestNow('2026-12-20 18:30:00');
+
+        try {
+            $this->publish($this->homeroomUser, $this->semester);
+
+            $publication = ReportCardPublication::query()->firstOrFail();
+            $this->assertSame(
+                '2026-12-20 18:30:00',
+                $publication->published_at->format('Y-m-d H:i:s'),
+            );
+
+            $payload = ReportCard::query()->where('student_id', $this->budi->id)->firstOrFail()->payload;
+            $this->assertSame('2026-12-21', $payload['published_at']);
+
+            $summary = app(ReportCardPublisher::class)->currentPublication($this->schoolClass, $this->semester);
+            $this->assertSame('2026-12-21', $summary['published_at']);
+
+            $this->retract($this->homeroomUser);
+
+            $publication->refresh();
+            $this->assertSame(
+                '2026-12-20 18:30:00',
+                $publication->retracted_at->format('Y-m-d H:i:s'),
+            );
+        } finally {
+            Date::setTestNow();
+        }
     }
 
     private function publish(User $user, Semester $semester): TestResponse
