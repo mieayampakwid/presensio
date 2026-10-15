@@ -1,7 +1,8 @@
-import { Head, router, Form } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { Head, Link, router, Form } from '@inertiajs/react';
+import { CalendarRange, Pencil } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
+import StaffRecapController from '@/actions/App/Http/Controllers/Staff/StaffRecapController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -120,6 +121,16 @@ export default function StaffAttendanceIndex({
                     />
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" asChild>
+                            <Link
+                                href={StaffRecapController.index.url({
+                                    query: { month: date.slice(0, 7) },
+                                })}
+                            >
+                                <CalendarRange className="mr-2 h-4 w-4" /> Rekap
+                                Bulanan
+                            </Link>
+                        </Button>
                         <Input
                             type="date"
                             value={date}

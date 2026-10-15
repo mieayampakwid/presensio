@@ -3,10 +3,15 @@
 use App\Http\Controllers\Staff\LeaveReviewController;
 use App\Http\Controllers\Staff\MyLeaveController;
 use App\Http\Controllers\Staff\StaffAttendanceController;
+use App\Http\Controllers\Staff\StaffRecapController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin,principal'])->group(function () {
     Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff-attendance.index');
+
+    // Monthly recap + CSV export (spec 16 §Req 6): admins and principals only.
+    Route::get('staff-attendance/recap', [StaffRecapController::class, 'index'])->name('staff-attendance.recap.index');
+    Route::get('staff-attendance/recap/export', [StaffRecapController::class, 'export'])->name('staff-attendance.recap.export');
 
     // Leave review queue (spec 16 §Req 5): admins and principals only.
     Route::get('staff-leave', [LeaveReviewController::class, 'index'])->name('staff-leave.index');
