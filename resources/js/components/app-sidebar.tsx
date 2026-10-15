@@ -18,6 +18,7 @@ import {
     Landmark,
     LayoutGrid,
     Monitor,
+    Palmtree,
     QrCode,
     Receipt,
     Scale,
@@ -47,6 +48,7 @@ import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/Chi
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
+import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
@@ -197,6 +199,11 @@ export function AppSidebar() {
                       href: myQr().url,
                       icon: QrCode,
                   },
+                  {
+                      title: 'My Leave',
+                      href: MyLeaveController.index().url,
+                      icon: Palmtree,
+                  },
               ]
             : []),
         ...(activeRole === 'student'
@@ -234,6 +241,11 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+                  {
+                      title: 'My Leave',
+                      href: MyLeaveController.index().url,
+                      icon: Palmtree,
                   },
                   {
                       title: 'Classes',
