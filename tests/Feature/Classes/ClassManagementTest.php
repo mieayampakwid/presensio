@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -19,12 +20,16 @@ class ClassManagementTest extends TestCase
     public function test_admin_can_view_the_classes_list(): void
     {
         $admin = User::factory()->admin()->create();
-        SchoolClass::factory()->create(['name' => 'Kelas 1A']);
+        $class = SchoolClass::factory()->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
             ->get(route('classes.index'))
             ->assertOk()
-            ->assertSee('Kelas 1A');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('classes/index')
+                ->has('classes.data', 1)
+                ->where('classes.data.0.id', $class->id)
+            );
     }
 
     public function test_admin_can_search_classes_by_name_or_teacher(): void

@@ -256,4 +256,25 @@ class CourseTest extends TestCase
             ->get(route('courses.index'))
             ->assertForbidden();
     }
+
+    public function test_course_show_supplies_class_subject_id_for_results_navigation(): void
+    {
+        $teacherUser = User::factory()->teacher()->create();
+        $teacher = Teacher::factory()->create(['user_id' => $teacherUser->id]);
+        $class = SchoolClass::factory()->create(['teacher_id' => $teacher->id]);
+        $subject = Subject::factory()->create();
+        $classSubject = ClassSubject::factory()->create([
+            'class_id' => $class->id,
+            'subject_id' => $subject->id,
+            'teacher_id' => $teacher->id,
+        ]);
+
+        $this->actingAs($teacherUser)
+            ->get(route('courses.show', $classSubject))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('teacher/courses/show')
+                ->where('course.id', $classSubject->id)
+            );
+    }
 }
