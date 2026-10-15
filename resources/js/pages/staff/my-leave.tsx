@@ -101,53 +101,33 @@ export default function MyLeave({ requests }: Props) {
                             className="space-y-6"
                         >
                             {({ processing, errors }) => (
-                                <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="type">Category</Label>
+                                        <select
+                                            id="type"
+                                            name="type"
+                                            defaultValue="sick"
+                                            required
+                                            className={SELECT_CLASS}
+                                        >
+                                            <option value="sick">
+                                                Sick (Sakit)
+                                            </option>
+                                            <option value="leave">
+                                                Leave (Izin)
+                                            </option>
+                                            <option value="annual_leave">
+                                                Annual Leave (Cuti)
+                                            </option>
+                                            <option value="official_duty">
+                                                Official Duty (Dinas Luar)
+                                            </option>
+                                        </select>
+                                        <InputError message={errors.type} />
+                                    </div>
+
                                     <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="type">
-                                                Category
-                                            </Label>
-                                            <select
-                                                id="type"
-                                                name="type"
-                                                defaultValue="sick"
-                                                required
-                                                className={SELECT_CLASS}
-                                            >
-                                                <option value="sick">
-                                                    Sick (Sakit)
-                                                </option>
-                                                <option value="leave">
-                                                    Leave (Izin)
-                                                </option>
-                                                <option value="annual_leave">
-                                                    Annual Leave (Cuti)
-                                                </option>
-                                                <option value="official_duty">
-                                                    Official Duty (Dinas Luar)
-                                                </option>
-                                            </select>
-                                            <InputError message={errors.type} />
-                                        </div>
-
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="reason">
-                                                Reason
-                                            </Label>
-                                            <textarea
-                                                id="reason"
-                                                name="reason"
-                                                rows={3}
-                                                required
-                                                maxLength={2000}
-                                                placeholder="Tell the school why you will be absent…"
-                                                className={TEXTAREA_CLASS}
-                                            />
-                                            <InputError
-                                                message={errors.reason}
-                                            />
-                                        </div>
-
                                         <div className="grid gap-2">
                                             <Label htmlFor="start_date">
                                                 First day
@@ -177,6 +157,20 @@ export default function MyLeave({ requests }: Props) {
                                                 message={errors.end_date}
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="reason">Reason</Label>
+                                        <textarea
+                                            id="reason"
+                                            name="reason"
+                                            rows={3}
+                                            required
+                                            maxLength={2000}
+                                            placeholder="Tell the school why you will be absent…"
+                                            className={TEXTAREA_CLASS}
+                                        />
+                                        <InputError message={errors.reason} />
                                     </div>
 
                                     <div className="grid gap-2">
