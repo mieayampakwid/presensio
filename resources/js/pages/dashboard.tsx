@@ -7,6 +7,7 @@ import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/Excus
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
+import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveReviewController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/card';
 import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
 import { EXCUSE_STATUS_BADGES, EXCUSE_TYPE_LABELS } from '@/lib/excuses';
+import { LEAVE_TYPE_LABELS } from '@/lib/leave';
 import { my } from '@/routes/excuses';
 import { myAttendance } from '@/routes/attendance';
 import { dashboard } from '@/routes';
@@ -65,10 +67,19 @@ type TodayRow = {
     scan_method: string | null;
 };
 
+type LeaveToday = {
+    status: string;
+    type: string;
+    start_date: string;
+    end_date: string;
+};
+
 type Props = {
     is_school_day: boolean;
     board: Board | null;
     pending_excuses: number | null;
+    pending_leave_requests: number | null;
+    employee_leave_today: LeaveToday | null;
     children: ChildCard[] | null;
     student: { today: TodayRow | null } | null;
 };
@@ -96,10 +107,12 @@ function PortalEmptyState({ title, body }: { title: string; body: string }) {
 function StaffSection({
     board,
     pendingExcuses,
+    pendingLeaveRequests,
     role,
 }: {
     board: Board;
     pendingExcuses: number;
+    pendingLeaveRequests: number | null;
     role: UserRole;
 }) {
     return (
@@ -214,7 +227,7 @@ function StaffSection({
                 </table>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-muted-foreground text-sm font-medium">
@@ -232,6 +245,26 @@ function StaffSection({
                         </Button>
                     </CardContent>
                 </Card>
+
+                {pendingLeaveRequests !== null && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-muted-foreground text-sm font-medium">
+                                Pending leave requests
+                            </CardTitle>
+                            <CardTitle className="text-4xl">
+                                {pendingLeaveRequests}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={LeaveReviewController.index().url}>
+                                    Leave review queue
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card>
                     <CardHeader className="pb-2">
@@ -436,10 +469,32 @@ function StudentSection({
     );
 }
 
+function EmployeeLeaveBanner({ leave }: { leave: LeaveToday }) {
+    return (
+        <Card>
+            <CardContent className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p className="text-sm font-medium">
+                        Anda sedang cuti/izin hari ini
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                        {leave.start_date} – {leave.end_date}
+                    </p>
+                </div>
+                <Badge variant="secondary">
+                    {LEAVE_TYPE_LABELS[leave.type] ?? leave.type}
+                </Badge>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function Dashboard({
     is_school_day,
     board,
     pending_excuses,
+    pending_leave_requests,
+    employee_leave_today,
     children,
     student,
 }: Props) {
@@ -465,10 +520,15 @@ export default function Dashboard({
                     </p>
                 )}
 
+                {employee_leave_today !== null && (
+                    <EmployeeLeaveBanner leave={employee_leave_today} />
+                )}
+
                 {isStaff && board !== null && (
                     <StaffSection
                         board={board}
                         pendingExcuses={pending_excuses ?? 0}
+                        pendingLeaveRequests={pending_leave_requests}
                         role={role}
                     />
                 )}

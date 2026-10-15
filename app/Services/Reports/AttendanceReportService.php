@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Concerns\WritesCsv;
 use App\Enums\UserRole;
 use App\Models\Attendance;
 use App\Models\Enrollment;
@@ -16,7 +17,6 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -31,6 +31,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AttendanceReportService
 {
+    use WritesCsv;
+
     private const STATUS_ORDER = ['present', 'late', 'absent', 'sick', 'leave'];
 
     /** Matches STATUS_BADGES labels in resources/js/lib/attendance.ts. */
@@ -416,24 +418,6 @@ class AttendanceReportService
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /**
-     * UTF-8 BOM first so Excel/Numbers read the file as UTF-8.
-     *
-     * @return resource
-     */
-    private function openCsv()
-    {
-        $out = fopen('php://output', 'w');
-
-        if ($out === false) {
-            throw new RuntimeException('Unable to open the CSV output stream.');
-        }
-
-        fwrite($out, "\xEF\xBB\xBF");
-
-        return $out;
     }
 
     private function formatRate(?float $rate): string

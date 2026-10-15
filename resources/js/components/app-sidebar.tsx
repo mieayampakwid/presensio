@@ -18,6 +18,7 @@ import {
     Landmark,
     LayoutGrid,
     Monitor,
+    Palmtree,
     QrCode,
     Receipt,
     Scale,
@@ -47,7 +48,10 @@ import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/Chi
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
+import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveReviewController';
+import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
+import StaffRecapController from '@/actions/App/Http/Controllers/Staff/StaffRecapController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -184,6 +188,16 @@ export function AppSidebar() {
                       icon: CalendarClock,
                   },
                   {
+                      title: 'Staff Leave',
+                      href: LeaveReviewController.index().url,
+                      icon: ClipboardList,
+                  },
+                  {
+                      title: 'Staff Recap',
+                      href: StaffRecapController.index().url,
+                      icon: FileSpreadsheet,
+                  },
+                  {
                       title: 'Notification Deliveries',
                       href: NotificationDeliveryController.index().url,
                       icon: BellRing,
@@ -196,6 +210,11 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+                  {
+                      title: 'My Leave',
+                      href: MyLeaveController.index().url,
+                      icon: Palmtree,
                   },
               ]
             : []),
@@ -234,6 +253,11 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+                  {
+                      title: 'My Leave',
+                      href: MyLeaveController.index().url,
+                      icon: Palmtree,
                   },
                   {
                       title: 'Classes',

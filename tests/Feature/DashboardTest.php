@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\AbsenceNotification;
 use App\Models\Attendance;
+use App\Models\Employee;
+use App\Models\EmployeeLeaveRequest;
 use App\Models\Excuse;
 use App\Models\Guardian;
 use App\Models\NonSchoolDay;
@@ -367,6 +369,78 @@ class DashboardTest extends TestCase
         $this->assertSame($attendance, Attendance::count());
         $this->assertSame($excuses, Excuse::count());
         $this->assertSame($notifications, AbsenceNotification::count());
+    }
+
+    public function test_admin_and_principal_see_the_pending_leave_request_count(): void
+    {
+        EmployeeLeaveRequest::factory()->count(2)->create();
+        EmployeeLeaveRequest::factory()->approved()->create();
+        EmployeeLeaveRequest::factory()->rejected()->create();
+
+        foreach ([User::factory()->admin()->create(), User::factory()->principal()->create()] as $user) {
+            $this->actingAs($user)
+                ->get(route('dashboard'))
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('pending_leave_requests', 2));
+        }
+    }
+
+    public function test_non_reviewer_does_not_see_the_pending_leave_request_count(): void
+    {
+        EmployeeLeaveRequest::factory()->create();
+
+        $this->actingAs(User::factory()->teacher()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('pending_leave_requests', null));
+    }
+
+    public function test_employee_on_approved_leave_today_sees_the_leave_banner(): void
+    {
+        $user = User::factory()->create();
+        $employee = Employee::factory()->forUser($user)->create();
+
+        // Past approved leave must not leak into today's chip.
+        EmployeeLeaveRequest::factory()
+            ->forEmployee($employee)
+            ->approved()
+            ->create(['start_date' => '2026-09-14', 'end_date' => '2026-09-15']);
+
+        $today = EmployeeLeaveRequest::factory()
+            ->forEmployee($employee)
+            ->approved()
+            ->leave()
+            ->create(['start_date' => '2026-09-21', 'end_date' => '2026-09-23']);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('employee_leave_today.status', 'approved')
+                ->where('employee_leave_today.type', 'leave')
+                ->where('employee_leave_today.start_date', '2026-09-21')
+                ->where('employee_leave_today.end_date', '2026-09-23')
+                ->missing('employee_leave_today.reason')
+                ->missing('employee_leave_today.review_note'));
+    }
+
+    public function test_employee_without_approved_leave_today_sees_no_banner(): void
+    {
+        $user = User::factory()->create();
+        $employee = Employee::factory()->forUser($user)->create();
+
+        // Pending leave today is not "on leave today" yet.
+        EmployeeLeaveRequest::factory()
+            ->forEmployee($employee)
+            ->create(['start_date' => '2026-09-21', 'end_date' => '2026-09-21']);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('employee_leave_today', null));
     }
 
     /**

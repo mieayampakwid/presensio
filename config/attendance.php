@@ -65,6 +65,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Leave request attachments
+    |--------------------------------------------------------------------------
+    |
+    | Proof uploads on employee leave submissions (spec 16 §Decisions):
+    | surat dokter / surat tugas. Stored on the private local disk under
+    | leave-attachments/ and served through an authorized download route.
+    |
+    */
+
+    'leave' => [
+        'attachment_mimes' => env('LEAVE_ATTACHMENT_MIMES', 'pdf,jpg,jpeg,png'),
+        'attachment_max_kb' => (int) env('LEAVE_ATTACHMENT_MAX_KB', 5120),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Guardian absence notifications (spec 05)
     |--------------------------------------------------------------------------
     |
