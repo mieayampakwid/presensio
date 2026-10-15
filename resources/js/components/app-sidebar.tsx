@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BellRing,
     BookMarked,
     BookOpen,
     Briefcase,
@@ -41,6 +42,7 @@ import GuardianController from '@/actions/App/Http/Controllers/Guardians/Guardia
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
+import NotificationDeliveryController from '@/actions/App/Http/Controllers/Admin/NotificationDeliveryController';
 import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
@@ -180,6 +182,11 @@ export function AppSidebar() {
                       title: 'Staff Attendance',
                       href: StaffAttendanceController.index().url,
                       icon: CalendarClock,
+                  },
+                  {
+                      title: 'Notification Deliveries',
+                      href: NotificationDeliveryController.index().url,
+                      icon: BellRing,
                   },
               ]
             : []),

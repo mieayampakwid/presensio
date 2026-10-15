@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Award,
     Calendar,
     Clock,
     Save,
@@ -290,6 +291,13 @@ export default function GradebookShow({
                                 Kelola Asesmen
                             </Link>
                             <span>•</span>
+                            <Link
+                                href={`/courses/${course.id}/results?semester=${semester.id}`}
+                                className="hover:underline"
+                            >
+                                Capaian Rapor
+                            </Link>
+                            <span>•</span>
                             <span>{course.class_name}</span>
                             <span>•</span>
                             <span>KKTP: {course.passing_threshold}</span>
@@ -306,6 +314,14 @@ export default function GradebookShow({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link
+                                href={`/courses/${course.id}/results?semester=${semester.id}`}
+                            >
+                                <Award className="mr-1.5 h-4 w-4" />
+                                <span>Capaian Rapor</span>
+                            </Link>
+                        </Button>
                         {canWrite && !is_finalized && (
                             <>
                                 <Button

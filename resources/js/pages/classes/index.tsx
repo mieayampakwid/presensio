@@ -3,6 +3,7 @@ import {
     BookOpen,
     ChevronLeft,
     ChevronRight,
+    FileSpreadsheet,
     GraduationCap,
     Pencil,
     Trash2,
@@ -11,6 +12,7 @@ import { useState, type ChangeEvent } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import ReportCardWorkspaceController from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
+import ClassGradeLedgerController from '@/actions/App/Http/Controllers/Teacher/ClassGradeLedgerController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -230,6 +232,28 @@ export default function ClassesIndex({
                                                     <GraduationCap className="h-4 w-4" />
                                                     <span className="sr-only">
                                                         Rapor Kelas
+                                                    </span>
+                                                </Link>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                                title="Buku Nilai Kelas"
+                                            >
+                                                <Link
+                                                    href={
+                                                        ClassGradeLedgerController.index(
+                                                            {
+                                                                school_class:
+                                                                    schoolClass.id,
+                                                            },
+                                                        ).url
+                                                    }
+                                                >
+                                                    <FileSpreadsheet className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        Buku Nilai Kelas
                                                     </span>
                                                 </Link>
                                             </Button>
