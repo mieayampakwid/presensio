@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Enums\LeaveRequestStatus;
+use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\StoreLeaveRequest;
 use App\Models\Employee;
 use App\Models\EmployeeLeaveRequest;
+use App\Services\Notifications\Message;
+use App\Services\Notifications\NotificationDispatcher;
+use App\Services\Notifications\RecipientResolver;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +35,8 @@ class MyLeaveController extends Controller
 
     public function __construct(
         private readonly SchoolSettings $settings,
+        private readonly NotificationDispatcher $dispatcher,
+        private readonly RecipientResolver $resolver,
     ) {}
 
     public function index(Request $request): Response
@@ -61,7 +67,21 @@ class MyLeaveController extends Controller
         $validated['attachment_path'] = $this->storeAttachment($request);
         $validated['status'] = LeaveRequestStatus::Pending;
 
-        EmployeeLeaveRequest::create($validated);
+        $leaveRequest = EmployeeLeaveRequest::create($validated);
+
+        $this->dispatcher->dispatch(
+            type: NotificationType::LeaveRequestSubmitted,
+            recipients: $this->resolver->forAdmins()
+                ->merge($this->resolver->forPrincipals())
+                ->unique(fn ($r) => $r->key())
+                ->values(),
+            message: new Message(
+                title: 'Pengajuan Cuti / Izin Baru',
+                body: "Pengajuan cuti/izin {$employee->name} menunggu peninjauan.",
+                route: 'staff-leave.index',
+            ),
+            dedupeBase: "leave_request:{$leaveRequest->id}:submitted",
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Leave request submitted — awaiting review.']);
 

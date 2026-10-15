@@ -5,9 +5,13 @@ namespace App\Services\Attendance;
 use App\Enums\EmployeeAttendanceStatus;
 use App\Enums\LeaveRequestStatus;
 use App\Enums\LeaveType;
+use App\Enums\NotificationType;
 use App\Models\EmployeeAttendance;
 use App\Models\EmployeeLeaveRequest;
 use App\Models\User;
+use App\Services\Notifications\Message;
+use App\Services\Notifications\NotificationDispatcher;
+use App\Services\Notifications\RecipientResolver;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +29,8 @@ class LeaveApprovalService
 {
     public function __construct(
         private readonly EmployeeCalendar $calendar,
+        private readonly NotificationDispatcher $dispatcher,
+        private readonly RecipientResolver $resolver,
     ) {}
 
     /**
@@ -86,6 +92,8 @@ class LeaveApprovalService
                 $this->upsertLeaveDay($pending->employee_id, $date, $status);
             }
 
+            $this->notifyReviewed($pending, 'Pengajuan Cuti / Izin Disetujui', 'telah disetujui');
+
             return true;
         });
     }
@@ -116,8 +124,34 @@ class LeaveApprovalService
                 'reviewed_at' => now(),
             ]);
 
+            $this->notifyReviewed($pending, 'Pengajuan Cuti / Izin Ditolak', 'ditolak');
+
             return true;
         });
+    }
+
+    /**
+     * Notify the employee's linked user of the review decision (spec 17:
+     * in-app only, no reason/review-note text in the payload).
+     */
+    private function notifyReviewed(EmployeeLeaveRequest $pending, string $title, string $outcome): void
+    {
+        $pending->loadMissing('employee.user');
+
+        if ($pending->employee->user === null) {
+            return;
+        }
+
+        $this->dispatcher->dispatch(
+            type: NotificationType::LeaveRequestReviewed,
+            recipients: collect([$this->resolver->forUser($pending->employee->user)]),
+            message: new Message(
+                title: $title,
+                body: "Pengajuan cuti/izin {$pending->employee->name} {$outcome}.",
+                route: 'my-leave.index',
+            ),
+            dedupeBase: "leave_request:{$pending->id}:reviewed",
+        );
     }
 
     private function attendanceStatusFor(LeaveType $type): EmployeeAttendanceStatus
