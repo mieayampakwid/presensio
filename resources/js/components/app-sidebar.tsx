@@ -48,6 +48,7 @@ import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/Chi
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
+import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveReviewController';
 import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
@@ -184,6 +185,11 @@ export function AppSidebar() {
                       title: 'Staff Attendance',
                       href: StaffAttendanceController.index().url,
                       icon: CalendarClock,
+                  },
+                  {
+                      title: 'Staff Leave',
+                      href: LeaveReviewController.index().url,
+                      icon: ClipboardList,
                   },
                   {
                       title: 'Notification Deliveries',

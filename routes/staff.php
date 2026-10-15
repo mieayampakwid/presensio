@@ -1,11 +1,18 @@
 <?php
 
+use App\Http\Controllers\Staff\LeaveReviewController;
 use App\Http\Controllers\Staff\MyLeaveController;
 use App\Http\Controllers\Staff\StaffAttendanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin,principal'])->group(function () {
     Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff-attendance.index');
+
+    // Leave review queue (spec 16 §Req 5): admins and principals only.
+    Route::get('staff-leave', [LeaveReviewController::class, 'index'])->name('staff-leave.index');
+    Route::get('staff-leave/{leave_request}/attachment', [LeaveReviewController::class, 'attachment'])->name('staff-leave.attachment');
+    Route::put('staff-leave/{leave_request}/approve', [LeaveReviewController::class, 'approve'])->name('staff-leave.approve');
+    Route::put('staff-leave/{leave_request}/reject', [LeaveReviewController::class, 'reject'])->name('staff-leave.reject');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
