@@ -1,18 +1,11 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -66,8 +59,8 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function MyLeave({ requests }: Props) {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [cancelling, setCancelling] = useState<LeaveRequestRow | null>(null);
-
     const destroy = (leaveRequest: LeaveRequestRow) => {
         router.delete(
             MyLeaveController.destroy({ leave_request: leaveRequest.id }).url,
@@ -80,25 +73,33 @@ export default function MyLeave({ requests }: Props) {
             <Head title="My Leave" />
 
             <div className="space-y-6 p-4">
-                <Heading
-                    title="My Leave"
-                    description="Request sick leave, izin, cuti, or official duty. The principal or an administrator reviews every submission."
-                />
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <Heading
+                        title="My Leave"
+                        description="Request sick leave, izin, cuti, or official duty. The principal or an administrator reviews every submission."
+                    />
+                    <Button onClick={() => setIsCreateOpen(true)}>
+                        <Plus className="mr-1.5 h-4 w-4" />
+                        New request
+                    </Button>
+                </div>
 
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle>New leave request</CardTitle>
-                        <CardDescription>
-                            One date range per submission. Attach proof such as
-                            a doctor's note or assignment letter (JPG, PNG, or
-                            PDF, max 5 MB). Ranges may not overlap a pending or
-                            approved request.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle>New leave request</DialogTitle>
+                            <DialogDescription>
+                                One date range per submission. Attach proof such
+                                as a doctor's note or assignment letter (JPG,
+                                PNG, or PDF, max 5 MB). Ranges may not overlap a
+                                pending or approved request.
+                            </DialogDescription>
+                        </DialogHeader>
+
                         <Form
                             {...MyLeaveController.store.form()}
-                            className="space-y-6"
+                            onSuccess={() => setIsCreateOpen(false)}
+                            className="space-y-4"
                         >
                             {({ processing, errors }) => (
                                 <div className="space-y-4">
@@ -187,16 +188,29 @@ export default function MyLeave({ requests }: Props) {
                                             message={errors.attachment}
                                         />
                                     </div>
-
-                                    <Button type="submit" disabled={processing}>
-                                        {processing && <Spinner />}
-                                        Submit request
-                                    </Button>
+                                    <DialogFooter className="gap-2 sm:gap-0">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                setIsCreateOpen(false)
+                                            }
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                        >
+                                            {processing && <Spinner />}
+                                            Submit request
+                                        </Button>
+                                    </DialogFooter>
                                 </div>
                             )}
                         </Form>
-                    </CardContent>
-                </Card>
+                    </DialogContent>
+                </Dialog>
 
                 <div className="overflow-x-auto rounded-lg border">
                     <table className="w-full text-sm">
