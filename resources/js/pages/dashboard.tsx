@@ -1,5 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { UserRoundX } from 'lucide-react';
+import ChildGradeController from '@/actions/App/Http/Controllers/Parent/ChildGradeController';
+import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
@@ -330,7 +332,7 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                 </Badge>
                             </p>
                         )}
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={my().url}>My Excuses</Link>
                             </Button>
@@ -345,6 +347,28 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                     }
                                 >
                                     Child report
+                                </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link
+                                    href={
+                                        ChildGradeController.index({
+                                            student: child.id,
+                                        }).url
+                                    }
+                                >
+                                    Nilai
+                                </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link
+                                    href={
+                                        ChildReportCardController.index({
+                                            student: child.id,
+                                        }).url
+                                    }
+                                >
+                                    Rapor
                                 </Link>
                             </Button>
                         </div>

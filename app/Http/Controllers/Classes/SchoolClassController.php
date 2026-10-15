@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Classes;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Classes\StoreSchoolClassRequest;
 use App\Http\Requests\Classes\UpdateSchoolClassRequest;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
+use App\Services\Attendance\ClassAccess;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +25,9 @@ class SchoolClassController extends Controller
      */
     public function index(Request $request): Response
     {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
         $search = $request->string('search')->toString();
         $years = AcademicYear::query()->orderByDesc('starts_at')->get(['id', 'name', 'is_active']);
 
@@ -30,7 +35,9 @@ class SchoolClassController extends Controller
 
         $classes = SchoolClass::query()
             ->where('academic_year_id', $yearId)
-            ->with('teacher.employee')
+            ->when(! $user->hasAnyRole(UserRole::Admin, UserRole::Principal), function (Builder $query) use ($user, $yearId) {
+                $query->whereIn('id', ClassAccess::academicClassIds($user, $yearId));
+            })
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -60,6 +67,9 @@ class SchoolClassController extends Controller
             'filters' => [
                 'search' => $search,
                 'year_id' => $yearId,
+            ],
+            'can' => [
+                'manage' => $user->hasRole(UserRole::Admin),
             ],
         ]);
     }

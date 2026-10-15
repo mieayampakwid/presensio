@@ -9,6 +9,7 @@ use App\Models\ClassSubject;
 use App\Models\CourseSemester;
 use App\Models\Enrollment;
 use App\Models\LearningObjective;
+use App\Models\ReportCardPublication;
 use App\Models\SchoolClass;
 use App\Models\Score;
 use App\Models\Semester;
@@ -16,7 +17,6 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
-use App\Support\ReportCardGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -215,25 +215,26 @@ class CourseFinalizationTest extends TestCase
         $res->assertStatus(422);
     }
 
-    public function test_undoing_finalization_blocked_when_report_cards_published(): void
+    private function finalizeCourseForSemester(Semester $semester): CourseSemester
     {
-        $courseSemester = CourseSemester::forCourse($this->classSubject, $this->semester);
+        $courseSemester = CourseSemester::forCourse($this->classSubject, $semester);
         $courseSemester->update([
             'finalized_at' => now(),
             'finalized_by_user_id' => $this->teacherUser->id,
         ]);
 
-        // Guard with mutable flag
-        $guard = new class extends ReportCardGuard
-        {
-            public bool $published = true;
+        return $courseSemester;
+    }
 
-            public function isPublished(ClassSubject $classSubject, Semester $semester): bool
-            {
-                return $this->published;
-            }
-        };
-        $this->app->instance(ReportCardGuard::class, $guard);
+    public function test_unfinalize_blocked_by_current_publication_for_matching_class_and_semester(): void
+    {
+        $courseSemester = $this->finalizeCourseForSemester($this->semester);
+
+        ReportCardPublication::factory()->create([
+            'semester_id' => $this->semester->id,
+            'class_id' => $this->schoolClass->id,
+            'published_by_user_id' => $this->teacherUser->id,
+        ]);
 
         $res = $this->actingAs($this->teacherUser)
             ->delete(route('courses.unfinalize', [
@@ -243,16 +244,57 @@ class CourseFinalizationTest extends TestCase
 
         $res->assertStatus(422);
         $this->assertTrue($courseSemester->fresh()->isFinalized());
+    }
 
-        // Now set published = false
-        $guard->published = false;
+    public function test_unfinalize_allowed_when_publication_is_for_different_class_or_semester(): void
+    {
+        $otherClass = SchoolClass::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'grade_level' => 5,
+            'name' => '5B',
+        ]);
+        $otherSemester = $this->academicYear->semesters()->where('number', 2)->firstOrFail();
 
-        $resUndo = $this->actingAs($this->teacherUser)
+        $courseSemester = $this->finalizeCourseForSemester($this->semester);
+
+        ReportCardPublication::factory()->create([
+            'semester_id' => $this->semester->id,
+            'class_id' => $otherClass->id,
+            'published_by_user_id' => $this->teacherUser->id,
+        ]);
+        ReportCardPublication::factory()->create([
+            'semester_id' => $otherSemester->id,
+            'class_id' => $this->schoolClass->id,
+            'published_by_user_id' => $this->teacherUser->id,
+        ]);
+
+        $res = $this->actingAs($this->teacherUser)
             ->delete(route('courses.unfinalize', [
                 'class_subject' => $this->classSubject->id,
                 'semester_id' => $this->semester->id,
             ]));
-        $resUndo->assertRedirect();
+
+        $res->assertRedirect();
+        $this->assertFalse($courseSemester->fresh()->isFinalized());
+    }
+
+    public function test_unfinalize_allowed_after_publication_retracted(): void
+    {
+        $courseSemester = $this->finalizeCourseForSemester($this->semester);
+
+        ReportCardPublication::factory()->retracted()->create([
+            'semester_id' => $this->semester->id,
+            'class_id' => $this->schoolClass->id,
+            'published_by_user_id' => $this->teacherUser->id,
+        ]);
+
+        $res = $this->actingAs($this->teacherUser)
+            ->delete(route('courses.unfinalize', [
+                'class_subject' => $this->classSubject->id,
+                'semester_id' => $this->semester->id,
+            ]));
+
+        $res->assertRedirect();
         $this->assertFalse($courseSemester->fresh()->isFinalized());
         $this->assertNull($courseSemester->fresh()->finalized_at);
 

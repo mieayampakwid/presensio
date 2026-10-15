@@ -9,8 +9,11 @@ Route::middleware(['auth'])->group(function () {
         ->name('classes.subjects.index');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,teacher,principal'])->group(function () {
     Route::get('classes', [SchoolClassController::class, 'index'])->name('classes.index');
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('classes', [SchoolClassController::class, 'store'])->name('classes.store');
     Route::put('classes/{school_class}', [SchoolClassController::class, 'update'])
         ->missing(fn () => to_route('classes.index'))

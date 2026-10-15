@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import {
+    Award,
     ChevronLeft,
     ClipboardList,
     FileSpreadsheet,
@@ -75,6 +76,12 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                             <Link href={`/courses/${course.id}/assessments`}>
                                 <ClipboardList className="mr-1.5 h-4 w-4" />
                                 <span>Kelola Asesmen</span>
+                            </Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={`/courses/${course.id}/results`}>
+                                <Award className="mr-1.5 h-4 w-4" />
+                                <span>Capaian Rapor</span>
                             </Link>
                         </Button>
                         <Button size="sm" asChild>

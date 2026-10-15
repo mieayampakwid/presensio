@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BellRing,
     BookMarked,
     BookOpen,
     Briefcase,
@@ -41,6 +42,8 @@ import GuardianController from '@/actions/App/Http/Controllers/Guardians/Guardia
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
+import NotificationDeliveryController from '@/actions/App/Http/Controllers/Admin/NotificationDeliveryController';
+import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
@@ -162,6 +165,11 @@ export function AppSidebar() {
         ...(activeRole === 'principal'
             ? [
                   {
+                      title: 'Classes',
+                      href: SchoolClassController.index().url,
+                      icon: School,
+                  },
+                  {
                       title: 'Audit Logs',
                       href: '/admin/audit-logs',
                       icon: FileText,
@@ -174,6 +182,11 @@ export function AppSidebar() {
                       title: 'Staff Attendance',
                       href: StaffAttendanceController.index().url,
                       icon: CalendarClock,
+                  },
+                  {
+                      title: 'Notification Deliveries',
+                      href: NotificationDeliveryController.index().url,
+                      icon: BellRing,
                   },
               ]
             : []),
@@ -208,6 +221,11 @@ export function AppSidebar() {
                       href: '/my-grades',
                       icon: FileSpreadsheet,
                   },
+                  {
+                      title: 'Rapor Saya',
+                      href: '/my-report-cards',
+                      icon: GraduationCap,
+                  },
               ]
             : []),
         ...(activeRole === 'teacher'
@@ -216,6 +234,11 @@ export function AppSidebar() {
                       title: 'My QR',
                       href: myQr().url,
                       icon: QrCode,
+                  },
+                  {
+                      title: 'Classes',
+                      href: SchoolClassController.index().url,
+                      icon: School,
                   },
                   {
                       title: 'My Courses',
@@ -249,6 +272,11 @@ export function AppSidebar() {
                       title: 'My Excuses',
                       href: my().url,
                       icon: FileText,
+                  },
+                  {
+                      title: 'Rapor Anak',
+                      href: ChildReportCardController.landing().url,
+                      icon: GraduationCap,
                   },
                   {
                       title: 'Child Report',

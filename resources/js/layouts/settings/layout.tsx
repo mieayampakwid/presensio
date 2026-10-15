@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAttendance } from '@/routes/attendance-settings';
+import { edit as editNotificationSettings } from '@/routes/notification-settings';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSchoolProfile } from '@/routes/school-profile';
@@ -45,6 +46,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                   {
                       title: 'Attendance',
                       href: editAttendance(),
+                      icon: null,
+                  },
+                  {
+                      title: 'Notifications',
+                      href: editNotificationSettings(),
                       icon: null,
                   },
               ]

@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -19,12 +20,16 @@ class ClassManagementTest extends TestCase
     public function test_admin_can_view_the_classes_list(): void
     {
         $admin = User::factory()->admin()->create();
-        SchoolClass::factory()->create(['name' => 'Kelas 1A']);
+        $class = SchoolClass::factory()->create(['name' => 'Kelas 1A']);
 
         $this->actingAs($admin)
             ->get(route('classes.index'))
             ->assertOk()
-            ->assertSee('Kelas 1A');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('classes/index')
+                ->has('classes.data', 1)
+                ->where('classes.data.0.id', $class->id)
+            );
     }
 
     public function test_admin_can_search_classes_by_name_or_teacher(): void
@@ -49,6 +54,32 @@ class ClassManagementTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('classes.index'))
+            ->assertForbidden();
+    }
+
+    public function test_teacher_can_view_classes_list_but_cannot_mutate(): void
+    {
+        $teacherUser = User::factory()->teacher()->create();
+        $class = SchoolClass::factory()->create();
+
+        $this->actingAs($teacherUser)
+            ->get(route('classes.index'))
+            ->assertOk();
+
+        $this->actingAs($teacherUser)
+            ->post(route('classes.store'), [
+                'name' => 'Kelas Baru',
+                'grade_level' => 1,
+                'curriculum' => 'merdeka',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($teacherUser)
+            ->put(route('classes.update', $class), ['name' => 'Kelas Edit'])
+            ->assertForbidden();
+
+        $this->actingAs($teacherUser)
+            ->delete(route('classes.destroy', $class))
             ->assertForbidden();
     }
 
@@ -263,7 +294,6 @@ class ClassManagementTest extends TestCase
     public static function nonAdminRoles(): array
     {
         return [
-            'teacher' => ['teacher'],
             'student' => ['student'],
             'parent' => ['parent'],
         ];

@@ -164,10 +164,13 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('children', 2)
+                ->where('children.0.id', $childA->id)
                 ->where('children.0.full_name', 'Alpha One')
                 ->where('children.0.class_name', 'Kelas 5A')
+                ->where('children.1.id', $childB->id)
                 ->where('children.1.full_name', 'Echo Five')
-                ->where('children.1.class_name', 'Kelas 5B'));
+                ->where('children.1.class_name', 'Kelas 5B')
+            );
     }
 
     public function test_parent_child_without_a_record_shows_no_record_status(): void
