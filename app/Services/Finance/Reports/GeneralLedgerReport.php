@@ -68,7 +68,7 @@ class GeneralLedgerReport
                 ->orderBy('journal_entries.entry_date')
                 ->orderBy('journal_entries.id')
                 ->orderBy('journal_lines.id')
-                ->with(['journalEntry:id,number,entry_date,description', 'student:id,name']);
+                ->with(['journalEntry:id,number,entry_date,description', 'student:id,full_name']);
 
             $periodLines = $linesQuery->get();
 

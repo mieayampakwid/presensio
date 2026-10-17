@@ -4,6 +4,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\JournalSource;
 use App\Models\Account;
+use App\Models\Student;
 use App\Models\User;
 use App\Services\Finance\JournalNumberGenerator;
 use App\Services\Finance\JournalPoster;
@@ -109,6 +110,27 @@ class LedgerReportTest extends TestCase
         $revLedger = $reportService->generate($this->revenueAccount->id, '2026-10-01', '2026-10-31');
         $revData = $revLedger['accounts'][0];
         $this->assertSame('500000.00', $revData['closing_balance']);
+    }
+
+    public function test_general_ledger_lists_student_on_receivable_lines(): void
+    {
+        $student = Student::factory()->create(['full_name' => 'Ahmad Fauzi']);
+        $receivable = Account::where('code', '1-1300')->firstOrFail();
+        $poster = new JournalPoster(new PeriodService, new JournalNumberGenerator);
+
+        DB::transaction(fn () => $poster->post(new PostableEntry(
+            entryDate: '2026-10-01',
+            description: 'Pengakuan SPP',
+            sourceType: JournalSource::Manual,
+            lines: [
+                new PostableLine(accountId: $receivable->id, debit: '350000.00', studentId: $student->id),
+                new PostableLine(accountId: $this->revenueAccount->id, credit: '350000.00'),
+            ]
+        )));
+
+        $ledger = (new GeneralLedgerReport)->generate($receivable->id, '2026-10-01', '2026-10-31');
+
+        $this->assertSame('Ahmad Fauzi', $ledger['accounts'][0]['lines'][0]['student_name']);
     }
 
     public function test_reports_export_csv_with_utf8_bom(): void
