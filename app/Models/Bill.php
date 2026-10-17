@@ -128,6 +128,29 @@ class Bill extends Model
     }
 
     /**
+     * Neither cancelled nor written off, so discount, cancel and write-off may still apply.
+     */
+    public function isOpen(): bool
+    {
+        return $this->cancelled_at === null && $this->written_off_at === null;
+    }
+
+    public function canAdjustDiscount(): bool
+    {
+        return $this->isOpen();
+    }
+
+    public function canCancel(): bool
+    {
+        return $this->isOpen() && Money::isZero($this->paid_amount);
+    }
+
+    public function canWriteOff(): bool
+    {
+        return $this->isOpen() && $this->isRecognized() && Money::isPositive($this->remainingAmount());
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
