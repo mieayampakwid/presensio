@@ -73,4 +73,6 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
         ->name('finance.periods.close');
     Route::post('finance/periods/{period}/reopen', [PeriodController::class, 'reopen'])
         ->name('finance.periods.reopen');
+    Route::post('finance/periods/year-end', [PeriodController::class, 'closeYear'])
+        ->name('finance.periods.year-end');
 });
