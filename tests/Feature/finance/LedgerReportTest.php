@@ -48,6 +48,7 @@ class LedgerReportTest extends TestCase
             'finance.reports.general-ledger',
             'finance.reports.trial-balance',
             'finance.reports.cash-book',
+            'finance.reports.receivables-reconciliation',
         ];
 
         foreach ($routes as $route) {
@@ -67,6 +68,19 @@ class LedgerReportTest extends TestCase
 
         $this->actingAs($parent)
             ->get(route('finance.reports.trial-balance'))
+            ->assertForbidden();
+    }
+
+    public function test_receivables_reconciliation_csv_has_bom_and_teacher_is_forbidden(): void
+    {
+        $response = $this->actingAs(User::factory()->finance()->create())
+            ->get(route('finance.reports.receivables-reconciliation', ['format' => 'csv', 'as_of' => '2026-10-01']))
+            ->assertOk();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $response->streamedContent());
+
+        $this->actingAs(User::factory()->teacher()->create())
+            ->get(route('finance.reports.receivables-reconciliation'))
             ->assertForbidden();
     }
 

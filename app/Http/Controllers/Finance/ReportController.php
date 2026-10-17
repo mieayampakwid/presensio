@@ -7,7 +7,9 @@ use App\Models\Account;
 use App\Services\Finance\Reports\CashBookReport;
 use App\Services\Finance\Reports\GeneralJournalReport;
 use App\Services\Finance\Reports\GeneralLedgerReport;
+use App\Services\Finance\Reports\ReceivablesReconciliationReport;
 use App\Services\Finance\Reports\TrialBalanceReport;
+use App\Services\SchoolSettings;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -93,6 +95,23 @@ class ReportController extends Controller
 
         return Inertia::render('finance/reports/cash-book', [
             'report' => $report->generate($accountId, $from, $to),
+        ]);
+    }
+
+    /**
+     * Display Receivables Reconciliation (Rekonsiliasi Piutang) report or download CSV.
+     */
+    public function receivablesReconciliation(Request $request, ReceivablesReconciliationReport $report, SchoolSettings $settings): Response|StreamedResponse
+    {
+        $validated = $request->validate(['as_of' => ['nullable', 'date_format:Y-m-d']]);
+        $asOf = $validated['as_of'] ?? $settings->todayDate();
+
+        if ($request->query('format') === 'csv') {
+            return $report->toCsv($asOf);
+        }
+
+        return Inertia::render('finance/reports/receivables-reconciliation', [
+            'report' => $report->generate($asOf),
         ]);
     }
 }

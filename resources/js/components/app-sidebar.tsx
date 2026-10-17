@@ -446,6 +446,11 @@ export function AppSidebar() {
                       href: ReportController.cashBook().url,
                       icon: Wallet,
                   },
+                  {
+                      title: 'Rekonsiliasi Piutang',
+                      href: ReportController.receivablesReconciliation().url,
+                      icon: Landmark,
+                  },
               ]
             : []),
     ];
