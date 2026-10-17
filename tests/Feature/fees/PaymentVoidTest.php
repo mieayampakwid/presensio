@@ -216,6 +216,20 @@ class PaymentVoidTest extends TestCase
         $this->assertSame(0, AuditLog::where('action', 'voided')->count());
     }
 
+    public function test_payment_on_a_written_off_bill_cannot_be_voided(): void
+    {
+        $bill = $this->bill('2026-09', '2026-09-01');
+        $payment = app(PaymentService::class)->createCash([$bill->id => '100000.00'], [$bill->student_id], $this->accountId('1-1100'), $this->finance);
+        app(BillService::class)->writeOff($bill->refresh(), 'Tidak tertagih');
+        $receivable = $this->balance('1-1300', $bill);
+
+        $this->actingAs($this->finance)->postJson(route('fees.payments.void', $payment), ['reason' => 'Salah input'])->assertUnprocessable();
+
+        $this->assertSame(PaymentStatus::Verified, $payment->refresh()->status);
+        $this->assertSame($receivable, $this->balance('1-1300', $bill));
+        $this->assertSame(BillStatus::WrittenOff, $bill->refresh()->status);
+    }
+
     public function test_only_admin_and_finance_may_void_ac_14_12(): void
     {
         $payment = $this->pay($this->bill('2026-09', '2026-09-01'));

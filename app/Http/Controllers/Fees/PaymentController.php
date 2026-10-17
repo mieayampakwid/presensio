@@ -52,7 +52,9 @@ class PaymentController extends Controller
                 'method_label' => $payment->payment_method->label(),
                 'status' => $payment->status->value,
                 'status_label' => $payment->status->label(),
-                'can_void' => $canManage && $payment->status === PaymentStatus::Verified,
+                'can_void' => $canManage
+                    && $payment->status === PaymentStatus::Verified
+                    && $payment->allocations->every(fn (PaymentAllocation $allocation) => $allocation->bill->written_off_at === null),
                 'has_receipt' => in_array($payment->status, [PaymentStatus::Verified, PaymentStatus::Void], true),
             ]);
 

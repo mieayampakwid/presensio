@@ -189,6 +189,12 @@ class PaymentService
             }
 
             $bills = Bill::query()->with('feeType')->whereIn('id', $payment->allocations()->select('bill_id'))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+
+            // The write-off only cleared the outstanding amount, so reversing this payment would revive a receivable on a written-off bill.
+            if ($bills->contains(fn (Bill $bill) => $bill->written_off_at !== null)) {
+                throw new PaymentOperationException('Pembayaran untuk tagihan yang sudah dihapusbukukan tidak dapat dibatalkan.');
+            }
+
             $original = JournalEntry::query()->with('lines')
                 ->where('source_type', JournalSource::Payment)->where('source_id', $payment->id)->whereNull('reverses_entry_id')
                 ->firstOrFail();
