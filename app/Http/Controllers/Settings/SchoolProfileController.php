@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\UpdateSchoolProfileRequest;
+use App\Models\Account;
 use App\Services\Audit\AuditLogger;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,14 @@ class SchoolProfileController extends Controller
                 'bank_account_holder' => $setting->bank_account_holder,
                 'default_curriculum' => $setting->default_curriculum,
                 'default_passing_threshold' => (string) ($setting->default_passing_threshold ?? '75.00'),
+                'default_transfer_account_id' => $setting->default_transfer_account_id,
             ],
+            'cashAccounts' => Account::query()
+                ->where('is_cash', true)
+                ->where('is_active', true)
+                ->where('is_postable', true)
+                ->orderBy('code')
+                ->get(['id', 'code', 'name']),
         ]);
     }
 

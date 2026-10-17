@@ -22,13 +22,24 @@ type SchoolProfileData = {
     bank_account_holder: string | null;
     default_curriculum: string;
     default_passing_threshold?: string;
+    default_transfer_account_id: number | null;
+};
+
+type CashAccount = {
+    id: number;
+    code: string;
+    name: string;
 };
 
 type Props = {
     profile: SchoolProfileData;
+    cashAccounts: CashAccount[];
 };
 
-export default function SchoolProfile({ profile }: Props) {
+const SELECT_CLASS =
+    'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
+
+export default function SchoolProfile({ profile, cashAccounts }: Props) {
     return (
         <SettingsLayout>
             <Head title="School Profile Settings" />
@@ -294,6 +305,39 @@ export default function SchoolProfile({ profile }: Props) {
                                         />
                                         <InputError
                                             message={errors.bank_account_holder}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="default_transfer_account_id">
+                                            Rekening tujuan transfer
+                                        </Label>
+                                        <select
+                                            id="default_transfer_account_id"
+                                            name="default_transfer_account_id"
+                                            defaultValue={
+                                                profile.default_transfer_account_id ??
+                                                ''
+                                            }
+                                            className={SELECT_CLASS}
+                                        >
+                                            <option value="">
+                                                Belum dipilih
+                                            </option>
+                                            {cashAccounts.map((account) => (
+                                                <option
+                                                    key={account.id}
+                                                    value={account.id}
+                                                >
+                                                    {account.code} -{' '}
+                                                    {account.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError
+                                            message={
+                                                errors.default_transfer_account_id
+                                            }
                                         />
                                     </div>
                                 </div>

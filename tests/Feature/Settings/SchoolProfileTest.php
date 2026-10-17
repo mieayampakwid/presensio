@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Models\Account;
 use App\Models\SchoolSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,6 +80,29 @@ class SchoolProfileTest extends TestCase
             'action' => 'updated',
             'auditable_type' => (new SchoolSetting)->getMorphClass(),
         ]);
+    }
+
+    public function test_default_transfer_account_accepts_cash_account_rejects_others_and_can_be_cleared(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $cash = Account::factory()->cash()->create();
+        $revenue = Account::factory()->revenue()->create();
+        $payload = ['school_name' => 'School', 'default_curriculum' => 'merdeka'];
+
+        $this->actingAs($admin)
+            ->put(route('school-profile.update'), $payload + ['default_transfer_account_id' => $cash->id])
+            ->assertSessionHasNoErrors();
+        $this->assertSame($cash->id, SchoolSetting::first()->default_transfer_account_id);
+
+        $this->actingAs($admin)
+            ->put(route('school-profile.update'), $payload + ['default_transfer_account_id' => $revenue->id])
+            ->assertSessionHasErrors('default_transfer_account_id');
+        $this->assertSame($cash->id, SchoolSetting::first()->default_transfer_account_id);
+
+        $this->actingAs($admin)
+            ->put(route('school-profile.update'), $payload + ['default_transfer_account_id' => null])
+            ->assertSessionHasNoErrors();
+        $this->assertNull(SchoolSetting::first()->default_transfer_account_id);
     }
 
     public function test_logo_upload_validates_png_and_jpg_and_max_size(): void

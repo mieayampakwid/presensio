@@ -38,6 +38,14 @@ class UpdateSchoolProfileRequest extends FormRequest
             'bank_account_holder' => ['nullable', 'string', 'max:255'],
             'default_curriculum' => ['required', Rule::enum(Curriculum::class)],
             'default_passing_threshold' => ['nullable', 'numeric', 'between:0,100'],
+            'default_transfer_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where(fn ($query) => $query
+                    ->where('is_cash', true)
+                    ->where('is_active', true)
+                    ->where('is_postable', true)),
+            ],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
         ];
     }

@@ -178,6 +178,7 @@ class ChartOfAccountsSeeder extends Seeder
         $prepaid = Account::where('code', '2-1100')->first();
         $badDebt = Account::where('code', '5-9100')->first();
         $netAssetsClosing = Account::where('code', '3-1000')->first();
+        $transfer = Account::where('code', '1-1200')->first();
 
         $settings = SchoolSetting::first();
         if ($settings) {
@@ -185,6 +186,7 @@ class ChartOfAccountsSeeder extends Seeder
                 'prepaid_revenue_account_id' => $prepaid?->id,
                 'bad_debt_expense_account_id' => $badDebt?->id,
                 'net_assets_closing_account_id' => $netAssetsClosing?->id,
+                'default_transfer_account_id' => $transfer?->id,
             ]);
         }
     }

@@ -222,5 +222,6 @@ class AccountTest extends TestCase
         $this->assertNotNull($settings->prepaid_revenue_account_id);
         $this->assertNotNull($settings->bad_debt_expense_account_id);
         $this->assertNotNull($settings->net_assets_closing_account_id);
+        $this->assertSame('1-1200', $settings->defaultTransferAccount->code);
     }
 }
