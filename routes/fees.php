@@ -5,12 +5,18 @@ use App\Http\Controllers\Fees\BillGenerationController;
 use App\Http\Controllers\Fees\CashierController;
 use App\Http\Controllers\Fees\DiscountController;
 use App\Http\Controllers\Fees\FeeTypeController;
+use App\Http\Controllers\Fees\ReceiptController;
 use Illuminate\Support\Facades\Route;
 
 // Read routes: Admin, Finance, Principal
 Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
     Route::get('fees/types', [FeeTypeController::class, 'index'])->name('fees.types.index');
     Route::get('fees/discounts', [DiscountController::class, 'index'])->name('fees.discounts.index');
+});
+
+// Kuitansi: Admin, Finance, Principal, and parents (own children only, checked in the controller)
+Route::middleware(['auth', 'role:admin,finance,principal,parent'])->group(function () {
+    Route::get('fees/payments/{payment}/receipt', [ReceiptController::class, 'show'])->name('fees.payments.receipt');
 });
 
 // Write routes: Admin, Finance only

@@ -2,6 +2,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import CashierController from '@/actions/App/Http/Controllers/Fees/CashierController';
+import ReceiptController from '@/actions/App/Http/Controllers/Fees/ReceiptController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -157,8 +158,17 @@ export default function Cashier({
                         <span className="font-semibold">
                             {flash.payment.receipt_number}
                         </span>
-                        .
-                        {/* Task 7: "Cetak Kuitansi" link for payment {flash.payment.id}. */}
+                        .{' '}
+                        <a
+                            href={ReceiptController.show.url({
+                                payment: flash.payment.id,
+                            })}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium underline"
+                        >
+                            Cetak Kuitansi
+                        </a>
                     </div>
                 )}
 
