@@ -30,6 +30,12 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
         ->name('finance.reports.cash-book');
     Route::get('finance/reports/receivables-reconciliation', [ReportController::class, 'receivablesReconciliation'])
         ->name('finance.reports.receivables-reconciliation');
+    Route::get('finance/reports/student-receivable-card', [ReportController::class, 'studentReceivableCard'])
+        ->name('finance.reports.student-receivable-card');
+    Route::get('finance/reports/receivables-aging', [ReportController::class, 'receivablesAging'])
+        ->name('finance.reports.receivables-aging');
+    Route::get('finance/reports/collections-by-class', [ReportController::class, 'collectionsByClass'])
+        ->name('finance.reports.collections-by-class');
 
     Route::get('finance/periods', [PeriodController::class, 'index'])
         ->name('finance.periods.index');

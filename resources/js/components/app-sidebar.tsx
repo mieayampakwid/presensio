@@ -451,6 +451,21 @@ export function AppSidebar() {
                       href: ReportController.receivablesReconciliation().url,
                       icon: Landmark,
                   },
+                  {
+                      title: 'Kartu Piutang Siswa',
+                      href: ReportController.studentReceivableCard().url,
+                      icon: IdCard,
+                  },
+                  {
+                      title: 'Umur Piutang',
+                      href: ReportController.receivablesAging().url,
+                      icon: Table2,
+                  },
+                  {
+                      title: 'Penerimaan per Kelas',
+                      href: ReportController.collectionsByClass().url,
+                      icon: Receipt,
+                  },
               ]
             : []),
     ];

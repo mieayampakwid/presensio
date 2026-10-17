@@ -2,9 +2,7 @@
 
 namespace App\Services\Finance;
 
-use App\Enums\JournalSource;
 use App\Enums\JournalStatus;
-use App\Enums\PaymentStatus;
 use App\Models\Account;
 use App\Models\Bill;
 use App\Models\FeeType;
@@ -37,7 +35,10 @@ class ReceivablesReconciliation
 {
     private const MISMATCH_LIMIT = 50;
 
-    public function __construct(private readonly SchoolSettings $settings) {}
+    public function __construct(
+        private readonly SchoolSettings $settings,
+        private readonly ReceivablesPosition $position,
+    ) {}
 
     /**
      * @return array{
@@ -62,9 +63,9 @@ class ReceivablesReconciliation
 
         $glTotals = $this->glTotals($asOf, $accountIds);
         $glByBill = $this->glByBill($asOf, $accountIds);
-        $paid = $this->verifiedPaid($asOf, $schoolEnd);
-        $closedOn = $this->closedDates();
-        $rewind = $this->adjustmentRewind($asOf, $receivableIds);
+        $paid = $this->position->verifiedPaid($asOf, $schoolEnd);
+        $closedOn = $this->position->closedDates();
+        $rewind = $this->position->adjustmentRewind($asOf, $receivableIds);
 
         $receivableSub = array_fill_keys($receivableIds, '0.00');
         $prepaidSub = '0.00';
@@ -75,7 +76,7 @@ class ReceivablesReconciliation
             ->select(['id', 'student_id', 'fee_type_id', 'title', 'amount', 'discount_amount', 'recognized_at', 'cancelled_at', 'written_off_at'])
             ->chunkById(1000, function ($bills) use ($asOf, $receivableByFeeType, $prepaidId, $paid, $closedOn, $rewind, $glByBill, &$receivableSub, &$prepaidSub, &$mismatches, &$mismatchCount) {
                 foreach ($bills as $bill) {
-                    $closedDate = $closedOn[$bill->id] ?? $this->stampDate($bill);
+                    $closedDate = $closedOn[$bill->id] ?? $this->position->stampDate($bill);
                     $isOpen = $closedDate === null || $closedDate > $asOf;
                     $isRecognized = $bill->recognized_at !== null && $bill->recognized_at->toDateString() <= $asOf;
                     $billPaid = $paid[$bill->id] ?? '0.00';
@@ -244,99 +245,5 @@ class ReceivablesReconciliation
         }
 
         return $balances;
-    }
-
-    /**
-     * Allocations on payments verified by as-of and not yet voided by then. A payment's date is that of its
-     * ledger entry (reversal entry for a void), falling back to the verified / voided timestamp.
-     *
-     * @return array<int, string>
-     */
-    private function verifiedPaid(string $asOf, string $schoolEnd): array
-    {
-        $paid = [];
-
-        $rows = DB::table('payment_allocations as pa')
-            ->join('payments as p', 'p.id', '=', 'pa.payment_id')
-            ->leftJoin('journal_entries as e', function ($join) {
-                $join->on('e.source_id', '=', 'p.id')
-                    ->where('e.source_type', JournalSource::Payment->value)
-                    ->where('e.status', JournalStatus::Posted->value)
-                    ->whereNull('e.reverses_entry_id');
-            })
-            ->leftJoin('journal_entries as r', function ($join) {
-                $join->on('r.reverses_entry_id', '=', 'e.id')->where('r.status', JournalStatus::Posted->value);
-            })
-            ->whereIn('p.status', [PaymentStatus::Verified->value, PaymentStatus::Void->value])
-            ->where(fn ($query) => $query
-                ->where(fn ($q) => $q->whereNotNull('e.id')->whereDate('e.entry_date', '<=', $asOf))
-                ->orWhere(fn ($q) => $q->whereNull('e.id')->where('p.verified_at', '<=', $schoolEnd)))
-            ->where(fn ($query) => $query
-                ->where('p.status', PaymentStatus::Verified->value)
-                ->orWhere(fn ($q) => $q->whereNotNull('r.id')->whereDate('r.entry_date', '>', $asOf))
-                ->orWhere(fn ($q) => $q->whereNull('r.id')->where('p.voided_at', '>', $schoolEnd)))
-            ->groupBy('pa.bill_id')
-            ->selectRaw('pa.bill_id, sum(pa.amount) as paid')
-            ->get();
-
-        foreach ($rows as $row) {
-            $paid[$row->bill_id] = Money::toDecimal($row->paid);
-        }
-
-        return $paid;
-    }
-
-    /**
-     * Date of the cancellation / write-off ledger entry per bill.
-     *
-     * @return array<int, string>
-     */
-    private function closedDates(): array
-    {
-        return DB::table('journal_entries')
-            ->whereIn('source_type', [JournalSource::BillCancellation->value, JournalSource::WriteOff->value])
-            ->where('status', JournalStatus::Posted->value)
-            ->groupBy('source_id')
-            ->selectRaw('source_id, min(entry_date) as closed_on')
-            ->pluck('closed_on', 'source_id')
-            ->map(fn ($date) => Date::parse($date)->toDateString())
-            ->all();
-    }
-
-    /**
-     * School-timezone date of a cancellation / write-off stamp, for bills with no ledger entry.
-     */
-    private function stampDate(Bill $bill): ?string
-    {
-        $stamp = $bill->cancelled_at ?? $bill->written_off_at;
-
-        return $stamp?->copy()->tz($this->settings->timezone())->toDateString();
-    }
-
-    /**
-     * Net amount change to undo for discount adjustments posted after as-of (credit − debit on the receivable).
-     *
-     * @param  array<int, int>  $receivableIds
-     * @return array<int, string>
-     */
-    private function adjustmentRewind(string $asOf, array $receivableIds): array
-    {
-        $rewind = [];
-
-        $rows = DB::table('journal_lines')
-            ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
-            ->where('journal_entries.status', JournalStatus::Posted->value)
-            ->where('journal_entries.source_type', JournalSource::BillAdjustment->value)
-            ->whereDate('journal_entries.entry_date', '>', $asOf)
-            ->whereIn('journal_lines.account_id', $receivableIds)
-            ->groupBy('journal_lines.bill_id')
-            ->selectRaw('journal_lines.bill_id, sum(journal_lines.debit) as debit, sum(journal_lines.credit) as credit')
-            ->get();
-
-        foreach ($rows as $row) {
-            $rewind[$row->bill_id] = Money::sub($row->credit, $row->debit);
-        }
-
-        return $rewind;
     }
 }
