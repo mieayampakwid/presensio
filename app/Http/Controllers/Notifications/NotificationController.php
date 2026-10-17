@@ -32,7 +32,7 @@ class NotificationController extends Controller
         ]);
 
         return Inertia::render('notifications/index', [
-            'notifications' => $notifications,
+            'inbox' => $notifications,
             'unread_only' => $unreadOnly,
         ]);
     }

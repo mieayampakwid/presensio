@@ -38,8 +38,9 @@ class InboxTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('notifications/index')
-            ->has('notifications.data', 20)
-            ->where('notifications.total', 25)
+            ->has('inbox.data', 20)
+            ->where('inbox.total', 25)
+            ->has('notifications.latest10', 10)
         );
     }
 
@@ -77,7 +78,7 @@ class InboxTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('notifications/index')
-            ->has('notifications.data', 2)
+            ->has('inbox.data', 2)
             ->where('unread_only', true)
         );
     }

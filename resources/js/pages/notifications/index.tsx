@@ -25,14 +25,11 @@ type Paginator = {
 };
 
 type Props = {
-    notifications: Paginator;
+    inbox: Paginator;
     unread_only: boolean;
 };
 
-export default function NotificationsIndex({
-    notifications,
-    unread_only,
-}: Props) {
+export default function NotificationsIndex({ inbox, unread_only }: Props) {
     return (
         <>
             <Head title="Notifikasi" />
@@ -77,14 +74,14 @@ export default function NotificationsIndex({
                 </div>
 
                 <div className="space-y-2">
-                    {notifications.data.length === 0 ? (
+                    {inbox.data.length === 0 ? (
                         <div className="border-border text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
                             <Bell className="mx-auto mb-2 size-8 opacity-40" />
                             Tidak ada notifikasi{' '}
                             {unread_only ? 'yang belum dibaca' : ''}.
                         </div>
                     ) : (
-                        notifications.data.map((item) => (
+                        inbox.data.map((item) => (
                             <div
                                 key={item.id}
                                 onClick={() =>
@@ -121,17 +118,16 @@ export default function NotificationsIndex({
                     )}
                 </div>
 
-                {notifications.last_page > 1 && (
+                {inbox.last_page > 1 && (
                     <div className="flex items-center justify-between border-t pt-4">
                         <span className="text-muted-foreground text-xs">
-                            Halaman {notifications.current_page} dari{' '}
-                            {notifications.last_page} ({notifications.total}{' '}
-                            total)
+                            Halaman {inbox.current_page} dari {inbox.last_page}{' '}
+                            ({inbox.total} total)
                         </span>
                         <div className="flex items-center gap-2">
-                            {notifications.prev_page_url ? (
+                            {inbox.prev_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
-                                    <Link href={notifications.prev_page_url}>
+                                    <Link href={inbox.prev_page_url}>
                                         <ChevronLeft className="mr-1 size-4" />
                                         Sebelumnya
                                     </Link>
@@ -143,9 +139,9 @@ export default function NotificationsIndex({
                                 </Button>
                             )}
 
-                            {notifications.next_page_url ? (
+                            {inbox.next_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
-                                    <Link href={notifications.next_page_url}>
+                                    <Link href={inbox.next_page_url}>
                                         Berikutnya
                                         <ChevronRight className="ml-1 size-4" />
                                     </Link>
