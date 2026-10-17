@@ -10,6 +10,8 @@
 
 **Blocking questions:** none. Per-grade amounts and separation of duties are spec v1.x/open and out of scope.
 
+**Execution order (user decision 2026-10-17):** 1 → 2 → 3 → 4 → 6 → 7 → 7b → 5 → 8 → 9. Cashier and Kuitansi run before Void, and Task 7b adds the bills and payments list pages, so every Fees B action can be reached and checked in the browser (neither Fees B nor Fees C had a UI entry point for discount adjust, cancel, write-off or void).
+
 ---
 
 ### Task 1: Schema and models
@@ -100,6 +102,19 @@
 **Dependencies:** Task 4 · **Verification:** `php artisan test --compact tests/Unit/Services/Finance/TerbilangTest.php tests/Feature/fees/ReceiptTest.php`
 
 - [ ] **Step 1:** Terbilang edge cases: 0, 100, 1.000, 1.500.000, 350.000, 2.000.000.000 ("satu ribu" vs "seribu"). Receipt content per spec: kop, number/date, line items (student, NIS, class, bill title, amount), total figures + words, method, verifying staff; voided payment watermarked "BATAL". Access: finance/admin, the paying guardian (own children), principal read.
+
+### Task 7b: Bills and payments lists
+
+**Files:**
+
+- Create: `BillController::index` (filter by class, student name/NIS, fee type, period, status), `app/Http/Controllers/Fees/PaymentController.php` (`index`, filter by date range, method, status), pages `resources/js/pages/fees/{bills,payments}.tsx`
+- Modify: `routes/fees.php`, sidebar finance group
+- Test: `tests/Feature/fees/BillIndexTest.php`, `tests/Feature/fees/PaymentIndexTest.php`
+
+**Dependencies:** Tasks 3, 4, 7 · **Verification:** `php artisan test --compact tests/Feature/fees/BillIndexTest.php tests/Feature/fees/PaymentIndexTest.php`
+
+- [ ] **Step 1:** Bills page: paginated list with student, class, fee type, period, net, paid, status; row actions call the Task 3 endpoints (discount adjust, cancel, write-off — reason dialogs), hidden when the bill state does not allow them. Principal sees the list read-only, with no actions.
+- [ ] **Step 2:** Payments page: paginated list with receipt number, date, students, amount, method, status; row actions open the Kuitansi (Task 7) and void (Task 5 endpoint — the button is wired once Task 5 lands; reason dialog). Teacher/guardian 403.
 
 ### Task 8: Withdrawal cancellation hook
 
