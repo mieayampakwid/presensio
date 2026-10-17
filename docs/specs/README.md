@@ -45,15 +45,15 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 06 | [Reports & Exports](06-reports.md) | Implemented 2026-09-20 (v1.5 year picker 2026-09-21, amended 2026-09-25) | Reporting |
 | 07 | [Academic Roll-over & Historical Attribution](07-academic-years.md) | Implemented 2026-09-21 (amended 2026-09-25) | Academic Lifecycle |
 | 08 | [Dashboard (Role Landing)](08-dashboard.md) | Implemented 2026-09-21 (amended 2026-09-25) | Portal Landing |
-| 09 | [Subjects & Teaching Assignments](09-subjects.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Foundation |
-| 10 | [Student Assessment & Grading](10-grading.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Evaluation |
-| 11 | [Digital Report Cards](11-report-cards.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Academic Reporting |
+| 09 | [Subjects & Teaching Assignments](09-subjects.md) | Implemented 2026-10-03 | Academic Foundation |
+| 10 | [Student Assessment & Grading](10-grading.md) | Implemented 2026-10-14 | Academic Evaluation |
+| 11 | [Digital Report Cards](11-report-cards.md) | Implemented 2026-10-14 | Academic Reporting |
 | 12 | [School Announcements](12-announcements.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Campus Communication |
 | 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
-| 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Draft v2.0 (2026-10-01) — Ready for planning after 15 | Billing, Cashier & Accounting |
-| 15 | [Academic Foundation](15-foundation.md) | Draft v1.0 (2026-10-01) — Ready for planning | Roles, Semesters, Class Levels, School Profile, Audit |
-| 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | Teacher & Tendik Attendance |
-| 17 | [Notification Center](17-notifications-center.md) | Draft v1.0 (2026-10-01) — Ready for planning after 15 | In-App, WhatsApp & Email Notifications |
+| 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Partially implemented — ledger core (plan 12) 2026-10-11; fees operations, portal & closing (plans 13–14) not started | Billing, Cashier & Accounting |
+| 15 | [Academic Foundation](15-foundation.md) | Implemented 2026-10-02 | Roles, Semesters, Class Levels, School Profile, Audit |
+| 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Implemented 2026-10-15 | Teacher & Tendik Attendance |
+| 17 | [Notification Center](17-notifications-center.md) | Implemented 2026-10-03 | In-App, WhatsApp & Email Notifications |
 | 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
 | 19 | [In-App QR Scanner](19-in-app-scanner.md) | Draft v1.0 (2026-10-05) — Ready for planning after 15 | Webcam Scanner & Operator Role |
 | 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
@@ -65,14 +65,14 @@ Single-school information & attendance system. Each numbered spec is a decision 
 ### Wave 1: Core Attendance System (Shipped ✅)
 `01 (Auth) → 02 (Master Data & Enrollments) → 03 (Attendance Engine) → 04 (Excuses) → 05 (Notifications) → 06 (Reports) → 07 (Roll-over) → 08 (Dashboard)`
 
-### Wave 2: Academic Teaching & Evaluation (Next Build Target 🎯)
+### Wave 2: Academic Teaching & Evaluation (Shipped ✅)
 `15 (Foundation) → 09 (Subjects & Assignments) → 10 (Grading & Gradebook) → 11 (Digital Report Cards & PDF)`
 
 Spec 15 is numbered after 14 to avoid renumbering, but is built first. Spec 16 (staff attendance) depends only on 15 and can run in parallel with 09–11. Spec 17 (notification center) depends on 15 and should land before 11/12/14 ship, since they dispatch through it.
 
 Spec 19 (in-app scanner) depends on 15 (new role) and can run in parallel with 16. Spec 20 (work shifts) depends on 16 (employee attendance engine).
 
-### Wave 3: Campus Communication, Timetables & Tuition (Supporting & Operations 💳)
+### Wave 3: Campus Communication, Timetables & Tuition (Next Build Target 🎯)
 `12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees, Receivables & General Ledger)`
 
 ---

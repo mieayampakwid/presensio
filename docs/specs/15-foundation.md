@@ -1,6 +1,6 @@
 # 15 — Academic Foundation (Roles, Semesters, Class Levels, School Profile & Audit)
 
-Status: draft v1.0 (2026-10-01) — prerequisite for 09–14 (resolves AUDIT-2026-10-01 S-01, S-02, S-03, S-04, S-06, P10-05)
+Status: v1.0 — implemented 2026-10-02 (drafted 2026-10-01) — prerequisite for 09–14 (resolves AUDIT-2026-10-01 S-01, S-02, S-03, S-04, S-06, P10-05)
 
 ## Problem
 

@@ -1,6 +1,6 @@
 # 11 — Digital Report Cards (Rapor Semester)
 
-Status: draft v1.1 (2026-10-01) — revised against specs 10 and 15 (AUDIT-2026-10-01 P11-01…06). Supersedes draft v1.0 (2026-09-25): `report_periods` replaced by `semesters` (15); publication now snapshots immutable versions; mid-semester transfer rule, promotion decision and extracurricular notes added; `principal_notes` removed.
+Status: v1.1 — implemented 2026-10-14 (drafted 2026-10-01) — revised against specs 10 and 15 (AUDIT-2026-10-01 P11-01…06). Supersedes draft v1.0 (2026-09-25): `report_periods` replaced by `semesters` (15); publication now snapshots immutable versions; mid-semester transfer rule, promotion decision and extracurricular notes added; `principal_notes` removed.
 
 ## Problem
 

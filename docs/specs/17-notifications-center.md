@@ -1,6 +1,6 @@
 # 17 — Notification Center (Notifikasi In-App, WhatsApp & Email)
 
-Status: draft v1.0 (2026-10-01) — resolves AUDIT-2026-10-01 S-07 / F-04. Depends on spec 15. Spec 05 (absence alerts) remains authoritative for absence alerts and is not rewritten by this spec.
+Status: v1.0 — implemented 2026-10-03 (drafted 2026-10-01) — resolves AUDIT-2026-10-01 S-07 / F-04. Depends on spec 15. Spec 05 (absence alerts) remains authoritative for absence alerts and is not rewritten by this spec.
 
 ## Problem
 

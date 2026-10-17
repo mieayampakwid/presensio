@@ -1,6 +1,6 @@
 # 16 — Employee Master & Staff Attendance (Pegawai & Presensi Guru/Tendik)
 
-Status: draft v1.0 (2026-10-01) — resolves AUDIT-2026-10-01 F-01 (decided for v1: teachers **and** non-teaching staff; scanner only, no GPS check-in). Depends on spec 15.
+Status: v1.0 — implemented 2026-10-15 (drafted 2026-10-01) — resolves AUDIT-2026-10-01 F-01 (decided for v1: teachers **and** non-teaching staff; scanner only, no GPS check-in). Depends on spec 15.
 
 ## Problem
 

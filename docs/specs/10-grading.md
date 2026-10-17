@@ -1,6 +1,6 @@
 # 10 — Student Assessment & Grading (Asesmen & Buku Nilai)
 
-Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P10-01…06). Supersedes draft v1.0 (2026-09-25): per-assessment weights replaced by Kurikulum Merdeka assessment kinds; semester scoping, learning objectives (TP), remedial policy, release and finalization added; curriculum seam introduced.
+Status: v1.1 — implemented 2026-10-14 (drafted 2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P10-01…06). Supersedes draft v1.0 (2026-09-25): per-assessment weights replaced by Kurikulum Merdeka assessment kinds; semester scoping, learning objectives (TP), remedial policy, release and finalization added; curriculum seam introduced.
 
 ## Problem
 

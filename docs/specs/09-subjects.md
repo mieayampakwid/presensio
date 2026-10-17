@@ -1,6 +1,6 @@
 # 09 — Subjects & Teaching Assignments (Mata Pelajaran & Pengajar)
 
-Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P09-01…03, S-01). Supersedes draft v1.0 (2026-09-25): KKM column renamed to curriculum-neutral `passing_threshold`; subject `group` + `sort_order` added; assignment copy at roll-over added.
+Status: v1.1 — implemented 2026-10-03 (drafted 2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 P09-01…03, S-01). Supersedes draft v1.0 (2026-09-25): KKM column renamed to curriculum-neutral `passing_threshold`; subject `group` + `sort_order` added; assignment copy at roll-over added.
 
 ## Problem
 
