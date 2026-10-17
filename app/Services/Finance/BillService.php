@@ -7,6 +7,7 @@ use App\Enums\FeeKind;
 use App\Enums\JournalSource;
 use App\Models\Bill;
 use App\Models\JournalEntry;
+use App\Models\Student;
 use App\Services\Audit\AuditLogger;
 use App\Services\Finance\Exceptions\BillOperationException;
 use App\Services\SchoolSettings;
@@ -187,6 +188,51 @@ class BillService
             $this->auditLogger->record($bill, 'bill_cancelled', ['status' => BillStatus::Unpaid->value], ['status' => BillStatus::Cancelled->value], $reason);
 
             return $bill;
+        });
+    }
+
+    /**
+     * Withdrawal / graduation (spec 14 §Fee operations): cancel the student's open bills that start
+     * after the enrollment end date and have no verified payment; bills with a partial verified
+     * payment are returned for treasurer review instead. Applies to every fee type.
+     *
+     * A bill "starts" on the first day of its period month (recurring) or on its due date (one-time).
+     * The review list is not persisted: it is derivable later as partially paid bills of students
+     * without an open enrollment whose start is after their last enrollment end.
+     *
+     * @return list<Bill> bills needing review
+     */
+    public function cancelForWithdrawal(Student $student, CarbonInterface $endDate): array
+    {
+        return DB::transaction(function () use ($student, $endDate) {
+            $review = [];
+
+            $bills = Bill::query()
+                ->with('feeType')
+                ->where('student_id', $student->id)
+                ->whereIn('status', [BillStatus::Unpaid, BillStatus::PartiallyPaid])
+                ->orderBy('id')
+                ->get();
+
+            foreach ($bills as $bill) {
+                $start = $bill->feeType->type === FeeKind::OneTime
+                    ? Date::parse($bill->due_date->toDateString())
+                    : Date::parse($bill->period_key.'-01');
+
+                if (! $start->greaterThan($endDate)) {
+                    continue;
+                }
+
+                if (Money::isPositive($this->calculator->paidAmount($bill))) {
+                    $review[] = $bill;
+
+                    continue;
+                }
+
+                $this->cancel($bill, 'Siswa keluar/lulus');
+            }
+
+            return $review;
         });
     }
 

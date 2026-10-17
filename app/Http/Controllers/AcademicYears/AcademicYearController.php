@@ -170,6 +170,9 @@ class AcademicYearController extends Controller
             }
             $message .= ').';
         }
+        if ($summary['needs_review'] > 0) {
+            $message .= " {$summary['needs_review']} bill(s) of departing students are partially paid and need treasurer review.";
+        }
         $request->session()->flash('roll_over_summary', $summary);
         Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
         Inertia::flash('roll_over_summary', $summary);
