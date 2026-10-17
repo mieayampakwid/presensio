@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
+use App\Services\Finance\Exceptions\BillOperationException;
 use App\Services\Finance\Exceptions\ClosedPeriodException;
 use App\Services\Finance\Exceptions\InvalidLineException;
 use App\Services\Finance\Exceptions\UnbalancedEntryException;
@@ -51,6 +52,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(
             fn (ClosedPeriodException $e, Request $request) => RejectionResponse::make($request, $e->getMessage()),
+        );
+
+        $exceptions->render(
+            fn (BillOperationException $e, Request $request) => RejectionResponse::make($request, $e->getMessage()),
         );
 
         $exceptions->render(

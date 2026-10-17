@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Fees\BillController;
+use App\Http\Controllers\Fees\BillGenerationController;
 use App\Http\Controllers\Fees\DiscountController;
 use App\Http\Controllers\Fees\FeeTypeController;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +29,12 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::delete('fees/discounts/{discount}', [DiscountController::class, 'destroy'])
         ->missing(fn () => to_route('fees.discounts.index'))
         ->name('fees.discounts.destroy');
+
+    Route::get('fees/generate', [BillGenerationController::class, 'index'])->name('fees.generate.index');
+    Route::post('fees/generate/preview', [BillGenerationController::class, 'preview'])->name('fees.generate.preview');
+    Route::post('fees/generate', [BillGenerationController::class, 'store'])->name('fees.generate.store');
+
+    Route::put('fees/bills/{bill}/discount', [BillController::class, 'discount'])->name('fees.bills.discount');
+    Route::post('fees/bills/{bill}/cancel', [BillController::class, 'cancel'])->name('fees.bills.cancel');
+    Route::post('fees/bills/{bill}/write-off', [BillController::class, 'writeOff'])->name('fees.bills.write-off');
 });

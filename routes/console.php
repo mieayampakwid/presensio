@@ -30,6 +30,10 @@ Schedule::command('attendance:sync-holidays')
     ->weeklyOn(0, '03:00')
     ->timezone($settings->timezone());
 
+Schedule::command('finance:recognize-bills')
+    ->dailyAt('00:30')
+    ->timezone($settings->timezone());
+
 Artisan::command('notifications:release-delayed', function () {
     $delayedDeliveries = NotificationDelivery::query()
         ->where('status', DeliveryStatus::Pending)

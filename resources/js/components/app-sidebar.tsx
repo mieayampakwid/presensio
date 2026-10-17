@@ -10,6 +10,7 @@ import {
     CalendarRange,
     ChevronsUpDown,
     ClipboardList,
+    FilePlus2,
     FileSpreadsheet,
     FileText,
     FolderGit2,
@@ -37,6 +38,7 @@ import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonS
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
+import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGenerationController';
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
@@ -346,6 +348,15 @@ export function AppSidebar() {
                   href: DiscountController.index().url,
                   icon: Percent,
               },
+              ...(['admin', 'finance'].includes(activeRole)
+                  ? [
+                        {
+                            title: 'Generate Bills',
+                            href: BillGenerationController.index().url,
+                            icon: FilePlus2,
+                        },
+                    ]
+                  : []),
           ]
         : [];
 
