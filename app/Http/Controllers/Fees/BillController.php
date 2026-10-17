@@ -44,8 +44,8 @@ class BillController extends Controller
             ])
             ->when($filters['search'] !== '', function (Builder $query) use ($filters) {
                 $query->whereHas('student', function (Builder $query) use ($filters) {
-                    $query->where('full_name', 'like', "%{$filters['search']}%")
-                        ->orWhere('student_number', 'like', "%{$filters['search']}%");
+                    $query->whereLike('full_name', "%{$filters['search']}%")
+                        ->orWhereLike('student_number', "%{$filters['search']}%");
                 });
             })
             ->when($filters['class_id'] !== '', function (Builder $query) use ($filters, $today) {

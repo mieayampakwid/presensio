@@ -28,8 +28,8 @@ class DiscountController extends Controller
             ->with(['student:id,full_name,student_number', 'feeType:id,name,code', 'academicYear:id,name'])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->whereHas('student', function (Builder $query) use ($search) {
-                    $query->where('full_name', 'like', "%{$search}%")
-                        ->orWhere('student_number', 'like', "%{$search}%");
+                    $query->whereLike('full_name', "%{$search}%")
+                        ->orWhereLike('student_number', "%{$search}%");
                 });
             })
             ->latest('id')

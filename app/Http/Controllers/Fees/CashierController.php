@@ -39,7 +39,7 @@ class CashierController extends Controller
             'term' => $term,
             'results' => mb_strlen($term) >= 2
                 ? Student::query()
-                    ->where(fn ($query) => $query->where('full_name', 'like', "%{$term}%")->orWhere('student_number', 'like', "%{$term}%"))
+                    ->where(fn ($query) => $query->whereLike('full_name', "%{$term}%")->orWhereLike('student_number', "%{$term}%"))
                     ->with('currentEnrollment.schoolClass')
                     ->orderBy('full_name')
                     ->limit(self::SEARCH_LIMIT)
