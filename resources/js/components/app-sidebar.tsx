@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BadgeCheck,
     Banknote,
     BellRing,
     BookMarked,
@@ -47,6 +48,7 @@ import CashierController from '@/actions/App/Http/Controllers/Fees/CashierContro
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
 import PaymentController from '@/actions/App/Http/Controllers/Fees/PaymentController';
+import VerificationController from '@/actions/App/Http/Controllers/Fees/VerificationController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
 import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
 import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
@@ -375,6 +377,11 @@ export function AppSidebar() {
                   title: 'Payments',
                   href: PaymentController.index().url,
                   icon: CreditCard,
+              },
+              {
+                  title: 'Verifikasi Transfer',
+                  href: VerificationController.index().url,
+                  icon: BadgeCheck,
               },
               ...(['admin', 'finance'].includes(activeRole)
                   ? [
