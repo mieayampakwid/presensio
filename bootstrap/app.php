@@ -8,6 +8,7 @@ use App\Http\Middleware\SetLocale;
 use App\Services\Finance\Exceptions\BillOperationException;
 use App\Services\Finance\Exceptions\ClosedPeriodException;
 use App\Services\Finance\Exceptions\InvalidLineException;
+use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Services\Finance\Exceptions\UnbalancedEntryException;
 use App\Support\Finance\RejectionResponse;
 use Illuminate\Foundation\Application;
@@ -56,6 +57,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(
             fn (BillOperationException $e, Request $request) => RejectionResponse::make($request, $e->getMessage()),
+        );
+
+        $exceptions->render(
+            fn (PaymentOperationException $e, Request $request) => RejectionResponse::make($request, $e->getMessage()),
         );
 
         $exceptions->render(

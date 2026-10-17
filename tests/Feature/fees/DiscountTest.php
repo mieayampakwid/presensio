@@ -32,7 +32,9 @@ class DiscountTest extends TestCase
 
     public function test_admin_finance_and_principal_can_view_discounts(): void
     {
-        $discount = StudentFeeDiscount::factory()->create(['reason' => 'Yatim']);
+        $discount = StudentFeeDiscount::factory()
+            ->for(Student::factory()->state(['full_name' => 'Siti Aminah']))
+            ->create(['reason' => 'Yatim']);
 
         foreach ([User::factory()->admin(), User::factory()->finance(), User::factory()->principal()] as $user) {
             $this->actingAs($user->create())
