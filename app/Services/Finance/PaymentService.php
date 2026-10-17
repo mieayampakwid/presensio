@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Finance\Exceptions\PaymentOperationException;
+use App\Services\Notifications\FeeNotifier;
 use App\Services\SchoolSettings;
 use App\Support\Money;
 use Carbon\CarbonInterface;
@@ -34,6 +35,7 @@ class PaymentService
         private readonly BillService $billService,
         private readonly SchoolSettings $settings,
         private readonly AuditLogger $auditLogger,
+        private readonly FeeNotifier $notifier,
     ) {}
 
     /**
@@ -147,6 +149,7 @@ class PaymentService
             $this->settle($payment, $reallocation ?? [], $bills, $verifier, $today);
 
             $this->auditLogger->record($payment, 'verified', ['status' => PaymentStatus::Pending->value], ['status' => PaymentStatus::Verified->value, 'receipt_number' => $payment->receipt_number]);
+            $this->notifier->paymentVerified($payment);
 
             return $payment;
         });
@@ -169,6 +172,7 @@ class PaymentService
                 ->each(fn (Bill $bill) => $this->billService->recompute($bill));
 
             $this->auditLogger->record($payment, 'rejected', ['status' => PaymentStatus::Pending->value], ['status' => PaymentStatus::Rejected->value], $reason);
+            $this->notifier->paymentRejected($payment);
 
             return $payment;
         });
