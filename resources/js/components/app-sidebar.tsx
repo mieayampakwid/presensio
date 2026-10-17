@@ -58,6 +58,7 @@ import StudentReportController from '@/actions/App/Http/Controllers/Reports/Stud
 import NotificationDeliveryController from '@/actions/App/Http/Controllers/Admin/NotificationDeliveryController';
 import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 import ParentFeeController from '@/actions/App/Http/Controllers/Parent/FeeController';
+import StudentFeeController from '@/actions/App/Http/Controllers/Student/FeeController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
@@ -257,6 +258,11 @@ export function AppSidebar() {
                       title: 'Rapor Saya',
                       href: '/my-report-cards',
                       icon: GraduationCap,
+                  },
+                  {
+                      title: 'Biaya Sekolah',
+                      href: StudentFeeController.index().url,
+                      icon: Wallet,
                   },
               ]
             : []),

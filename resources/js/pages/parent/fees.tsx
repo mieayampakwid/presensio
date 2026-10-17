@@ -172,7 +172,11 @@ export default function ParentFees({
             <div className="max-w-5xl space-y-6 p-4">
                 <Heading
                     title="Biaya Sekolah"
-                    description="Tagihan, status pembayaran, dan unggah bukti transfer."
+                    description={
+                        canUpload
+                            ? 'Tagihan, status pembayaran, dan unggah bukti transfer.'
+                            : 'Tagihan dan status pembayaran.'
+                    }
                 />
 
                 <div className="rounded-lg border p-4 text-sm">
@@ -240,20 +244,22 @@ export default function ParentFees({
                                         ))}
                                     </select>
                                 )}
-                                <Button
-                                    type="button"
-                                    disabled={
-                                        !uploadEnabled ||
-                                        selectedBills.length === 0
-                                    }
-                                    onClick={() => setOpen(true)}
-                                >
-                                    Unggah Bukti Transfer
-                                </Button>
+                                {canUpload && (
+                                    <Button
+                                        type="button"
+                                        disabled={
+                                            !uploadEnabled ||
+                                            selectedBills.length === 0
+                                        }
+                                        onClick={() => setOpen(true)}
+                                    >
+                                        Unggah Bukti Transfer
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
-                        {!transferAccountConfigured && (
+                        {canUpload && !transferAccountConfigured && (
                             <p className="text-muted-foreground text-sm">
                                 Unggah bukti transfer belum tersedia: rekening
                                 tujuan transfer belum diatur oleh sekolah.
@@ -264,7 +270,9 @@ export default function ParentFees({
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
-                                        <th className="w-10 px-4 py-3" />
+                                        {canUpload && (
+                                            <th className="w-10 px-4 py-3" />
+                                        )}
                                         <th className="px-4 py-3">Siswa</th>
                                         <th className="px-4 py-3">Tagihan</th>
                                         <th className="px-4 py-3">
@@ -285,28 +293,31 @@ export default function ParentFees({
                                 <tbody>
                                     {bills.map((bill) => (
                                         <tr key={bill.id} className="border-t">
-                                            <td className="px-4 py-3">
-                                                {isOpen(bill) && (
-                                                    <Checkbox
-                                                        aria-label={`Pilih ${bill.title} ${bill.student_name}`}
-                                                        disabled={
-                                                            !uploadEnabled
-                                                        }
-                                                        checked={
-                                                            bill.id in selected
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            toggle(
-                                                                bill,
-                                                                checked ===
-                                                                    true,
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                            </td>
+                                            {canUpload && (
+                                                <td className="px-4 py-3">
+                                                    {isOpen(bill) && (
+                                                        <Checkbox
+                                                            aria-label={`Pilih ${bill.title} ${bill.student_name}`}
+                                                            disabled={
+                                                                !uploadEnabled
+                                                            }
+                                                            checked={
+                                                                bill.id in
+                                                                selected
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                toggle(
+                                                                    bill,
+                                                                    checked ===
+                                                                        true,
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
+                                                </td>
+                                            )}
                                             <td className="px-4 py-3">
                                                 {bill.student_name}
                                                 <div className="text-muted-foreground text-xs">
@@ -354,7 +365,7 @@ export default function ParentFees({
                                     {bills.length === 0 && (
                                         <tr className="border-t">
                                             <td
-                                                colSpan={8}
+                                                colSpan={canUpload ? 8 : 7}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
                                                 Belum ada tagihan.
@@ -442,147 +453,157 @@ export default function ParentFees({
                 </div>
             </div>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogTitle>Unggah Bukti Transfer</DialogTitle>
-                    <DialogDescription>
-                        Pembayaran akan diverifikasi oleh sekolah sebelum
-                        tagihan dinyatakan lunas.
-                    </DialogDescription>
+            {canUpload && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogContent>
+                        <DialogTitle>Unggah Bukti Transfer</DialogTitle>
+                        <DialogDescription>
+                            Pembayaran akan diverifikasi oleh sekolah sebelum
+                            tagihan dinyatakan lunas.
+                        </DialogDescription>
 
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            {selectedBills.map((bill) => (
-                                <div
-                                    key={bill.id}
-                                    className="grid grid-cols-[1fr_9rem] items-center gap-3 text-sm"
-                                >
-                                    <span>
-                                        {bill.title} - {bill.student_name}
-                                        <span className="text-muted-foreground">
-                                            {' '}
-                                            · sisa{' '}
-                                            {formatRupiah(bill.remaining)}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                {selectedBills.map((bill) => (
+                                    <div
+                                        key={bill.id}
+                                        className="grid grid-cols-[1fr_9rem] items-center gap-3 text-sm"
+                                    >
+                                        <span>
+                                            {bill.title} - {bill.student_name}
+                                            <span className="text-muted-foreground">
+                                                {' '}
+                                                · sisa{' '}
+                                                {formatRupiah(bill.remaining)}
+                                            </span>
                                         </span>
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            max={bill.remaining}
+                                            step="0.01"
+                                            aria-label={`Jumlah ${bill.title} ${bill.student_name}`}
+                                            value={selected[bill.id]}
+                                            onChange={(event) =>
+                                                setSelected((current) => ({
+                                                    ...current,
+                                                    [bill.id]:
+                                                        event.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                ))}
+                                <InputError
+                                    message={
+                                        errors.allocations ?? errors.amount
+                                    }
+                                />
+                                <div className="flex justify-between rounded-lg border p-3 text-sm">
+                                    <span>Total transfer</span>
+                                    <span className="font-semibold tabular-nums">
+                                        {formatRupiah(String(totalCents / 100))}
                                     </span>
-                                    <Input
-                                        type="number"
-                                        min={0}
-                                        max={bill.remaining}
-                                        step="0.01"
-                                        aria-label={`Jumlah ${bill.title} ${bill.student_name}`}
-                                        value={selected[bill.id]}
-                                        onChange={(event) =>
-                                            setSelected((current) => ({
-                                                ...current,
-                                                [bill.id]: event.target.value,
-                                            }))
-                                        }
-                                    />
                                 </div>
-                            ))}
-                            <InputError
-                                message={errors.allocations ?? errors.amount}
-                            />
-                            <div className="flex justify-between rounded-lg border p-3 text-sm">
-                                <span>Total transfer</span>
-                                <span className="font-semibold tabular-nums">
-                                    {formatRupiah(String(totalCents / 100))}
-                                </span>
                             </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="payment_date">
+                                    Tanggal Transfer
+                                </Label>
+                                <Input
+                                    id="payment_date"
+                                    type="date"
+                                    value={form.data.payment_date}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'payment_date',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                                <InputError
+                                    message={form.errors.payment_date}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="origin_bank">Bank Asal</Label>
+                                <Input
+                                    id="origin_bank"
+                                    maxLength={100}
+                                    value={form.data.origin_bank}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'origin_bank',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                                <InputError message={form.errors.origin_bank} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="proof">
+                                    Bukti Transfer (JPG, PNG, PDF, maks. 5 MB)
+                                </Label>
+                                <Input
+                                    id="proof"
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'proof',
+                                            event.target.files?.[0] ?? null,
+                                        )
+                                    }
+                                />
+                                <InputError message={form.errors.proof} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="notes">Catatan</Label>
+                                <Input
+                                    id="notes"
+                                    maxLength={255}
+                                    value={form.data.notes}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'notes',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                                <InputError message={form.errors.notes} />
+                            </div>
+
+                            <InputError message={errors.transfer} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="payment_date">
-                                Tanggal Transfer
-                            </Label>
-                            <Input
-                                id="payment_date"
-                                type="date"
-                                value={form.data.payment_date}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'payment_date',
-                                        event.target.value,
-                                    )
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setOpen(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="button"
+                                disabled={
+                                    form.processing ||
+                                    totalCents <= 0 ||
+                                    form.data.proof === null
                                 }
-                            />
-                            <InputError message={form.errors.payment_date} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="origin_bank">Bank Asal</Label>
-                            <Input
-                                id="origin_bank"
-                                maxLength={100}
-                                value={form.data.origin_bank}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'origin_bank',
-                                        event.target.value,
-                                    )
-                                }
-                            />
-                            <InputError message={form.errors.origin_bank} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="proof">
-                                Bukti Transfer (JPG, PNG, PDF, maks. 5 MB)
-                            </Label>
-                            <Input
-                                id="proof"
-                                type="file"
-                                accept=".jpg,.jpeg,.png,.pdf"
-                                onChange={(event) =>
-                                    form.setData(
-                                        'proof',
-                                        event.target.files?.[0] ?? null,
-                                    )
-                                }
-                            />
-                            <InputError message={form.errors.proof} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="notes">Catatan</Label>
-                            <Input
-                                id="notes"
-                                maxLength={255}
-                                value={form.data.notes}
-                                onChange={(event) =>
-                                    form.setData('notes', event.target.value)
-                                }
-                            />
-                            <InputError message={form.errors.notes} />
-                        </div>
-
-                        <InputError message={errors.transfer} />
-                    </div>
-
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            type="button"
-                            disabled={
-                                form.processing ||
-                                totalCents <= 0 ||
-                                form.data.proof === null
-                            }
-                            onClick={submit}
-                        >
-                            {form.processing && <Spinner />}
-                            Kirim
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                                onClick={submit}
+                            >
+                                {form.processing && <Spinner />}
+                                Kirim
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
         </>
     );
 }
