@@ -19,11 +19,13 @@ import {
     LayoutGrid,
     Monitor,
     Palmtree,
+    Percent,
     QrCode,
     Receipt,
     Scale,
     School,
     Table2,
+    Tags,
     Target,
     UserRound,
     Users,
@@ -35,6 +37,8 @@ import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonS
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
+import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
+import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
 import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
 import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
@@ -331,6 +335,16 @@ export function AppSidebar() {
                   title: 'Accounting Periods',
                   href: PeriodController.index().url,
                   icon: CalendarClock,
+              },
+              {
+                  title: 'Fee Types',
+                  href: FeeTypeController.index().url,
+                  icon: Tags,
+              },
+              {
+                  title: 'Fee Discounts',
+                  href: DiscountController.index().url,
+                  icon: Percent,
               },
           ]
         : [];
