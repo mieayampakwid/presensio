@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Fees\BillController;
 use App\Http\Controllers\Fees\BillGenerationController;
+use App\Http\Controllers\Fees\CashierController;
 use App\Http\Controllers\Fees\DiscountController;
 use App\Http\Controllers\Fees\FeeTypeController;
 use Illuminate\Support\Facades\Route;
@@ -37,4 +38,7 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::put('fees/bills/{bill}/discount', [BillController::class, 'discount'])->name('fees.bills.discount');
     Route::post('fees/bills/{bill}/cancel', [BillController::class, 'cancel'])->name('fees.bills.cancel');
     Route::post('fees/bills/{bill}/write-off', [BillController::class, 'writeOff'])->name('fees.bills.write-off');
+
+    Route::get('fees/cashier', [CashierController::class, 'index'])->name('fees.cashier.index');
+    Route::post('fees/cashier', [CashierController::class, 'store'])->name('fees.cashier.store');
 });

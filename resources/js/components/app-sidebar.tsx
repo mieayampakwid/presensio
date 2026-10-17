@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    Banknote,
     BellRing,
     BookMarked,
     BookOpen,
@@ -39,6 +40,7 @@ import SchoolClassController from '@/actions/App/Http/Controllers/Classes/School
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
 import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGenerationController';
+import CashierController from '@/actions/App/Http/Controllers/Fees/CashierController';
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
@@ -354,6 +356,11 @@ export function AppSidebar() {
                             title: 'Generate Bills',
                             href: BillGenerationController.index().url,
                             icon: FilePlus2,
+                        },
+                        {
+                            title: 'Cashier',
+                            href: CashierController.index().url,
+                            icon: Banknote,
                         },
                     ]
                   : []),

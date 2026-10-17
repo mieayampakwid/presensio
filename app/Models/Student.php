@@ -109,6 +109,16 @@ class Student extends Model
     }
 
     /**
+     * Fee bills owed by this student.
+     *
+     * @return HasMany<Bill, $this>
+     */
+    public function bills(): HasMany
+    {
+        return $this->hasMany(Bill::class);
+    }
+
+    /**
      * RFID cards currently assigned to this student.
      *
      * @return HasMany<RfidCard, $this>
