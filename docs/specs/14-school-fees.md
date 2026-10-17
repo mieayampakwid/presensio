@@ -422,6 +422,13 @@ Further rules:
 - Requires spec 15 (`finance` role, school profile, audit log). PDF rendering via `barryvdh/laravel-dompdf` (approved 2026-10-01), shared with spec 11.
 - All posting runs in the same database transaction as the operational change.
 
+## Decisions (2026-10-17, Fees C planning)
+
+- **Transfer deposit account:** a setting `default_transfer_account_id` (an `is_cash` account, seeded as `1-1200`) is the deposit account for guardian transfers. Verification may change it per payment.
+- **Year-end closing:** months 1–11 of the fiscal year must be closed. The closing entry is dated the last day of the fiscal year, then the last month is closed and all 12 periods are locked. Locked periods cannot be reopened. The closed-period guard is not bypassed.
+- **Student self-read:** students get a read-only "my fees" page (own bills and payments, no upload).
+- **Verification amount:** re-allocation must equal the payment amount; the amount is not editable. An underpayment is rejected.
+
 ## Open Questions
 
 - `[NEEDS DECISION: Separation of duties]`: Should the user who recorded or verified a payment be prevented from voiding it, or from closing the period? Common internal-control practice, but small schools may have a single treasurer.

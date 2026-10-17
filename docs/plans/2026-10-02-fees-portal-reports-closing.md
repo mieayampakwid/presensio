@@ -8,7 +8,7 @@
 
 **Prerequisites:** Fees B merged; Plan 4 for Task 7.
 
-**Blocking questions:** none.
+**Blocking questions:** none. **Revised 2026-10-17** after Fees B shipped: `PaymentService::{submitTransfer,verify,reject,duplicateProofWarnings}`, the notification types, the bank fields and `bill_reminder_days_before` already exist, so Tasks 1, 2 and 7 are HTTP/UI/wiring. Added: Task 0 (`default_transfer_account_id` setting), Task 1b (student read-only page), year-end closing closes the last month itself and locks the year (see spec 14 Decisions). The working slice list is in the approved session plan; slice order: 0, 1, 1b, 2, 3, 4, 5, 6, 7, 8.
 
 ---
 
