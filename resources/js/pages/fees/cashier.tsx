@@ -53,9 +53,9 @@ export default function Cashier({
     cashAccounts,
     defaultAccountId,
 }: Props) {
-    const { flash } = usePage<{
-        flash: { payment?: { id: number; receipt_number: string } };
-    }>().props;
+    const flash = usePage().flash as {
+        payment?: { id: number; receipt_number: string };
+    };
     const [search, setSearch] = useState(term);
     const [allocations, setAllocations] = useState<Record<number, string>>({});
 
