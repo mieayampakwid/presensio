@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    Banknote,
     BellRing,
     BookMarked,
     BookOpen,
@@ -10,6 +11,8 @@ import {
     CalendarRange,
     ChevronsUpDown,
     ClipboardList,
+    CreditCard,
+    FilePlus2,
     FileSpreadsheet,
     FileText,
     FolderGit2,
@@ -19,11 +22,14 @@ import {
     LayoutGrid,
     Monitor,
     Palmtree,
+    Percent,
     QrCode,
     Receipt,
+    ReceiptText,
     Scale,
     School,
     Table2,
+    Tags,
     Target,
     UserRound,
     Users,
@@ -35,6 +41,12 @@ import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonS
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
+import BillController from '@/actions/App/Http/Controllers/Fees/BillController';
+import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGenerationController';
+import CashierController from '@/actions/App/Http/Controllers/Fees/CashierController';
+import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
+import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
+import PaymentController from '@/actions/App/Http/Controllers/Fees/PaymentController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
 import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
 import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
@@ -332,6 +344,40 @@ export function AppSidebar() {
                   href: PeriodController.index().url,
                   icon: CalendarClock,
               },
+              {
+                  title: 'Fee Types',
+                  href: FeeTypeController.index().url,
+                  icon: Tags,
+              },
+              {
+                  title: 'Fee Discounts',
+                  href: DiscountController.index().url,
+                  icon: Percent,
+              },
+              {
+                  title: 'Bills',
+                  href: BillController.index().url,
+                  icon: ReceiptText,
+              },
+              {
+                  title: 'Payments',
+                  href: PaymentController.index().url,
+                  icon: CreditCard,
+              },
+              ...(['admin', 'finance'].includes(activeRole)
+                  ? [
+                        {
+                            title: 'Generate Bills',
+                            href: BillGenerationController.index().url,
+                            icon: FilePlus2,
+                        },
+                        {
+                            title: 'Cashier',
+                            href: CashierController.index().url,
+                            icon: Banknote,
+                        },
+                    ]
+                  : []),
           ]
         : [];
 

@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Bill;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\Finance\BillService;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -17,7 +19,10 @@ use InvalidArgumentException;
  */
 class EnrollmentService
 {
-    public function __construct(private readonly SchoolSettings $settings) {}
+    public function __construct(
+        private readonly SchoolSettings $settings,
+        private readonly BillService $billService,
+    ) {}
 
     /**
      * Enroll the student into the class, ending any open enrollment the
@@ -67,21 +72,26 @@ class EnrollmentService
     }
 
     /**
-     * End the student's open enrollment (alumni/left). Idempotent.
+     * End the student's open enrollment (alumni/left). Idempotent. A no-successor close, so future
+     * zero-payment bills are cancelled in the same transaction; returns the bills left for review.
+     *
+     * @return list<Bill>
      */
-    public function release(Student $student, ?string $endedOn = null): void
+    public function release(Student $student, ?string $endedOn = null): array
     {
-        DB::transaction(function () use ($student, $endedOn): void {
+        return DB::transaction(function () use ($student, $endedOn): array {
             /** @var Enrollment|null $open */
             $open = $student->enrollments()->whereNull('ended_on')->lockForUpdate()->first();
 
             if ($open === null) {
-                return;
+                return [];
             }
 
             $open->forceFill([
                 'ended_on' => max($endedOn ?? $this->settings->todayDate(), $open->started_on->toDateString()),
             ])->save();
+
+            return $this->billService->cancelForWithdrawal($student, $open->ended_on);
         });
     }
 

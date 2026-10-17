@@ -89,7 +89,7 @@ class CashBookReport
             ->orderBy('journal_entries.entry_date')
             ->orderBy('journal_entries.id')
             ->orderBy('journal_lines.id')
-            ->with(['journalEntry:id,number,entry_date,description', 'student:id,name'])
+            ->with(['journalEntry:id,number,entry_date,description', 'student:id,full_name'])
             ->get();
 
         $runningBalance = $openingBalance;

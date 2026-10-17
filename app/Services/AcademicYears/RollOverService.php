@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
+use App\Services\Finance\BillService;
 use App\Services\SchoolSettings;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -21,12 +22,15 @@ use InvalidArgumentException;
  */
 class RollOverService
 {
-    public function __construct(private readonly SchoolSettings $schoolSettings) {}
+    public function __construct(
+        private readonly SchoolSettings $schoolSettings,
+        private readonly BillService $billService,
+    ) {}
 
     /**
      * @param  array<int, array{mode: 'existing'|'new'|'none', target_class_id?: int|null, new_name?: string|null, new_teacher_id?: int|null, copy_subjects?: bool|null}>  $mappings
      *                                                                                                                                                                                Keyed by source class id.
-     * @return array{copied: int, skipped: list<array{subject: string, reason: string}>}
+     * @return array{copied: int, skipped: list<array{subject: string, reason: string}>, needs_review: int}
      */
     public function rollOver(AcademicYear $target, array $mappings, string $effectiveOn): array
     {
@@ -42,7 +46,7 @@ class RollOverService
                 ->exists();
 
             if ($alreadyPromoted) {
-                return ['copied' => 0, 'skipped' => []]; // idempotent re-apply
+                return ['copied' => 0, 'skipped' => [], 'needs_review' => 0]; // idempotent re-apply
             }
 
             $targets = $this->resolveTargets($target, $source, $mappings);
@@ -50,12 +54,15 @@ class RollOverService
             $sourceClassIds = $source->classes()->pluck('id');
 
             $open = Enrollment::query()
+                ->with('student')
                 ->whereNull('ended_on')
                 ->whereIn('class_id', $sourceClassIds)
                 ->lockForUpdate()
                 ->get();
 
             $endedOn = Date::parse($effectiveOn)->subDay()->toDateString();
+
+            $needsReview = 0;
 
             foreach ($open as $enrollment) {
                 $enrollment->forceFill(['ended_on' => $endedOn])->save();
@@ -69,6 +76,9 @@ class RollOverService
                         'started_on' => $effectiveOn,
                         'ended_on' => null,
                     ]);
+                } else {
+                    // Unmapped = alumni: a no-successor close, so future zero-payment bills are cancelled.
+                    $needsReview += count($this->billService->cancelForWithdrawal($enrollment->student, Date::parse($endedOn)));
                 }
             }
             $subjectSummary = $this->copySubjectAssignments($targets, $mappings);
@@ -76,7 +86,7 @@ class RollOverService
             AcademicYear::query()->whereKeyNot($target->id)->update(['is_active' => false]);
             $target->forceFill(['is_active' => true])->save();
 
-            return $subjectSummary;
+            return [...$subjectSummary, 'needs_review' => $needsReview];
         });
     }
 
