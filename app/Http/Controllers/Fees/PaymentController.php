@@ -27,6 +27,8 @@ class PaymentController extends Controller
             'status' => $request->string('status')->toString(),
         ];
 
+        $canManage = $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance);
+
         $payments = Payment::query()
             ->with('allocations.bill.student:id,full_name')
             ->when($filters['date_from'] !== '', fn (Builder $query) => $query->whereDate('payment_date', '>=', $filters['date_from']))
@@ -50,6 +52,7 @@ class PaymentController extends Controller
                 'method_label' => $payment->payment_method->label(),
                 'status' => $payment->status->value,
                 'status_label' => $payment->status->label(),
+                'can_void' => $canManage && $payment->status === PaymentStatus::Verified,
                 'has_receipt' => in_array($payment->status, [PaymentStatus::Verified, PaymentStatus::Void], true),
             ]);
 
@@ -64,7 +67,7 @@ class PaymentController extends Controller
                 fn (PaymentStatus $status) => ['value' => $status->value, 'label' => $status->label()],
                 PaymentStatus::cases()
             ),
-            'canManage' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance),
+            'canManage' => $canManage,
         ]);
     }
 }

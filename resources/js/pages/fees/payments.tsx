@@ -1,12 +1,22 @@
-import { Head, Link } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
+import PaymentVoidController from '@/actions/App/Http/Controllers/Fees/PaymentVoidController';
 import ReceiptController from '@/actions/App/Http/Controllers/Fees/ReceiptController';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 
 type PaymentRow = {
     id: number;
@@ -17,6 +27,7 @@ type PaymentRow = {
     method_label: string;
     status: string;
     status_label: string;
+    can_void: boolean;
     has_receipt: boolean;
 };
 
@@ -69,6 +80,8 @@ export default function PaymentsIndex({
     methods,
     statuses,
 }: Props) {
+    const [voiding, setVoiding] = useState<PaymentRow | null>(null);
+
     const submitFilters = (
         event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     ) => {
@@ -216,7 +229,17 @@ export default function PaymentsIndex({
                                                     </a>
                                                 </Button>
                                             )}
-                                            {/* Task 5: void button (canManage, verified payments only) */}
+                                            {payment.can_void && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setVoiding(payment)
+                                                    }
+                                                >
+                                                    Batalkan
+                                                </Button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -268,6 +291,68 @@ export default function PaymentsIndex({
                     </div>
                 </div>
             </div>
+
+            <Dialog
+                open={voiding !== null}
+                onOpenChange={(open) => !open && setVoiding(null)}
+            >
+                <DialogContent>
+                    {voiding && (
+                        <>
+                            <DialogTitle>Batalkan Pembayaran</DialogTitle>
+                            <DialogDescription>
+                                {voiding.receipt_number} -{' '}
+                                {voiding.students.join(', ')}. Jurnal pembayaran
+                                dibalik dan tagihan kembali belum lunas.
+                            </DialogDescription>
+                            <Form
+                                key={voiding.id}
+                                {...PaymentVoidController.form({
+                                    payment: voiding.id,
+                                })}
+                                onSuccess={() => setVoiding(null)}
+                                className="space-y-4"
+                            >
+                                {({ processing, errors }) => (
+                                    <>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="reason">
+                                                Alasan
+                                            </Label>
+                                            <Input
+                                                id="reason"
+                                                name="reason"
+                                                required
+                                                maxLength={255}
+                                            />
+                                            <InputError
+                                                message={errors.reason}
+                                            />
+                                        </div>
+                                        <DialogFooter className="gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setVoiding(null)}
+                                            >
+                                                Batal
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                variant="destructive"
+                                                disabled={processing}
+                                            >
+                                                {processing && <Spinner />}
+                                                Batalkan Pembayaran
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                )}
+                            </Form>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

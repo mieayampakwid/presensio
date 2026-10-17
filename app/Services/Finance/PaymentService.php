@@ -7,8 +7,10 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Bill;
 use App\Models\Guardian;
+use App\Models\JournalEntry;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Services\SchoolSettings;
 use App\Support\Money;
@@ -20,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Payment lifecycle against the ledger (spec 14 §Fee operations). Lock order is always
- * payment first, then bills ordered by id. Void is added in a later task.
+ * payment first, then bills ordered by id.
  */
 class PaymentService
 {
@@ -31,6 +33,7 @@ class PaymentService
         private readonly ReceiptNumberGenerator $receiptNumbers,
         private readonly BillService $billService,
         private readonly SchoolSettings $settings,
+        private readonly AuditLogger $auditLogger,
     ) {}
 
     /**
@@ -165,6 +168,83 @@ class PaymentService
 
             return $payment;
         });
+    }
+
+    /**
+     * Void a verified payment (AC-14-08): reverse the verification entry on the void date, reclassify prepaid
+     * credits whose bill was recognized since (Dr receivable / Cr prepaid revenue, so the plain reversal does not
+     * leave prepaid negative), then recompute the bills.
+     */
+    public function void(Payment $payment, string $reason, User $user): Payment
+    {
+        return DB::transaction(function () use ($payment, $reason, $user) {
+            if (trim($reason) === '') {
+                throw new PaymentOperationException('Alasan pembatalan wajib diisi.');
+            }
+
+            $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+
+            if ($payment->status !== PaymentStatus::Verified) {
+                throw new PaymentOperationException('Hanya pembayaran terverifikasi yang dapat dibatalkan.');
+            }
+
+            $bills = Bill::query()->with('feeType')->whereIn('id', $payment->allocations()->select('bill_id'))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $original = JournalEntry::query()->with('lines')
+                ->where('source_type', JournalSource::Payment)->where('source_id', $payment->id)->whereNull('reverses_entry_id')
+                ->firstOrFail();
+
+            $reversal = $this->poster->reverse($original, $this->today(), $reason);
+            $this->reclassifyRecognizedPrepaid($original, $reversal, $bills, $user);
+
+            $payment->update([
+                'status' => PaymentStatus::Void,
+                'void_reason' => $reason,
+                'voided_at' => now(),
+                'voided_by_user_id' => $user->id,
+            ]);
+
+            $bills->each(fn (Bill $bill) => $this->billService->recompute($bill));
+
+            $this->auditLogger->record($payment, 'voided', ['status' => PaymentStatus::Verified->value], ['status' => PaymentStatus::Void->value], $reason);
+
+            return $payment;
+        });
+    }
+
+    /**
+     * Allocations that credited prepaid revenue on a bill recognized afterwards had that prepaid consumed by
+     * the recognition (Dr P), so the reversal's Dr P overshoots: move it back with Dr R / Cr P.
+     *
+     * @param  SupportCollection<int, Bill>  $bills
+     */
+    private function reclassifyRecognizedPrepaid(JournalEntry $original, JournalEntry $reversal, SupportCollection $bills, User $user): void
+    {
+        $prepaidId = $this->prepaidAccountId();
+        $lines = [];
+
+        foreach ($original->lines->where('account_id', $prepaidId)->sortBy('bill_id') as $line) {
+            $bill = $bills->get($line->bill_id);
+
+            if (! $bill->isRecognized()) {
+                continue;
+            }
+
+            $lines[] = new PostableLine(accountId: $bill->feeType->receivable_account_id, debit: $line->credit, credit: '0.00', studentId: $bill->student_id, billId: $bill->id);
+            $lines[] = new PostableLine(accountId: $prepaidId, debit: '0.00', credit: $line->credit, studentId: $bill->student_id, billId: $bill->id);
+        }
+
+        if ($lines === []) {
+            return;
+        }
+
+        $this->poster->post(new PostableEntry(
+            entryDate: $reversal->entry_date,
+            description: "Reklasifikasi pembatalan: {$original->description}",
+            sourceType: JournalSource::PaymentVoid,
+            lines: $lines,
+            sourceId: $original->source_id,
+            createdByUserId: $user->id,
+        ));
     }
 
     /**
