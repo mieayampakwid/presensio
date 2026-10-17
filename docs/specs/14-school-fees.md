@@ -1,6 +1,6 @@
 # 14 — School Fees, Receivables & General Ledger (SPP, Piutang & Buku Besar)
 
-Status: v2.0 — partially implemented: ledger core 2026-10-11 (plan 12); fees operations, portal & closing not started (drafted 2026-10-01). Decided scope: double-entry general ledger plus student receivables, accrual basis. Supersedes draft v1.1 (2026-10-01): the receivables/payments model of v1.1 is kept, and every financial event now posts a balanced journal entry to a general ledger.
+Status: v2.0 — implemented: ledger core 2026-10-11 (plan 12), fees operations 2026-10-17 (plan 13), portal, verification, reports & year-end closing code-complete 2026-10-17 (plan 14, browser click-through pending) (drafted 2026-10-01). Decided scope: double-entry general ledger plus student receivables, accrual basis. Supersedes draft v1.1 (2026-10-01): the receivables/payments model of v1.1 is kept, and every financial event now posts a balanced journal entry to a general ledger.
 
 New in v2.0:
 - Chart of accounts and accounting periods with closing.
