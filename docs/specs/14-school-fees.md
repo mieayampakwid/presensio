@@ -41,7 +41,7 @@ Private and independent schools in Indonesia (usually run by a yayasan) fund ope
 - Tax computation and e-filing.
 - Multi-currency (IDR only).
 - Credit balances / deposits on student accounts: overpayment is allocated to other open bills of the same students or the transfer is rejected.
-- Cash refunds to families (a refund is recorded as a manual journal in v1).
+- Cash refunds to families (a refund is recorded as a manual journal in v1; superseded by spec 22, overpayment receipt and refund).
 
 ## User Stories
 
