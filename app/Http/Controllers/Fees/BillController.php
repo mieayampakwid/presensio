@@ -60,6 +60,7 @@ class BillController extends Controller
             ->withQueryString()
             ->through(fn (Bill $bill) => [
                 'id' => $bill->id,
+                'student_id' => $bill->student_id,
                 'student_name' => $bill->student->full_name,
                 'student_number' => $bill->student->student_number,
                 'class_name' => $bill->student->enrollments->first()?->schoolClass?->name,

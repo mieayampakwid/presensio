@@ -80,6 +80,10 @@ class PeriodService
     {
         $period = $this->ensure($periodKey);
 
+        if ($period->isLocked()) {
+            throw new RuntimeException('Periode terkunci oleh tutup buku tahunan.');
+        }
+
         if ($period->isClosed()) {
             throw new RuntimeException("Periode {$periodKey} sudah dalam status ditutup.");
         }
@@ -123,6 +127,10 @@ class PeriodService
         }
 
         $period = $this->ensure($periodKey);
+
+        if ($period->isLocked()) {
+            throw new RuntimeException('Periode terkunci oleh tutup buku tahunan dan tidak dapat dibuka kembali.');
+        }
 
         if ($period->isOpen()) {
             throw new RuntimeException("Periode {$periodKey} sudah dalam status terbuka.");

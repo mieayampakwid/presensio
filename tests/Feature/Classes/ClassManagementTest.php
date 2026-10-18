@@ -17,6 +17,82 @@ class ClassManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public static function schoolWideClassReaderRoles(): array
+    {
+        return [
+            'principal' => ['principal'],
+            'admin' => ['admin'],
+        ];
+    }
+
+    #[DataProvider('schoolWideClassReaderRoles')]
+    public function test_populated_class_list_displays_homeroom_names(string $role): void
+    {
+        $user = User::factory()->{$role}()->create();
+        $year = AcademicYear::factory()->current()->create();
+        $firstTeacher = Teacher::factory()->create(['name' => 'Budi Raharjo']);
+        $secondTeacher = Teacher::factory()->create(['name' => 'Siti Aminah']);
+        SchoolClass::factory()->withTeacher($firstTeacher)->create([
+            'academic_year_id' => $year->id,
+            'name' => '1A',
+        ]);
+        SchoolClass::factory()->withTeacher($secondTeacher)->create([
+            'academic_year_id' => $year->id,
+            'name' => '1B',
+        ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $year->id,
+            'name' => '1C',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('classes.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('classes/index')
+                ->has('classes.data', 3)
+                ->where('classes.data.0.teacher.name', 'Budi Raharjo')
+                ->where('classes.data.1.teacher.name', 'Siti Aminah')
+                ->where('classes.data.2.teacher', null)
+                ->where('can.manage', $role === 'admin')
+            );
+    }
+
+    public function test_teacher_populated_class_list_stays_scoped(): void
+    {
+        $user = User::factory()->teacher()->create();
+        $year = AcademicYear::factory()->current()->create();
+        $teacher = Teacher::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Budi Raharjo',
+        ]);
+        SchoolClass::factory()->withTeacher($teacher)->create([
+            'academic_year_id' => $year->id,
+            'name' => '1A',
+        ]);
+        SchoolClass::factory()->withTeacher($teacher)->create([
+            'academic_year_id' => $year->id,
+            'name' => '1B',
+        ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $year->id,
+            'name' => 'Hidden Class',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('classes.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('classes/index')
+                ->has('classes.data', 2)
+                ->where('classes.data.0.name', '1A')
+                ->where('classes.data.0.teacher.name', 'Budi Raharjo')
+                ->where('classes.data.1.name', '1B')
+                ->where('classes.data.1.teacher.name', 'Budi Raharjo')
+                ->where('can.manage', false)
+            );
+    }
+
     public function test_admin_can_view_the_classes_list(): void
     {
         $admin = User::factory()->admin()->create();

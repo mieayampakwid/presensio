@@ -20,6 +20,7 @@ use App\Services\Finance\Exceptions\BillOperationException;
 use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Services\Finance\PaymentService;
 use App\Services\Finance\PeriodService;
+use App\Services\Finance\ReceivablesReconciliation;
 use App\Services\Finance\Reports\TrialBalanceReport;
 use App\Services\SchoolSettings;
 use App\Support\Money;
@@ -34,8 +35,8 @@ use Tests\TestCase;
 
 /**
  * Property-style check (Fees B Task 9): a seeded random sequence of fee operations keeps the
- * ledger balanced after every step and the bill subledgers consistent at the end. Receivables
- * reconciliation reports are Fees C; here the per-bill ledger balances are derived directly.
+ * ledger balanced and reconciled to the bill subledger after every step, and the bill caches
+ * consistent at the end.
  */
 class FeesLedgerPropertyTest extends TestCase
 {
@@ -64,8 +65,6 @@ class FeesLedgerPropertyTest extends TestCase
 
     private int $receivableAccount;
 
-    private int $prepaidAccount;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -79,7 +78,6 @@ class FeesLedgerPropertyTest extends TestCase
 
         $this->cashAccount = $this->accountId('1-1100');
         $this->receivableAccount = $this->accountId('1-1300');
-        $this->prepaidAccount = $this->accountId('2-1100');
 
         AcademicYear::factory()->current()->create();
         $this->class = SchoolClass::factory()->create(['grade_level' => 5]);
@@ -117,10 +115,12 @@ class FeesLedgerPropertyTest extends TestCase
 
         $this->runOperation('generate');
         $this->assertLedgerBalanced();
+        $this->assertReconciled();
 
         for ($i = 1; $i < self::OPERATIONS; $i++) {
             $this->runOperation($this->randomOperation());
             $this->assertLedgerBalanced();
+            $this->assertReconciled();
         }
 
         $this->step = self::OPERATIONS;
@@ -557,15 +557,23 @@ class FeesLedgerPropertyTest extends TestCase
         $this->assertCount(0, $unbalanced, $this->context('unbalanced entries '.$unbalanced->implode(',')));
     }
 
+    /**
+     * AC-14-19: GL and the bill subledger agree, for receivables and prepaid revenue, and no bill is off.
+     */
+    private function assertReconciled(): void
+    {
+        $result = app(ReceivablesReconciliation::class)->asOf(app(SchoolSettings::class)->todayDate());
+
+        foreach ([...$result['receivables'], $result['prepaid']] as $row) {
+            $this->assertSame(0, Money::cmp($row['difference'], '0.00'), $this->context("{$row['code']} GL {$row['gl_balance']} != subledger {$row['subledger_balance']}"));
+        }
+
+        $this->assertSame([], $result['mismatches'], $this->context('bill mismatches '.json_encode($result['mismatches'])));
+    }
+
     private function assertBillSubledgers(): void
     {
         $calculator = app(BillStatusCalculator::class);
-        $balances = [];
-
-        foreach (JournalLine::whereNotNull('bill_id')->get(['bill_id', 'account_id', 'debit', 'credit']) as $line) {
-            $key = $line->bill_id.'|'.$line->account_id;
-            $balances[$key] = Money::add($balances[$key] ?? '0.00', Money::sub($line->debit, $line->credit));
-        }
 
         foreach (Bill::orderBy('id')->get() as $bill) {
             $id = "bill #{$bill->id} ({$bill->period_key}, {$bill->status->value})";
@@ -573,23 +581,6 @@ class FeesLedgerPropertyTest extends TestCase
 
             $this->assertSame($verified, Money::toDecimal($bill->paid_amount), $this->context("{$id} paid_amount"));
             $this->assertSame($calculator->statusFor($bill, $verified), $bill->status, $this->context("{$id} status"));
-
-            $receivable = $balances["{$bill->id}|{$this->receivableAccount}"] ?? '0.00';
-            $prepaid = Money::sub('0', $balances["{$bill->id}|{$this->prepaidAccount}"] ?? '0.00');
-
-            if (! $bill->isOpen()) {
-                $expectedReceivable = '0.00';
-            } elseif ($bill->isRecognized()) {
-                $expectedReceivable = Money::sub($bill->netAmount(), $verified);
-            } else {
-                $expectedReceivable = '0.00';
-            }
-
-            $this->assertSame(0, Money::cmp($expectedReceivable, $receivable), $this->context("{$id} receivable {$receivable}, expected {$expectedReceivable}"));
-
-            // Prepaid is held only until the bill is recognized, then consumed against it.
-            $expectedPrepaid = $bill->isOpen() && ! $bill->isRecognized() ? $verified : '0.00';
-            $this->assertSame(0, Money::cmp($expectedPrepaid, $prepaid), $this->context("{$id} prepaid {$prepaid}, expected {$expectedPrepaid}"));
         }
     }
 }

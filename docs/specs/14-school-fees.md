@@ -1,6 +1,6 @@
 # 14 — School Fees, Receivables & General Ledger (SPP, Piutang & Buku Besar)
 
-Status: v2.0 — partially implemented: ledger core 2026-10-11 (plan 12); fees operations, portal & closing not started (drafted 2026-10-01). Decided scope: double-entry general ledger plus student receivables, accrual basis. Supersedes draft v1.1 (2026-10-01): the receivables/payments model of v1.1 is kept, and every financial event now posts a balanced journal entry to a general ledger.
+Status: v2.0 — implemented: ledger core 2026-10-11 (plan 12), fees operations 2026-10-17 (plan 13), portal, verification, reports & year-end closing code-complete 2026-10-17 (plan 14, browser click-through pending) (drafted 2026-10-01). Decided scope: double-entry general ledger plus student receivables, accrual basis. Supersedes draft v1.1 (2026-10-01): the receivables/payments model of v1.1 is kept, and every financial event now posts a balanced journal entry to a general ledger.
 
 New in v2.0:
 - Chart of accounts and accounting periods with closing.
@@ -421,6 +421,13 @@ Further rules:
 - Accrual basis, intended to be compatible with ISAK 35 (Penyajian Laporan Keuangan Entitas Berorientasi Nonlaba) for yayasan-run schools. The school's accountant should validate the chart of accounts and posting rules before go-live.
 - Requires spec 15 (`finance` role, school profile, audit log). PDF rendering via `barryvdh/laravel-dompdf` (approved 2026-10-01), shared with spec 11.
 - All posting runs in the same database transaction as the operational change.
+
+## Decisions (2026-10-17, Fees C planning)
+
+- **Transfer deposit account:** a setting `default_transfer_account_id` (an `is_cash` account, seeded as `1-1200`) is the deposit account for guardian transfers. Verification may change it per payment.
+- **Year-end closing:** months 1–11 of the fiscal year must be closed. The closing entry is dated the last day of the fiscal year, then the last month is closed and all 12 periods are locked. Locked periods cannot be reopened. The closed-period guard is not bypassed.
+- **Student self-read:** students get a read-only "my fees" page (own bills and payments, no upload).
+- **Verification amount:** re-allocation must equal the payment amount; the amount is not editable. An underpayment is rejected.
 
 ## Open Questions
 

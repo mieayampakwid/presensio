@@ -7,6 +7,7 @@ use App\Enums\Ability;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Finance\PeriodService;
+use App\Services\Finance\Preconditions\ReceivablesReconciliationPrecondition;
 use App\Services\Finance\Preconditions\TrialBalanceClosePrecondition;
 use App\Services\SchoolSettings;
 use Carbon\CarbonImmutable;
@@ -32,10 +33,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SchoolSettings::class);
 
         $this->app->bind(PeriodService::class, function ($app) {
-            return new PeriodService(
+            $service = new PeriodService(
                 $app->make(AuditLogger::class),
                 $app->make(TrialBalanceClosePrecondition::class),
             );
+            $service->addPrecondition($app->make(ReceivablesReconciliationPrecondition::class));
+
+            return $service;
         });
     }
 

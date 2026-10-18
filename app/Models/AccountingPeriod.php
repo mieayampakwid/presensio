@@ -64,6 +64,14 @@ class AccountingPeriod extends Model
     }
 
     /**
+     * Check if the period is locked by year-end closing (cannot be reopened).
+     */
+    public function isLocked(): bool
+    {
+        return $this->status === 'locked';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AccountingPeriod;
 use App\Services\Finance\PeriodService;
+use App\Services\Finance\YearEndCloser;
 use App\Services\SchoolSettings;
 use App\Support\Finance\RejectionResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +21,7 @@ class PeriodController extends Controller
     /**
      * Display listing of monthly accounting periods and their status.
      */
-    public function index(Request $request, PeriodService $periodService, SchoolSettings $settings): Response
+    public function index(Request $request, PeriodService $periodService, SchoolSettings $settings, YearEndCloser $yearEndCloser): Response
     {
         $currentMonth = Carbon::parse($settings->todayDate())->startOfMonth();
 
@@ -44,6 +46,7 @@ class PeriodController extends Controller
 
         return Inertia::render('finance/periods', [
             'periods' => $periods,
+            'closableYears' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance) ? $yearEndCloser->closableYears() : [],
         ]);
     }
 
@@ -84,6 +87,29 @@ class PeriodController extends Controller
         Inertia::flash('toast', [
             'type' => 'success',
             'message' => "Periode {$period} berhasil dibuka kembali.",
+        ]);
+
+        return to_route('finance.periods.index');
+    }
+
+    /**
+     * Post the year-end closing entry and lock the fiscal year's periods.
+     */
+    public function closeYear(Request $request, YearEndCloser $yearEndCloser): RedirectResponse
+    {
+        $validated = $request->validate([
+            'fiscal_year_start' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        try {
+            $yearEndCloser->close($validated['fiscal_year_start'], (int) auth()->id());
+        } catch (RuntimeException $e) {
+            return RejectionResponse::make($request, $e->getMessage());
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Tahun buku berhasil ditutup dan seluruh periodenya dikunci.',
         ]);
 
         return to_route('finance.periods.index');

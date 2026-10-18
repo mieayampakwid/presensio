@@ -48,6 +48,10 @@ class LedgerReportTest extends TestCase
             'finance.reports.general-ledger',
             'finance.reports.trial-balance',
             'finance.reports.cash-book',
+            'finance.reports.receivables-reconciliation',
+            'finance.reports.student-receivable-card',
+            'finance.reports.receivables-aging',
+            'finance.reports.collections-by-class',
         ];
 
         foreach ($routes as $route) {
@@ -68,6 +72,49 @@ class LedgerReportTest extends TestCase
         $this->actingAs($parent)
             ->get(route('finance.reports.trial-balance'))
             ->assertForbidden();
+    }
+
+    public function test_receivables_reconciliation_csv_has_bom_and_teacher_is_forbidden(): void
+    {
+        $response = $this->actingAs(User::factory()->finance()->create())
+            ->get(route('finance.reports.receivables-reconciliation', ['format' => 'csv', 'as_of' => '2026-10-01']))
+            ->assertOk();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $response->streamedContent());
+
+        $this->actingAs(User::factory()->teacher()->create())
+            ->get(route('finance.reports.receivables-reconciliation'))
+            ->assertForbidden();
+    }
+
+    public function test_receivable_reports_export_csv_with_bom_and_are_closed_to_other_roles(): void
+    {
+        $student = Student::factory()->create();
+        $routes = [
+            'finance.reports.student-receivable-card' => ['student_id' => $student->id],
+            'finance.reports.receivables-aging' => [],
+            'finance.reports.collections-by-class' => [],
+        ];
+
+        foreach ($routes as $route => $params) {
+            $response = $this->actingAs(User::factory()->principal()->create())
+                ->get(route($route, [...$params, 'format' => 'csv']))
+                ->assertOk()
+                ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+            $this->assertStringStartsWith("\xEF\xBB\xBF", $response->streamedContent());
+
+            foreach (['teacher', 'parent', 'student'] as $role) {
+                $this->actingAs(User::factory()->{$role}()->create())->get(route($route))->assertForbidden();
+            }
+        }
+    }
+
+    public function test_collections_by_class_rejects_an_inverted_date_range(): void
+    {
+        $this->actingAs(User::factory()->finance()->create())
+            ->get(route('finance.reports.collections-by-class', ['from' => '2026-07-31', 'to' => '2026-07-01']))
+            ->assertSessionHasErrors('to');
     }
 
     public function test_general_ledger_running_balance_respects_normal_balance_and_contra(): void

@@ -17,17 +17,26 @@ import { Label } from '@/components/ui/label';
 
 type PeriodRow = {
     period: string;
-    status: 'open' | 'closed';
+    status: 'open' | 'closed' | 'locked';
     is_open: boolean;
     closed_at: string | null;
     closed_by: string | null;
 };
 
-type Props = {
-    periods: PeriodRow[];
+type ClosableYear = {
+    fiscal_year_start: string;
+    label: string;
+    is_closable: boolean;
+    reason: string | null;
 };
 
-export default function PeriodsIndex({ periods }: Props) {
+type Props = {
+    periods: PeriodRow[];
+    closableYears: ClosableYear[];
+};
+
+export default function PeriodsIndex({ periods, closableYears }: Props) {
+    const [closingYear, setClosingYear] = useState<ClosableYear | null>(null);
     const [reopeningPeriod, setReopeningPeriod] = useState<PeriodRow | null>(
         null,
     );
@@ -45,6 +54,18 @@ export default function PeriodsIndex({ periods }: Props) {
             {
                 preserveScroll: true,
                 onSuccess: () => setClosingPeriod(null),
+            },
+        );
+    };
+
+    const handleCloseYearConfirm = () => {
+        if (!closingYear) return;
+        router.post(
+            '/finance/periods/year-end',
+            { fiscal_year_start: closingYear.fiscal_year_start },
+            {
+                preserveScroll: true,
+                onSuccess: () => setClosingYear(null),
             },
         );
     };
@@ -89,6 +110,47 @@ export default function PeriodsIndex({ periods }: Props) {
                     </div>
                 </div>
 
+                {closableYears.length > 0 && (
+                    <div className="bg-card space-y-3 rounded-lg border p-4">
+                        <div>
+                            <h2 className="font-semibold">
+                                Tutup Buku Tahunan
+                            </h2>
+                            <p className="text-muted-foreground text-xs">
+                                Bulan 1-11 tahun buku harus sudah ditutup. Saldo
+                                pendapatan dan beban dipindahkan ke akun aset
+                                neto, lalu seluruh 12 periode dikunci.
+                            </p>
+                        </div>
+                        {closableYears.map((year) => (
+                            <div
+                                key={year.fiscal_year_start}
+                                className="flex items-center justify-between gap-3 border-t pt-3"
+                            >
+                                <div>
+                                    <div className="font-mono font-bold">
+                                        {year.label}
+                                    </div>
+                                    {year.reason && (
+                                        <div className="text-muted-foreground text-xs">
+                                            {year.reason}
+                                        </div>
+                                    )}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!year.is_closable}
+                                    onClick={() => setClosingYear(year)}
+                                >
+                                    <Lock className="mr-1 h-3.5 w-3.5" /> Tutup
+                                    Buku Tahunan
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -121,7 +183,15 @@ export default function PeriodsIndex({ periods }: Props) {
                                             {p.period}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {p.is_open ? (
+                                            {p.status === 'locked' ? (
+                                                <Badge
+                                                    variant="default"
+                                                    className="bg-red-800"
+                                                >
+                                                    <Lock className="mr-1 h-3 w-3" />{' '}
+                                                    Terkunci
+                                                </Badge>
+                                            ) : p.is_open ? (
                                                 <Badge
                                                     variant="outline"
                                                     className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30"
@@ -159,7 +229,8 @@ export default function PeriodsIndex({ periods }: Props) {
                                             {p.closed_by ?? '-'}
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            {p.is_open ? (
+                                            {p.status ===
+                                            'locked' ? null : p.is_open ? (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -216,6 +287,36 @@ export default function PeriodsIndex({ periods }: Props) {
                         </Button>
                         <Button onClick={handleCloseConfirm}>
                             Ya, Tutup Periode
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Year-End Close Dialog */}
+            <Dialog
+                open={closingYear !== null}
+                onOpenChange={(open) => !open && setClosingYear(null)}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Konfirmasi Tutup Buku Tahunan</DialogTitle>
+                        <DialogDescription>
+                            Tahun buku <strong>{closingYear?.label}</strong>{' '}
+                            akan ditutup: jurnal penutup diposting dan seluruh
+                            12 periode dikunci. Periode terkunci tidak dapat
+                            dibuka kembali.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setClosingYear(null)}
+                        >
+                            Batal
+                        </Button>
+                        <Button onClick={handleCloseYearConfirm}>
+                            Ya, Tutup Buku Tahunan
                         </Button>
                     </DialogFooter>
                 </DialogContent>

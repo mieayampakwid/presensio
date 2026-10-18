@@ -49,9 +49,10 @@ type Props = {
         from: string;
         to: string;
     };
+    canManage: boolean;
 };
 
-export default function JournalsIndex({ journals, filters }: Props) {
+export default function JournalsIndex({ journals, filters, canManage }: Props) {
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(filters.status || 'all');
     const [from, setFrom] = useState(filters.from);
@@ -82,12 +83,14 @@ export default function JournalsIndex({ journals, filters }: Props) {
                         description="Daftar ayat jurnal umum, pencatatan beban operasional, dan saldo awal buku besar."
                     />
 
-                    <Button asChild>
-                        <Link href="/finance/journals/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Buat Jurnal Baru
-                        </Link>
-                    </Button>
+                    {canManage && (
+                        <Button asChild>
+                            <Link href="/finance/journals/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Buat Jurnal Baru
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <div className="bg-card grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-4">

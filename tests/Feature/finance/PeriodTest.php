@@ -4,6 +4,8 @@ namespace Tests\Feature\Finance;
 
 use App\Models\Account;
 use App\Models\AccountingPeriod;
+use App\Models\Bill;
+use App\Models\FeeType;
 use App\Models\User;
 use App\Services\Finance\Contracts\ClosePrecondition;
 use App\Services\Finance\PeriodService;
@@ -81,6 +83,27 @@ class PeriodTest extends TestCase
             ->post(route('finance.periods.close', '2026-09'));
 
         $response->assertStatus(422);
+    }
+
+    public function test_close_is_rejected_when_receivables_reconciliation_has_a_difference(): void
+    {
+        $finance = User::factory()->finance()->create();
+        AccountingPeriod::create(['period' => '2026-09', 'status' => 'open']);
+
+        // Recognized in the subledger but never posted to the GL.
+        $feeType = FeeType::factory()->create([
+            'receivable_account_id' => Account::where('code', '1-1300')->firstOrFail()->id,
+            'revenue_account_id' => $this->revenueAccount->id,
+            'discount_account_id' => Account::where('code', '4-1900')->firstOrFail()->id,
+        ]);
+        Bill::factory()->recognized('2026-09-01')->create(['fee_type_id' => $feeType->id, 'period_key' => '2026-09', 'amount' => '350000.00']);
+
+        $this->actingAs($finance)
+            ->postJson(route('finance.periods.close', '2026-09'))
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Rekonsiliasi piutang tidak seimbang: selisih Rp 350.000; periksa Laporan Rekonsiliasi Piutang.']);
+
+        $this->assertSame('open', AccountingPeriod::where('period', '2026-09')->firstOrFail()->status);
     }
 
     public function test_finance_can_reopen_closed_period_with_reason(): void

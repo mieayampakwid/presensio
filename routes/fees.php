@@ -8,6 +8,7 @@ use App\Http\Controllers\Fees\FeeTypeController;
 use App\Http\Controllers\Fees\PaymentController;
 use App\Http\Controllers\Fees\PaymentVoidController;
 use App\Http\Controllers\Fees\ReceiptController;
+use App\Http\Controllers\Fees\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 // Read routes: Admin, Finance, Principal
@@ -16,6 +17,8 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
     Route::get('fees/discounts', [DiscountController::class, 'index'])->name('fees.discounts.index');
     Route::get('fees/bills', [BillController::class, 'index'])->name('fees.bills.index');
     Route::get('fees/payments', [PaymentController::class, 'index'])->name('fees.payments.index');
+    Route::get('fees/verifications', [VerificationController::class, 'index'])->name('fees.verifications.index');
+    Route::get('fees/verifications/{payment}/proof', [VerificationController::class, 'proof'])->name('fees.verifications.proof');
 });
 
 // Kuitansi: Admin, Finance, Principal, and parents (own children only, checked in the controller)
@@ -50,6 +53,9 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::post('fees/bills/{bill}/write-off', [BillController::class, 'writeOff'])->name('fees.bills.write-off');
 
     Route::post('fees/payments/{payment}/void', PaymentVoidController::class)->name('fees.payments.void');
+
+    Route::post('fees/verifications/{payment}/verify', [VerificationController::class, 'verify'])->name('fees.verifications.verify');
+    Route::post('fees/verifications/{payment}/reject', [VerificationController::class, 'reject'])->name('fees.verifications.reject');
 
     Route::get('fees/cashier', [CashierController::class, 'index'])->name('fees.cashier.index');
     Route::post('fees/cashier', [CashierController::class, 'store'])->name('fees.cashier.store');

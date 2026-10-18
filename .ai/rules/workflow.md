@@ -19,4 +19,4 @@ The full gate is `composer ci:check` (JS check, TS types, then Pint, PHPStan, ar
 
 ## Generated Frontend Routes
 
-Never hand-edit `resources/js/{actions,routes,wayfinder}`; regenerate them with `sail artisan wayfinder:generate`.
+Never hand-edit `resources/js/{actions,routes,wayfinder}`; regenerate them with `sail artisan wayfinder:generate --with-form` (the Vite plugin runs with `formVariants: true`; without the flag the `.form` helpers disappear and `types:check` fails across many pages).

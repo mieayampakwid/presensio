@@ -79,6 +79,7 @@ type Props = {
     accounts: AccountRow[];
     types: TypeOption[];
     restrictions: RestrictionOption[];
+    canManage: boolean;
 };
 
 const TYPE_PREFIX_MAP: Record<string, string> = {
@@ -201,6 +202,7 @@ export default function AccountsIndex({
     accounts,
     types,
     restrictions,
+    canManage,
 }: Props) {
     const [selectedType, setSelectedType] = useState<string>('all');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -398,10 +400,12 @@ export default function AccountsIndex({
                         description="Kelola akun buku besar, saldo normal, dan hierarki pelaporan keuangan."
                     />
 
-                    <Button onClick={openCreateModal}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Akun
-                    </Button>
+                    {canManage && (
+                        <Button onClick={openCreateModal}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Akun
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -453,16 +457,18 @@ export default function AccountsIndex({
                                 <th className="px-4 py-3 font-medium">
                                     Status
                                 </th>
-                                <th className="px-4 py-3 text-right font-medium">
-                                    Aksi
-                                </th>
+                                {canManage && (
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Aksi
+                                    </th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
                             {filteredAccounts.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={7}
+                                        colSpan={canManage ? 7 : 6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
                                         Belum ada akun dalam kategori ini.
@@ -571,48 +577,52 @@ export default function AccountsIndex({
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        openEditModal(account)
-                                                    }
-                                                    title="Edit akun"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
+                                        {canManage && (
+                                            <td className="px-4 py-3 text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            openEditModal(
+                                                                account,
+                                                            )
+                                                        }
+                                                        title="Edit akun"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
 
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    disabled={
-                                                        account.journal_lines_count >
-                                                            0 ||
-                                                        account.children_count >
-                                                            0
-                                                    }
-                                                    onClick={() =>
-                                                        setDeletingAccount(
-                                                            account,
-                                                        )
-                                                    }
-                                                    className="text-destructive hover:text-destructive"
-                                                    title={
-                                                        account.journal_lines_count >
-                                                        0
-                                                            ? 'Akun bertransaksi tidak dapat dihapus'
-                                                            : account.children_count >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        disabled={
+                                                            account.journal_lines_count >
+                                                                0 ||
+                                                            account.children_count >
                                                                 0
-                                                              ? 'Akun dengan sub-akun tidak dapat dihapus'
-                                                              : 'Hapus akun'
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </td>
+                                                        }
+                                                        onClick={() =>
+                                                            setDeletingAccount(
+                                                                account,
+                                                            )
+                                                        }
+                                                        className="text-destructive hover:text-destructive"
+                                                        title={
+                                                            account.journal_lines_count >
+                                                            0
+                                                                ? 'Akun bertransaksi tidak dapat dihapus'
+                                                                : account.children_count >
+                                                                    0
+                                                                  ? 'Akun dengan sub-akun tidak dapat dihapus'
+                                                                  : 'Hapus akun'
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))
                             )}

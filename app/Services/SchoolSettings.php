@@ -276,6 +276,16 @@ class SchoolSettings
     }
 
     /**
+     * Cash account that receives guardian bank transfers.
+     */
+    public function defaultTransferAccountId(): ?int
+    {
+        $id = $this->row()->default_transfer_account_id;
+
+        return $id !== null ? (int) $id : null;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function defaults(): array
@@ -309,6 +319,7 @@ class SchoolSettings
             'staff_absent_sweep_time' => '09:00',
             'default_scope_weight' => '50.00',
             'default_final_weight' => '50.00',
+            'default_transfer_account_id' => null,
         ];
     }
 }

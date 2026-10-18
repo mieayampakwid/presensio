@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BadgeCheck,
     Banknote,
     BellRing,
     BookMarked,
@@ -47,6 +48,7 @@ import CashierController from '@/actions/App/Http/Controllers/Fees/CashierContro
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
 import PaymentController from '@/actions/App/Http/Controllers/Fees/PaymentController';
+import VerificationController from '@/actions/App/Http/Controllers/Fees/VerificationController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
 import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
 import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
@@ -57,6 +59,8 @@ import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/Pres
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
 import NotificationDeliveryController from '@/actions/App/Http/Controllers/Admin/NotificationDeliveryController';
 import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
+import ParentFeeController from '@/actions/App/Http/Controllers/Parent/FeeController';
+import StudentFeeController from '@/actions/App/Http/Controllers/Student/FeeController';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
@@ -257,6 +261,11 @@ export function AppSidebar() {
                       href: '/my-report-cards',
                       icon: GraduationCap,
                   },
+                  {
+                      title: 'Biaya Sekolah',
+                      href: StudentFeeController.index().url,
+                      icon: Wallet,
+                  },
               ]
             : []),
         ...(activeRole === 'teacher'
@@ -315,6 +324,11 @@ export function AppSidebar() {
                       icon: GraduationCap,
                   },
                   {
+                      title: 'Biaya Sekolah',
+                      href: ParentFeeController.index().url,
+                      icon: Wallet,
+                  },
+                  {
                       title: 'Child Report',
                       href: StudentReportController.index().url,
                       icon: ClipboardList,
@@ -363,6 +377,11 @@ export function AppSidebar() {
                   title: 'Payments',
                   href: PaymentController.index().url,
                   icon: CreditCard,
+              },
+              {
+                  title: 'Verifikasi Transfer',
+                  href: VerificationController.index().url,
+                  icon: BadgeCheck,
               },
               ...(['admin', 'finance'].includes(activeRole)
                   ? [
@@ -426,6 +445,26 @@ export function AppSidebar() {
                       title: 'Cash Book',
                       href: ReportController.cashBook().url,
                       icon: Wallet,
+                  },
+                  {
+                      title: 'Rekonsiliasi Piutang',
+                      href: ReportController.receivablesReconciliation().url,
+                      icon: Landmark,
+                  },
+                  {
+                      title: 'Kartu Piutang Siswa',
+                      href: ReportController.studentReceivableCard().url,
+                      icon: IdCard,
+                  },
+                  {
+                      title: 'Umur Piutang',
+                      href: ReportController.receivablesAging().url,
+                      icon: Table2,
+                  },
+                  {
+                      title: 'Penerimaan per Kelas',
+                      href: ReportController.collectionsByClass().url,
+                      icon: Receipt,
                   },
               ]
             : []),

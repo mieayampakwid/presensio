@@ -21,7 +21,7 @@ class TrialBalanceClosePrecondition implements ClosePrecondition
      */
     public function check(AccountingPeriod $period): void
     {
-        $endOfMonth = Carbon::createFromFormat('Y-m', $period->period)
+        $endOfMonth = Carbon::parse($period->period.'-01')
             ->endOfMonth()
             ->toDateString();
 

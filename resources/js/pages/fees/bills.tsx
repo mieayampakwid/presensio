@@ -2,6 +2,7 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import BillController from '@/actions/App/Http/Controllers/Fees/BillController';
+import ReportController from '@/actions/App/Http/Controllers/Finance/ReportController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 type BillRow = {
     id: number;
+    student_id: number;
     student_name: string;
     student_number: string | null;
     class_name: string | null;
@@ -320,6 +322,21 @@ export default function BillsIndex({
                                         <div className="font-medium">
                                             {bill.student_name}
                                         </div>
+                                        <Link
+                                            href={
+                                                ReportController.studentReceivableCard(
+                                                    {
+                                                        query: {
+                                                            student_id:
+                                                                bill.student_id,
+                                                        },
+                                                    },
+                                                ).url
+                                            }
+                                            className="text-primary text-xs hover:underline"
+                                        >
+                                            Kartu piutang
+                                        </Link>
                                         {bill.student_number && (
                                             <div className="text-muted-foreground text-xs">
                                                 {bill.student_number}
