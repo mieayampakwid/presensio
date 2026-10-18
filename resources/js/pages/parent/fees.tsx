@@ -145,6 +145,30 @@ export default function ParentFees({
             return next;
         });
 
+    // Bills with a pending transfer are left out so "select all" cannot stack duplicate transfers.
+    const selectableBills = useMemo(
+        () => bills.filter((bill) => isOpen(bill) && !bill.has_pending),
+        [bills],
+    );
+    const allSelectableSelected =
+        selectableBills.length > 0 &&
+        selectableBills.every((bill) => bill.id in selected);
+
+    const toggleAll = (checked: boolean) =>
+        setSelected((current) => {
+            const next = { ...current };
+
+            for (const bill of selectableBills) {
+                if (!checked) {
+                    delete next[bill.id];
+                } else if (!(bill.id in next)) {
+                    next[bill.id] = bill.remaining;
+                }
+            }
+
+            return next;
+        });
+
     const submit = () => {
         form.transform((data) => ({
             ...data,
@@ -271,7 +295,26 @@ export default function ParentFees({
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
                                         {canUpload && (
-                                            <th className="w-10 px-4 py-3" />
+                                            <th className="w-10 px-4 py-3">
+                                                <Checkbox
+                                                    aria-label="Pilih semua tagihan yang belum dibayar"
+                                                    disabled={
+                                                        !uploadEnabled ||
+                                                        selectableBills.length ===
+                                                            0
+                                                    }
+                                                    checked={
+                                                        allSelectableSelected
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        toggleAll(
+                                                            checked === true,
+                                                        )
+                                                    }
+                                                />
+                                            </th>
                                         )}
                                         <th className="px-4 py-3">Siswa</th>
                                         <th className="px-4 py-3">Tagihan</th>
