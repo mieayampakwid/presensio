@@ -11,6 +11,7 @@ use App\Services\Audit\AuditLogger;
 use App\Services\SchoolSettings;
 use App\Support\Money;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -77,6 +78,12 @@ class YearEndCloser
                 throw new RuntimeException("Periode terakhir tahun buku ({$lastKey}) harus berstatus terbuka.");
             }
 
+            if (($blocking = $this->unclosedEarlierYear($start)) !== null) {
+                $blockingKeys = $this->periodKeys($blocking);
+
+                throw new RuntimeException("Tahun buku {$blockingKeys[0]} s.d. {$blockingKeys[11]} harus ditutup terlebih dahulu.");
+            }
+
             $entry = $this->postClosingEntry($start, $end, $closingAccountId, $userId);
 
             $lastPeriod = $this->periodService->close($lastKey, $userId);
@@ -129,6 +136,9 @@ class YearEndCloser
                 $reason = "Periode {$openKey} belum ditutup.";
             } elseif (($statuses[$lastKey] ?? 'open') !== 'open') {
                 $reason = "Periode terakhir ({$lastKey}) harus berstatus terbuka.";
+            } elseif (($blocking = $this->unclosedEarlierYear($start)) !== null) {
+                $blockingKeys = $this->periodKeys($blocking);
+                $reason = "Tahun buku sebelumnya ({$blockingKeys[0]} s.d. {$blockingKeys[11]}) belum ditutup.";
             }
 
             $years[] = [
@@ -140,6 +150,46 @@ class YearEndCloser
         }
 
         return $years;
+    }
+
+    /**
+     * Start of the earliest fiscal year before $start that has posted revenue/expense activity
+     * (closing entries ignored) and no locked period, or null. Years without activity are skipped.
+     */
+    private function unclosedEarlierYear(Carbon $start): ?Carbon
+    {
+        $firstActivity = $this->activityQuery()
+            ->whereDate('journal_entries.entry_date', '<', $start->toDateString())
+            ->min('journal_entries.entry_date');
+
+        if ($firstActivity === null) {
+            return null;
+        }
+
+        for ($year = $this->fiscalYearStartFor(Carbon::parse($firstActivity)); $year->lt($start); $year = $year->copy()->addYear()) {
+            $yearEnd = $year->copy()->addMonthsNoOverflow(11)->endOfMonth();
+
+            $hasActivity = $this->activityQuery()
+                ->whereDate('journal_entries.entry_date', '>=', $year->toDateString())
+                ->whereDate('journal_entries.entry_date', '<=', $yearEnd->toDateString())
+                ->exists();
+
+            if ($hasActivity && ! AccountingPeriod::query()->whereIn('period', $this->periodKeys($year))->where('status', 'locked')->exists()) {
+                return $year;
+            }
+        }
+
+        return null;
+    }
+
+    private function activityQuery(): Builder
+    {
+        return DB::table('journal_lines')
+            ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+            ->join('accounts', 'accounts.id', '=', 'journal_lines.account_id')
+            ->whereIn('accounts.type', [AccountType::Revenue->value, AccountType::Expense->value])
+            ->where('journal_entries.status', 'posted')
+            ->where('journal_entries.source_type', '!=', JournalSource::Closing->value);
     }
 
     /**

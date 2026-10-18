@@ -30,6 +30,8 @@ class YearEndClosingTest extends TestCase
 
     private const YEAR_START = '2026-07-01';
 
+    private const PREVIOUS_YEAR_START = '2025-07-01';
+
     private User $finance;
 
     protected function setUp(): void
@@ -93,6 +95,19 @@ class YearEndClosingTest extends TestCase
     private function closeYear(): void
     {
         $this->actingAs($this->finance)->post(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START]);
+    }
+
+    /**
+     * Months 1-11 of the 2025/26 fiscal year closed, June 2026 still open.
+     */
+    private function closeFirstElevenMonthsOfPreviousYear(): void
+    {
+        foreach (range(0, 10) as $offset) {
+            AccountingPeriod::updateOrCreate(
+                ['period' => date('Y-m', strtotime(self::PREVIOUS_YEAR_START." +{$offset} month"))],
+                ['status' => 'closed'],
+            );
+        }
     }
 
     private function netAssetsBalance(): string
@@ -299,5 +314,51 @@ class YearEndClosingTest extends TestCase
 
         $this->actingAs(User::factory()->principal()->create())->get(route('finance.periods.index'))
             ->assertInertia(fn ($page) => $page->has('closableYears', 0));
+    }
+
+    public function test_an_earlier_year_with_activity_must_be_closed_first(): void
+    {
+        $this->journal('2025-09-15', '1-1100', '4-1100', '500000.00');
+        $this->closeFirstElevenMonthsOfPreviousYear();
+        $this->postSurplusActivity();
+        $this->closeFirstElevenMonths();
+
+        $this->actingAs($this->finance)
+            ->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])
+            ->assertUnprocessable()
+            ->assertJsonFragment(['message' => 'Tahun buku 2025-07 s.d. 2026-06 harus ditutup terlebih dahulu.']);
+
+        $this->assertNothingClosed();
+
+        $this->actingAs($this->finance)->get(route('finance.periods.index'))
+            ->assertInertia(fn ($page) => $page->where('closableYears.0.fiscal_year_start', self::YEAR_START)
+                ->where('closableYears.0.is_closable', false)
+                ->where('closableYears.0.reason', 'Tahun buku sebelumnya (2025-07 s.d. 2026-06) belum ditutup.'));
+    }
+
+    public function test_year_can_be_closed_once_the_earlier_year_is_closed(): void
+    {
+        $this->journal('2025-09-15', '1-1100', '4-1100', '500000.00');
+        $this->closeFirstElevenMonthsOfPreviousYear();
+        $this->postSurplusActivity();
+        $this->closeFirstElevenMonths();
+
+        $this->actingAs($this->finance)
+            ->post(route('finance.periods.year-end'), ['fiscal_year_start' => self::PREVIOUS_YEAR_START])
+            ->assertRedirect();
+        $this->closeYear();
+
+        $this->assertSame(2, JournalEntry::where('source_type', JournalSource::Closing)->count());
+        $this->assertSame(24, AccountingPeriod::where('status', 'locked')->count());
+    }
+
+    public function test_an_earlier_year_with_only_an_opening_balance_does_not_block(): void
+    {
+        $this->journal('2025-06-30', '1-1100', '3-1000', '500000.00');
+        $this->closeFirstElevenMonths();
+
+        $this->closeYear();
+
+        $this->assertSame(12, AccountingPeriod::where('status', 'locked')->count());
     }
 }
