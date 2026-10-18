@@ -94,7 +94,7 @@ Building a separate pipeline for each would produce six inconsistent mechanisms,
 5. **Guardian Preferences (profile page)**: WhatsApp toggles for opt-out-allowed types.
 6. **Bill Reminder Job**:
    - Runs daily at 07:00 school time.
-   - For bills with status `unpaid` / `partially_paid` due in exactly `bill_reminder_days_before` days, dispatches one `bill_due_reminder` per guardian per day. Dedupe key: `bill_due_reminder:{guardian_id}:{date}`. One reminder covers all such bills of all the guardian's children.
+   - For bills with status `unpaid` / `partially_paid` due in exactly `bill_reminder_days_before` days, dispatches one `bill_due_reminder` per guardian per day. Dedupe key: `bill_due_reminder:{date}:guardian:{guardian_id}` (the dispatcher composes every key as `{type}:{base}:{recipient}`; the reminder's base is the date). One reminder covers all such bills of all the guardian's children.
 7. **WhatsApp templates**: Indonesian lang files per type with placeholders, ending with the portal link and `— Pengelola {school_name}` (school profile, 15).
 
 ## Schema
