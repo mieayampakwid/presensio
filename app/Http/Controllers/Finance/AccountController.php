@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\AccountType;
 use App\Enums\NetAssetRestriction;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveAccountRequest;
 use App\Models\Account;
@@ -69,6 +70,7 @@ class AccountController extends Controller
             'accounts' => $accounts,
             'types' => $types,
             'restrictions' => $restrictions,
+            'canManage' => $request->user()->hasRole(UserRole::Admin),
         ]);
     }
 

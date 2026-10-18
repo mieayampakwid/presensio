@@ -41,8 +41,8 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
         ->name('finance.periods.index');
 });
 
-// Write routes: Admin, Finance only
-Route::middleware(['auth', 'role:admin,finance'])->group(function () {
+// Chart of accounts setup: Admin only (spec 14 §Access)
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('finance/accounts', [AccountController::class, 'store'])->name('finance.accounts.store');
     Route::put('finance/accounts/{account}', [AccountController::class, 'update'])
         ->missing(fn () => to_route('finance.accounts.index'))
@@ -50,7 +50,10 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::delete('finance/accounts/{account}', [AccountController::class, 'destroy'])
         ->missing(fn () => to_route('finance.accounts.index'))
         ->name('finance.accounts.destroy');
+});
 
+// Write routes: Admin, Finance only
+Route::middleware(['auth', 'role:admin,finance'])->group(function () {
     Route::get('finance/journals/create', [ManualJournalController::class, 'create'])->name('finance.journals.create');
     Route::post('finance/journals', [ManualJournalController::class, 'store'])->name('finance.journals.store');
     Route::get('finance/journals/{journal}/edit', [ManualJournalController::class, 'edit'])

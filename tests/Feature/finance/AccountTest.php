@@ -11,6 +11,7 @@ use App\Models\SchoolSetting;
 use App\Models\User;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -56,37 +57,50 @@ class AccountTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_principal_cannot_create_update_or_delete_account(): void
+    public function test_principal_and_finance_cannot_create_update_or_delete_account(): void
     {
-        $principal = User::factory()->principal()->create();
         $account = Account::factory()->create(['code' => '1-1100']);
 
-        $this->actingAs($principal)
-            ->post(route('finance.accounts.store'), [
-                'code' => '1-1200',
-                'name' => 'Bank',
-                'type' => 'asset',
-            ])
-            ->assertForbidden();
+        foreach ([User::factory()->principal()->create(), User::factory()->finance()->create()] as $user) {
+            $this->actingAs($user)
+                ->post(route('finance.accounts.store'), [
+                    'code' => '1-1200',
+                    'name' => 'Bank',
+                    'type' => 'asset',
+                ])
+                ->assertForbidden();
 
-        $this->actingAs($principal)
-            ->put(route('finance.accounts.update', $account), [
-                'code' => '1-1100',
-                'name' => 'Kas Baru',
-                'type' => 'asset',
-            ])
-            ->assertForbidden();
+            $this->actingAs($user)
+                ->put(route('finance.accounts.update', $account), [
+                    'code' => '1-1100',
+                    'name' => 'Kas Baru',
+                    'type' => 'asset',
+                ])
+                ->assertForbidden();
 
-        $this->actingAs($principal)
-            ->delete(route('finance.accounts.destroy', $account))
-            ->assertForbidden();
+            $this->actingAs($user)
+                ->delete(route('finance.accounts.destroy', $account))
+                ->assertForbidden();
+        }
+
+        $this->assertDatabaseMissing('accounts', ['code' => '1-1200']);
+        $this->assertDatabaseHas('accounts', ['id' => $account->id, 'name' => $account->name]);
     }
 
-    public function test_finance_can_create_new_account(): void
+    public function test_only_admin_can_manage_accounts_on_index(): void
     {
-        $finance = User::factory()->finance()->create();
+        foreach (['admin' => true, 'finance' => false, 'principal' => false] as $role => $canManage) {
+            $this->actingAs(User::factory()->{$role}()->create())
+                ->get(route('finance.accounts.index'))
+                ->assertInertia(fn (Assert $page) => $page->where('canManage', $canManage));
+        }
+    }
 
-        $response = $this->actingAs($finance)->post(route('finance.accounts.store'), [
+    public function test_admin_can_create_new_account(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('finance.accounts.store'), [
             'code' => '1-1500',
             'name' => 'Perlengkapan Sekolah',
             'type' => 'asset',
@@ -105,10 +119,10 @@ class AccountTest extends TestCase
 
     public function test_code_must_be_unique(): void
     {
-        $finance = User::factory()->finance()->create();
+        $admin = User::factory()->admin()->create();
         Account::factory()->create(['code' => '1-1100']);
 
-        $this->actingAs($finance)->post(route('finance.accounts.store'), [
+        $this->actingAs($admin)->post(route('finance.accounts.store'), [
             'code' => '1-1100',
             'name' => 'Kas Duplikat',
             'type' => 'asset',
@@ -117,9 +131,9 @@ class AccountTest extends TestCase
 
     public function test_restriction_only_allowed_for_net_assets(): void
     {
-        $finance = User::factory()->finance()->create();
+        $admin = User::factory()->admin()->create();
 
-        $this->actingAs($finance)->post(route('finance.accounts.store'), [
+        $this->actingAs($admin)->post(route('finance.accounts.store'), [
             'code' => '4-1100',
             'name' => 'Pendapatan Salah',
             'type' => 'revenue',
@@ -127,7 +141,7 @@ class AccountTest extends TestCase
         ])->assertSessionHasErrors(['restriction']);
 
         // Allowed for net assets
-        $this->actingAs($finance)->post(route('finance.accounts.store'), [
+        $this->actingAs($admin)->post(route('finance.accounts.store'), [
             'code' => '3-1000',
             'name' => 'Aset Neto Valid',
             'type' => 'net_assets',
@@ -142,7 +156,7 @@ class AccountTest extends TestCase
 
     public function test_cannot_delete_account_with_posted_lines(): void
     {
-        $finance = User::factory()->finance()->create();
+        $admin = User::factory()->admin()->create();
         $account = Account::factory()->create(['code' => '1-1100']);
         $entry = JournalEntry::factory()->create(['status' => JournalStatus::Posted]);
 
@@ -153,7 +167,7 @@ class AccountTest extends TestCase
             'credit' => '0.00',
         ]);
 
-        $this->actingAs($finance)
+        $this->actingAs($admin)
             ->delete(route('finance.accounts.destroy', $account))
             ->assertStatus(422);
 
@@ -162,7 +176,7 @@ class AccountTest extends TestCase
 
     public function test_cannot_change_type_of_account_with_posted_lines(): void
     {
-        $finance = User::factory()->finance()->create();
+        $admin = User::factory()->admin()->create();
         $account = Account::factory()->create(['code' => '1-1100', 'type' => AccountType::Asset]);
         $entry = JournalEntry::factory()->create(['status' => JournalStatus::Posted]);
 
@@ -173,7 +187,7 @@ class AccountTest extends TestCase
             'credit' => '0.00',
         ]);
 
-        $this->actingAs($finance)
+        $this->actingAs($admin)
             ->put(route('finance.accounts.update', $account), [
                 'code' => '1-1100',
                 'name' => 'Kas Tunai Updated',
@@ -184,14 +198,14 @@ class AccountTest extends TestCase
 
     public function test_parent_account_loses_postable_when_child_is_added(): void
     {
-        $finance = User::factory()->finance()->create();
+        $admin = User::factory()->admin()->create();
         $parent = Account::factory()->create([
             'code' => '1-1000',
             'name' => 'Kas & Bank',
             'is_postable' => true,
         ]);
 
-        $this->actingAs($finance)->post(route('finance.accounts.store'), [
+        $this->actingAs($admin)->post(route('finance.accounts.store'), [
             'code' => '1-1100',
             'name' => 'Kas Tunai',
             'type' => 'asset',
