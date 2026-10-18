@@ -64,9 +64,10 @@ type Props = {
         is_balanced: boolean;
         lines: JournalLineRow[];
     };
+    canManage: boolean;
 };
 
-export default function JournalShow({ journal }: Props) {
+export default function JournalShow({ journal, canManage }: Props) {
     const [isReverseOpen, setIsReverseOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -130,43 +131,46 @@ export default function JournalShow({ journal }: Props) {
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        {journal.status === 'draft' ? (
-                            <>
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link
-                                        href={`/finance/journals/${journal.id}/edit`}
-                                    >
-                                        <Pencil className="mr-1 h-4 w-4" /> Edit
-                                        Draf
-                                    </Link>
-                                </Button>
+                    {canManage && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            {journal.status === 'draft' ? (
+                                <>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link
+                                            href={`/finance/journals/${journal.id}/edit`}
+                                        >
+                                            <Pencil className="mr-1 h-4 w-4" />{' '}
+                                            Edit Draf
+                                        </Link>
+                                    </Button>
 
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-destructive"
+                                        onClick={() => setIsDeleteOpen(true)}
+                                    >
+                                        <Trash2 className="mr-1 h-4 w-4" />{' '}
+                                        Hapus
+                                    </Button>
+
+                                    <Button size="sm" onClick={handlePostDraft}>
+                                        <Send className="mr-1 h-4 w-4" />{' '}
+                                        Posting ke Buku Besar
+                                    </Button>
+                                </>
+                            ) : (
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-destructive"
-                                    onClick={() => setIsDeleteOpen(true)}
+                                    onClick={() => setIsReverseOpen(true)}
                                 >
-                                    <Trash2 className="mr-1 h-4 w-4" /> Hapus
+                                    <RotateCcw className="mr-1 h-4 w-4" /> Buat
+                                    Jurnal Pembalik
                                 </Button>
-
-                                <Button size="sm" onClick={handlePostDraft}>
-                                    <Send className="mr-1 h-4 w-4" /> Posting ke
-                                    Buku Besar
-                                </Button>
-                            </>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setIsReverseOpen(true)}
-                            >
-                                <RotateCcw className="mr-1 h-4 w-4" /> Buat
-                                Jurnal Pembalik
-                            </Button>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Metadata Card */}

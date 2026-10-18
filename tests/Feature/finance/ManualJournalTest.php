@@ -278,6 +278,34 @@ class ManualJournalTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_only_finance_can_open_the_journal_create_form(): void
+    {
+        $this->actingAs(User::factory()->principal()->create())
+            ->get(route('finance.journals.create'))
+            ->assertForbidden();
+
+        $this->actingAs(User::factory()->finance()->create())
+            ->get(route('finance.journals.create'))
+            ->assertOk();
+    }
+
+    public function test_journal_pages_expose_can_manage_by_role(): void
+    {
+        $journal = JournalEntry::factory()->create(['status' => JournalStatus::Posted]);
+
+        foreach ([['finance', true], ['principal', false]] as [$role, $expected]) {
+            $user = User::factory()->{$role}()->create();
+
+            $this->actingAs($user)
+                ->get(route('finance.journals.index'))
+                ->assertInertia(fn ($page) => $page->where('canManage', $expected));
+
+            $this->actingAs($user)
+                ->get(route('finance.journals.show', $journal))
+                ->assertInertia(fn ($page) => $page->where('canManage', $expected));
+        }
+    }
+
     public function test_journal_attachment_upload_and_download(): void
     {
         Storage::fake('local');

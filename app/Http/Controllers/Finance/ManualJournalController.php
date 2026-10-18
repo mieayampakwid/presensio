@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\JournalSource;
 use App\Enums\JournalStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveJournalRequest;
 use App\Models\Account;
@@ -77,6 +78,7 @@ class ManualJournalController extends Controller
                 'from' => $from,
                 'to' => $to,
             ],
+            'canManage' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance),
         ]);
     }
 
@@ -196,7 +198,7 @@ class ManualJournalController extends Controller
     /**
      * Display the specified journal entry.
      */
-    public function show(JournalEntry $journal): Response
+    public function show(Request $request, JournalEntry $journal): Response
     {
         $journal->load([
             'lines.account',
@@ -247,6 +249,7 @@ class ManualJournalController extends Controller
                     'memo' => $line->memo,
                 ]),
             ],
+            'canManage' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance),
         ]);
     }
 

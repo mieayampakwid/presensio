@@ -11,8 +11,8 @@ Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
     Route::get('finance/accounts', [AccountController::class, 'index'])->name('finance.accounts.index');
 
     Route::get('finance/journals', [ManualJournalController::class, 'index'])->name('finance.journals.index');
-    Route::get('finance/journals/create', [ManualJournalController::class, 'create'])->name('finance.journals.create');
     Route::get('finance/journals/{journal}', [ManualJournalController::class, 'show'])
+        ->whereNumber('journal')
         ->missing(fn () => to_route('finance.journals.index'))
         ->name('finance.journals.show');
     Route::get('finance/journals/{journal}/attachment', [ManualJournalController::class, 'attachment'])
@@ -51,6 +51,7 @@ Route::middleware(['auth', 'role:admin,finance'])->group(function () {
         ->missing(fn () => to_route('finance.accounts.index'))
         ->name('finance.accounts.destroy');
 
+    Route::get('finance/journals/create', [ManualJournalController::class, 'create'])->name('finance.journals.create');
     Route::post('finance/journals', [ManualJournalController::class, 'store'])->name('finance.journals.store');
     Route::get('finance/journals/{journal}/edit', [ManualJournalController::class, 'edit'])
         ->missing(fn () => to_route('finance.journals.index'))

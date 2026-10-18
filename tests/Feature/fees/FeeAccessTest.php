@@ -68,7 +68,7 @@ class FeeAccessTest extends TestCase
         'finance.accounts.destroy' => 'write',
         'finance.journals.index' => 'read',
         'finance.journals.store' => 'write',
-        'finance.journals.create' => 'read',
+        'finance.journals.create' => 'write',
         'finance.journals.show' => 'read',
         'finance.journals.update' => 'write',
         'finance.journals.destroy' => 'write',
