@@ -34,6 +34,7 @@ class SchoolClassController extends Controller
         $yearId = $this->resolveYearId($request, $years);
 
         $classes = SchoolClass::query()
+            ->with('teacher.employee:id,name')
             ->where('academic_year_id', $yearId)
             ->when(! $user->hasAnyRole(UserRole::Admin, UserRole::Principal), function (Builder $query) use ($user, $yearId) {
                 $query->whereIn('id', ClassAccess::academicClassIds($user, $yearId));
