@@ -17,6 +17,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ManualJournalTest extends TestCase
@@ -49,6 +51,57 @@ class ManualJournalTest extends TestCase
             'is_postable' => true,
             'is_active' => true,
         ]);
+    }
+
+    public static function journalReaderRoles(): array
+    {
+        return [
+            'principal' => ['principal'],
+            'admin' => ['admin'],
+            'finance' => ['finance'],
+        ];
+    }
+
+    #[DataProvider('journalReaderRoles')]
+    public function test_populated_journal_list_displays_exact_totals(string $role): void
+    {
+        $user = User::factory()->{$role}()->create();
+        $posted = JournalEntry::factory()->create([
+            'entry_date' => '2026-10-05',
+            'created_by_user_id' => $user->id,
+        ]);
+        JournalLine::factory()->for($posted)->create([
+            'account_id' => $this->expenseAccount->id,
+            'debit' => '123.45',
+            'credit' => '0.00',
+        ]);
+        JournalLine::factory()->for($posted)->create([
+            'account_id' => $this->cashAccount->id,
+            'debit' => '0.00',
+            'credit' => '123.45',
+        ]);
+        $draft = JournalEntry::factory()->draft()->create([
+            'entry_date' => '2026-10-04',
+            'created_by_user_id' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('finance.journals.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/journals/index')
+                ->has('journals.data', 2)
+                ->where('journals.data.0.id', $posted->id)
+                ->where('journals.data.0.total_debit', '123.45')
+                ->where('journals.data.0.total_credit', '123.45')
+                ->where('journals.data.0.lines_count', 2)
+                ->where('journals.data.0.author', $user->username)
+                ->where('journals.data.1.id', $draft->id)
+                ->where('journals.data.1.total_debit', '0.00')
+                ->where('journals.data.1.total_credit', '0.00')
+                ->where('journals.data.1.lines_count', 0)
+                ->where('journals.data.1.author', null)
+            );
     }
 
     public function test_finance_can_save_manual_journal_as_draft(): void

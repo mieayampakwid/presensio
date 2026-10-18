@@ -37,7 +37,7 @@ class ManualJournalController extends Controller
         $to = $request->string('to')->toString();
 
         $journals = JournalEntry::query()
-            ->with(['author:id,username'])
+            ->with(['author:id,username', 'lines:id,journal_entry_id,debit,credit'])
             ->withCount('lines')
             ->when($status !== '', fn ($q) => $q->where('status', $status))
             ->when($search !== '', function ($q) use ($search) {
