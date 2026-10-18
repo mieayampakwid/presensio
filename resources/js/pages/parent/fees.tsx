@@ -455,14 +455,14 @@ export default function ParentFees({
 
             {canUpload && (
                 <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-h-[90dvh] grid-rows-[auto_auto_minmax(0,1fr)_auto]">
                         <DialogTitle>Unggah Bukti Transfer</DialogTitle>
                         <DialogDescription>
                             Pembayaran akan diverifikasi oleh sekolah sebelum
                             tagihan dinyatakan lunas.
                         </DialogDescription>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 overflow-y-auto pr-1">
                             <div className="space-y-2">
                                 {selectedBills.map((bill) => (
                                     <div
