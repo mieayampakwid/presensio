@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $prepaid_revenue_account_id
  * @property int|null $bad_debt_expense_account_id
  * @property int|null $net_assets_closing_account_id
+ * @property int|null $guardian_deposit_account_id
  * @property int|null $default_transfer_account_id
  * @property string $default_scope_weight
  * @property string $default_final_weight
@@ -52,6 +53,7 @@ use Illuminate\Support\Carbon;
  * @property-read Account|null $prepaidRevenueAccount
  * @property-read Account|null $badDebtExpenseAccount
  * @property-read Account|null $netAssetsClosingAccount
+ * @property-read Account|null $guardianDepositAccount
  * @property-read Account|null $defaultTransferAccount
  */
 #[Fillable([
@@ -87,6 +89,7 @@ use Illuminate\Support\Carbon;
     'prepaid_revenue_account_id',
     'bad_debt_expense_account_id',
     'net_assets_closing_account_id',
+    'guardian_deposit_account_id',
     'default_transfer_account_id',
     'default_scope_weight',
     'default_final_weight',
@@ -127,6 +130,12 @@ class SchoolSetting extends Model
         return $this->belongsTo(Account::class, 'default_transfer_account_id');
     }
 
+    /** @return BelongsTo<Account, $this> */
+    public function guardianDepositAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'guardian_deposit_account_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -147,6 +156,7 @@ class SchoolSetting extends Model
             'prepaid_revenue_account_id' => 'integer',
             'bad_debt_expense_account_id' => 'integer',
             'net_assets_closing_account_id' => 'integer',
+            'guardian_deposit_account_id' => 'integer',
             'default_transfer_account_id' => 'integer',
             'default_scope_weight' => 'decimal:2',
             'default_final_weight' => 'decimal:2',

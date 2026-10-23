@@ -249,6 +249,8 @@ class ManualJournalController extends Controller
                     'memo' => $line->memo,
                 ]),
             ],
+            'overpayment_id' => $journal->source_type->isOverpayment() ? $journal->source_id : null,
+            'canReverse' => ! $this->isOverpaymentJournal($journal),
             'canManage' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance),
         ]);
     }
@@ -470,6 +472,8 @@ class ManualJournalController extends Controller
      */
     public function reverse(Request $request, JournalEntry $journal, JournalPoster $poster, SchoolSettings $settings): RedirectResponse
     {
+        abort_if($this->isOverpaymentJournal($journal), 422, 'Gunakan pembatalan pada detail kelebihan pembayaran; jurnal otomatis tidak dapat dibalik langsung.');
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:255'],
             'date' => ['nullable', 'date'],
@@ -495,6 +499,20 @@ class ManualJournalController extends Controller
         ]);
 
         return to_route('finance.journals.show', $reversal);
+    }
+
+    private function isOverpaymentJournal(JournalEntry $journal): bool
+    {
+        $seen = [];
+        while ($journal !== null && ! isset($seen[$journal->id])) {
+            if ($journal->source_type->isOverpayment()) {
+                return true;
+            }
+            $seen[$journal->id] = true;
+            $journal = $journal->reversesEntry;
+        }
+
+        return false;
     }
 
     /**

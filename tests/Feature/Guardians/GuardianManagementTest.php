@@ -3,6 +3,7 @@
 namespace Tests\Feature\Guardians;
 
 use App\Models\Guardian;
+use App\Models\Overpayment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,15 @@ use Tests\TestCase;
 class GuardianManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_guardian_with_overpayment_history_cannot_be_deleted(): void
+    {
+        $record = Overpayment::factory()->create();
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)->delete(route('guardians.destroy', $record->guardian_id))->assertSessionHasErrors('guardian');
+        $this->assertDatabaseHas('guardians', ['id' => $record->guardian_id]);
+        $this->assertDatabaseHas('overpayments', ['id' => $record->id]);
+    }
 
     public function test_admin_can_view_the_guardians_list(): void
     {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Finance\Reports;
 
+use App\Services\Finance\GuardianDepositReconciliation;
 use App\Services\Finance\ReceivablesReconciliation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -9,6 +10,7 @@ class ReceivablesReconciliationReport
 {
     public function __construct(
         private readonly ReceivablesReconciliation $reconciliation,
+        private readonly GuardianDepositReconciliation $deposits,
     ) {}
 
     /**
@@ -18,7 +20,7 @@ class ReceivablesReconciliationReport
      */
     public function generate(string $asOf): array
     {
-        return $this->reconciliation->asOf($asOf);
+        return $this->reconciliation->asOf($asOf) + ['guardian_deposits' => $this->deposits->asOf($asOf)];
     }
 
     /**
@@ -47,6 +49,12 @@ class ReceivablesReconciliationReport
 
             foreach ($data['mismatches'] as $row) {
                 fputcsv($out, [$row['bill_id'], $row['student_name'], $row['title'], $row['account_code'], $row['kind'], $row['expected'], $row['actual']]);
+            }
+
+            fputcsv($out, []);
+            fputcsv($out, ['Titipan Wali', 'Nama Akun', 'Saldo Buku Besar', 'Saldo Subledger', 'Selisih']);
+            foreach ($data['guardian_deposits']['accounts'] as $row) {
+                fputcsv($out, [$row['code'], $row['name'], $row['gl_balance'], $row['subledger_balance'], $row['difference']]);
             }
 
             fclose($out);

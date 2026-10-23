@@ -70,6 +70,12 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_active' => true,
             ],
 
+            [
+                'code' => '2-1200', 'name' => 'Titipan Wali (Kelebihan Pembayaran)',
+                'type' => AccountType::Liability, 'is_contra' => false, 'restriction' => null,
+                'is_postable' => true, 'is_cash' => false, 'is_active' => true,
+            ],
+
             // Aset Neto (3-xxxx)
             [
                 'code' => '3-1000',
@@ -187,6 +193,7 @@ class ChartOfAccountsSeeder extends Seeder
                 'bad_debt_expense_account_id' => $badDebt?->id,
                 'net_assets_closing_account_id' => $netAssetsClosing?->id,
                 'default_transfer_account_id' => $transfer?->id,
+                'guardian_deposit_account_id' => $settings->guardian_deposit_account_id ?? Account::where('code', '2-1200')->value('id'),
             ]);
         }
     }

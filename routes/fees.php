@@ -5,6 +5,7 @@ use App\Http\Controllers\Fees\BillGenerationController;
 use App\Http\Controllers\Fees\CashierController;
 use App\Http\Controllers\Fees\DiscountController;
 use App\Http\Controllers\Fees\FeeTypeController;
+use App\Http\Controllers\Fees\OverpaymentController;
 use App\Http\Controllers\Fees\PaymentController;
 use App\Http\Controllers\Fees\PaymentVoidController;
 use App\Http\Controllers\Fees\ReceiptController;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 // Read routes: Admin, Finance, Principal
 Route::middleware(['auth', 'role:admin,finance,principal'])->group(function () {
+    Route::get('fees/overpayments', [OverpaymentController::class, 'index'])->name('fees.overpayments.index');
+    Route::get('fees/overpayments/{overpayment}', [OverpaymentController::class, 'show'])->name('fees.overpayments.show');
+    Route::get('fees/overpayments/{overpayment}/proof/{kind}', [OverpaymentController::class, 'proof'])->whereIn('kind', ['receipt', 'refund'])->name('fees.overpayments.proof');
     Route::get('fees/types', [FeeTypeController::class, 'index'])->name('fees.types.index');
     Route::get('fees/discounts', [DiscountController::class, 'index'])->name('fees.discounts.index');
     Route::get('fees/bills', [BillController::class, 'index'])->name('fees.bills.index');
@@ -28,6 +32,9 @@ Route::middleware(['auth', 'role:admin,finance,principal,parent'])->group(functi
 
 // Write routes: Admin, Finance only
 Route::middleware(['auth', 'role:admin,finance'])->group(function () {
+    Route::post('fees/overpayments', [OverpaymentController::class, 'store'])->name('fees.overpayments.store');
+    Route::post('fees/overpayments/{overpayment}/refund', [OverpaymentController::class, 'refund'])->name('fees.overpayments.refund');
+    Route::post('fees/overpayments/{overpayment}/cancel', [OverpaymentController::class, 'cancel'])->name('fees.overpayments.cancel');
     Route::post('fees/types', [FeeTypeController::class, 'store'])->name('fees.types.store');
     Route::put('fees/types/{fee_type}', [FeeTypeController::class, 'update'])
         ->missing(fn () => to_route('fees.types.index'))

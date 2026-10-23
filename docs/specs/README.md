@@ -26,6 +26,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | **School announcements** | `announcements` → `announcement_receipts` | Bulletin board targeted by role, grade level or class (resolved via enrollments), with read/acknowledgement tracking (spec 12) |
 | **Weekly timetable** | `bell_schedules` → `lesson_periods`, `timetable_slots` | School bell schedule with day variants; per-semester class timetables bound to periods (spec 13) |
 | **School fees & tuition** | `fee_types` → `bills` ← `payment_allocations` → `payments` | Fee catalog, discounts, bulk billing, cash and verified transfers, derived bill status, void-only corrections, receipts (spec 14) |
+| **Guardian excess receipts & refunds** | `overpayments` → immutable receipt/refund/cancellation journal links | Held guardian liability, captured account, itemized guardian-borne bank fee, per-account reconciliation (spec 22) |
 | **General ledger** | `accounts` → `journal_entries` → `journal_lines`, `accounting_periods` | Double-entry, accrual basis; every fee event posts a balanced journal; manual journals, trial balance, receivables reconciliation, period closing (spec 14) |
 | **Notification center** | `notifications`, `notification_deliveries`, `notification_preferences` | In-app inbox plus WhatsApp/email per type, idempotent ledger, quota, quiet hours, opt-out; absence alerts stay on spec 05 (spec 17) |
 | **Employees & staff attendance** | `employees` ← `teachers`; `employee_attendances`, `employee_leave_requests` | Teacher and tendik master; scanner check-in/out, lateness, early leave, leave requests, monthly recap (spec 16) |
@@ -58,7 +59,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 19 | [In-App QR Scanner](19-in-app-scanner.md) | Draft v1.0 (2026-10-05) — Ready for planning after 15 | Webcam Scanner & Operator Role |
 | 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
 | 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
-| 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Draft v1.1 (2026-10-18) — Ready for planning after accountant review | Excess money held as liability, refund to guardian (amends 14) |
+| 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Implemented 2026-10-23 (v1.3); accountant go-live review pending | Excess money held as liability, refund to guardian (amends 14) |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 

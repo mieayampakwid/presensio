@@ -68,7 +68,7 @@ class GeneralLedgerReport
                 ->orderBy('journal_entries.entry_date')
                 ->orderBy('journal_entries.id')
                 ->orderBy('journal_lines.id')
-                ->with(['journalEntry:id,number,entry_date,description', 'student:id,full_name']);
+                ->with(['journalEntry:id,number,entry_date,description,source_type,source_id', 'student:id,full_name']);
 
             $periodLines = $linesQuery->get();
 
@@ -91,6 +91,8 @@ class GeneralLedgerReport
                     'id' => $line->id,
                     'entry_date' => $line->journalEntry->entry_date->toDateString(),
                     'number' => $line->journalEntry->number,
+                    'journal_entry_id' => $line->journalEntry->id,
+                    'overpayment_id' => $line->journalEntry->source_type->isOverpayment() ? $line->journalEntry->source_id : null,
                     'description' => $line->journalEntry->description,
                     'debit' => $line->debit,
                     'credit' => $line->credit,

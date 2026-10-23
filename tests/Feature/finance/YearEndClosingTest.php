@@ -54,6 +54,18 @@ class YearEndClosingTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_guardian_deposit_mismatch_rolls_back_year_end(): void
+    {
+        $this->postSurplusActivity();
+        $this->journal('2027-06-25', '1-1200', '2-1200', '1000.00');
+        $this->closeFirstElevenMonths();
+        $count = JournalEntry::count();
+        $this->actingAs($this->finance)->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])->assertUnprocessable()->assertSee('Titipan Wali');
+        $this->assertSame($count, JournalEntry::count());
+        $this->assertDatabaseMissing('accounting_periods', ['status' => 'locked']);
+        $this->assertDatabaseMissing('journal_entries', ['source_type' => 'closing']);
+    }
+
     private function accountId(string $code): int
     {
         return Account::where('code', $code)->firstOrFail()->id;

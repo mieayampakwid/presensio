@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Guardians\StoreGuardianRequest;
 use App\Http\Requests\Guardians\UpdateGuardianRequest;
 use App\Models\Guardian;
+use App\Models\Overpayment;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,6 +72,10 @@ class GuardianController extends Controller
      */
     public function destroy(Guardian $guardian): RedirectResponse
     {
+        if (Overpayment::where('guardian_id', $guardian->id)->exists()) {
+            return back()->withErrors(['guardian' => 'Wali memiliki riwayat kelebihan pembayaran dan tidak dapat dihapus.']);
+        }
+
         if ($guardian->user_id !== null) {
             Inertia::flash('toast', [
                 'type' => 'error',

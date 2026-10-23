@@ -1,6 +1,8 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
+import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
+import ManualJournalController from '@/actions/App/Http/Controllers/Finance/ManualJournalController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +19,8 @@ type CashLine = {
     id: number;
     entry_date: string;
     number: string;
+    journal_entry_id: number;
+    overpayment_id: number | null;
     description: string;
     debit: string;
     credit: string;
@@ -243,7 +247,27 @@ export default function CashBookReportPage({ report }: Props) {
                                                     {line.entry_date}
                                                 </td>
                                                 <td className="text-primary px-3 py-1.5 font-mono">
-                                                    {line.number}
+                                                    <Link
+                                                        className="underline"
+                                                        href={ManualJournalController.show(
+                                                            line.journal_entry_id,
+                                                        )}
+                                                    >
+                                                        {line.number}
+                                                    </Link>
+                                                    {line.overpayment_id && (
+                                                        <Link
+                                                            className="ml-2 underline"
+                                                            href={OverpaymentController.show(
+                                                                line.overpayment_id,
+                                                            )}
+                                                        >
+                                                            Kelebihan #
+                                                            {
+                                                                line.overpayment_id
+                                                            }
+                                                        </Link>
+                                                    )}
                                                 </td>
                                                 <td className="max-w-xs truncate px-3 py-1.5">
                                                     {line.description}

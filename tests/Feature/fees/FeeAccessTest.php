@@ -7,6 +7,7 @@ use App\Models\Bill;
 use App\Models\FeeType;
 use App\Models\Guardian;
 use App\Models\JournalEntry;
+use App\Models\Overpayment;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\StudentFeeDiscount;
@@ -40,6 +41,12 @@ class FeeAccessTest extends TestCase
 
     /** @var array<string, string> route name => access level */
     private const MATRIX = [
+        'fees.overpayments.index' => 'read',
+        'fees.overpayments.show' => 'read',
+        'fees.overpayments.proof' => 'read',
+        'fees.overpayments.store' => 'write',
+        'fees.overpayments.refund' => 'write',
+        'fees.overpayments.cancel' => 'write',
         'fees.bills.index' => 'read',
         'fees.bills.cancel' => 'write',
         'fees.bills.discount' => 'write',
@@ -121,6 +128,8 @@ class FeeAccessTest extends TestCase
         $parameters = [];
 
         foreach ([
+            'overpayment' => fn () => Overpayment::factory()->create(),
+            'kind' => fn () => 'receipt',
             'bill' => fn () => Bill::factory()->create(),
             'discount' => fn () => StudentFeeDiscount::factory()->create(),
             'payment' => fn () => Payment::factory()->create(),

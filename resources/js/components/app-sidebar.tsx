@@ -47,6 +47,7 @@ import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGe
 import CashierController from '@/actions/App/Http/Controllers/Fees/CashierController';
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
+import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
 import PaymentController from '@/actions/App/Http/Controllers/Fees/PaymentController';
 import VerificationController from '@/actions/App/Http/Controllers/Fees/VerificationController';
 import AccountController from '@/actions/App/Http/Controllers/Finance/AccountController';
@@ -372,6 +373,11 @@ export function AppSidebar() {
                   title: 'Bills',
                   href: BillController.index().url,
                   icon: ReceiptText,
+              },
+              {
+                  title: 'Kelebihan Pembayaran',
+                  href: OverpaymentController.index().url,
+                  icon: Banknote,
               },
               {
                   title: 'Payments',

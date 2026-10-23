@@ -285,6 +285,11 @@ class SchoolSettings
         return $id !== null ? (int) $id : null;
     }
 
+    public function guardianDepositAccountId(): ?int
+    {
+        return $this->row()->guardian_deposit_account_id;
+    }
+
     /**
      * @return array<string, mixed>
      */

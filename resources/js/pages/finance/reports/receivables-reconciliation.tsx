@@ -1,6 +1,7 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Download } from 'lucide-react';
 import { useState } from 'react';
+import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,11 @@ type Mismatch = {
 type Props = {
     report: {
         as_of: string;
+        guardian_deposits: {
+            accounts: ReconciliationRow[];
+            is_balanced: boolean;
+            total_difference: string;
+        };
         receivables: ReconciliationRow[];
         prepaid: ReconciliationRow;
         total_difference: string;
@@ -107,6 +113,70 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                     )}
                 </div>
 
+                <section className="space-y-3 rounded-lg border p-4">
+                    <div className="flex flex-wrap justify-between gap-3">
+                        <h2 className="font-semibold">
+                            Rekonsiliasi Titipan Wali
+                        </h2>
+                        <Link
+                            className="text-sm underline"
+                            href={OverpaymentController.index()}
+                        >
+                            Lihat kelebihan pembayaran
+                        </Link>
+                    </div>
+                    <p className="text-sm">
+                        {report.guardian_deposits.is_balanced
+                            ? 'Seimbang'
+                            : `Selisih: Rp ${rupiah(report.guardian_deposits.total_difference)}`}
+                    </p>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr>
+                                    {[
+                                        'Akun',
+                                        'Buku Besar (Rp)',
+                                        'Titipan belum selesai (Rp)',
+                                        'Selisih (Rp)',
+                                    ].map((title) => (
+                                        <th key={title} className="p-2">
+                                            {title}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {report.guardian_deposits.accounts.map(
+                                    (row) => (
+                                        <tr
+                                            key={row.account_id}
+                                            className="border-t"
+                                        >
+                                            <td className="p-2">
+                                                {row.code} — {row.name}
+                                            </td>
+                                            <td className="p-2 tabular-nums">
+                                                {rupiah(row.gl_balance)}
+                                            </td>
+                                            <td className="p-2 tabular-nums">
+                                                {rupiah(row.subledger_balance)}
+                                            </td>
+                                            <td className="p-2 tabular-nums">
+                                                {rupiah(row.difference)}
+                                            </td>
+                                        </tr>
+                                    ),
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {report.guardian_deposits.accounts.length === 0 && (
+                        <p className="text-muted-foreground text-sm">
+                            Belum ada akun atau riwayat Titipan Wali.
+                        </p>
+                    )}
+                </section>
                 <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">

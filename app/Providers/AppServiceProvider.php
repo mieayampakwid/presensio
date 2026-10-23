@@ -7,6 +7,7 @@ use App\Enums\Ability;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Finance\PeriodService;
+use App\Services\Finance\Preconditions\GuardianDepositReconciliationPrecondition;
 use App\Services\Finance\Preconditions\ReceivablesReconciliationPrecondition;
 use App\Services\Finance\Preconditions\TrialBalanceClosePrecondition;
 use App\Services\SchoolSettings;
@@ -38,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(TrialBalanceClosePrecondition::class),
             );
             $service->addPrecondition($app->make(ReceivablesReconciliationPrecondition::class));
+            $service->addPrecondition($app->make(GuardianDepositReconciliationPrecondition::class));
 
             return $service;
         });

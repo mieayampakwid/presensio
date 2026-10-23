@@ -5,6 +5,7 @@ namespace Tests\Feature\Settings;
 use App\Models\Account;
 use App\Models\SchoolSetting;
 use App\Models\User;
+use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -103,6 +104,25 @@ class SchoolProfileTest extends TestCase
             ->put(route('school-profile.update'), $payload + ['default_transfer_account_id' => null])
             ->assertSessionHasNoErrors();
         $this->assertNull(SchoolSetting::first()->default_transfer_account_id);
+    }
+
+    public function test_guardian_deposit_requires_dedicated_active_postable_non_cash_non_contra_liability(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $valid = Account::factory()->create(['type' => 'liability', 'is_cash' => false, 'is_contra' => false, 'is_active' => true, 'is_postable' => true]);
+        $payload = ['school_name' => 'School', 'default_curriculum' => 'merdeka', 'guardian_deposit_account_id' => $valid->id];
+        $this->actingAs($admin)->put(route('school-profile.update'), $payload)->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('settings', ['guardian_deposit_account_id' => $valid->id]);
+        foreach ([['type' => 'asset'], ['is_cash' => true], ['is_contra' => true], ['is_active' => false], ['is_postable' => false]] as $changes) {
+            $invalid = Account::factory()->create(array_replace(['type' => 'liability', 'is_cash' => false, 'is_contra' => false, 'is_active' => true, 'is_postable' => true], $changes));
+            $this->putJson(route('school-profile.update'), array_replace($payload, ['guardian_deposit_account_id' => $invalid->id]))->assertUnprocessable();
+            $this->assertDatabaseHas('settings', ['guardian_deposit_account_id' => $valid->id]);
+        }
+        SchoolSetting::first()->update(['prepaid_revenue_account_id' => $valid->id]);
+        app(SchoolSettings::class)->refresh();
+        $this->putJson(route('school-profile.update'), $payload)->assertUnprocessable();
+        $this->put(route('school-profile.update'), array_replace($payload, ['guardian_deposit_account_id' => null]))->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('settings', ['guardian_deposit_account_id' => null]);
     }
 
     public function test_logo_upload_validates_png_and_jpg_and_max_size(): void

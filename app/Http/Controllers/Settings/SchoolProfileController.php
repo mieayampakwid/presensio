@@ -43,7 +43,12 @@ class SchoolProfileController extends Controller
                 'default_curriculum' => $setting->default_curriculum,
                 'default_passing_threshold' => (string) ($setting->default_passing_threshold ?? '75.00'),
                 'default_transfer_account_id' => $setting->default_transfer_account_id,
+                'guardian_deposit_account_id' => $setting->guardian_deposit_account_id,
             ],
+            'guardianDepositAccounts' => Account::query()->where('type', 'liability')
+                ->where('is_cash', false)->where('is_contra', false)->where('is_active', true)->where('is_postable', true)
+                ->when($setting->prepaid_revenue_account_id, fn ($q, $id) => $q->whereKeyNot($id))
+                ->orderBy('code')->get(['id', 'code', 'name']),
             'cashAccounts' => Account::query()
                 ->where('is_cash', true)
                 ->where('is_active', true)

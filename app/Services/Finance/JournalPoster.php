@@ -158,6 +158,7 @@ class JournalPoster
             : $onDate;
 
         $sourceType = match ($original->source_type) {
+            JournalSource::OverpaymentReceipt => JournalSource::OverpaymentCancellation,
             JournalSource::Payment => JournalSource::PaymentVoid,
             JournalSource::BillRecognition => JournalSource::BillCancellation,
             default => JournalSource::Manual,

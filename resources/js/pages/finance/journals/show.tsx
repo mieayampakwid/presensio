@@ -10,6 +10,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
+import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -65,9 +66,16 @@ type Props = {
         lines: JournalLineRow[];
     };
     canManage: boolean;
+    canReverse: boolean;
+    overpayment_id: number | null;
 };
 
-export default function JournalShow({ journal, canManage }: Props) {
+export default function JournalShow({
+    journal,
+    canManage,
+    canReverse,
+    overpayment_id,
+}: Props) {
     const [isReverseOpen, setIsReverseOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -131,46 +139,64 @@ export default function JournalShow({ journal, canManage }: Props) {
                         />
                     </div>
 
-                    {canManage && (
-                        <div className="flex flex-wrap items-center gap-2">
-                            {journal.status === 'draft' ? (
-                                <>
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link
-                                            href={`/finance/journals/${journal.id}/edit`}
+                    {overpayment_id && (
+                        <Link
+                            className="text-sm underline"
+                            href={OverpaymentController.show(overpayment_id)}
+                        >
+                            Kelebihan pembayaran #{overpayment_id}
+                        </Link>
+                    )}
+                    {canManage &&
+                        (journal.status === 'draft' || canReverse) && (
+                            <div className="flex flex-wrap items-center gap-2">
+                                {journal.status === 'draft' ? (
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            asChild
                                         >
-                                            <Pencil className="mr-1 h-4 w-4" />{' '}
-                                            Edit Draf
-                                        </Link>
-                                    </Button>
+                                            <Link
+                                                href={`/finance/journals/${journal.id}/edit`}
+                                            >
+                                                <Pencil className="mr-1 h-4 w-4" />{' '}
+                                                Edit Draf
+                                            </Link>
+                                        </Button>
 
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-destructive"
+                                            onClick={() =>
+                                                setIsDeleteOpen(true)
+                                            }
+                                        >
+                                            <Trash2 className="mr-1 h-4 w-4" />{' '}
+                                            Hapus
+                                        </Button>
+
+                                        <Button
+                                            size="sm"
+                                            onClick={handlePostDraft}
+                                        >
+                                            <Send className="mr-1 h-4 w-4" />{' '}
+                                            Posting ke Buku Besar
+                                        </Button>
+                                    </>
+                                ) : (
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="text-destructive"
-                                        onClick={() => setIsDeleteOpen(true)}
+                                        onClick={() => setIsReverseOpen(true)}
                                     >
-                                        <Trash2 className="mr-1 h-4 w-4" />{' '}
-                                        Hapus
+                                        <RotateCcw className="mr-1 h-4 w-4" />{' '}
+                                        Buat Jurnal Pembalik
                                     </Button>
-
-                                    <Button size="sm" onClick={handlePostDraft}>
-                                        <Send className="mr-1 h-4 w-4" />{' '}
-                                        Posting ke Buku Besar
-                                    </Button>
-                                </>
-                            ) : (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsReverseOpen(true)}
-                                >
-                                    <RotateCcw className="mr-1 h-4 w-4" /> Buat
-                                    Jurnal Pembalik
-                                </Button>
-                            )}
-                        </div>
-                    )}
+                                )}
+                            </div>
+                        )}
                 </div>
 
                 {/* Metadata Card */}

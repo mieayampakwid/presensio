@@ -4,6 +4,7 @@ namespace App\Http\Requests\Settings;
 
 use App\Enums\Curriculum;
 use App\Enums\UserRole;
+use App\Services\SchoolSettings;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -45,6 +46,13 @@ class UpdateSchoolProfileRequest extends FormRequest
                     ->where('is_cash', true)
                     ->where('is_active', true)
                     ->where('is_postable', true)),
+            ],
+            'guardian_deposit_account_id' => [
+                'nullable', 'integer',
+                Rule::exists('accounts', 'id')->where(fn ($query) => $query
+                    ->where('type', 'liability')->where('is_cash', false)->where('is_contra', false)
+                    ->where('is_active', true)->where('is_postable', true)),
+                Rule::notIn(array_filter([app(SchoolSettings::class)->row()->prepaid_revenue_account_id])),
             ],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
         ];

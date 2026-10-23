@@ -23,6 +23,7 @@ type SchoolProfileData = {
     default_curriculum: string;
     default_passing_threshold?: string;
     default_transfer_account_id: number | null;
+    guardian_deposit_account_id: number | null;
 };
 
 type CashAccount = {
@@ -34,12 +35,17 @@ type CashAccount = {
 type Props = {
     profile: SchoolProfileData;
     cashAccounts: CashAccount[];
+    guardianDepositAccounts: CashAccount[];
 };
 
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
-export default function SchoolProfile({ profile, cashAccounts }: Props) {
+export default function SchoolProfile({
+    profile,
+    cashAccounts,
+    guardianDepositAccounts,
+}: Props) {
     return (
         <SettingsLayout>
             <Head title="School Profile Settings" />
@@ -58,6 +64,38 @@ export default function SchoolProfile({ profile, cashAccounts }: Props) {
                 >
                     {({ processing, errors }) => (
                         <div className="space-y-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="guardian_deposit_account_id">
+                                    Akun Titipan Wali (Kelebihan Pembayaran)
+                                </Label>
+                                <select
+                                    id="guardian_deposit_account_id"
+                                    name="guardian_deposit_account_id"
+                                    className={SELECT_CLASS}
+                                    defaultValue={
+                                        profile.guardian_deposit_account_id ??
+                                        ''
+                                    }
+                                >
+                                    <option value="">Belum diatur</option>
+                                    {guardianDepositAccounts.map((account) => (
+                                        <option
+                                            key={account.id}
+                                            value={account.id}
+                                        >
+                                            {account.code} — {account.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-muted-foreground text-sm">
+                                    Akun kewajiban khusus titipan wali.
+                                    Perubahan hanya berlaku untuk penerimaan
+                                    baru.
+                                </p>
+                                <InputError
+                                    message={errors.guardian_deposit_account_id}
+                                />
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="school_name">
                                     Official School Name
