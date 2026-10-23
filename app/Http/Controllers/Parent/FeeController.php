@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parent;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Parent\StoreTransferRequest;
+use App\Models\Payment;
 use App\Models\User;
 use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Services\Finance\FeePortal;
@@ -31,9 +32,11 @@ class FeeController extends Controller
     {
         $studentIds = $this->linkedStudentIds($request->user());
         $school = $settings->row();
+        $allowCancel = $request->user()->hasRole(UserRole::Parent) && $request->user()->guardian !== null;
 
         return Inertia::render('parent/fees', [
-            'portal' => $portal->forStudents($studentIds),
+            'portal' => fn () => $portal->forStudents($studentIds, $allowCancel),
+            'pendingTransfers' => fn () => $portal->pendingTransfers($studentIds, $allowCancel, max(1, $request->integer('transfers_page', 1))),
             'students' => $portal->children($studentIds),
             'schoolBank' => [
                 'bank_name' => $school->bank_name,
@@ -91,6 +94,16 @@ class FeeController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Bukti transfer terkirim, menunggu verifikasi.']);
 
         return to_route('parent.fees.index');
+    }
+
+    public function cancel(Request $request, Payment $payment, PaymentService $payments): RedirectResponse
+    {
+        $payments->cancelByGuardian($payment, $request->user());
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Transfer berhasil dibatalkan.']);
+
+        return to_route('parent.fees.index', [
+            'transfers_page' => max(1, $request->integer('transfers_page', 1)),
+        ]);
     }
 
     /**

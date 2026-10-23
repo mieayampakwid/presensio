@@ -338,13 +338,29 @@ class FeesLedgerPropertyTest extends TestCase
             return;
         }
 
-        app(PaymentService::class)->submitTransfer(
-            $this->total($allocations),
-            $allocations,
-            $this->studentIds($allocations),
-            $this->cashAccount,
-            app(SchoolSettings::class)->todayDate(),
-            $this->finance,
+        $overclaims = false;
+        foreach ($allocations as $billId => $amount) {
+            $pending = DB::table('payment_allocations')
+                ->join('payments', 'payments.id', '=', 'payment_allocations.payment_id')
+                ->where('payment_allocations.bill_id', $billId)
+                ->where('payments.status', PaymentStatus::Pending->value)
+                ->sum('payment_allocations.amount');
+            $claimable = Money::sub(Bill::findOrFail($billId)->remainingAmount(), $pending);
+            $overclaims = $overclaims || Money::gt($amount, $claimable);
+        }
+
+        $this->attempt(
+            fn () => app(PaymentService::class)->submitTransfer(
+                $this->total($allocations),
+                $allocations,
+                $this->studentIds($allocations),
+                $this->cashAccount,
+                app(SchoolSettings::class)->todayDate(),
+                $this->finance,
+            ),
+            $overclaims,
+            PaymentOperationException::class,
+            'transfer must respect other pending claims',
         );
     }
 

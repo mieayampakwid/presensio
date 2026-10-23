@@ -57,7 +57,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
 | 19 | [In-App QR Scanner](19-in-app-scanner.md) | Draft v1.0 (2026-10-05) — Ready for planning after 15 | Webcam Scanner & Operator Role |
 | 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
-| 21 | [Payment Return Workflow](21-payment-return.md) | Draft v1.2 (2026-10-22) — Ready for planning; review findings addressed, not implemented | Guardian transfer cancel & claim limit (amends 14) |
+| 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
 | 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Draft v1.1 (2026-10-18) — Ready for planning after accountant review | Excess money held as liability, refund to guardian (amends 14) |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.

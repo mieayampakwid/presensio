@@ -6,10 +6,12 @@ use App\Enums\BillStatus;
 use App\Enums\JournalSource;
 use App\Enums\PaymentStatus;
 use App\Models\Account;
+use App\Models\AuditLog;
 use App\Models\Bill;
 use App\Models\FeeType;
 use App\Models\Guardian;
 use App\Models\JournalEntry;
+use App\Models\JournalLine;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Student;
@@ -17,7 +19,9 @@ use App\Models\User;
 use App\Services\Finance\BillService;
 use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Services\Finance\PaymentService;
+use App\Services\Finance\ReceivablesReconciliation;
 use App\Services\SchoolSettings;
+use App\Support\Money;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
@@ -326,5 +330,121 @@ class PaymentServiceTest extends TestCase
         $receivable = $this->accountId('1-1300');
         $this->assertSame(0, $recognition->lines->where('account_id', $receivable)->count());
         $this->assertSame(0, $this->paymentEntry($payment)->lines->where('account_id', $receivable)->count());
+    }
+
+    public function test_pending_claims_allow_only_the_unclaimed_remainder(): void
+    {
+        $bill = $this->bill();
+        $submit = fn (string $amount) => $this->service->submitTransfer(
+            $amount, [$bill->id => $amount], [$bill->student_id],
+            $this->accountId('1-1200'), '2026-07-09', $this->user,
+        );
+        $first = $submit('200000.00');
+        $before = Payment::count();
+
+        try {
+            $submit('150001.00');
+            $this->fail('An upload consumed another pending claim.');
+        } catch (PaymentOperationException $exception) {
+            $this->assertStringContainsString(Money::format('150000.00'), $exception->getMessage());
+        }
+
+        $this->assertSame($before, Payment::count());
+        $second = $submit('150000.00');
+        $this->service->verify($second, null, $this->accountId('1-1200'), $this->user);
+        $this->service->verify($first, null, $this->accountId('1-1200'), $this->user);
+        $this->assertSame('350000.00', $bill->refresh()->paid_amount);
+        $this->assertSame(BillStatus::Paid, $bill->status);
+    }
+
+    public function test_reallocation_respects_other_claims_and_excludes_its_own_claim(): void
+    {
+        $bill = $this->bill();
+        $other = $this->bill(['student_id' => $bill->student_id, 'period_key' => '2026-08']);
+        $payment = $this->pending($bill);
+        $claimed = $this->pending($other);
+
+        try {
+            $this->service->verify($payment, [$other->id => '350000.00'], $this->accountId('1-1200'), $this->user);
+            $this->fail('A reallocation consumed another pending claim.');
+        } catch (PaymentOperationException $exception) {
+            $this->assertStringContainsString('menunggu verifikasi', $exception->getMessage());
+        }
+
+        $this->assertSame(PaymentStatus::Pending, $payment->refresh()->status);
+        $this->assertSame([$bill->id], $payment->allocations()->pluck('bill_id')->all());
+        $this->assertSame(0, JournalEntry::count());
+        $this->service->verify($payment, [$bill->id => '350000.00'], $this->accountId('1-1200'), $this->user);
+        $this->assertSame(PaymentStatus::Verified, $payment->refresh()->status);
+        $this->assertSame(PaymentStatus::Pending, $claimed->refresh()->status);
+    }
+
+    public function test_cash_ignores_pending_claims_and_legacy_verification_keeps_the_remaining_balance_check(): void
+    {
+        $bill = $this->bill();
+        $this->pending($bill);
+        $cash = $this->service->createCash([$bill->id => '350000.00'], [$bill->student_id], $this->accountId('1-1100'), $this->user);
+        $this->assertSame(PaymentStatus::Verified, $cash->status);
+        $this->assertSame(BillStatus::Paid, $bill->refresh()->status);
+
+        $legacyBill = $this->bill();
+        $first = $this->pending($legacyBill);
+        $duplicate = Payment::factory()->create(['amount' => '350000.00']);
+        $duplicate->allocations()->create(['bill_id' => $legacyBill->id, 'amount' => '350000.00']);
+        $this->service->verify($first, null, $this->accountId('1-1200'), $this->user);
+        $before = JournalEntry::count();
+        try {
+            $this->service->verify($duplicate, null, $this->accountId('1-1200'), $this->user);
+            $this->fail('A legacy duplicate exceeded the remaining balance.');
+        } catch (PaymentOperationException) {
+            $this->assertSame(PaymentStatus::Pending, $duplicate->refresh()->status);
+        }
+        $this->assertSame($before, JournalEntry::count());
+    }
+
+    public function test_rejection_releases_claims_and_disjoint_claims_verify_in_submission_order(): void
+    {
+        $bill = $this->bill();
+        $rejected = $this->pending($bill);
+        $this->service->reject($rejected, 'Bukti salah', $this->user);
+        $first = $this->service->submitTransfer('200000.00', [$bill->id => '200000.00'], [$bill->student_id], $this->accountId('1-1200'), '2026-07-09', $this->user);
+        $second = $this->service->submitTransfer('150000.00', [$bill->id => '150000.00'], [$bill->student_id], $this->accountId('1-1200'), '2026-07-09', $this->user);
+        $this->service->verify($first, null, $this->accountId('1-1200'), $this->user);
+        $this->service->verify($second, null, $this->accountId('1-1200'), $this->user);
+        $this->assertSame('350000.00', $bill->refresh()->paid_amount);
+        $this->assertSame(BillStatus::Paid, $bill->status);
+    }
+
+    public function test_claim_cancellation_and_settlement_preserve_the_ledger(): void
+    {
+        $parent = User::factory()->parent()->create();
+        $guardian = Guardian::factory()->create(['user_id' => $parent->id]);
+        $bill = $this->bill(['recognized_at' => null]);
+        $guardian->students()->attach($bill->student_id, ['relationship_type' => 'father']);
+        $other = $this->bill(['recognized_at' => null, 'student_id' => $bill->student_id, 'period_key' => '2026-06']);
+        $this->actingAs($parent);
+        app(BillService::class)->recognize($bill);
+        app(BillService::class)->recognize($other);
+        $baseline = JournalEntry::count();
+        $submit = fn (Bill $target, string $amount) => $this->service->submitTransfer(
+            $amount, [$target->id => $amount], [$target->student_id],
+            $this->accountId('1-1200'), '2026-07-09', $parent,
+        );
+        $first = $submit($bill, '200000.00');
+        $cancelled = $submit($bill, '150000.00');
+        $this->service->cancelByGuardian($cancelled, $parent);
+        $replacement = $submit($bill, '150000.00');
+        $this->assertSame($baseline, JournalEntry::count());
+        $this->service->verify($first, null, $this->accountId('1-1200'), $this->user);
+        $this->service->verify($replacement, null, $this->accountId('1-1200'), $this->user);
+        $beforeReject = JournalEntry::count();
+        $this->service->reject($submit($other, '350000.00'), 'Bukti salah', $this->user);
+        $this->assertSame($beforeReject, JournalEntry::count());
+        $this->assertTrue(app(ReceivablesReconciliation::class)->asOf('2026-07-10')['is_balanced']);
+        $lines = JournalLine::whereHas('journalEntry', fn ($query) => $query->where('status', 'posted'))->get();
+        $debit = $lines->reduce(fn (string $sum, JournalLine $line) => Money::add($sum, $line->debit), '0.00');
+        $credit = $lines->reduce(fn (string $sum, JournalLine $line) => Money::add($sum, $line->credit), '0.00');
+        $this->assertSame($debit, $credit);
+        $this->assertSame(1, AuditLog::where('action', 'cancelled_by_guardian')->count());
     }
 }

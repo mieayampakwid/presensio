@@ -16,6 +16,7 @@ use App\Models\PaymentAllocation;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Finance\PaymentService;
 use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -227,5 +228,126 @@ class FeePortalTest extends TestCase
             ->get(route('parent.fees.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->has('portal.bills', 0)->has('students', 0));
+    }
+
+    public function test_a_second_full_claim_has_field_feedback_and_no_orphan_proof(): void
+    {
+        $bill = $this->billFor($this->child);
+        $this->actingAs($this->parent)->post(route('parent.fees.transfers.store'), $this->payload($bill));
+        $stored = Storage::disk('local')->allFiles();
+
+        $this->post(route('parent.fees.transfers.store'), $this->payload($bill))
+            ->assertSessionHasErrors('allocations');
+
+        $this->assertSame(1, Payment::count());
+        $this->assertSame($stored, Storage::disk('local')->allFiles());
+        $this->assertSame(0, JournalEntry::count());
+    }
+
+    public function test_a_shared_hidden_transfer_claim_has_private_json_feedback_and_no_orphan_proof(): void
+    {
+        $bill = $this->billFor($this->child);
+        $hidden = $this->billFor($this->stranger);
+        $payment = Payment::factory()->create(['amount' => '700000.00']);
+        $payment->allocations()->createMany([
+            ['bill_id' => $bill->id, 'amount' => '350000.00'],
+            ['bill_id' => $hidden->id, 'amount' => '350000.00'],
+        ]);
+
+        $response = $this->actingAs($this->parent)
+            ->postJson(route('parent.fees.transfers.store'), $this->payload($bill))
+            ->assertUnprocessable()->assertJsonValidationErrors('allocations');
+
+        $message = $response->json('errors.allocations.0');
+        $this->assertStringContainsString($bill->title, $message);
+        $this->assertStringContainsString('hubungi bendahara', $message);
+        $this->assertStringNotContainsString($this->stranger->full_name, $message);
+        $this->assertSame(1, Payment::count());
+        $this->assertSame([], Storage::disk('local')->allFiles());
+        $this->assertSame(0, JournalEntry::count());
+    }
+
+    public function test_pending_list_reaches_transfers_outside_the_latest_fifty_history_rows(): void
+    {
+        $bill = $this->billFor($this->child);
+        $oldest = Payment::factory()->create();
+        PaymentAllocation::create(['payment_id' => $oldest->id, 'bill_id' => $bill->id, 'amount' => '1.00']);
+        for ($i = 0; $i < 50; $i++) {
+            $newer = Payment::factory()->rejected()->create();
+            PaymentAllocation::create(['payment_id' => $newer->id, 'bill_id' => $bill->id, 'amount' => '1.00']);
+        }
+        $this->actingAs($this->parent)->get(route('parent.fees.index'))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('portal.payments', 50)
+            ->where('pendingTransfers.total', 1)
+            ->where('pendingTransfers.data.0.id', $oldest->id)
+            ->where('pendingTransfers.data.0.can_cancel', true));
+    }
+
+    public function test_pending_pagination_is_scoped_and_falls_back_after_the_last_row_is_cancelled(): void
+    {
+        $bill = $this->billFor($this->child);
+        for ($i = 0; $i < 21; $i++) {
+            $payment = Payment::factory()->create(['amount' => '1.00']);
+            $payment->allocations()->create(['bill_id' => $bill->id, 'amount' => '1.00']);
+        }
+        $oldest = Payment::oldest('id')->firstOrFail();
+        $hidden = Payment::factory()->create();
+        $hidden->allocations()->createMany([
+            ['bill_id' => $bill->id, 'amount' => '1.00'],
+            ['bill_id' => $this->billFor($this->stranger)->id, 'amount' => '1.00'],
+        ]);
+        $this->actingAs($this->parent)->get(route('parent.fees.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('pendingTransfers.data', 20)->where('pendingTransfers.total', 21)
+                ->where('pendingTransfers.current_page', 1)
+                ->where('pendingTransfers.data.0.id', $oldest->id + 20));
+        $this->get(route('parent.fees.index', ['transfers_page' => 2]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('pendingTransfers.data', 1)->where('pendingTransfers.data.0.id', $oldest->id)
+                ->where('pendingTransfers.data.0.can_cancel', true));
+        $this->post(route('parent.fees.transfers.cancel', ['payment' => $oldest, 'transfers_page' => 2]))->assertRedirect();
+        $this->get(route('parent.fees.index', ['transfers_page' => 2]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('pendingTransfers.current_page', 1)->where('pendingTransfers.total', 20));
+    }
+
+    public function test_display_claimable_is_non_negative_and_recovers_when_claims_are_cancelled(): void
+    {
+        $bill = $this->billFor($this->child);
+        $payments = Payment::factory()->count(2)->create();
+        foreach ($payments as $payment) {
+            $payment->allocations()->create(['bill_id' => $bill->id, 'amount' => '350000.00']);
+        }
+        $this->actingAs($this->parent)->get(route('parent.fees.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('portal.bills.0.claimable', '0.00'));
+        foreach ($payments as $payment) {
+            $this->post(route('parent.fees.transfers.cancel', $payment))->assertRedirect();
+        }
+        $this->get(route('parent.fees.index', ['transfers_page' => 999]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portal.bills.0.claimable', '350000.00')->where('portal.bills.0.has_pending', false)
+                ->has('pendingTransfers.data', 0)->where('pendingTransfers.current_page', 1));
+        $partial = Payment::factory()->create(['amount' => '200000.00']);
+        $partial->allocations()->create(['bill_id' => $bill->id, 'amount' => '200000.00']);
+        $this->get(route('parent.fees.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portal.bills.0.claimable', '150000.00')->where('portal.bills.0.has_pending', true));
+    }
+
+    public function test_cash_settlement_keeps_a_pending_claim_visible_with_zero_display_balance(): void
+    {
+        $bill = $this->billFor($this->child);
+        $pending = Payment::factory()->create();
+        $pending->allocations()->create(['bill_id' => $bill->id, 'amount' => '350000.00']);
+        app(PaymentService::class)->createCash(
+            [$bill->id => '350000.00'], [$bill->student_id], $this->transferAccount->id,
+            User::factory()->finance()->create(),
+        );
+        $this->actingAs($this->parent)->get(route('parent.fees.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portal.bills.0.claimable', '0.00')->where('portal.bills.0.has_pending', true)
+                ->where('portal.bills.0.status', 'paid')->where('pendingTransfers.data.0.can_cancel', true));
+        $this->assertSame(PaymentStatus::Pending, $pending->refresh()->status);
     }
 }

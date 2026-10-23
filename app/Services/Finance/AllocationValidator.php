@@ -3,7 +3,9 @@
 namespace App\Services\Finance;
 
 use App\Enums\BillStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Bill;
+use App\Models\PaymentAllocation;
 use App\Services\Finance\Exceptions\PaymentOperationException;
 use App\Support\Money;
 use Illuminate\Support\Collection;
@@ -17,7 +19,7 @@ class AllocationValidator
 
     /**
      * Lock the allocated bills (ordered by id) and validate the split against them.
-     * Must run inside the caller's transaction, after the payment row is locked.
+     * Must run inside the caller's transaction, after any existing payment row is locked.
      *
      * @param  array<int, string>  $allocations  bill id => amount
      * @param  list<int>  $allowedStudentIds
@@ -25,8 +27,13 @@ class AllocationValidator
      *
      * @throws PaymentOperationException
      */
-    public function validate(string $paymentAmount, array $allocations, array $allowedStudentIds): Collection
-    {
+    public function validate(
+        string $paymentAmount,
+        array $allocations,
+        array $allowedStudentIds,
+        bool $respectPendingClaims = false,
+        ?int $excludePaymentId = null,
+    ): Collection {
         if ($allocations === []) {
             throw new PaymentOperationException('Pembayaran harus dialokasikan ke minimal satu tagihan.');
         }
@@ -38,6 +45,19 @@ class AllocationValidator
             ->lockForUpdate()
             ->get()
             ->keyBy('id');
+
+        $pendingByBill = $respectPendingClaims
+            ? PaymentAllocation::query()
+                ->whereIn('bill_id', $bills->keys())
+                ->when($excludePaymentId !== null, fn ($query) => $query->where('payment_id', '!=', $excludePaymentId))
+                ->whereHas('payment', fn ($query) => $query->where('status', PaymentStatus::Pending))
+                ->get(['bill_id', 'amount'])
+                ->groupBy('bill_id')
+                ->map(fn (Collection $rows) => $rows->reduce(
+                    fn (string $sum, PaymentAllocation $row) => Money::add($sum, $row->amount),
+                    '0.00',
+                ))
+            : collect();
 
         $total = '0.00';
 
@@ -59,7 +79,20 @@ class AllocationValidator
                 throw new PaymentOperationException('Setiap alokasi harus lebih besar dari 0.');
             }
 
-            if (Money::gt($amount, Money::sub($bill->netAmount(), $paid))) {
+            $remaining = Money::sub($bill->netAmount(), $paid);
+            $pending = $pendingByBill->get($billId, '0.00');
+            $claimable = Money::sub($remaining, $pending);
+
+            if ($respectPendingClaims && Money::gt($amount, $claimable) && Money::isPositive($pending)) {
+                $display = Money::isNegative($claimable) ? '0.00' : $claimable;
+
+                throw new PaymentOperationException(
+                    'Alokasi untuk tagihan "'.$bill->title.'" melebihi jumlah yang dapat diklaim ('.Money::format($display).'). '
+                    .'Ada transfer menunggu verifikasi untuk tagihan ini. Periksa daftar transfer yang dapat Anda batalkan atau hubungi bendahara.'
+                );
+            }
+
+            if (Money::gt($amount, $remaining)) {
                 throw new PaymentOperationException("Alokasi untuk tagihan \"{$bill->title}\" melebihi sisa tagihan.");
             }
 

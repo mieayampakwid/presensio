@@ -4,6 +4,7 @@ namespace Tests\Feature\Student;
 
 use App\Models\Bill;
 use App\Models\FeeType;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,5 +56,17 @@ class FeeTest extends TestCase
         $this->actingAs(User::factory()->student()->create())
             ->post(route('parent.fees.transfers.store'))
             ->assertForbidden();
+    }
+
+    public function test_student_payment_rows_never_grant_cancellation(): void
+    {
+        $user = User::factory()->student()->create();
+        $student = Student::factory()->create(['user_id' => $user->id]);
+        $bill = $this->billFor($student, 'SPP');
+        $payment = Payment::factory()->create();
+        $payment->allocations()->create(['bill_id' => $bill->id, 'amount' => '350000.00']);
+        $this->actingAs($user)->get(route('student.fees.index'))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('portal.payments.0.can_cancel', false)->missing('pendingTransfers'));
     }
 }

@@ -1,6 +1,6 @@
 # 21 — Payment Return Workflow (Pembatalan & Batas Klaim Transfer)
 
-Status: Draft v1.2 (2026-10-22) — Ready for planning; not implemented. Follow-up to spec 14 (Fees C), deferred by the user on 2026-10-18 after the Fees C browser click-through. Amends spec 14 "Payment status" and the Guardian Portal upload rules; does not change the ledger. v1.2 resolves the review findings: all eligible pending transfers remain reachable, displayed claimable balances cannot be negative, cancellation follows spec 15's union-of-roles authorization, and claim-limit feedback respects payment visibility. Supersedes v1.1 (2026-10-18), which introduced explicit claim-check mode, re-allocation checks, linked-guardian cancellation and upload-race coverage.
+Status: Implemented 2026-10-23 (v1.2). Follow-up to spec 14 (Fees C), deferred by the user on 2026-10-18 after the Fees C browser click-through. Amends spec 14 "Payment status" and the Guardian Portal upload rules; does not change the ledger. v1.2 resolves the review findings: all eligible pending transfers remain reachable, displayed claimable balances cannot be negative, cancellation follows spec 15's union-of-roles authorization, and claim-limit feedback respects payment visibility. Supersedes v1.1 (2026-10-18), which introduced explicit claim-check mode, re-allocation checks, linked-guardian cancellation and upload-race coverage.
 
 ## Problem
 
@@ -109,7 +109,7 @@ Examples use whole rupiah; existing decimal-string money precision is unchanged.
 
 ## Timeline & Dependencies
 
-- No hard deadline has been specified. Next step is an implementation plan for this scope, followed by focused tests, PostgreSQL concurrency verification, project checks and browser click-through before shipping.
+- Delivered 2026-10-23 using `docs/plans/2026-10-22-payment-return.md`. Focused tests, real PostgreSQL concurrency checks, the full project CI gate and browser journeys passed. The first-month correctness review remains the post-release measurement described above.
 - Depends on implemented specs 14 (payment services/portal), 15 (roles/audit) and 17 (existing notification behavior). It can ship before spec 22 and has no dependency on refund-fee decisions.
 - No blocking product question remains for this scope; the cashier follow-up above stays deferred.
 

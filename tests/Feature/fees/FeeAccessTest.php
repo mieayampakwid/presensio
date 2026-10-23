@@ -34,6 +34,7 @@ class FeeAccessTest extends TestCase
         'admin' => ['admin'],
         'receipt' => ['admin', 'finance', 'principal', 'parent'],
         'parent' => ['admin', 'parent'],
+        'guardian' => ['parent'],
         'student' => ['student'],
     ];
 
@@ -91,6 +92,7 @@ class FeeAccessTest extends TestCase
         'finance.reports.trial-balance' => 'read',
         'parent.fees.index' => 'parent',
         'parent.fees.transfers.store' => 'parent',
+        'parent.fees.transfers.cancel' => 'guardian',
         'student.fees.index' => 'student',
     ];
 
@@ -148,7 +150,16 @@ class FeeAccessTest extends TestCase
             default => null,
         };
 
-        $response = $this->actingAs($user)->call($route->methods()[0], route($name, $this->routeParameters($name)));
+        $parameters = $this->routeParameters($name);
+        if ($name === 'parent.fees.transfers.cancel' && $role === 'parent') {
+            $student = Student::factory()->create();
+            $user->guardian->students()->attach($student->id, ['relationship_type' => 'father']);
+            $parameters['payment']->allocations()->create([
+                'bill_id' => Bill::factory()->create(['student_id' => $student->id])->id,
+                'amount' => '350000.00',
+            ]);
+        }
+        $response = $this->actingAs($user)->call($route->methods()[0], route($name, $parameters));
 
         if ($allowed) {
             $this->assertNotSame(403, $response->getStatusCode(), "$role was denied $name");

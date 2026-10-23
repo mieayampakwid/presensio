@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -34,8 +35,8 @@ class StudentImportHttpTest extends TestCase
             ->post(route('students.import.store'), ['file' => $file]);
 
         $response->assertOk();
-        $response->assertSee('students/import/map');
-        $response->assertSee('Nama');
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('students/import/map')->where('headers', ['Nama', 'Kelas']));
     }
 
     public function test_identical_reupload_skips_straight_to_preview(): void
@@ -62,7 +63,7 @@ class StudentImportHttpTest extends TestCase
         $this->actingAs($admin)
             ->post(route('students.import.store'), ['file' => $file2])
             ->assertOk()
-            ->assertSee('students/import/preview');
+            ->assertInertia(fn (Assert $page) => $page->component('students/import/preview'));
     }
 
     public function test_unmapped_full_name_is_rejected_on_preview(): void

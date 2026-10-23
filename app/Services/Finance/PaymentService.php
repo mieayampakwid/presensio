@@ -5,6 +5,7 @@ namespace App\Services\Finance;
 use App\Enums\JournalSource;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\UserRole;
 use App\Models\Bill;
 use App\Models\Guardian;
 use App\Models\JournalEntry;
@@ -90,7 +91,7 @@ class PaymentService
     ): Payment {
         return DB::transaction(function () use ($amount, $allocations, $studentIds, $depositAccountId, $paymentDate, $submitter, $originBank, $proofPath, $proofHash, $notes) {
             $amount = Money::toDecimal($amount);
-            $this->validator->validate($amount, $allocations, $studentIds);
+            $this->validator->validate($amount, $allocations, $studentIds, respectPendingClaims: true);
 
             $payment = Payment::create([
                 'amount' => $amount,
@@ -131,7 +132,11 @@ class PaymentService
                 ->flatMap(fn (Guardian $guardian) => $guardian->students->pluck('id'));
             $studentIds = array_values($payment->allocations->map(fn ($allocation) => $allocation->bill->student_id)->merge($guardianStudents)->map(fn ($id) => (int) $id)->unique()->all());
 
-            $bills = $this->validator->validate($payment->amount, $allocations, $studentIds);
+            $bills = $this->validator->validate(
+                $payment->amount, $allocations, $studentIds,
+                respectPendingClaims: $reallocation !== null,
+                excludePaymentId: $payment->id,
+            );
 
             if ($reallocation !== null) {
                 $payment->allocations()->delete();
@@ -175,6 +180,37 @@ class PaymentService
             $this->notifier->paymentRejected($payment);
 
             return $payment;
+        });
+    }
+
+    public function cancelByGuardian(Payment $payment, User $user): Payment
+    {
+        abort_unless($user->hasRole(UserRole::Parent), 403);
+
+        return DB::transaction(function () use ($payment, $user) {
+            $locked = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+            $guardian = Guardian::query()->where('user_id', $user->id)->first();
+            abort_unless($guardian !== null && $locked->payment_method === PaymentMethod::BankTransfer, 403);
+
+            $studentIds = $locked->allocations()->join('bills', 'bills.id', '=', 'payment_allocations.bill_id')
+                ->pluck('bills.student_id')->unique();
+            $linkedCount = $guardian->students()->whereIn('students.id', $studentIds)->count();
+            abort_unless($studentIds->isNotEmpty() && $linkedCount === $studentIds->count(), 403);
+
+            if ($locked->status !== PaymentStatus::Pending) {
+                throw new PaymentOperationException('Hanya pembayaran berstatus menunggu verifikasi yang dapat diproses.');
+            }
+
+            $bills = Bill::query()->whereIn('id', $locked->allocations()->select('bill_id'))
+                ->orderBy('id')->lockForUpdate()->get();
+            $locked->update(['status' => PaymentStatus::Rejected, 'reject_reason' => 'Dibatalkan oleh wali']);
+            $bills->each(fn (Bill $bill) => $this->billService->recompute($bill));
+            $this->auditLogger->record(
+                $locked, 'cancelled_by_guardian', ['status' => PaymentStatus::Pending->value],
+                ['status' => PaymentStatus::Rejected->value, 'reject_reason' => 'Dibatalkan oleh wali'],
+            );
+
+            return $locked;
         });
     }
 

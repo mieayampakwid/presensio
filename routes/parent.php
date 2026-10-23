@@ -13,3 +13,7 @@ Route::middleware(['auth', 'role:parent,admin'])->group(function () {
     Route::get('my-fees', [FeeController::class, 'index'])->name('parent.fees.index');
     Route::post('my-fees/transfers', [FeeController::class, 'store'])->name('parent.fees.transfers.store');
 });
+
+Route::post('my-fees/transfers/{payment}/cancel', [FeeController::class, 'cancel'])
+    ->middleware(['auth', 'role:parent'])
+    ->name('parent.fees.transfers.cancel');

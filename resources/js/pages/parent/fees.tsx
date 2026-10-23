@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import ReceiptController from '@/actions/App/Http/Controllers/Fees/ReceiptController';
 import FeeController from '@/actions/App/Http/Controllers/Parent/FeeController';
@@ -30,6 +30,7 @@ type BillRow = {
     net_amount: string;
     paid_amount: string;
     remaining: string;
+    claimable: string;
     status: string;
     status_label: string;
     has_pending: boolean;
@@ -45,9 +46,18 @@ type PaymentRow = {
     origin_bank: string | null;
     reject_reason: string | null;
     can_view_receipt: boolean;
+    can_cancel: boolean;
+};
+
+type PendingTransfers = {
+    data: PaymentRow[];
+    current_page: number;
+    last_page: number;
+    total: number;
 };
 
 type Props = {
+    pendingTransfers?: PendingTransfers;
     portal: {
         summary: { unpaid: string; pending: string; paid: string };
         bills: BillRow[];
@@ -91,8 +101,12 @@ const statusVariant = (status: string) => {
 const isOpen = (bill: BillRow) =>
     bill.status === 'unpaid' || bill.status === 'partially_paid';
 
+const canSelectBill = (bill: BillRow) =>
+    isOpen(bill) && toCents(bill.claimable) > 0;
+
 export default function ParentFees({
     portal,
+    pendingTransfers,
     students,
     schoolBank,
     canUpload,
@@ -101,6 +115,40 @@ export default function ParentFees({
     const [childFilter, setChildFilter] = useState('');
     const [selected, setSelected] = useState<Record<number, string>>({});
     const [open, setOpen] = useState(false);
+    const [cancelling, setCancelling] = useState<PaymentRow | null>(null);
+    const [paging, setPaging] = useState(false);
+    const cancelForm = useForm({});
+
+    const cancelTransfer = () => {
+        if (!cancelling || cancelForm.processing) {
+            return;
+        }
+        cancelForm.post(
+            FeeController.cancel.url(
+                { payment: cancelling.id },
+                {
+                    query: {
+                        transfers_page: pendingTransfers?.current_page ?? 1,
+                    },
+                },
+            ),
+            { preserveScroll: true, onSuccess: () => setCancelling(null) },
+        );
+    };
+
+    const visitPendingPage = (page: number) => {
+        router.get(
+            FeeController.index.url({ query: { transfers_page: page } }),
+            {},
+            {
+                only: ['pendingTransfers'],
+                preserveScroll: true,
+                preserveState: true,
+                onStart: () => setPaging(true),
+                onFinish: () => setPaging(false),
+            },
+        );
+    };
 
     const form = useForm<{
         payment_date: string;
@@ -137,7 +185,7 @@ export default function ParentFees({
             const next = { ...current };
 
             if (checked) {
-                next[bill.id] = bill.remaining;
+                next[bill.id] = bill.claimable;
             } else {
                 delete next[bill.id];
             }
@@ -145,11 +193,7 @@ export default function ParentFees({
             return next;
         });
 
-    // Bills with a pending transfer are left out so "select all" cannot stack duplicate transfers.
-    const selectableBills = useMemo(
-        () => bills.filter((bill) => isOpen(bill) && !bill.has_pending),
-        [bills],
-    );
+    const selectableBills = useMemo(() => bills.filter(canSelectBill), [bills]);
     const allSelectableSelected =
         selectableBills.length > 0 &&
         selectableBills.every((bill) => bill.id in selected);
@@ -162,7 +206,7 @@ export default function ParentFees({
                 if (!checked) {
                     delete next[bill.id];
                 } else if (!(bill.id in next)) {
-                    next[bill.id] = bill.remaining;
+                    next[bill.id] = bill.claimable;
                 }
             }
 
@@ -342,7 +386,10 @@ export default function ParentFees({
                                                         <Checkbox
                                                             aria-label={`Pilih ${bill.title} ${bill.student_name}`}
                                                             disabled={
-                                                                !uploadEnabled
+                                                                !uploadEnabled ||
+                                                                !canSelectBill(
+                                                                    bill,
+                                                                )
                                                             }
                                                             checked={
                                                                 bill.id in
@@ -421,6 +468,141 @@ export default function ParentFees({
                     </div>
                 )}
 
+                {canUpload && pendingTransfers && (
+                    <section
+                        aria-labelledby="pending-transfers-title"
+                        className="space-y-3"
+                        aria-busy={paging}
+                    >
+                        <div>
+                            <h2
+                                id="pending-transfers-title"
+                                className="text-lg font-medium"
+                            >
+                                Transfer Menunggu Verifikasi
+                            </h2>
+                            <p className="text-muted-foreground text-sm">
+                                Periksa atau batalkan pengajuan transfer yang
+                                belum diverifikasi sekolah.
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto rounded-lg border">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/50 text-left">
+                                    <tr>
+                                        <th className="px-4 py-3">Tanggal</th>
+                                        <th className="px-4 py-3">Bank Asal</th>
+                                        <th className="px-4 py-3 text-right">
+                                            Jumlah
+                                        </th>
+                                        <th className="px-4 py-3">
+                                            <span className="sr-only">
+                                                Tindakan
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pendingTransfers.data.map((payment) => (
+                                        <tr
+                                            key={payment.id}
+                                            className="border-t"
+                                        >
+                                            <td className="px-4 py-3">
+                                                {payment.payment_date}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {payment.origin_bank ?? '-'}
+                                            </td>
+                                            <td className="px-4 py-3 text-right tabular-nums">
+                                                {formatRupiah(payment.amount)}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                {payment.can_cancel && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled={
+                                                            cancelForm.processing
+                                                        }
+                                                        onClick={() =>
+                                                            setCancelling(
+                                                                payment,
+                                                            )
+                                                        }
+                                                    >
+                                                        Batalkan
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {pendingTransfers.data.length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={4}
+                                                className="text-muted-foreground px-4 py-8 text-center"
+                                            >
+                                                Tidak ada transfer menunggu
+                                                verifikasi.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        {pendingTransfers.total > 0 && (
+                            <nav
+                                aria-label="Halaman transfer menunggu verifikasi"
+                                className="flex flex-wrap items-center justify-between gap-3"
+                            >
+                                <p
+                                    className="text-muted-foreground text-sm"
+                                    aria-live="polite"
+                                >
+                                    Halaman {pendingTransfers.current_page} dari{' '}
+                                    {pendingTransfers.last_page}
+                                </p>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={
+                                            paging ||
+                                            pendingTransfers.current_page <= 1
+                                        }
+                                        onClick={() =>
+                                            visitPendingPage(
+                                                pendingTransfers.current_page -
+                                                    1,
+                                            )
+                                        }
+                                    >
+                                        Sebelumnya
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={
+                                            paging ||
+                                            pendingTransfers.current_page >=
+                                                pendingTransfers.last_page
+                                        }
+                                        onClick={() =>
+                                            visitPendingPage(
+                                                pendingTransfers.current_page +
+                                                    1,
+                                            )
+                                        }
+                                    >
+                                        Berikutnya
+                                    </Button>
+                                </div>
+                            </nav>
+                        )}
+                    </section>
+                )}
+
                 <div className="space-y-3">
                     <h2 className="text-lg font-medium">Riwayat Pembayaran</h2>
                     <div className="overflow-x-auto rounded-lg border">
@@ -464,6 +646,20 @@ export default function ParentFees({
                                                 )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
+                                            {payment.can_cancel && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={
+                                                        cancelForm.processing
+                                                    }
+                                                    onClick={() =>
+                                                        setCancelling(payment)
+                                                    }
+                                                >
+                                                    Batalkan
+                                                </Button>
+                                            )}
                                             {payment.can_view_receipt && (
                                                 <a
                                                     href={ReceiptController.show.url(
@@ -496,6 +692,40 @@ export default function ParentFees({
                 </div>
             </div>
 
+            <Dialog
+                open={cancelling !== null}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen && !cancelForm.processing) {
+                        setCancelling(null);
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogTitle>Batalkan transfer?</DialogTitle>
+                    <DialogDescription>
+                        {cancelling &&
+                            `Transfer ${formatRupiah(cancelling.amount)} tanggal ${cancelling.payment_date} akan ditandai sebagai dibatalkan oleh wali. Bukti tetap disimpan.`}
+                    </DialogDescription>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            disabled={cancelForm.processing}
+                            onClick={() => setCancelling(null)}
+                        >
+                            Kembali
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            disabled={cancelForm.processing}
+                            onClick={cancelTransfer}
+                        >
+                            {cancelForm.processing && <Spinner />} Batalkan
+                            transfer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {canUpload && (
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogContent className="max-h-[90dvh] grid-rows-[auto_auto_minmax(0,1fr)_auto]">
@@ -516,14 +746,14 @@ export default function ParentFees({
                                             {bill.title} - {bill.student_name}
                                             <span className="text-muted-foreground">
                                                 {' '}
-                                                · sisa{' '}
-                                                {formatRupiah(bill.remaining)}
+                                                · dapat diklaim{' '}
+                                                {formatRupiah(bill.claimable)}
                                             </span>
                                         </span>
                                         <Input
                                             type="number"
                                             min={0}
-                                            max={bill.remaining}
+                                            max={bill.claimable}
                                             step="0.01"
                                             aria-label={`Jumlah ${bill.title} ${bill.student_name}`}
                                             value={selected[bill.id]}
