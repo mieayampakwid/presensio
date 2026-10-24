@@ -47,3 +47,6 @@ yarn-error.log
 frankenphp
 frankenphp-worker.php
 /backups
+
+# Local verification artifacts and usage telemetry
+/docs/testing/
