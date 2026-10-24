@@ -1,5 +1,7 @@
 # School Announcements Implementation Plan
 
+Superseded on 2026-10-24 by [the revised plan](2026-10-24-announcements.md), following spec 12 v1.2 readiness review. Preserve this file as historical planning context; do not execute its publication replay/dependency instructions.
+
 > **For implementer agents:** Spec: `docs/specs/12-announcements.md` (ACs 12-01…10). Conventions: `2026-10-02-roadmap-wave-2-3.md`.
 
 **Goal:** Authenticated bulletin board with audience targeting (all/role/grade level/class) resolved through enrollments, private attachments, drafts/scheduling, read + acknowledgement tracking, and a dashboard widget.

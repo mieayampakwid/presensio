@@ -1,0 +1,33 @@
+export type Announcement = {
+    id: number;
+    title: string;
+    excerpt: string;
+    body: string | null;
+    author: string;
+    published_at: string | null;
+    updated_at: string;
+    is_updated: boolean;
+    status: string;
+    audience_type: string;
+    audience_role: string | null;
+    audience_grade_level: number | null;
+    class_id: number | null;
+    is_pinned: boolean;
+    requires_acknowledgement: boolean;
+    notify_urgent: boolean;
+    attachment_name: string | null;
+    read_at: string | null;
+    acknowledged_at: string | null;
+    can_manage: boolean;
+    can_report: boolean;
+    can_acknowledge: boolean;
+};
+export type ClassContext = { id: number; name: string } | null;
+export type PageData<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+};

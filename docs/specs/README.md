@@ -49,7 +49,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 09 | [Subjects & Teaching Assignments](09-subjects.md) | Implemented 2026-10-03 | Academic Foundation |
 | 10 | [Student Assessment & Grading](10-grading.md) | Implemented 2026-10-14 | Academic Evaluation |
 | 11 | [Digital Report Cards](11-report-cards.md) | Implemented 2026-10-14 | Academic Reporting |
-| 12 | [School Announcements](12-announcements.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Campus Communication |
+| 12 | [School Announcements](12-announcements.md) | Implemented 2026-10-24 (v1.2); every-role browser verification and PostgreSQL feature tests passed | Campus Communication |
 | 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
 | 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Implemented — ledger core (plan 12) 2026-10-11, fees operations (plan 13) 2026-10-17; portal, verification, reports & closing (plan 14) implemented and browser-verified 2026-10-24; principal controls and direct POST authorization verified | Billing, Cashier & Accounting |
 | 15 | [Academic Foundation](15-foundation.md) | Implemented 2026-10-02 | Roles, Semesters, Class Levels, School Profile, Audit |
@@ -75,8 +75,8 @@ Spec 15 is numbered after 14 to avoid renumbering, but is built first. Spec 16 (
 
 Spec 19 (in-app scanner) depends on 15 (new role) and can run in parallel with 16. Spec 20 (work shifts) depends on 16 (employee attendance engine).
 
-### Wave 3: Campus Communication, Timetables & Tuition (Next Build Target 🎯)
-`12 (Announcements & Bulletin Board) ─── 13 (Weekly Timetables) ─── 14 (School Fees, Receivables & General Ledger)`
+### Wave 3: Campus Communication, Timetables & Tuition (Timetables Next 🎯)
+`12 (Announcements — shipped) ─── 13 (Weekly Timetables — next) ─── 14 (School Fees, Receivables & General Ledger — shipped)`
 
 ---
 

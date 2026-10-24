@@ -53,3 +53,5 @@ Artisan::command('notifications:release-delayed', function () {
 
 Schedule::command('notifications:prune')->daily();
 Schedule::command('notifications:release-delayed')->everyMinute();
+
+Schedule::command('announcements:publish-due')->everyMinute()->withoutOverlapping();

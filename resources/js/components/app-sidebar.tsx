@@ -1,3 +1,4 @@
+import AnnouncementReaderController from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     BadgeCheck,
@@ -117,6 +118,11 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'Pengumuman',
+            href: AnnouncementReaderController.index().url,
+            icon: FileText,
         },
         ...(activeRole === 'admin'
             ? [

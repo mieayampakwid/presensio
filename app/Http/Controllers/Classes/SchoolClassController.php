@@ -9,6 +9,7 @@ use App\Http\Requests\Classes\UpdateSchoolClassRequest;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
+use App\Services\Announcements\AnnouncementAudience;
 use App\Services\Attendance\ClassAccess;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -33,6 +34,9 @@ class SchoolClassController extends Controller
 
         $yearId = $this->resolveYearId($request, $years);
 
+        $announcementAccess = app(AnnouncementAudience::class);
+        $announcementClassIds = $announcementAccess->manager($user) ? SchoolClass::where('academic_year_id', AcademicYear::active()?->id)->pluck('id') : $announcementAccess->teachingClassIds($user);
+
         $classes = SchoolClass::query()
             ->with('teacher.employee:id,name')
             ->where('academic_year_id', $yearId)
@@ -51,6 +55,7 @@ class SchoolClassController extends Controller
             ->paginate(15)
             ->through(fn (SchoolClass $class) => [
                 'id' => $class->id,
+                'can_announce' => $announcementClassIds->contains($class->id),
                 'name' => $class->name,
                 'grade_level' => $class->grade_level,
                 'curriculum' => is_string($class->curriculum) ? $class->curriculum : $class->curriculum->value,

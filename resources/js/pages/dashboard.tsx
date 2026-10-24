@@ -1,3 +1,4 @@
+import AnnouncementReaderController from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { UserRoundX } from 'lucide-react';
 import ChildGradeController from '@/actions/App/Http/Controllers/Parent/ChildGradeController';
@@ -79,6 +80,10 @@ type Props = {
     board: Board | null;
     pending_excuses: number | null;
     pending_leave_requests: number | null;
+    announcementSummary: {
+        items: { id: number; title: string; published_at: string | null }[];
+        unacknowledged_count: number;
+    };
     employee_leave_today: LeaveToday | null;
     children: ChildCard[] | null;
     student: { today: TodayRow | null } | null;
@@ -494,6 +499,7 @@ export default function Dashboard({
     board,
     pending_excuses,
     pending_leave_requests,
+    announcementSummary,
     employee_leave_today,
     children,
     student,
@@ -520,6 +526,54 @@ export default function Dashboard({
                     </p>
                 )}
 
+                <section
+                    className="space-y-3 rounded-lg border p-5"
+                    aria-label="Pengumuman terbaru"
+                >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="font-semibold">
+                            Pengumuman terbaru{' '}
+                            {announcementSummary.unacknowledged_count > 0 && (
+                                <Badge variant="secondary">
+                                    {announcementSummary.unacknowledged_count}{' '}
+                                    perlu konfirmasi
+                                </Badge>
+                            )}
+                        </h2>
+                        <Link
+                            className="text-sm underline underline-offset-4"
+                            href={AnnouncementReaderController.index()}
+                        >
+                            Semua pengumuman
+                        </Link>
+                    </div>
+                    {announcementSummary.items.length ? (
+                        <ul className="divide-y">
+                            {announcementSummary.items.map((item) => (
+                                <li
+                                    key={item.id}
+                                    className="flex flex-wrap justify-between gap-2 py-3"
+                                >
+                                    <Link
+                                        className="text-sm font-medium hover:underline"
+                                        href={AnnouncementReaderController.show(
+                                            item.id,
+                                        )}
+                                    >
+                                        {item.title}
+                                    </Link>
+                                    <span className="text-muted-foreground text-xs">
+                                        {item.published_at}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-muted-foreground text-sm">
+                            Belum ada pengumuman untuk Anda.
+                        </p>
+                    )}
+                </section>
                 {employee_leave_today !== null && (
                     <EmployeeLeaveBanner leave={employee_leave_today} />
                 )}

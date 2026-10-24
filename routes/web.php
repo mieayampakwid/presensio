@@ -48,3 +48,5 @@ require __DIR__.'/finance.php';
 require __DIR__.'/fees.php';
 require __DIR__.'/parent.php';
 require __DIR__.'/student.php';
+
+require __DIR__.'/announcements.php';

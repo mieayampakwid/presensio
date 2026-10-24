@@ -13,6 +13,7 @@ use App\Models\EmployeeLeaveRequest;
 use App\Models\Excuse;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Announcements\AnnouncementReadModel;
 use App\Services\Attendance\ClassAccess;
 use App\Services\Reports\AttendanceReportService;
 use App\Services\SchoolSettings;
@@ -41,6 +42,7 @@ class DashboardController extends Controller
         $isReviewer = in_array($activeRole, [UserRole::Admin, UserRole::Principal], true);
 
         return Inertia::render('dashboard', [
+            'announcementSummary' => app(AnnouncementReadModel::class)->summary($user),
             'is_school_day' => $this->settings->isSchoolDay($this->settings->todayDate()),
             'board' => $isStaff ? $this->boardSummary($user) : null,
             'pending_excuses' => $isStaff ? $this->pendingCount($user) : null,

@@ -1,3 +1,4 @@
+import { index as classAnnouncements } from '@/routes/classes/announcements';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     BookOpen,
@@ -30,6 +31,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 type ClassRow = {
     id: number;
+    can_announce: boolean;
     name: string;
     grade_level: number;
     curriculum: string;
@@ -257,6 +259,21 @@ export default function ClassesIndex({
                                                     </span>
                                                 </Link>
                                             </Button>
+                                            {schoolClass.can_announce && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                >
+                                                    <Link
+                                                        href={classAnnouncements(
+                                                            schoolClass.id,
+                                                        )}
+                                                    >
+                                                        Pengumuman kelas
+                                                    </Link>
+                                                </Button>
+                                            )}
                                             {can.manage && (
                                                 <>
                                                     <Button
