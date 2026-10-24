@@ -44,9 +44,12 @@ class PeriodController extends Controller
                 'closed_by' => $p->closedBy?->username,
             ]);
 
+        $canManage = $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance);
+
         return Inertia::render('finance/periods', [
             'periods' => $periods,
-            'closableYears' => $request->user()->hasAnyRole(UserRole::Admin, UserRole::Finance) ? $yearEndCloser->closableYears() : [],
+            'canManage' => $canManage,
+            'closableYears' => $canManage ? $yearEndCloser->closableYears() : [],
         ]);
     }
 

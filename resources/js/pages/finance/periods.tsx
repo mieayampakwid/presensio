@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Info, Lock, Unlock } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,16 @@ type ClosableYear = {
 };
 
 type Props = {
+    canManage: boolean;
     periods: PeriodRow[];
     closableYears: ClosableYear[];
 };
 
-export default function PeriodsIndex({ periods, closableYears }: Props) {
+export default function PeriodsIndex({
+    canManage,
+    periods,
+    closableYears,
+}: Props) {
     const [closingYear, setClosingYear] = useState<ClosableYear | null>(null);
     const [reopeningPeriod, setReopeningPeriod] = useState<PeriodRow | null>(
         null,
@@ -47,9 +53,9 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
     });
 
     const handleCloseConfirm = () => {
-        if (!closingPeriod) return;
+        if (!canManage || !closingPeriod) return;
         router.post(
-            `/finance/periods/${closingPeriod.period}/close`,
+            PeriodController.close.url(closingPeriod.period),
             {},
             {
                 preserveScroll: true,
@@ -59,9 +65,9 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
     };
 
     const handleCloseYearConfirm = () => {
-        if (!closingYear) return;
+        if (!canManage || !closingYear) return;
         router.post(
-            '/finance/periods/year-end',
+            PeriodController.closeYear.url(),
             { fiscal_year_start: closingYear.fiscal_year_start },
             {
                 preserveScroll: true,
@@ -72,8 +78,8 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
 
     const handleReopenSubmit = (e: FormEvent) => {
         e.preventDefault();
-        if (!reopeningPeriod) return;
-        reopenForm.post(`/finance/periods/${reopeningPeriod.period}/reopen`, {
+        if (!canManage || !reopeningPeriod) return;
+        reopenForm.post(PeriodController.reopen.url(reopeningPeriod.period), {
             preserveScroll: true,
             onSuccess: () => {
                 setReopeningPeriod(null);
@@ -110,7 +116,7 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
                     </div>
                 </div>
 
-                {closableYears.length > 0 && (
+                {canManage && closableYears.length > 0 && (
                     <div className="bg-card space-y-3 rounded-lg border p-4">
                         <div>
                             <h2 className="font-semibold">
@@ -229,8 +235,9 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
                                             {p.closed_by ?? '-'}
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            {p.status ===
-                                            'locked' ? null : p.is_open ? (
+                                            {!canManage ||
+                                            p.status ===
+                                                'locked' ? null : p.is_open ? (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -264,7 +271,7 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
 
             {/* Close Confirm Dialog */}
             <Dialog
-                open={closingPeriod !== null}
+                open={canManage && closingPeriod !== null}
                 onOpenChange={(open) => !open && setClosingPeriod(null)}
             >
                 <DialogContent>
@@ -294,7 +301,7 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
 
             {/* Year-End Close Dialog */}
             <Dialog
-                open={closingYear !== null}
+                open={canManage && closingYear !== null}
                 onOpenChange={(open) => !open && setClosingYear(null)}
             >
                 <DialogContent>
@@ -324,7 +331,7 @@ export default function PeriodsIndex({ periods, closableYears }: Props) {
 
             {/* Reopen Dialog */}
             <Dialog
-                open={reopeningPeriod !== null}
+                open={canManage && reopeningPeriod !== null}
                 onOpenChange={(open) => !open && setReopeningPeriod(null)}
             >
                 <DialogContent>

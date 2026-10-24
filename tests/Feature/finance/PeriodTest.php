@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\AccountingPeriod;
 use App\Models\Bill;
@@ -11,6 +12,8 @@ use App\Services\Finance\Contracts\ClosePrecondition;
 use App\Services\Finance\PeriodService;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -153,7 +156,10 @@ class PeriodTest extends TestCase
         // Principal can view
         $this->actingAs($principal)
             ->get(route('finance.periods.index'))
-            ->assertOk();
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/periods')
+                ->where('canManage', false)
+                ->where('closableYears', []));
 
         // Principal cannot close
         $this->actingAs($principal)
@@ -166,6 +172,26 @@ class PeriodTest extends TestCase
                 'reason' => 'Trying to reopen',
             ])
             ->assertForbidden();
+    }
+
+    /** @return array<string, array{UserRole}> */
+    public static function managingRoles(): array
+    {
+        return ['admin' => [UserRole::Admin], 'finance' => [UserRole::Finance]];
+    }
+
+    #[DataProvider('managingRoles')]
+    public function test_management_capability_includes_accounts_with_a_principal_role(UserRole $role): void
+    {
+        $manager = User::factory()->withRoles(UserRole::Principal, $role)->create();
+
+        $this->actingAs($manager)
+            ->withSession(['active_role' => UserRole::Principal->value])
+            ->get(route('finance.periods.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/periods')
+                ->where('canManage', true)
+                ->has('closableYears'));
     }
 
     public function test_closed_period_blocks_journal_posting(): void

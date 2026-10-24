@@ -51,7 +51,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 11 | [Digital Report Cards](11-report-cards.md) | Implemented 2026-10-14 | Academic Reporting |
 | 12 | [School Announcements](12-announcements.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Campus Communication |
 | 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
-| 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Implemented — ledger core (plan 12) 2026-10-11, fees operations (plan 13) 2026-10-17; portal, verification, reports & closing (plan 14) code-complete 2026-10-17, browser click-through pending | Billing, Cashier & Accounting |
+| 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Implemented — ledger core (plan 12) 2026-10-11, fees operations (plan 13) 2026-10-17; portal, verification, reports & closing (plan 14) implemented and browser-verified 2026-10-24; principal controls and direct POST authorization verified | Billing, Cashier & Accounting |
 | 15 | [Academic Foundation](15-foundation.md) | Implemented 2026-10-02 | Roles, Semesters, Class Levels, School Profile, Audit |
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Implemented 2026-10-15 | Teacher & Tendik Attendance |
 | 17 | [Notification Center](17-notifications-center.md) | Implemented 2026-10-03 | In-App, WhatsApp & Email Notifications |
