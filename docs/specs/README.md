@@ -50,7 +50,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 10 | [Student Assessment & Grading](10-grading.md) | Implemented 2026-10-14 | Academic Evaluation |
 | 11 | [Digital Report Cards](11-report-cards.md) | Implemented 2026-10-14 | Academic Reporting |
 | 12 | [School Announcements](12-announcements.md) | Implemented 2026-10-24 (v1.2); every-role browser verification and PostgreSQL feature tests passed | Campus Communication |
-| 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.1 (2026-10-01) — Ready for planning after 15 | Timetable & Schedule |
+| 13 | [Class Timetables & Schedules](13-timetable.md) | Draft v1.2 (2026-10-25) — Ready to plan | Timetable & Schedule |
 | 14 | [School Fees, Receivables & General Ledger](14-school-fees.md) | Implemented — ledger core (plan 12) 2026-10-11, fees operations (plan 13) 2026-10-17; portal, verification, reports & closing (plan 14) implemented and browser-verified 2026-10-24; principal controls and direct POST authorization verified | Billing, Cashier & Accounting |
 | 15 | [Academic Foundation](15-foundation.md) | Implemented 2026-10-02 | Roles, Semesters, Class Levels, School Profile, Audit |
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Implemented 2026-10-15 | Teacher & Tendik Attendance |

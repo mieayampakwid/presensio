@@ -1,12 +1,12 @@
 # Class Timetables Implementation Plan
 
-> **For implementer agents:** Spec: `docs/specs/13-timetable.md` (ACs 13-01…10). Conventions: `2026-10-02-roadmap-wave-2-3.md`.
+> **For implementer agents:** Spec: `docs/specs/13-timetable.md` (ACs 13-01…10, v1.2 — URLs below are final). Conventions: `2026-10-02-roadmap-wave-2-3.md`; UI strings via lang files, id/en (spec 18).
 
 **Goal:** Bell schedules with day variants, per-semester class timetables bound to periods with conflict handling, weekly views, teacher schedule, and "Jadwal Hari Ini" on the dashboard.
 
 **Architecture:** `BellSchedule` → `LessonPeriod` is the only source of times. `TimetableValidator` is a pure-ish service (overlap = hard error, teacher/room clash = warning list) used by the editor. A `TodaySchedule` service resolves who sees which slots through enrollments and the current semester.
 
-**Prerequisites:** Plan 2 (semesters, `school_operational_days`), Plan 3 (`class_subjects`).
+**Prerequisites:** Plan 2 (semesters), Plan 3 (`class_subjects`). Operational weekdays and `isSchoolDay` come from spec 03 settings (`SchoolSettings::operationalWeekdays()` / `isSchoolDay()`); there is no separate operational-days table.
 
 **Blocking questions:** none.
 
@@ -17,12 +17,12 @@
 **Files:**
 
 - Create: migrations `create_bell_schedules_table`, `create_lesson_periods_table` (spec §Schema 1–2); models `BellSchedule`, `LessonPeriod`, factories; `app/Enums/PeriodKind.php`; `app/Http/Controllers/Timetable/BellScheduleController.php`, `app/Http/Requests/Timetable/SaveBellScheduleRequest.php`, `resources/js/pages/timetable/bell-schedules.tsx`, `routes/timetable.php`
-- Modify: `app/Models/LessonPeriod.php` (`isInUse()` via slots; later), `routes/web.php`
+- Modify: `app/Models/LessonPeriod.php` (`isInUse()` via slots; completed in Task 2), `routes/web.php`, `resources/js/components/app-sidebar.tsx` (admin entry "Bell Schedules"; URL `/bell-schedules`, flat per roadmap mapping)
 - Test: `tests/Feature/timetable/BellScheduleTest.php`
 
 **Dependencies:** none · **Verification:** `php artisan test --compact tests/Feature/timetable/BellScheduleTest.php`
 
-- [ ] **Step 1:** Validation: across all schedules every operational weekday (`SchoolSettings::operationalWeekdays()`) is covered exactly once (AC-13-01: uncovered or double → 422); within a schedule periods are ordered, non-overlapping, `start < end`, lessons have `number`, breaks have `name`.
+- [ ] **Step 1:** Validation: across all schedules every operational weekday (`SchoolSettings::operationalWeekdays()`) is covered exactly once (AC-13-01: uncovered or double → 422); within a schedule periods are ordered, non-overlapping, `start < end`, lessons have `number`, breaks have `name`, lesson numbers unique and sequential (1…n).
 - [ ] **Step 2:** Period delete guard 422 when used by slots (stubbed to false until Task 2; Task 2 updates). Admin only.
 - [ ] **Step 3:** AC-13-06 is satisfied structurally (times live only here); test it in Task 4.
 
@@ -58,6 +58,7 @@
 **Files:**
 
 - Create: `app/Services/Timetable/TimetableView.php` (derives times from periods), `app/Http/Controllers/Timetable/ClassTimetableViewController.php` (`GET /classes/{school_class}/timetable?semester=`), `app/Http/Controllers/Teacher/ScheduleController.php`, `resources/js/pages/timetable/week.tsx` (print CSS), `resources/js/pages/teacher/schedule.tsx`
+- Modify: `routes/teacher.php` (`GET schedule`, teacher-middleware group), `resources/js/components/app-sidebar.tsx` (teacher entry), `resources/js/pages/classes/index.tsx` (row action → weekly view — contextual destination, no sidebar item)
 - Test: `tests/Feature/timetable/TimetableViewTest.php`
 
 **Dependencies:** Task 2 · **Verification:** `php artisan test --compact tests/Feature/timetable/TimetableViewTest.php`
@@ -77,17 +78,18 @@
 
 - [ ] **Step 1:** Student → `classOn(today)`; guardian → each child's; current semester via `SemesterService::current()`; not a school day (`isSchoolDay`, includes `non_school_days` and non-operational weekday) → empty with "Tidak ada jadwal pelajaran hari ini." (AC-13-10). AC-13-08: student moved 5A → 5B yesterday sees 5B.
 
-### Task 6: Staff dashboard first-period hook
+### Task 6: First period of not-yet-arrived teachers (spec 16 §7)
 
 **Files:**
 
-- Modify: bind the real `FirstPeriodLookup` (introduced in plan 9 Task 4 as a null object) in `app/Providers/AppServiceProvider.php`
-- Test: `tests/Feature/Staff/DashboardFirstPeriodTest.php`
+- Modify: `app/Http/Controllers/Staff/StaffAttendanceController.php` (the not-yet-arrived teacher list gains each teacher's first period today, resolved through `TodaySchedule`), `resources/js/pages/staff/attendance.tsx`
+- Test: extend `tests/Feature/Staff/StaffAttendanceOverviewTest.php`
 
-**Dependencies:** Task 4; Plan 9 · **Verification:** `php artisan test --compact tests/Feature/Staff`
+**Dependencies:** Task 5 · **Verification:** `php artisan test --compact tests/Feature/Staff/StaffAttendanceOverviewTest.php`
 
-- [ ] **Step 1:** Skip this task if plan 9 has not landed; it is one binding plus one test.
+- [ ] **Step 1:** Spec 16 §7 promises "a list of not-yet-arrived teachers with their first period today (when timetable 13 exists)". No lookup placeholder was ever introduced — add the enrichment here. Teachers with no slot today show no period.
 
 ### Task 7: Close out
 
-- [ ] `composer ci:check`; propose spec 13 → implemented. Note: slots are never hard-deleted once per-period attendance exists (v1.x) — no change needed now.
+- [ ] Door-to-door UI verification (`.ai/rules/navigation.md`): admin login → sidebar → bell schedules CRUD → classes listing → timetable editor + weekly view; teacher login → sidebar schedule; student/guardian dashboard "Jadwal Hari Ini" incl. the non-school-day empty state.
+- [ ] `composer ci:check`; propose spec 13 → implemented (README table + spec Status). Note: slots are never hard-deleted once per-period attendance exists (v1.x) — no change needed now.

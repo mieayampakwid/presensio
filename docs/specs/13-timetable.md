@@ -1,6 +1,6 @@
 # 13 — Class Timetables & Schedules (Jadwal Pelajaran)
 
-Status: draft v1.1 (2026-10-01) — revised against spec 15 (AUDIT-2026-10-01 S-05, P13-01…03). Supersedes draft v1.0 (2026-09-25): free-form slot times replaced by a bell schedule (jam pelajaran) master with day variants; slots scoped per semester; today's class resolved through enrollments; operational days taken from `school_operational_days`.
+Status: draft v1.2 (2026-10-25) — URLs aligned to the flat route convention (roadmap wave 2–3); edit roles (admin-only) and past-year read-only made explicit; copy-skip reasons aligned with the plan. Supersedes v1.1 (2026-10-01): revised against spec 15 (AUDIT-2026-10-01 S-05, P13-01…03); free-form slot times replaced by a bell schedule (jam pelajaran) master with day variants; slots scoped per semester; today's class resolved through enrollments; operational days taken from `school_operational_days` (spec 03 settings).
 
 ## Problem
 
@@ -52,6 +52,8 @@ Weekly timetables (Jadwal Pelajaran) are distributed as photos of whiteboards or
   - Overlap within the same class, semester and day → hard error (HTTP 422).
   - Same teacher, or same non-empty room, at overlapping periods on the same day and semester in another class → warning modal: *"Peringatan: Guru bersangkutan telah dijadwalkan di Kelas 5A pada jam tersebut."* The admin may confirm and save anyway (`confirm_conflicts = true`).
   - The day must be an operational day.
+- **Edit roles**: bell schedules and class timetables are admin-only to edit; the principal sees both read-only (finance read-only precedent, spec 14).
+- **Past years**: classes of a past academic year are read-only, including their timetables (07).
 - **Today resolution** (S-05):
   - Student: the class from `classOn(today)`.
   - Guardian: `classOn(today)` for each linked child.
@@ -61,11 +63,11 @@ Weekly timetables (Jadwal Pelajaran) are distributed as photos of whiteboards or
 
 ## Requirements
 
-1. **Bell Schedule Editor (`/admin/bell-schedules`)**:
-   - CRUD bell schedules with weekday assignment. Validation: every operational day is covered exactly once.
-   - Per schedule, ordered periods: `kind`, `number` (lesson only), `start_time`, `end_time`. Periods are contiguous or gapped, never overlapping.
+1. **Bell Schedule Editor (`/bell-schedules`, admin only)**:
+   - CRUD bell schedules with weekday assignment. Validation: the union of `weekdays` across all schedules equals the operational weekdays (`school_operational_days`) exactly — every operational day covered exactly once, no non-operational weekday claimed.
+   - Per schedule, ordered periods: `kind`, `number` (lesson only), `start_time`, `end_time`. Periods are contiguous or gapped, never overlapping. Lesson `number`s are unique and sequential (1…n) within a schedule.
    - Deleting a period used by slots → HTTP 422.
-2. **Class Timetable Editor (`GET /admin/classes/{id}/timetable?semester=`)**:
+2. **Class Timetable Editor (`GET /classes/{id}/timetable/edit?semester=`, admin only; past-year classes read-only)**:
    - Grid: operational days × that day's periods (breaks shaded).
    - Add, edit, move and delete slots. Form fields:
      - type (Mata Pelajaran / Kegiatan)
@@ -77,7 +79,7 @@ Weekly timetables (Jadwal Pelajaran) are distributed as photos of whiteboards or
 3. **Class Weekly View (`GET /classes/{id}/timetable?semester=`)**:
    - Admin and principal: all classes. Teachers: classes in scope (09). Students and guardians: own / child's current class.
    - Cards show period numbers, derived times, subject or activity, teacher, and room. Printable layout.
-4. **Teacher Schedule (`GET /teacher/schedule`)**:
+4. **Teacher Schedule (`GET /schedule`)**:
    - Current-semester slots of the teacher's `class_subjects`, grouped by day; today's current/next slot highlighted.
 5. **Dashboard "Jadwal Hari Ini" (08)**:
    - Students and guardians (one block per child): today's slots in period order, current/next highlighted.
@@ -132,10 +134,10 @@ Weekly timetables (Jadwal Pelajaran) are distributed as photos of whiteboards or
 - **AC-13-01**: Saving bell schedules that leave an operational day uncovered, or cover a day twice, returns HTTP 422.
 - **AC-13-02**: Placing Matematika on Monday Jam ke-2 with `period_count = 2` in 5A, when 5A already has a slot at Jam ke-3 Monday in the same semester, returns HTTP 422.
 - **AC-13-03**: A slot spanning across "Istirahat 1" returns HTTP 422.
-- **AC-13-04**: Assigning Pak Budi to 5B Monday Jam ke-2 while he teaches 5A then returns a conflict warning; resubmitting with `confirm_conflicts = true` saves it.
+- **AC-13-04**: Assigning Pak Budi to 5B Monday Jam ke-2 in the current semester while he is already scheduled in 5A at an overlapping period returns a conflict warning; resubmitting with `confirm_conflicts = true` saves it.
 - **AC-13-05**: An activity slot "Upacara Bendera" renders with no teacher name.
 - **AC-13-06**: When 07:00–07:35 for Jam ke-1 in "Reguler" is changed to 07:15–07:50, every class's Monday–Thursday Jam ke-1 shows the new time.
-- **AC-13-07**: "Salin dari semester sebelumnya" copies 5A's Ganjil slots into Genap and reports slots skipped because their `class_subjects` row was removed.
+- **AC-13-07**: "Salin dari semester sebelumnya" copies 5A's Ganjil slots into Genap and reports slots skipped because their `class_subjects` row was removed or the target position is already occupied.
 - **AC-13-08**: A student who moved from 5A to 5B yesterday sees 5B's timetable in "Jadwal Hari Ini".
 - **AC-13-09**: Pak Budi's `/teacher/schedule` lists his slots in 5A and 6A for the current semester.
 - **AC-13-10**: On a date in `non_school_days` or a non-operational weekday, "Jadwal Hari Ini" shows "Tidak ada jadwal pelajaran hari ini."
