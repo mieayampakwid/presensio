@@ -16,8 +16,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('bell-schedules.destroy');
 });
 
-// Class timetable slots: admin only (spec 13 Requirement 2)
+// Class timetable editor: admin only (spec 13 Requirement 2)
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('classes/{school_class}/timetable/edit', [ClassTimetableController::class, 'edit'])
+        ->name('classes.timetable.edit');
+    Route::post('classes/{school_class}/timetable/copy', [ClassTimetableController::class, 'copy'])
+        ->name('classes.timetable.copy');
     Route::post('classes/{school_class}/timetable/slots', [ClassTimetableController::class, 'store'])
         ->name('classes.timetable.slots.store');
     Route::put('classes/{school_class}/timetable/slots/{slot}', [ClassTimetableController::class, 'update'])

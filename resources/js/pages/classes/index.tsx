@@ -2,6 +2,7 @@ import { index as classAnnouncements } from '@/routes/classes/announcements';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarDays,
     ChevronLeft,
     ChevronRight,
     FileSpreadsheet,
@@ -12,6 +13,7 @@ import {
 import { useState, type ChangeEvent } from 'react';
 import ClassSubjectController from '@/actions/App/Http/Controllers/Classes/ClassSubjectController';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
+import ClassTimetableController from '@/actions/App/Http/Controllers/Timetable/ClassTimetableController';
 import ReportCardWorkspaceController from '@/actions/App/Http/Controllers/Teacher/ReportCardWorkspaceController';
 import ClassGradeLedgerController from '@/actions/App/Http/Controllers/Teacher/ClassGradeLedgerController';
 import Heading from '@/components/heading';
@@ -193,6 +195,30 @@ export default function ClassesIndex({
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">
+                                            {can.manage && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    asChild
+                                                    title="Jadwal Pelajaran"
+                                                >
+                                                    <Link
+                                                        href={
+                                                            ClassTimetableController.edit(
+                                                                {
+                                                                    school_class:
+                                                                        schoolClass.id,
+                                                                },
+                                                            ).url
+                                                        }
+                                                    >
+                                                        <CalendarDays className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Jadwal Pelajaran
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
