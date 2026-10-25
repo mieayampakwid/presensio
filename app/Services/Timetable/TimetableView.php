@@ -156,6 +156,35 @@ class TimetableView
     }
 
     /**
+     * The teacher's earliest slot on a day, by period order — the staff
+     * attendance "first period today" enrichment (spec 16 §7). Null when
+     * they teach nothing that day.
+     *
+     * @return array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}|null
+     */
+    public function firstSlotForTeacher(Teacher $teacher, Semester $semester, int $weekday): ?array
+    {
+        $schedule = $this->scheduleForDay(BellSchedule::query()->with('periods')->get(), $weekday);
+
+        if ($schedule === null) {
+            return null;
+        }
+
+        $slot = TimetableSlot::query()
+            ->where('semester_id', $semester->id)
+            ->where('day_of_week', $weekday)
+            ->whereHas('classSubject', fn ($query) => $query->where('teacher_id', $teacher->id))
+            ->with(['lessonPeriod', 'classSubject.subject:id,name', 'classSubject.schoolClass:id,name'])
+            ->get()
+            ->sortBy(fn (TimetableSlot $slot): int => (int) $slot->lessonPeriod->sort_order)
+            ->first();
+
+        return $slot !== null
+            ? $this->assignmentPayload($slot, $schedule->periods->values())
+            : null;
+    }
+
+    /**
      * The bell schedule covering an ISO weekday — at most one per day
      * (AC-13-01 coverage invariant).
      *

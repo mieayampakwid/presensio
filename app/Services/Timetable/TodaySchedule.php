@@ -3,6 +3,7 @@
 namespace App\Services\Timetable;
 
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Services\AcademicYears\SemesterService;
 use App\Services\SchoolSettings;
 
@@ -38,5 +39,27 @@ class TodaySchedule
         }
 
         return $this->view->todaySlots($class, $semester, $this->settings->now()->dayOfWeekIso);
+    }
+
+    /**
+     * The teacher's first period today (staff attendance enrichment, spec
+     * 16 §7) — null on non-school days, without a current semester, or
+     * when the teacher has no slot today.
+     *
+     * @return array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}|null
+     */
+    public function firstPeriodForTeacher(Teacher $teacher): ?array
+    {
+        $today = $this->settings->todayDate();
+
+        if (! $this->settings->isSchoolDay($today)) {
+            return null;
+        }
+
+        $semester = $this->semesters->current();
+
+        return $semester !== null
+            ? $this->view->firstSlotForTeacher($teacher, $semester, $this->settings->now()->dayOfWeekIso)
+            : null;
     }
 }

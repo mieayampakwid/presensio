@@ -37,6 +37,13 @@ type EmployeeRow = {
     scan_method: string | null;
     overridden_by: string | null;
     notes: string | null;
+    first_period: {
+        title: string;
+        class_name: string;
+        room: string | null;
+        start_time: string;
+        end_time: string;
+    } | null;
 };
 
 type Summary = {
@@ -301,6 +308,23 @@ export default function StaffAttendanceIndex({
                                                     </span>
                                                 )}
                                             </div>
+                                            {row.first_period && (
+                                                <div className="text-muted-foreground mt-1 text-xs">
+                                                    Jam pertama:{' '}
+                                                    {row.first_period.title} (
+                                                    {
+                                                        row.first_period
+                                                            .class_name
+                                                    }
+                                                    ) ·{' '}
+                                                    {
+                                                        row.first_period
+                                                            .start_time
+                                                    }
+                                                    {row.first_period.room &&
+                                                        ` · ${row.first_period.room}`}
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-4 py-3">

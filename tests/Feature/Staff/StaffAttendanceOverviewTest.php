@@ -5,19 +5,26 @@ namespace Tests\Feature\Staff;
 use App\Enums\EmployeeAttendanceStatus;
 use App\Enums\ScanMethod;
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Models\AuditLog;
+use App\Models\ClassSubject;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
+use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Models\Teacher;
+use App\Models\TimetableSlot;
 use App\Models\User;
 use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Concerns\CreatesBellSchedules;
 use Tests\TestCase;
 
 class StaffAttendanceOverviewTest extends TestCase
 {
+    use CreatesBellSchedules;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -209,5 +216,107 @@ class StaffAttendanceOverviewTest extends TestCase
                 'status' => EmployeeAttendanceStatus::Present->value,
             ])
             ->assertForbidden();
+    }
+
+    /**
+     * Spec 16 §7: a not-yet-arrived teacher's row carries their first
+     * period today once timetables exist (spec 13).
+     */
+    public function test_not_yet_arrived_teacher_shows_first_period_today(): void
+    {
+        Date::setTestNow('2026-10-06 07:00:00', 'Asia/Jakarta');
+
+        $fixture = $this->firstPeriodWorld();
+        [$employee, $classSubject] = $fixture;
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('staff-attendance.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('staff/attendance')
+                ->where('rows.0.employee_id', $employee->id)
+                ->where('rows.0.status', 'not_yet_arrived')
+                ->where('rows.0.first_period.title', $classSubject->subject->name)
+                ->where('rows.0.first_period.class_name', '5A')
+                ->where('rows.0.first_period.start_time', '07:00'));
+
+        Date::setTestNow();
+    }
+
+    public function test_teacher_without_slots_today_shows_no_first_period(): void
+    {
+        Date::setTestNow('2026-10-06 07:00:00', 'Asia/Jakarta');
+
+        [$employee] = $this->firstPeriodWorld(withSlot: false);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('staff-attendance.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('staff/attendance')
+                ->where('rows.0.employee_id', $employee->id)
+                ->where('rows.0.first_period', null));
+
+        Date::setTestNow();
+    }
+
+    public function test_arrived_teacher_shows_no_first_period(): void
+    {
+        Date::setTestNow('2026-10-06 07:00:00', 'Asia/Jakarta');
+
+        [$employee] = $this->firstPeriodWorld();
+
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $employee->id,
+            'date' => '2026-10-06',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => now(),
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('staff-attendance.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('staff/attendance')
+                ->where('rows.0.employee_id', $employee->id)
+                ->where('rows.0.status', 'present')
+                ->where('rows.0.first_period', null));
+
+        Date::setTestNow();
+    }
+
+    /**
+     * One expected teacher-employee on a Tuesday with a current timetable.
+     * When $withSlot is true they teach 5A Jam ke-1 today.
+     *
+     * @return array{0: Employee, 1: ClassSubject}
+     */
+    private function firstPeriodWorld(bool $withSlot = true): array
+    {
+        $year = AcademicYear::factory()->current()->create();
+        $class = SchoolClass::factory()->create(['academic_year_id' => $year->id, 'name' => '5A']);
+        $semester = $year->semesters()->firstOrFail();
+        $schedule = $this->createSchedule('Reguler', [1, 2, 3, 4], 3, breakAfterLesson: 2);
+
+        $employee = Employee::factory()->create([
+            'name' => 'Budi Santoso',
+            'working_days' => [1, 2, 3, 4, 5],
+        ]);
+        $teacher = Teacher::factory()->create(['employee_id' => $employee->id]);
+        $classSubject = ClassSubject::factory()->create([
+            'class_id' => $class->id,
+            'teacher_id' => $teacher->id,
+        ]);
+
+        if ($withSlot) {
+            TimetableSlot::factory()->forClassSubject($classSubject)->create([
+                'semester_id' => $semester->id,
+                'class_id' => $class->id,
+                'day_of_week' => 2,
+                'lesson_period_id' => $schedule->periods->firstWhere('number', 1)->id,
+            ]);
+        }
+
+        return [$employee, $classSubject];
     }
 }

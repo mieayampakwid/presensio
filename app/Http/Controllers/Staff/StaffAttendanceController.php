@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Services\Attendance\EmployeeCalendar;
 use App\Services\SchoolSettings;
+use App\Services\Timetable\TodaySchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -23,6 +24,7 @@ class StaffAttendanceController extends Controller
     public function __construct(
         private readonly SchoolSettings $settings,
         private readonly EmployeeCalendar $calendar,
+        private readonly TodaySchedule $todaySchedule,
     ) {}
 
     /**
@@ -38,8 +40,9 @@ class StaffAttendanceController extends Controller
 
         $isSchoolDay = $this->settings->isSchoolDay($date);
 
-        // Fetch active employees
-        $activeEmployees = Employee::query()->active()->orderBy('name')->get();
+        // Fetch active employees (teacher preloaded: isTeacher() and the
+        // first-period enrichment read it without N+1)
+        $activeEmployees = Employee::query()->active()->with('teacher')->orderBy('name')->get();
 
         // Load existing attendance records for the date
         $records = EmployeeAttendance::query()
@@ -78,6 +81,7 @@ class StaffAttendanceController extends Controller
             $status = $record?->status;
             $hasIn = $record !== null && $record->checked_in_at !== null;
             $hasOut = $record !== null && $record->checked_out_at !== null;
+            $notYetArrived = $record === null || ($status === EmployeeAttendanceStatus::Absent && ! $hasIn);
             $isNoCheckout = $hasIn && ! $hasOut && $isPastDate;
 
             if ($isNoCheckout) {
@@ -114,10 +118,11 @@ class StaffAttendanceController extends Controller
                 'scan_method' => $record?->scan_method?->value,
                 'overridden_by' => $record?->overrideBy?->username,
                 'notes' => $record?->notes,
+                'first_period' => $this->firstPeriod($emp, $notYetArrived, $date, $todayDate),
             ];
 
             $include = match ($filter) {
-                'not_yet_arrived' => $record === null || ($status === EmployeeAttendanceStatus::Absent && ! $hasIn),
+                'not_yet_arrived' => $notYetArrived,
                 'late' => $status === EmployeeAttendanceStatus::Late,
                 'absent' => $status === EmployeeAttendanceStatus::Absent,
                 'on_leave' => $status?->isExcused() ?? false,
@@ -212,6 +217,22 @@ class StaffAttendanceController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Presensi pegawai berhasil diperbarui.']);
 
         return to_route('staff-attendance.index', ['date' => $date]);
+    }
+
+    /**
+     * The first period of a not-yet-arrived teacher, on today's view only
+     * (spec 16 §7: arrange substitutes for their first periods). Null for
+     * tendik, arrived teachers, and past-date views.
+     *
+     * @return array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}|null
+     */
+    private function firstPeriod(Employee $employee, bool $notYetArrived, string $date, string $todayDate): ?array
+    {
+        if (! $notYetArrived || $date !== $todayDate || $employee->teacher === null) {
+            return null;
+        }
+
+        return $this->todaySchedule->firstPeriodForTeacher($employee->teacher);
     }
 
     /**
