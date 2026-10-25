@@ -2,7 +2,15 @@
 
 use App\Http\Controllers\Timetable\BellScheduleController;
 use App\Http\Controllers\Timetable\ClassTimetableController;
+use App\Http\Controllers\Timetable\ClassTimetableViewController;
 use Illuminate\Support\Facades\Route;
+
+// Class weekly view: every role, authorization in the controller
+// (spec 13 Requirement 3)
+Route::middleware(['auth'])->group(function () {
+    Route::get('classes/{school_class}/timetable', [ClassTimetableViewController::class, 'show'])
+        ->name('classes.timetable.view');
+});
 
 // Bell schedule master: admin only (spec 13 Requirement 1)
 Route::middleware(['auth', 'role:admin'])->group(function () {

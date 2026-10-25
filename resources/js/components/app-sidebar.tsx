@@ -72,6 +72,7 @@ import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveRev
 import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import StaffRecapController from '@/actions/App/Http/Controllers/Staff/StaffRecapController';
+import ScheduleController from '@/actions/App/Http/Controllers/Teacher/ScheduleController';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -298,6 +299,11 @@ export function AppSidebar() {
                       title: 'Classes',
                       href: SchoolClassController.index().url,
                       icon: School,
+                  },
+                  {
+                      title: 'My Schedule',
+                      href: ScheduleController.index().url,
+                      icon: CalendarClock,
                   },
                   {
                       title: 'My Courses',

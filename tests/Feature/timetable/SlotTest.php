@@ -12,13 +12,14 @@ use App\Models\Semester;
 use App\Models\Teacher;
 use App\Models\TimetableSlot;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\CreatesBellSchedules;
 use Tests\TestCase;
 
 class SlotTest extends TestCase
 {
+    use CreatesBellSchedules;
     use RefreshDatabase;
 
     private User $admin;
@@ -375,38 +376,6 @@ class SlotTest extends TestCase
         );
     }
 
-    private function createSchedule(string $name, array $weekdays, int $lessons, ?int $breakAfterLesson = null): BellSchedule
-    {
-        return BellSchedule::factory()
-            ->has(
-                LessonPeriod::factory()
-                    ->count($breakAfterLesson === null ? $lessons : $lessons + 1)
-                    ->sequence(function (Sequence $sequence) use ($breakAfterLesson): array {
-                        $position = $sequence->index + 1;
-                        $isBreak = $breakAfterLesson !== null && $position === $breakAfterLesson + 1;
-
-                        if ($isBreak) {
-                            return [
-                                'kind' => PeriodKind::Break,
-                                'number' => null,
-                                'name' => 'Istirahat',
-                                'sort_order' => $position,
-                            ];
-                        }
-
-                        return [
-                            'kind' => PeriodKind::Lesson,
-                            'number' => $breakAfterLesson !== null && $position > $breakAfterLesson
-                                ? $position - 1
-                                : $position,
-                            'name' => null,
-                            'sort_order' => $position,
-                        ];
-                    }),
-                'periods'
-            )
-            ->create(['name' => $name, 'weekdays' => $weekdays]);
-    }
 
     /**
      * @return array<string, array{0: string}>

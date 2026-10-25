@@ -109,6 +109,19 @@ return [
             'cancel' => 'Batal',
         ],
     ],
+    'week' => [
+        'title' => 'Jadwal Pelajaran Kelas',
+        'semester' => 'Semester',
+        'print' => 'Cetak',
+        'no_slots' => 'Belum ada jadwal pada hari ini.',
+    ],
+    'schedule' => [
+        'title' => 'Jadwal Mengajar',
+        'description' => 'Jam mengajar saya di semua kelas semester ini.',
+        'current' => 'Sedang berlangsung',
+        'next' => 'Berikutnya',
+        'no_slots' => 'Belum ada jadwal pada hari ini.',
+    ],
     'toast' => [
         'created' => 'Jadwal jam pelajaran berhasil disimpan.',
         'updated' => 'Jadwal jam pelajaran berhasil diperbarui.',

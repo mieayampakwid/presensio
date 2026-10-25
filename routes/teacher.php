@@ -12,10 +12,12 @@ use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\ReportCardBundleController;
 use App\Http\Controllers\Teacher\ReportCardPublicationController;
 use App\Http\Controllers\Teacher\ReportCardWorkspaceController;
+use App\Http\Controllers\Teacher\ScheduleController;
 use App\Http\Controllers\Teacher\ScoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:teacher,admin,principal'])->group(function () {
+    Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule');
     Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
     Route::get('courses/{class_subject}', [CourseController::class, 'show'])->name('courses.show');
     Route::get('objectives', [LearningObjectiveController::class, 'index'])->name('objectives.index');

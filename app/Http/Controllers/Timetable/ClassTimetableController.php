@@ -4,17 +4,14 @@ namespace App\Http\Controllers\Timetable;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Timetable\SaveSlotRequest;
-use App\Models\BellSchedule;
 use App\Models\ClassSubject;
 use App\Models\LessonPeriod;
 use App\Models\SchoolClass;
 use App\Models\Semester;
 use App\Models\TimetableSlot;
-use App\Services\AcademicYears\SemesterService;
-use App\Services\SchoolSettings;
 use App\Services\Timetable\TimetableCopier;
 use App\Services\Timetable\TimetableValidator;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\Timetable\TimetableView;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +25,7 @@ class ClassTimetableController extends Controller
     public function __construct(
         private readonly TimetableValidator $validator,
         private readonly TimetableCopier $copier,
+        private readonly TimetableView $view,
     ) {}
 
     /**
@@ -42,26 +40,7 @@ class ClassTimetableController extends Controller
             'classSubjects.teacher.employee:id,name',
         ]);
 
-        $semester = $this->resolveSemester($request, $schoolClass);
-
-        $schedules = BellSchedule::query()->with('periods')->get();
-        $slots = TimetableSlot::query()
-            ->where('semester_id', $semester->id)
-            ->where('class_id', $schoolClass->id)
-            ->with([
-                'lessonPeriod',
-                'classSubject.subject:id,name',
-                'classSubject.teacher.employee:id,name',
-            ])
-            ->get();
-
-        $days = collect(app(SchoolSettings::class)->operationalWeekdays())
-            ->map(fn (int $weekday): array => $this->dayPayload(
-                $weekday,
-                $this->scheduleForDay($schedules, $weekday),
-                $slots,
-            ))
-            ->all();
+        $semester = $this->view->resolveSemester($request, $schoolClass);
 
         return Inertia::render('timetable/editor', [
             'school_class' => ['id' => $schoolClass->id, 'name' => $schoolClass->name],
@@ -81,7 +60,7 @@ class ClassTimetableController extends Controller
                 ->all(),
             'semester_id' => $semester->id,
             'read_only' => ! $schoolClass->academicYear->is_active,
-            'days' => $days,
+            'days' => $this->view->days($schoolClass, $semester),
         ]);
     }
 
@@ -229,110 +208,5 @@ class ClassTimetableController extends Controller
         }
 
         return null;
-    }
-
-    /**
-     * The semester being edited: the `semester` query param when it belongs
-     * to the class's academic year, else the current semester, else the
-     * year's first semester (past-year classes have no current semester).
-     */
-    private function resolveSemester(Request $request, SchoolClass $schoolClass): Semester
-    {
-        $semesters = $schoolClass->academicYear->semesters;
-
-        $requestedId = (int) $request->query('semester');
-        $currentId = app(SemesterService::class)->current()?->id;
-
-        /** @var Semester|null $semester */
-        $semester = $semesters->firstWhere('id', $requestedId > 0 ? $requestedId : null)
-            ?? $semesters->firstWhere('id', $currentId)
-            ?? $semesters->first();
-
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
-
-        return $semester;
-    }
-
-    /**
-     * The bell schedule covering an ISO weekday — at most one per day
-     * (AC-13-01 coverage invariant).
-     *
-     * @param  Collection<int, BellSchedule>  $schedules
-     */
-    private function scheduleForDay(Collection $schedules, int $weekday): ?BellSchedule
-    {
-        return $schedules->first(
-            fn (BellSchedule $schedule): bool => in_array(
-                $weekday,
-                array_map(intval(...), $schedule->weekdays),
-                true,
-            ),
-        );
-    }
-
-    /**
-     * Grid payload for one operational weekday: the day's bell schedule
-     * periods and the semester's slots on that day, with start/end times
-     * derived from the periods (spec 13: times live only in the bell
-     * schedule).
-     *
-     * @param  Collection<int, TimetableSlot>  $slots
-     * @return array{weekday: int, periods: list<array{id: int, kind: string, number: int|null, name: string|null, start_time: string, end_time: string}>, slots: list<array{id: int, day_of_week: int, lesson_period_id: int, period_count: int, class_subject_id: int|null, activity_name: string|null, room: string|null, title: string, teacher_name: string|null, start_time: string, end_time: string}>}
-     */
-    private function dayPayload(int $weekday, ?BellSchedule $schedule, Collection $slots): array
-    {
-        if ($schedule === null) {
-            return [
-                'weekday' => $weekday,
-                'periods' => [],
-                'slots' => [],
-            ];
-        }
-
-        $periods = $schedule->periods->values();
-
-        return [
-            'weekday' => $weekday,
-            'periods' => array_values($periods
-                ->map(fn (LessonPeriod $period): array => [
-                    'id' => $period->id,
-                    'kind' => $period->kind->value,
-                    'number' => $period->number,
-                    'name' => $period->name,
-                    'start_time' => substr((string) $period->start_time, 0, 5),
-                    'end_time' => substr((string) $period->end_time, 0, 5),
-                ])
-                ->all()),
-            'slots' => array_values($slots
-                ->where('day_of_week', $weekday)
-                ->map(fn (TimetableSlot $slot): array => $this->slotPayload($slot, $periods))
-                ->all()),
-        ];
-    }
-
-    /**
-     * @param  Collection<int, LessonPeriod>  $periods  the day's ordered periods
-     * @return array{id: int, day_of_week: int, lesson_period_id: int, period_count: int, class_subject_id: int|null, activity_name: string|null, room: string|null, title: string, teacher_name: string|null, start_time: string, end_time: string}
-     */
-    private function slotPayload(TimetableSlot $slot, Collection $periods): array
-    {
-        $subject = $slot->classSubject;
-
-        $index = $periods->search(fn (LessonPeriod $period): bool => $period->is($slot->lessonPeriod));
-        $last = $periods->slice((int) $index, $slot->period_count)->last();
-
-        return [
-            'id' => $slot->id,
-            'day_of_week' => $slot->day_of_week,
-            'lesson_period_id' => $slot->lesson_period_id,
-            'period_count' => $slot->period_count,
-            'class_subject_id' => $slot->class_subject_id,
-            'activity_name' => $slot->activity_name,
-            'room' => $slot->room,
-            'title' => $subject !== null ? $subject->subject->name : (string) $slot->activity_name,
-            'teacher_name' => $subject?->teacher?->employee?->name,
-            'start_time' => substr((string) $slot->lessonPeriod->start_time, 0, 5),
-            'end_time' => $last !== null ? substr((string) $last->end_time, 0, 5) : substr((string) $slot->lessonPeriod->end_time, 0, 5),
-        ];
     }
 }

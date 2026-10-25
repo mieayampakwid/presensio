@@ -109,6 +109,19 @@ return [
             'cancel' => 'Cancel',
         ],
     ],
+    'week' => [
+        'title' => 'Class Timetable',
+        'semester' => 'Semester',
+        'print' => 'Print',
+        'no_slots' => 'No lessons scheduled on this day.',
+    ],
+    'schedule' => [
+        'title' => 'My Schedule',
+        'description' => 'My teaching periods across all classes this semester.',
+        'current' => 'Now',
+        'next' => 'Next',
+        'no_slots' => 'No lessons scheduled on this day.',
+    ],
     'toast' => [
         'created' => 'Bell schedule created.',
         'updated' => 'Bell schedule updated.',
