@@ -75,7 +75,7 @@ class TimetableView
      * class_subjects slots), grouped by operational day; today's current/
      * next slot highlighted in the school timezone.
      *
-     * @return list<array{weekday: int, slots: list<array{id: int, class_name: string, title: string, room: string|null, start_time: string, end_time: string, status: string|null}>}>
+     * @return list<array{weekday: int, slots: list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>}>
      */
     public function teacherSchedule(Teacher $teacher, Semester $semester): array
     {
@@ -87,6 +87,7 @@ class TimetableView
                 'lessonPeriod',
                 'classSubject.subject:id,name',
                 'classSubject.schoolClass:id,name',
+                'classSubject.teacher.employee:id,name',
             ])
             ->get();
 
@@ -115,6 +116,43 @@ class TimetableView
                 ];
             })
             ->all());
+    }
+
+    /**
+     * Today's class slots in period order with derived times and the
+     * current/next slot marked from the school-timezone clock (dashboard
+     * "Jadwal Hari Ini", spec 13 Requirement 5).
+     *
+     * @return list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>
+     */
+    public function todaySlots(SchoolClass $schoolClass, Semester $semester, int $weekday): array
+    {
+        $schedule = $this->scheduleForDay(BellSchedule::query()->with('periods')->get(), $weekday);
+
+        if ($schedule === null) {
+            return [];
+        }
+
+        $periods = $schedule->periods->values();
+
+        $slots = TimetableSlot::query()
+            ->where('semester_id', $semester->id)
+            ->where('class_id', $schoolClass->id)
+            ->where('day_of_week', $weekday)
+            ->with([
+                'lessonPeriod',
+                'classSubject.subject:id,name',
+                'classSubject.teacher.employee:id,name',
+            ])
+            ->get()
+            ->sortBy(fn (TimetableSlot $slot): int => (int) $periods->search(
+                fn (LessonPeriod $period): bool => $period->is($slot->lessonPeriod),
+            ))
+            ->map(fn (TimetableSlot $slot): array => $this->assignmentPayload($slot, $periods))
+            ->values()
+            ->all();
+
+        return array_values($this->withNowStatus($slots, app(SchoolSettings::class)->now()->format('H:i')));
     }
 
     /**
@@ -197,12 +235,13 @@ class TimetableView
     }
 
     /**
-     * A teacher-schedule entry: the slot's class, subject, room and derived
-     * times. `status` is null everywhere except today's current/next slot
-     * (set by withNowStatus).
+     * A schedule entry for the teacher view and today's dashboard block:
+     * the slot's class, subject/activity, teacher, room and derived times.
+     * `status` is null everywhere except today's current/next slot (set by
+     * withNowStatus).
      *
      * @param  Collection<int, LessonPeriod>  $periods  the day's ordered periods
-     * @return array{id: int, class_name: string, title: string, room: string|null, start_time: string, end_time: string, status: string|null}
+     * @return array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}
      */
     private function assignmentPayload(TimetableSlot $slot, Collection $periods): array
     {
@@ -213,6 +252,7 @@ class TimetableView
             'id' => $slot->id,
             'class_name' => $subject?->schoolClass->name ?? '',
             'title' => $subject?->subject->name ?? (string) $slot->activity_name,
+            'teacher_name' => $subject?->teacher?->employee?->name,
             'room' => $slot->room,
             'start_time' => $times['start'],
             'end_time' => $times['end'],
@@ -244,8 +284,8 @@ class TimetableView
      * ("next") from the school-timezone clock. H:i strings compare
      * lexicographically.
      *
-     * @param  array<int, array{id: int, class_name: string, title: string, room: string|null, start_time: string, end_time: string, status: string|null}>  $slots
-     * @return array<int, array{id: int, class_name: string, title: string, room: string|null, start_time: string, end_time: string, status: string|null}>
+     * @param  array<int, array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>  $slots
+     * @return array<int, array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>
      */
     private function withNowStatus(array $slots, string $clock): array
     {

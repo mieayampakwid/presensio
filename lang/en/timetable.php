@@ -115,6 +115,10 @@ return [
         'print' => 'Print',
         'no_slots' => 'No lessons scheduled on this day.',
     ],
+    'today' => [
+        'title' => "Today's Schedule",
+        'empty' => 'No lessons scheduled today.',
+    ],
     'schedule' => [
         'title' => 'My Schedule',
         'description' => 'My teaching periods across all classes this semester.',

@@ -17,6 +17,7 @@ use App\Services\Announcements\AnnouncementReadModel;
 use App\Services\Attendance\ClassAccess;
 use App\Services\Reports\AttendanceReportService;
 use App\Services\SchoolSettings;
+use App\Services\Timetable\TodaySchedule;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,6 +32,7 @@ class DashboardController extends Controller
     public function __construct(
         private readonly AttendanceReportService $reports,
         private readonly SchoolSettings $settings,
+        private readonly TodaySchedule $todaySchedule,
     ) {}
 
     public function index(Request $request): Response
@@ -52,6 +54,7 @@ class DashboardController extends Controller
                 : null,
             'children' => $activeRole === UserRole::Parent ? $this->children($user) : null,
             'student' => $activeRole === UserRole::Student ? $this->studentToday($user) : null,
+            'today_schedule' => $activeRole === UserRole::Student ? $this->studentSchedule($user) : null,
         ]);
     }
 
@@ -131,9 +134,9 @@ class DashboardController extends Controller
 
     /**
      * Per linked child: today's status (null = no record yet — never
-     * "absent") and the child's latest excuse.
+     * "absent"), the child's latest excuse, and the child's today schedule.
      *
-     * @return array<int, array{id: int, full_name: string, class_name: string|null, today_status: string|null, latest_excuse: array{type: string, status: string, start_date: string, end_date: string}|null}>|null
+     * @return array<int, array{id: int, full_name: string, class_name: string|null, today_status: string|null, latest_excuse: array{type: string, status: string, start_date: string, end_date: string}|null, today_slots: list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>}>|null
      */
     private function children(User $user): ?array
     {
@@ -176,6 +179,7 @@ class DashboardController extends Controller
                         'start_date' => $excuse->start_date->toDateString(),
                         'end_date' => $excuse->end_date->toDateString(),
                     ],
+                    'today_slots' => $this->todaySchedule->forStudent($child),
                 ];
             })
             ->all();
@@ -197,6 +201,19 @@ class DashboardController extends Controller
             ->first(['status', 'checked_in_at', 'checked_out_at', 'scan_method']);
 
         return ['today' => $this->todayRow($record)];
+    }
+
+    /**
+     * Today's slots for the student's classOn(today) class; null when the
+     * account has no student profile (the portal empty state covers it).
+     *
+     * @return list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>|null
+     */
+    private function studentSchedule(User $user): ?array
+    {
+        $student = $user->student;
+
+        return $student !== null ? $this->todaySchedule->forStudent($student) : null;
     }
 
     /**

@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\AbsenceNotification;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\ClassSubject;
 use App\Models\Employee;
 use App\Models\EmployeeLeaveRequest;
 use App\Models\Excuse;
@@ -12,14 +14,17 @@ use App\Models\NonSchoolDay;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\TimetableSlot;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Concerns\CreatesBellSchedules;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
 {
+    use CreatesBellSchedules;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -284,6 +289,62 @@ class DashboardTest extends TestCase
                 ->where('student', null));
     }
 
+    public function test_student_sees_todays_schedule_for_their_class(): void
+    {
+        [$class, $subject] = $this->mondayWorld(['Kelas 5A'])[0];
+
+        $user = User::factory()->student()->create();
+        Student::factory()->enrolledIn($class)->create(['user_id' => $user->id]);
+
+        // 01:30 school-tz is before every period, so the first slot is next.
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('today_schedule', 1)
+                ->where('today_schedule.0.title', $subject->subject->name)
+                ->where('today_schedule.0.start_time', '07:00')
+                ->where('today_schedule.0.status', 'next'));
+    }
+
+    /**
+     * AC-13-10: on a seeded non-school day the block renders the empty
+     * state from the same payload.
+     */
+    public function test_students_schedule_is_empty_on_a_non_school_day(): void
+    {
+        [$class] = $this->mondayWorld(['Kelas 5A'])[0];
+        NonSchoolDay::factory()->create(['date' => '2026-09-21']);
+
+        $user = User::factory()->student()->create();
+        Student::factory()->enrolledIn($class)->create(['user_id' => $user->id]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('today_schedule', []));
+    }
+
+    public function test_parent_sees_todays_schedule_per_child(): void
+    {
+        [$pairA, $pairB] = $this->mondayWorld(['Kelas 5A', 'Kelas 5B']);
+        [$classA, $subjectA] = $pairA;
+        [$classB, $subjectB] = $pairB;
+
+        $childA = Student::factory()->enrolledIn($classA)->create(['full_name' => 'Alpha One']);
+        $childB = Student::factory()->enrolledIn($classB)->create(['full_name' => 'Echo Five']);
+
+        $this->actingAs($this->parentUser($childA, $childB))
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('children.0.full_name', 'Alpha One')
+                ->where('children.0.today_slots.0.title', $subjectA->subject->name)
+                ->where('children.1.full_name', 'Echo Five')
+                ->where('children.1.today_slots.0.title', $subjectB->subject->name));
+    }
+
     public function test_roles_get_no_cross_role_widgets(): void
     {
         $class = SchoolClass::factory()->create();
@@ -487,6 +548,36 @@ class DashboardTest extends TestCase
         );
 
         return $user;
+    }
+
+    /**
+     * A current-year class per name, each with one Monday slot anchored at
+     * lesson 1 (factory times 07:00-07:35); the pair [class, subject] is
+     * returned per entry.
+     *
+     * @param  array<int, string>  $names
+     * @return array<int, array{0: SchoolClass, 1: ClassSubject}>
+     */
+    private function mondayWorld(array $names): array
+    {
+        $year = AcademicYear::factory()->current()->create();
+        $schedule = $this->createSchedule('Reguler', [1, 2, 3, 4], 2);
+        $this->createSchedule('Jumat', [5], 2);
+        $semesterId = $year->semesters()->firstOrFail()->id;
+        $lessonOne = $schedule->periods->firstWhere('number', 1);
+
+        return array_map(function (string $name) use ($year, $semesterId, $lessonOne): array {
+            $class = SchoolClass::factory()->create(['academic_year_id' => $year->id, 'name' => $name]);
+            $subject = ClassSubject::factory()->create(['class_id' => $class->id]);
+            TimetableSlot::factory()->forClassSubject($subject)->create([
+                'semester_id' => $semesterId,
+                'class_id' => $class->id,
+                'day_of_week' => 1,
+                'lesson_period_id' => $lessonOne->id,
+            ]);
+
+            return [$class, $subject];
+        }, $names);
     }
 
     private function todayRecord(Student $student, string $state = 'default'): Attendance

@@ -115,6 +115,10 @@ return [
         'print' => 'Cetak',
         'no_slots' => 'Belum ada jadwal pada hari ini.',
     ],
+    'today' => [
+        'title' => 'Jadwal Hari Ini',
+        'empty' => 'Tidak ada jadwal pelajaran hari ini.',
+    ],
     'schedule' => [
         'title' => 'Jadwal Mengajar',
         'description' => 'Jam mengajar saya di semua kelas semester ini.',

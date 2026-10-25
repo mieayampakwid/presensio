@@ -19,6 +19,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useTranslation } from '@/hooks/use-translation';
 import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
 import { EXCUSE_STATUS_BADGES, EXCUSE_TYPE_LABELS } from '@/lib/excuses';
 import { LEAVE_TYPE_LABELS } from '@/lib/leave';
@@ -59,6 +60,7 @@ type ChildCard = {
         start_date: string;
         end_date: string;
     } | null;
+    today_slots: ScheduleSlot[] | null;
 };
 
 type TodayRow = {
@@ -75,6 +77,17 @@ type LeaveToday = {
     end_date: string;
 };
 
+type ScheduleSlot = {
+    id: number;
+    class_name: string;
+    title: string;
+    teacher_name: string | null;
+    room: string | null;
+    start_time: string;
+    end_time: string;
+    status: 'current' | 'next' | null;
+};
+
 type Props = {
     is_school_day: boolean;
     board: Board | null;
@@ -87,6 +100,7 @@ type Props = {
     employee_leave_today: LeaveToday | null;
     children: ChildCard[] | null;
     student: { today: TodayRow | null } | null;
+    today_schedule: ScheduleSlot[] | null;
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -106,6 +120,52 @@ function PortalEmptyState({ title, body }: { title: string; body: string }) {
                 <p className="text-sm">{body}</p>
             </CardContent>
         </Card>
+    );
+}
+
+function TodayScheduleList({ slots }: { slots: ScheduleSlot[] }) {
+    const { t } = useTranslation();
+
+    if (slots.length === 0) {
+        return (
+            <p className="text-muted-foreground text-sm">
+                {t('timetable.today.empty')}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="divide-y">
+            {slots.map((slot) => (
+                <li
+                    key={slot.id}
+                    className="flex flex-wrap items-center gap-2 py-2 text-sm"
+                >
+                    <span className="text-muted-foreground w-24 shrink-0 text-xs tabular-nums">
+                        {slot.start_time}–{slot.end_time}
+                    </span>
+                    <span className="flex flex-wrap items-center gap-2 font-medium">
+                        {slot.title}
+                        {slot.room ? ` · ${slot.room}` : ''}
+                        {slot.status === 'current' && (
+                            <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                {t('timetable.schedule.current')}
+                            </span>
+                        )}
+                        {slot.status === 'next' && (
+                            <span className="text-primary border-primary rounded-full border px-2 py-0.5 text-[10px] font-medium">
+                                {t('timetable.schedule.next')}
+                            </span>
+                        )}
+                    </span>
+                    {slot.teacher_name && (
+                        <span className="text-muted-foreground text-xs">
+                            {slot.teacher_name}
+                        </span>
+                    )}
+                </li>
+            ))}
+        </ul>
     );
 }
 
@@ -310,6 +370,8 @@ function StaffSection({
 }
 
 function ParentSection({ cards }: { cards: ChildCard[] | null }) {
+    const { t } = useTranslation();
+
     if (cards === null) {
         return (
             <PortalEmptyState
@@ -369,6 +431,14 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                     ]?.label ?? child.latest_excuse.status}
                                 </Badge>
                             </p>
+                        )}
+                        {child.today_slots !== null && (
+                            <div className="space-y-1">
+                                <p className="text-muted-foreground text-xs font-medium">
+                                    {t('timetable.today.title')}
+                                </p>
+                                <TodayScheduleList slots={child.today_slots} />
+                            </div>
                         )}
                         <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" asChild>
@@ -503,8 +573,10 @@ export default function Dashboard({
     employee_leave_today,
     children,
     student,
+    today_schedule,
 }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
+    const { t } = useTranslation();
     const role = auth.active_role ?? auth.user.role;
     const isStaff = ['admin', 'principal', 'teacher', 'counselor'].includes(
         role,
@@ -590,6 +662,19 @@ export default function Dashboard({
                 {role === 'parent' && <ParentSection cards={children} />}
 
                 {role === 'student' && <StudentSection profile={student} />}
+
+                {role === 'student' && today_schedule !== null && (
+                    <Card className="max-w-md">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-muted-foreground text-sm font-medium">
+                                {t('timetable.today.title')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <TodayScheduleList slots={today_schedule} />
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </>
     );
