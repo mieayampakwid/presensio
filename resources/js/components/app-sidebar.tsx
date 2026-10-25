@@ -1,6 +1,7 @@
 import AnnouncementReaderController from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    AlarmClock,
     BadgeCheck,
     Banknote,
     BellRing,
@@ -66,6 +67,7 @@ import StudentFeeController from '@/actions/App/Http/Controllers/Student/FeeCont
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
+import BellScheduleController from '@/actions/App/Http/Controllers/Timetable/BellScheduleController';
 import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveReviewController';
 import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
@@ -156,6 +158,11 @@ export function AppSidebar() {
                       title: 'Subjects',
                       href: SubjectController.index().url,
                       icon: BookOpen,
+                  },
+                  {
+                      title: 'Bell Schedules',
+                      href: BellScheduleController.index().url,
+                      icon: AlarmClock,
                   },
                   {
                       title: 'Courses',

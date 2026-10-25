@@ -84,12 +84,22 @@ class ClassSubject extends Model
     }
 
     /**
+     * Slots anchored at this assignment (spec 13).
+     *
+     * @return HasMany<TimetableSlot, $this>
+     */
+    public function timetableSlots(): HasMany
+    {
+        return $this->hasMany(TimetableSlot::class);
+    }
+
+    /**
      * Check if this class subject assignment has downstream usage
-     * (assessments in plan 5, timetable slots in plan 11).
+     * (assessments, timetable slots).
      */
     public function isInUse(): bool
     {
-        return $this->assessments()->exists();
+        return $this->assessments()->exists() || $this->timetableSlots()->exists();
     }
 
     /**
