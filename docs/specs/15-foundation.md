@@ -2,6 +2,8 @@
 
 Status: v1.0 — implemented 2026-10-02 (drafted 2026-10-01) — prerequisite for 09–14 (resolves AUDIT-2026-10-01 S-01, S-02, S-03, S-04, S-06, P10-05)
 
+> **Scanner amendment (spec 19 v1.1, implemented on feature branch 2026-10-27):** adds the exclusive `scanner_operator` role. Scanner operators, admins, and teachers may scan school-wide student and employee QR codes. Operators receive only scanner product access, with explicit authentication/logout support exceptions and a dashboard redirect; deny all other protected product pages and mutations, including profile-linked employee self-service. See [spec 19](19-in-app-scanner.md) for the permission boundary, entry paths, and remaining physical-camera/browser acceptance.
+
 ## Problem
 
 Wave 1 was built around four fixed roles, a year-only academic calendar and an attendance-only settings row. Wave 2–3 specs (09–14) already depend on things this foundation does not provide:
@@ -43,8 +45,8 @@ Wave 1 was built around four fixed roles, a year-only academic calendar and an a
 
 ### Roles & permissions (S-01)
 
-- **Roles** (enum, stored in `user_roles`): `admin`, `principal`, `teacher`, `counselor`, `finance`, `staff`, `parent`, `student`. `staff` = non-teaching employee self-service (spec 16).
-- **Multiple roles per user.** A user holds one or more roles. `student` is exclusive: it cannot be combined with any other role.
+- **Roles** (enum, stored in `user_roles`): `admin`, `principal`, `teacher`, `counselor`, `finance`, `staff`, `parent`, `student`, `scanner_operator`. `staff` = non-teaching employee self-service (spec 16).
+- **Multiple roles per user.** A user holds one or more roles. `student` and `scanner_operator` are each exclusive: neither can be combined with any other role.
 - **Authorization = union of the user's roles.** Policies and gates check whether *any* held role grants the ability. No request-time "active role" affects authorization.
 - **Active role is UI-only.** Users with several roles pick an active role from a header switcher (stored in the session — never in static/singleton state, Octane). Navigation and the dashboard (08) render for the active role. Default: the first role in the order above.
 - **Data scope stays data-derived, not role-derived.** Homeroom and subject-teacher scope (02, 09) and guardian ↔ child links (02) remain the scoping mechanism; roles only grant capabilities.
@@ -53,21 +55,22 @@ Wave 1 was built around four fixed roles, a year-only academic calendar and an a
 
 **Permission matrix (v1, code-defined):**
 
-| Capability | admin | principal | teacher | counselor | finance | parent | student |
-|---|---|---|---|---|---|---|---|
-| Manage users, roles, master data, settings | ✓ | | | | | | |
-| Attendance override / bulk marking | ✓ all | | scoped | | | | |
-| Excuse review (approve/reject) | ✓ | | | | | | |
-| Attendance reports & presence board | ✓ all | ✓ all | scoped | ✓ all | | own children | self |
-| Gradebook entry | ✓ all | | own `class_subjects` | | | | |
-| View grades & report card drafts | ✓ all | ✓ all | scoped | | | | |
-| Publish / unpublish report cards | ✓ | | homeroom class | | | | |
-| View published report cards | ✓ | ✓ | scoped | | | own children | self |
-| Fees & payments (14) | ✓ | read | | | ✓ | own children | self (read) |
-| Audit log | ✓ | ✓ (read) | | | | | |
-| Staff attendance overview, recap, leave approval (16) | ✓ | ✓ | | | | | |
+| Capability | admin | principal | teacher | counselor | finance | parent | student | scanner_operator |
+|---|---|---|---|---|---|---|---|---|
+| Manage users, roles, master data, settings | ✓ | | | | | | | |
+| Attendance override / bulk marking | ✓ all | | scoped | | | | | |
+| Excuse review (approve/reject) | ✓ | | | | | | | |
+| Attendance reports & presence board | ✓ all | ✓ all | scoped | ✓ all | | own children | self | |
+| Gradebook entry | ✓ all | | own `class_subjects` | | | | | |
+| View grades & report card drafts | ✓ all | ✓ all | scoped | | | | | |
+| Publish / unpublish report cards | ✓ | | homeroom class | | | | | |
+| View published report cards | ✓ | ✓ | scoped | | | own children | self | |
+| Fees & payments (14) | ✓ | read | | | ✓ | own children | self (read) | |
+| Audit log | ✓ | ✓ (read) | | | | | | |
+| Staff attendance overview, recap, leave approval (16) | ✓ | ✓ | | | | | | |
+| Scanner page and scan endpoint (19) | ✓ | | ✓ school-wide | | | | | ✓ |
 
-Own staff attendance and leave requests (16) are available to any user linked to an employee record, regardless of role; `staff` grants nothing beyond that self-service. "scoped" = homeroom classes plus classes with an assignment in `class_subjects` (09), in the selected academic year.
+Own staff attendance and leave requests (16) are available to users linked to an employee record, except scanner operators (19); `staff` grants nothing beyond that self-service. "scoped" = homeroom classes plus classes with an assignment in `class_subjects` (09), in the selected academic year.
 
 ### Semesters (S-02)
 
@@ -101,7 +104,7 @@ Own staff attendance and leave requests (16) are available to any user linked to
 ## Requirements
 
 1. **Role management (`/admin/users/{id}`)**:
-   - Admin assigns/removes roles via multi-select; `student` exclusive; last-admin guard.
+   - Admin assigns/removes roles via multi-select; `student` and `scanner_operator` exclusive; last-admin guard.
    - Data migration: every existing `users.role` becomes one `user_roles` row; `users.role` is then dropped.
 2. **Active role switcher**:
    - Shown only for users with more than one role. `PUT /active-role` validates the role is held, stores it in the session, redirects to `/dashboard`.
@@ -193,7 +196,7 @@ Own staff attendance and leave requests (16) are available to any user linked to
 ## Acceptance Criteria
 
 - **AC-15-01**: A user with roles `teacher` and `parent` can open their homeroom attendance page and their linked child's report with one session; both return HTTP 200.
-- **AC-15-02**: Assigning `student` together with any other role is rejected with HTTP 422.
+- **AC-15-02**: Assigning `student` or `scanner_operator` together with any other role is rejected with HTTP 422.
 - **AC-15-03**: Removing `admin` from the last active admin is rejected with HTTP 422.
 - **AC-15-04**: A `principal` attempting any attendance override, grade entry or publication receives HTTP 403; viewing all class reports returns HTTP 200.
 - **AC-15-05**: A `finance` user requesting a gradebook receives HTTP 403.

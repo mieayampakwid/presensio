@@ -56,7 +56,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Implemented 2026-10-15 | Teacher & Tendik Attendance |
 | 17 | [Notification Center](17-notifications-center.md) | Implemented 2026-10-03 | In-App, WhatsApp & Email Notifications |
 | 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
-| 19 | [In-App QR Scanner](19-in-app-scanner.md) | Draft v1.0 (2026-10-05) — Ready for planning after 15 | Webcam Scanner & Operator Role |
+| 19 | [In-App QR Scanner](19-in-app-scanner.md) | Code implemented on feature branch 2026-10-27 (v1.1); automated/Chromium checks passed, physical-camera/browser acceptance pending | Webcam Scanner & Operator Role |
 | 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
 | 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
 | 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Implemented 2026-10-23 (v1.3); accountant go-live review pending | Excess money held as liability, refund to guardian (amends 14) |
@@ -73,7 +73,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 
 Spec 15 is numbered after 14 to avoid renumbering, but is built first. Spec 16 (staff attendance) depends only on 15 and can run in parallel with 09–11. Spec 17 (notification center) depends on 15 and should land before 11/12/14 ship, since they dispatch through it.
 
-Spec 19 (in-app scanner) depends on 15 (new role) and can run in parallel with 16. Spec 20 (work shifts) depends on 16 (employee attendance engine).
+Spec 19 (in-app scanner) depends on 03 (shared student engine, including the shared alumni guard), 15 (new exclusive operator role), and 16 (required employee QR/attendance support). It amends the operator landing in 08 and role permissions in 15; these amendments are implemented on the feature branch; physical-camera/browser acceptance remains pending. Spec 20 (work shifts) depends on 16 (employee attendance engine).
 
 ### Wave 3: Campus Communication, Timetables & Tuition (Timetables Next 🎯)
 `12 (Announcements — shipped) ─── 13 (Weekly Timetables — next) ─── 14 (School Fees, Receivables & General Ledger — shipped)`

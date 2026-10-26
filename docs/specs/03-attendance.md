@@ -2,7 +2,9 @@
 
 Status: v2.5 — implemented 2026-09-19 (sweep population amendment 2026-09-21, amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-01/03/04/05/08/10)
 
-> **Pending amendment (spec 16, draft):** the scanner endpoint also resolves employee credentials (`rfid_cards.employee_id`, employee QR tokens, `scan_events.employee_id`, outcome `ignored_inactive`). Not yet implemented.
+> **Shared-engine prerequisite for spec 19 v1.1:** the `ignored_alumni` eligibility rule below was completed in the shared student engine/outcome enum on `in-app-qr-scanner` (2026-10-27), with hardware/web parity coverage. Preserve this guard before accepting the [in-app scanner](19-in-app-scanner.md). Web attempts use server time and share audit outcomes; hardware clock/response contracts remain compatible.
+
+> **Employee extension (spec 16, implemented 2026-10-15):** the scanner endpoint also resolves employee credentials (`rfid_cards.employee_id`, employee QR tokens, `scan_events.employee_id`, outcome `ignored_inactive`). See [spec 16](16-staff-attendance.md) for employee-specific attendance rules.
 
 ## Problem
 

@@ -2,6 +2,8 @@
 
 Status: v1.0 — implemented 2026-09-21 (amended 2026-09-25; audit amendment 2026-10-01 — see AUDIT-2026-10-01 D-09)
 
+> **Scanner amendment (spec 19 v1.1, implemented on feature branch 2026-10-27):** `scanner_operator` login lands on `/scanner`; `/dashboard` redirects there without building dashboard data. Operators have only the Scanner destination and logout. Admin/teacher scanner entry paths use their existing dashboard/sidebar. See [spec 19](19-in-app-scanner.md) for remaining physical-camera/browser acceptance.
+
 ## Problem
 
 When school community members log into traditional school administrative software, landing on a generic starter-kit page or empty menu forces them to navigate multiple sub-pages to answer immediate morning questions:
