@@ -99,7 +99,7 @@ Night-shift absences swept at 21:00 or later fall inside the default quiet hours
 1. **Shift Template Management (Attendance Settings section, admin-only)**:
    - Managed as a "Shift Kerja" section on `/settings/attendance`; CRUD posts to flat resource routes (`settings/shifts`, `settings/shifts/{shift}`). No standalone page.
    - Fields: `name` (required, unique, max 100), `start_time` (required, HH:MM), `end_time` (required, HH:MM), `sweep_offset_minutes` (unsigned int, default 120, range 30–480). `crosses_midnight` is derived and displayed, not editable.
-   - Validation: `start_time ≠ end_time`.
+   - Validation: `start_time ≠ end_time`; `start_time + sweep_offset_minutes` must stay within the start date (a sweep time past 24:00 would fire the next day and mark that evening's not-yet-started shift absent).
    - Deletion blocked (HTTP 422, explanatory message) while any employee default, roster row, or attendance record references the shift.
    - Max 10 templates (UI simplicity; raise if needed).
 
