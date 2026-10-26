@@ -57,7 +57,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 17 | [Notification Center](17-notifications-center.md) | Implemented 2026-10-03 | In-App, WhatsApp & Email Notifications |
 | 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
 | 19 | [In-App QR Scanner](19-in-app-scanner.md) | Code implemented on feature branch 2026-10-27 (v1.1); automated/Chromium checks passed, physical-camera/browser acceptance pending | Webcam Scanner & Operator Role |
-| 20 | [Work Shifts](20-work-shifts.md) | Draft v1.0 (2026-10-05) — Ready for planning after 16 | Shift Scheduling & Per-Shift Sweep |
+| 20 | [Work Shifts](20-work-shifts.md) | Draft v1.1 (2026-10-26) — reviewed against shipped spec 16, ready for implementation planning | Shift Scheduling & Per-Shift Sweep |
 | 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
 | 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Implemented 2026-10-23 (v1.3); accountant go-live review pending | Excess money held as liability, refund to guardian (amends 14) |
 
