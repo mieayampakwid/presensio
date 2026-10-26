@@ -8,6 +8,16 @@ export type Decoder = {
 };
 export type DecoderFactory = (elementId: string) => Promise<Decoder>;
 
+export function releaseCameraVideos(videos: Iterable<HTMLVideoElement>): void {
+    for (const video of videos) {
+        const stream = video.srcObject as MediaStream | null;
+        for (const track of stream?.getTracks() ?? []) track.stop();
+        video.pause();
+        video.srcObject = null;
+        video.remove();
+    }
+}
+
 async function browserDecoder(elementId: string): Promise<Decoder> {
     if (!globalThis.isSecureContext) throw new Error('insecure');
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('unsupported');
@@ -37,6 +47,10 @@ async function browserDecoder(elementId: string): Promise<Decoder> {
                 track.addEventListener('ended', onEnded);
         },
         async stop() {
+            const videos = Array.from(
+                document.getElementById(elementId)?.querySelectorAll('video') ??
+                    [],
+            );
             for (const track of tracks) {
                 if (ended) track.removeEventListener('ended', ended);
             }
@@ -45,6 +59,7 @@ async function browserDecoder(elementId: string): Promise<Decoder> {
             } finally {
                 for (const track of tracks) track.stop();
                 tracks = [];
+                releaseCameraVideos(videos);
                 if (!scanner.isScanning) scanner.clear();
             }
         },
@@ -97,7 +112,7 @@ export function createScannerCamera(
             generation++;
             const instance = decoder;
             decoder = null;
-            if (instance) await instance.stop();
+            if (instance && !starting) await instance.stop();
         },
     };
 }

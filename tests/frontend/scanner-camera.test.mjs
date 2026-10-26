@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createScannerCamera } from '../../resources/js/lib/scanner-camera.ts';
+import {
+    createScannerCamera,
+    releaseCameraVideos,
+} from '../../resources/js/lib/scanner-camera.ts';
 
 function decoder() {
     let resolve;
@@ -44,6 +47,11 @@ void test('permission completing after cancellation releases the late stream', a
     const pending = camera.start();
     await Promise.resolve();
     await camera.stop();
+    assert.equal(
+        fake.stops(),
+        0,
+        'stop must wait for the decoder startup transition',
+    );
     fake.resolve();
     await pending;
     fake.emit('private-token');
@@ -97,4 +105,25 @@ void test('track termination pauses and callbacks after stop are ignored', async
     assert.deepEqual(frames, ['one']);
     assert.equal(ended, 1);
     assert.equal(fake.live(), false);
+});
+
+void test('camera cleanup detaches the last video frame and releases tracks even after decoder failure', () => {
+    const track = {
+        readyState: 'live',
+        stop() {
+            this.readyState = 'ended';
+        },
+    };
+    let attached = true;
+    const video = {
+        srcObject: { getTracks: () => [track] },
+        pause() {},
+        remove() {
+            attached = false;
+        },
+    };
+    releaseCameraVideos([video]);
+    assert.equal(track.readyState, 'ended');
+    assert.equal(video.srcObject, null);
+    assert.equal(attached, false);
 });
