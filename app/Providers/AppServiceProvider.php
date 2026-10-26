@@ -78,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Scanner tap endpoint (spec 03) — the framework `api` group ships
         // no default throttle, so the named limiter is load-bearing.
+        RateLimiter::for('web-scanner', fn (Request $request) => Limit::perMinute(60)->by((string) $request->user()->getAuthIdentifier()));
+
         RateLimiter::for('scanner', function (Request $request) {
             return Limit::perMinute(60)->by($request->ip());
         });

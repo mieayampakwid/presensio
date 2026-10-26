@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('active-role', ActiveRoleController::class)->name('active-role.switch');
 });
 
+require __DIR__.'/scanner.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/users.php';
 require __DIR__.'/classes.php';
