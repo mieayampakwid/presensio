@@ -21,8 +21,8 @@ use Tests\TestCase;
 
 class TimetableViewTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesBellSchedules;
+    use RefreshDatabase;
 
     private User $admin;
 
@@ -61,6 +61,7 @@ class TimetableViewTest extends TestCase
 
         parent::tearDown();
     }
+
     public function test_admin_and_principal_can_view_any_class_timetable(): void
     {
         $subject = ClassSubject::factory()->create(['class_id' => $this->class->id]);

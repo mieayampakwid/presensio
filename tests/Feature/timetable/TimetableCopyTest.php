@@ -324,7 +324,6 @@ class TimetableCopyTest extends TestCase
         );
     }
 
-
     /**
      * @return array<string, array{0: string}>
      */
