@@ -2,8 +2,12 @@
 
 use App\Enums\DeliveryStatus;
 use App\Jobs\DeliverNotification;
+use App\Models\Employee;
 use App\Models\NotificationDelivery;
+use App\Models\Shift;
+use App\Models\ShiftRoster;
 use App\Services\SchoolSettings;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -25,6 +29,28 @@ Schedule::command('attendance:mark-absences')
 Schedule::command('staff-attendance:mark-absences')
     ->dailyAt($settings->staffAbsentSweepTime())
     ->timezone($settings->timezone());
+
+// Per-shift absent sweeps (spec 20 §Req 6): one run per shift active today —
+// employee defaults plus today's non-null roster rows. The try/catch guards
+// pre-migration boots the same way SchoolSettings does above.
+try {
+    $shiftIds = Employee::query()->active()->whereNotNull('shift_id')->pluck('shift_id')
+        ->merge(
+            ShiftRoster::query()
+                ->whereDate('date', $settings->todayDate())
+                ->whereNotNull('shift_id')
+                ->pluck('shift_id')
+        )
+        ->unique();
+
+    foreach (Shift::query()->findMany($shiftIds) as $shift) {
+        Schedule::command("staff-attendance:mark-absences --shift={$shift->id}")
+            ->dailyAt($shift->sweepCronTime())
+            ->timezone($settings->timezone());
+    }
+} catch (QueryException) {
+    // Pre-migration boot (e.g. artisan migrate:fresh) — nothing to register.
+}
 
 Schedule::command('attendance:sync-holidays')
     ->weeklyOn(0, '03:00')

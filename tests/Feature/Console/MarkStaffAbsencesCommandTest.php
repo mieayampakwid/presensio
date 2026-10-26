@@ -6,8 +6,11 @@ use App\Enums\EmployeeAttendanceStatus;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\NonSchoolDay;
+use App\Models\RfidCard;
 use App\Models\ScanEvent;
 use App\Models\SchoolSetting;
+use App\Models\Shift;
+use App\Models\ShiftRoster;
 use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
@@ -123,6 +126,170 @@ class MarkStaffAbsencesCommandTest extends TestCase
 
         // Second run: 0 new records created, no duplicate key errors
         $this->artisan('staff-attendance:mark-absences')
+            ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $this->assertSame(1, EmployeeAttendance::count());
+    }
+
+    public function test_shift_sweep_marks_only_that_shifts_employees_without_records(): void
+    {
+        // Monday 2026-10-05, 21:00 Jakarta — the Malam sweep time (19:00 + 120)
+        Date::setTestNow('2026-10-05 14:00:00', 'UTC');
+
+        $night = Shift::factory()->night()->create();
+        $this->assertSame('21:00', $night->sweepCronTime());
+
+        $marked = Employee::factory()->create(['shift_id' => $night->id]);
+
+        $alreadyPresent = Employee::factory()->create(['shift_id' => $night->id]);
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $alreadyPresent->id,
+            'date' => '2026-10-05',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => now(),
+            'shift_id' => $night->id,
+        ]);
+
+        $pagiEmployee = Employee::factory()->create(['shift_id' => Shift::factory()->create()->id]);
+        $noShiftEmployee = Employee::factory()->create();
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
+            ->expectsOutput('Marked 1 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $record = EmployeeAttendance::where('employee_id', $marked->id)->where('date', '2026-10-05')->first();
+        $this->assertNotNull($record);
+        $this->assertSame(EmployeeAttendanceStatus::Absent, $record->status);
+        $this->assertSame($night->id, $record->shift_id);
+
+        // The present night employee keeps their record; Pagi and no-shift
+        // employees are untouched by the Malam run (AC-20-03)
+        $this->assertSame(
+            EmployeeAttendanceStatus::Present,
+            EmployeeAttendance::where('employee_id', $alreadyPresent->id)->where('date', '2026-10-05')->sole()->status,
+        );
+        $this->assertFalse(EmployeeAttendance::where('employee_id', $pagiEmployee->id)->exists());
+        $this->assertFalse(EmployeeAttendance::where('employee_id', $noShiftEmployee->id)->exists());
+    }
+
+    public function test_no_flag_sweep_touches_only_employees_without_any_shift(): void
+    {
+        // Monday 2026-10-05, 09:00 Jakarta — the global sweep time
+        Date::setTestNow('2026-10-05 02:00:00', 'UTC');
+
+        $nightEmployee = Employee::factory()->create(['shift_id' => Shift::factory()->night()->create()->id]);
+        $pagiEmployee = Employee::factory()->create(['shift_id' => Shift::factory()->create()->id]);
+        $noShiftEmployee = Employee::factory()->create();
+
+        $this->artisan('staff-attendance:mark-absences')
+            ->expectsOutput('Marked 1 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $record = EmployeeAttendance::where('employee_id', $noShiftEmployee->id)->sole();
+        $this->assertSame(EmployeeAttendanceStatus::Absent, $record->status);
+        $this->assertNull($record->shift_id);
+
+        // Shift-assigned employees wait for their own per-shift runs (AC-20-04)
+        $this->assertFalse(EmployeeAttendance::where('employee_id', $nightEmployee->id)->exists());
+        $this->assertFalse(EmployeeAttendance::where('employee_id', $pagiEmployee->id)->exists());
+    }
+
+    public function test_day_off_roster_row_is_skipped_by_both_runs_and_a_tap_still_records(): void
+    {
+        Date::setTestNow('2026-10-05 02:00:00', 'UTC');
+
+        $night = Shift::factory()->night()->create();
+        $employee = Employee::factory()->create(['shift_id' => $night->id]);
+        ShiftRoster::factory()->dayOff()->create([
+            'employee_id' => $employee->id,
+            'date' => '2026-10-05',
+        ]);
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
+            ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        // The no-flag run also skips the day-off row despite its null shift
+        $this->artisan('staff-attendance:mark-absences')
+            ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $this->assertSame(0, EmployeeAttendance::count());
+
+        // A tap that day still creates a normal record (extra day)
+        config(['attendance.scanner_keys' => ['test-scanner-key']]);
+        RfidCard::factory()->assignedToEmployee($employee)->create(['rfid_number' => 'EMP-DAYOFF']);
+
+        Date::setTestNow(Date::parse('2026-10-05 06:50:00', 'Asia/Jakarta'));
+
+        $this->postJson(
+            route('attendance.scan'),
+            ['credential_type' => 'rfid', 'credential' => 'EMP-DAYOFF'],
+            ['X-Scanner-Key' => 'test-scanner-key'],
+        )->assertOk()->assertJson(['outcome' => 'checked_in', 'detail' => 'check_in']);
+
+        $record = EmployeeAttendance::where('employee_id', $employee->id)->sole();
+        $this->assertSame('2026-10-05', $record->date->toDateString());
+        $this->assertSame(EmployeeAttendanceStatus::Present, $record->status);
+        $this->assertNull($record->shift_id);
+    }
+
+    public function test_rostered_shift_on_a_non_working_day_is_not_swept(): void
+    {
+        // Tuesday 2026-10-06, 09:00 Jakarta — school day, but not for this employee
+        Date::setTestNow('2026-10-06 02:00:00', 'UTC');
+
+        $night = Shift::factory()->night()->create();
+        $employee = Employee::factory()->create(['working_days' => [1]]);
+        ShiftRoster::factory()->create([
+            'employee_id' => $employee->id,
+            'date' => '2026-10-06',
+            'shift_id' => $night->id,
+        ]);
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
+            ->expectsOutput('Marked 0 employees absent for 2026-10-06.')
+            ->assertSuccessful();
+
+        $this->assertSame(0, EmployeeAttendance::count());
+    }
+
+    public function test_deactivated_employee_with_default_shift_and_roster_rows_is_never_swept(): void
+    {
+        Date::setTestNow('2026-10-05 02:00:00', 'UTC');
+
+        $night = Shift::factory()->night()->create();
+        $employee = Employee::factory()->inactive()->create(['shift_id' => $night->id]);
+        ShiftRoster::factory()->create([
+            'employee_id' => $employee->id,
+            'date' => '2026-10-05',
+            'shift_id' => Shift::factory()->create()->id,
+        ]);
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
+            ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $this->artisan('staff-attendance:mark-absences')
+            ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $this->assertSame(0, EmployeeAttendance::count());
+    }
+
+    public function test_shift_sweep_is_idempotent_on_rerun(): void
+    {
+        Date::setTestNow('2026-10-05 14:00:00', 'UTC');
+
+        $night = Shift::factory()->night()->create();
+        Employee::factory()->create(['shift_id' => $night->id]);
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
+            ->expectsOutput('Marked 1 employees absent for 2026-10-05.')
+            ->assertSuccessful();
+
+        $this->artisan('staff-attendance:mark-absences', ['--shift' => $night->id])
             ->expectsOutput('Marked 0 employees absent for 2026-10-05.')
             ->assertSuccessful();
 
