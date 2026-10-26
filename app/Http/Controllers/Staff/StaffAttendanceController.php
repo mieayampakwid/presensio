@@ -10,6 +10,7 @@ use App\Http\Requests\Staff\UpsertStaffAttendanceRequest;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Services\Attendance\EmployeeCalendar;
+use App\Services\Attendance\ShiftResolver;
 use App\Services\SchoolSettings;
 use App\Services\Timetable\TodaySchedule;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class StaffAttendanceController extends Controller
         private readonly SchoolSettings $settings,
         private readonly EmployeeCalendar $calendar,
         private readonly TodaySchedule $todaySchedule,
+        private readonly ShiftResolver $shifts,
     ) {}
 
     /**
@@ -159,8 +161,9 @@ class StaffAttendanceController extends Controller
         $validated = $request->validated();
         $tz = $this->settings->timezone();
         $date = $validated['date'];
+        $shift = $request->effectiveShift();
 
-        DB::transaction(function () use ($validated, $tz, $date, $request): void {
+        DB::transaction(function () use ($validated, $tz, $date, $shift, $request): void {
             $existing = EmployeeAttendance::query()
                 ->where('employee_id', $validated['employee_id'])
                 ->whereDate('date', $date)
@@ -172,14 +175,26 @@ class StaffAttendanceController extends Controller
                 ? Date::parse("{$date} {$validated['checked_in_at']}", $tz)->tz('UTC')
                 : null;
 
+            // On a cross-midnight shift a checkout time earlier than the
+            // check-in parses as the next calendar day (spec 20 §Req 8).
+            $checkoutDate = $date;
+
+            if ($shift?->crosses_midnight
+                && ! empty($validated['checked_in_at'])
+                && ! empty($validated['checked_out_at'])
+                && $validated['checked_out_at'] < $validated['checked_in_at']
+            ) {
+                $checkoutDate = Date::parse($date)->addDay()->toDateString();
+            }
+
             $checkedOutInstant = ! empty($validated['checked_out_at'])
-                ? Date::parse("{$date} {$validated['checked_out_at']}", $tz)->tz('UTC')
+                ? Date::parse("{$checkoutDate} {$validated['checked_out_at']}", $tz)->tz('UTC')
                 : null;
 
             $lateMinutes = 0;
             if ($checkedInInstant !== null) {
                 $localIn = $checkedInInstant->copy()->tz($tz);
-                $staffStartTime = $this->settings->staffStartTimeOn($localIn);
+                $staffStartTime = $this->shifts->windowFor($shift, $date)[0];
                 if ($localIn->greaterThan($staffStartTime)) {
                     $lateMinutes = (int) ceil($staffStartTime->diffInMinutes($localIn, false));
                 }
@@ -188,7 +203,7 @@ class StaffAttendanceController extends Controller
             $earlyLeaveMinutes = 0;
             if ($checkedOutInstant !== null) {
                 $localOut = $checkedOutInstant->copy()->tz($tz);
-                $staffEndTime = $this->settings->staffEndTimeOn($localOut);
+                $staffEndTime = $this->shifts->windowFor($shift, $date)[1];
                 $earlyLeaveMinutes = max(0, (int) ceil($localOut->diffInMinutes($staffEndTime, false)));
             }
 
@@ -203,6 +218,7 @@ class StaffAttendanceController extends Controller
                     'checked_out_at' => $checkedOutInstant,
                     'late_minutes' => $lateMinutes,
                     'early_leave_minutes' => $earlyLeaveMinutes,
+                    'shift_id' => $shift?->id,
                     'scan_method' => ScanMethod::ManualOverride,
                     'override_by_user_id' => $request->user()->id,
                     'overridden_at' => now(),
