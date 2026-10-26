@@ -11,6 +11,7 @@ return [
             'days' => 'Days',
             'periods' => 'Periods',
         ],
+        'actions' => 'Actions',
         'days_summary' => ':lessons lessons · :breaks breaks',
         'remove' => 'Delete schedule',
         'remove_description' => 'Schedule :name will be deleted. This action cannot be undone.',

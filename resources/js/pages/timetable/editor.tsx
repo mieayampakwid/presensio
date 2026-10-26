@@ -82,6 +82,7 @@ type FormState = {
     lesson_period_id: string;
     period_count: string;
     room: string;
+    semester_id?: string;
     confirm_conflicts: boolean;
 };
 
@@ -153,6 +154,7 @@ export default function TimetableEditor({
         http.clearErrors();
         http.setData({
             ...emptyForm(),
+            semester_id: String(semesterId),
             day_of_week: String(day.weekday),
             lesson_period_id: String(period.id),
             class_subject_id: classSubjects[0]
@@ -171,6 +173,7 @@ export default function TimetableEditor({
         http.clearErrors();
         http.setData({
             ...emptyForm(),
+            semester_id: String(semesterId),
             type: slot.class_subject_id !== null ? 'subject' : 'activity',
             class_subject_id:
                 slot.class_subject_id !== null

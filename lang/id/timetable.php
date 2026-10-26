@@ -11,6 +11,7 @@ return [
             'days' => 'Hari',
             'periods' => 'Periode',
         ],
+        'actions' => 'Aksi',
         'days_summary' => ':lessons jam pelajaran · :breaks istirahat',
         'remove' => 'Hapus',
         'remove_description' => 'Jadwal :name akan dihapus. Tindakan ini tidak dapat dibatalkan.',
