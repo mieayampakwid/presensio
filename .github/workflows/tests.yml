@@ -33,6 +33,11 @@ jobs:
 
       - name: Setup Application
         run: composer setup
+        env:
+          # .env.example points at the Sail container (DB_HOST=pgsql), which
+          # does not exist on the runner; the test suite itself runs sqlite.
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
 
       - name: Run CI Checks
         run: composer ci:check
