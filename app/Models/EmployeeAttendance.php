@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $checked_out_at
  * @property int $late_minutes
  * @property int $early_leave_minutes
+ * @property int|null $shift_id
  * @property ScanMethod|null $scan_method
  * @property int|null $override_by_user_id
  * @property Carbon|null $overridden_at
@@ -28,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Employee $employee
+ * @property-read Shift|null $shift
  * @property-read User|null $overrideBy
  */
 #[Fillable([
@@ -38,6 +40,7 @@ use Illuminate\Support\Carbon;
     'checked_out_at',
     'late_minutes',
     'early_leave_minutes',
+    'shift_id',
     'scan_method',
     'override_by_user_id',
     'overridden_at',
@@ -87,5 +90,15 @@ class EmployeeAttendance extends Model
     public function overrideBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'override_by_user_id');
+    }
+
+    /**
+     * Shift snapshotted at record creation, null for the global staff hours.
+     *
+     * @return BelongsTo<Shift, $this>
+     */
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
     }
 }
