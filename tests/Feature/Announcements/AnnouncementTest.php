@@ -39,6 +39,9 @@ class AnnouncementTest extends TestCase
     {
         $rows = [];
         foreach (UserRole::cases() as $role) {
+            if ($role === UserRole::ScannerOperator) {
+                continue;
+            }
             $rows[$role->value] = [$role];
         }
 

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'scanner_operator' => 'Operator Scanner',
     'admin' => 'Admin',
     'principal' => 'Kepala Sekolah',
     'teacher' => 'Guru',

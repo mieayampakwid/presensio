@@ -6,7 +6,8 @@ export type UserRole =
     | 'finance'
     | 'staff'
     | 'parent'
-    | 'student';
+    | 'student'
+    | 'scanner_operator';
 
 export type User = {
     id: number;

@@ -18,6 +18,7 @@ use App\Services\Attendance\ClassAccess;
 use App\Services\Reports\AttendanceReportService;
 use App\Services\SchoolSettings;
 use App\Services\Timetable\TodaySchedule;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,9 +36,13 @@ class DashboardController extends Controller
         private readonly TodaySchedule $todaySchedule,
     ) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
+        if ($user->hasRole(UserRole::ScannerOperator)) {
+            return redirect()->route('scanner.index');
+        }
+
         $activeRole = $user->activeRole();
         $isStaff = in_array($activeRole, [UserRole::Admin, UserRole::Principal, UserRole::Teacher, UserRole::Counselor], true);
 

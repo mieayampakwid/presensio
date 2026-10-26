@@ -53,6 +53,7 @@ const ALL_ROLES: UserRole[] = [
     'staff',
     'parent',
     'student',
+    'scanner_operator',
 ];
 
 export default function UserForm({
@@ -93,10 +94,12 @@ export default function UserForm({
 
     const toggleRole = (targetRole: UserRole) => {
         let nextRoles: UserRole[];
-        if (targetRole === 'student') {
-            nextRoles = ['student'];
+        if (targetRole === 'student' || targetRole === 'scanner_operator') {
+            nextRoles = [targetRole];
         } else {
-            const withoutStudent = roles.filter((r) => r !== 'student');
+            const withoutStudent = roles.filter(
+                (r) => r !== 'student' && r !== 'scanner_operator',
+            );
             if (withoutStudent.includes(targetRole)) {
                 nextRoles = withoutStudent.filter((r) => r !== targetRole);
             } else {
@@ -253,6 +256,18 @@ export default function UserForm({
                                 )}
                             />
                             <InputError message={errors.password} />
+                            <Label htmlFor="password_confirmation">
+                                {t('users.form.password_confirmation')}
+                            </Label>
+                            <PasswordInput
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                autoComplete="new-password"
+                                required
+                            />
+                            <InputError
+                                message={errors.password_confirmation}
+                            />
                         </div>
                     )}
 

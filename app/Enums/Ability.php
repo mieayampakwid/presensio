@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum Ability: string
 {
+    case OperateScanner = 'operate-scanner';
     case ManageMasterData = 'manage-master-data';
     case OverrideAttendance = 'override-attendance';
     case ReviewExcuses = 'review-excuses';

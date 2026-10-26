@@ -13,6 +13,7 @@ class RolePermissions
      * @var array<string, list<UserRole>>
      */
     public const MATRIX = [
+        'operate-scanner' => [UserRole::Admin, UserRole::Teacher, UserRole::ScannerOperator],
         'manage-master-data' => [
             UserRole::Admin,
         ],

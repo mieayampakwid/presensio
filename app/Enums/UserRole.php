@@ -12,4 +12,5 @@ enum UserRole: string
     case Staff = 'staff';
     case Parent = 'parent';
     case Student = 'student';
+    case ScannerOperator = 'scanner_operator';
 }

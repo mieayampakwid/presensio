@@ -42,6 +42,21 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
+        if ($user?->hasRole(UserRole::ScannerOperator)) {
+            return [
+                ...parent::share($request),
+                'name' => config('app.name'),
+                'auth' => [
+                    'user' => ['id' => $user->id, 'username' => $user->username, 'email' => $user->email,
+                        'role' => 'scanner_operator', 'roles' => ['scanner_operator']],
+                    'active_role' => 'scanner_operator',
+                ],
+                'locale' => app()->getLocale(),
+                'translations' => fn (): array => $this->translations(),
+                'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            ];
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),

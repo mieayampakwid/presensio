@@ -19,6 +19,10 @@ class EnsureUserIsActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Your account has been deactivated.'], 401);
+            }
+
             return redirect()->route('login')
                 ->with('status', 'Your account has been deactivated.');
         }

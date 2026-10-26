@@ -43,6 +43,7 @@ return [
         'not_linked' => 'Not linked',
         'active' => 'Active',
         'password' => 'Password',
+        'password_confirmation' => 'Confirm password',
         'password_placeholder' => 'Password',
         'create_submit' => 'Create user',
     ],

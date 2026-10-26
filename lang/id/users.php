@@ -43,6 +43,7 @@ return [
         'not_linked' => 'Tidak terhubung',
         'active' => 'Aktif',
         'password' => 'Kata sandi',
+        'password_confirmation' => 'Konfirmasi kata sandi',
         'password_placeholder' => 'Kata sandi',
         'create_submit' => 'Buat pengguna',
     ],

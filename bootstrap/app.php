@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RestrictScannerOperatorAccess;
 use App\Http\Middleware\SetLocale;
 use App\Services\Finance\Exceptions\BillOperationException;
 use App\Services\Finance\Exceptions\ClosedPeriodException;
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             HandleInertiaRequests::class,
             EnsureUserIsActive::class,
+            RestrictScannerOperatorAccess::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })

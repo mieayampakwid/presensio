@@ -67,8 +67,8 @@ class UpdateUserRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 $roles = (array) $this->input('roles', []);
-                if (in_array(UserRole::Student->value, $roles, true) && count(array_unique($roles)) > 1) {
-                    $validator->errors()->add('roles', 'The student role cannot be combined with other roles.');
+                if (count(array_unique($roles)) > 1 && (in_array(UserRole::Student->value, $roles, true) || in_array(UserRole::ScannerOperator->value, $roles, true))) {
+                    $validator->errors()->add('roles', in_array(UserRole::Student->value, $roles, true) ? 'The student role cannot be combined with other roles.' : 'The scanner operator role cannot be combined with other roles.');
                 }
             },
             function (Validator $validator): void {
