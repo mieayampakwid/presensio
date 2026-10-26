@@ -4,12 +4,14 @@ namespace App\Services\Attendance;
 
 use App\Enums\ScanMethod;
 use App\Enums\ScanOutcome;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\RfidCard;
 use App\Models\ScanEvent;
 use App\Models\Student;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -57,6 +59,17 @@ class AttendanceScanService
         }
 
         $date = $scannedAt->tz($this->settings->timezone())->toDateString();
+
+        $activeYearId = AcademicYear::active()?->id;
+        $eligible = $activeYearId !== null && $student->enrollments()
+            ->whereNull('ended_on')
+            ->where('started_on', '<=', $date)
+            ->whereHas('schoolClass', fn (Builder $query) => $query->where('academic_year_id', $activeYearId))
+            ->exists();
+
+        if (! $eligible) {
+            return $this->log($method, $identifier, $student, ScanOutcome::IgnoredAlumni, $scannedAt);
+        }
 
         /** @var ScanResult $result */
         $result = DB::transaction(function () use ($method, $student, $date, $scannedAt) {

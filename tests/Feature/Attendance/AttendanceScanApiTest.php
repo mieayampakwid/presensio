@@ -3,9 +3,12 @@
 namespace Tests\Feature\Attendance;
 
 use App\Enums\AttendanceStatus;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\Enrollment;
 use App\Models\RfidCard;
 use App\Models\ScanEvent;
+use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Services\Attendance\QrTokenService;
@@ -15,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AttendanceScanApiTest extends TestCase
@@ -45,6 +49,51 @@ class AttendanceScanApiTest extends TestCase
         return $this->postJson(route('attendance.scan'), $payload, $key === null ? [] : ['X-Scanner-Key' => $key]);
     }
 
+    public function test_unenrolled_student_is_ignored_without_attendance_mutation(): void
+    {
+        $student = Student::factory()->create();
+        RfidCard::factory()->assigned($student)->create(['rfid_number' => 'ALUMNI']);
+
+        $this->scan(['credential_type' => 'rfid', 'credential' => 'ALUMNI'])
+            ->assertOk()->assertJson(['outcome' => 'ignored', 'detail' => 'ignored_alumni']);
+
+        $this->assertDatabaseCount('attendances', 0);
+        $this->assertDatabaseHas('scan_events', ['student_id' => $student->id, 'outcome' => 'ignored_alumni']);
+        $this->assertDatabaseCount('scan_events', 1);
+    }
+
+    #[DataProvider('ineligibleEnrollments')]
+    public function test_ineligible_enrollment_cannot_change_existing_attendance(string $reason): void
+    {
+        $student = Student::factory()->create();
+        $year = AcademicYear::factory()->current()->create();
+        $class = SchoolClass::factory()->create(['academic_year_id' => $year->id]);
+        if ($reason === 'inactive_year' || $reason === 'no_active_year') {
+            $year->update(['is_active' => false]);
+        }
+        if ($reason !== 'no_active_year') {
+            Enrollment::factory()->create([
+                'student_id' => $student->id, 'class_id' => $class->id,
+                'started_on' => $reason === 'future' ? '2026-09-22' : '2026-07-01',
+                'ended_on' => $reason === 'ended' ? '2026-09-20' : null,
+            ]);
+        }
+        $attendance = Attendance::factory()->absent()->create(['student_id' => $student->id, 'date' => '2026-09-21']);
+        $before = $attendance->refresh()->getAttributes();
+        RfidCard::factory()->assigned($student)->create(['rfid_number' => 'INELIGIBLE']);
+
+        $this->scan(['credential_type' => 'rfid', 'credential' => 'INELIGIBLE'])
+            ->assertOk()->assertJson(['outcome' => 'ignored', 'detail' => 'ignored_alumni']);
+
+        $this->assertSame($before, $attendance->refresh()->getAttributes());
+        $this->assertDatabaseCount('scan_events', 1);
+    }
+
+    public static function ineligibleEnrollments(): array
+    {
+        return array_map(fn (string $reason): array => [$reason], ['ended', 'future', 'inactive_year', 'no_active_year']);
+    }
+
     public function test_missing_or_wrong_key_is_unauthorized_and_logs_nothing(): void
     {
         $this->scan(['credential_type' => 'rfid', 'credential' => 'X'], null)->assertUnauthorized();
@@ -61,7 +110,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_first_rfid_tap_checks_in_present_with_event_and_identifier(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         $this->scan(['credential_type' => 'rfid', 'credential' => '001234'])
@@ -86,7 +135,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_tap_after_school_start_is_late(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         // 00:35 UTC = 07:35 Jakarta, past the 07:30 start.
@@ -99,7 +148,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_second_tap_within_debounce_is_a_noop(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         $this->scan(['credential_type' => 'rfid', 'credential' => '001234']);
@@ -115,7 +164,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_checkout_tap_beyond_debounce_respects_require_checkout(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         $this->scan(['credential_type' => 'rfid', 'credential' => '001234']);
@@ -145,7 +194,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_tap_upgrades_a_swept_absence(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
         Attendance::factory()->absent()->create(['student_id' => $student->id, 'date' => '2026-09-21']);
 
@@ -161,7 +210,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_tap_racing_the_sweep_upgrades_the_row_the_sweep_inserted(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         // The sweep inserts its absent row right after the scan's read
@@ -186,7 +235,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_taps_by_excused_students_are_noops(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         foreach (['sick', 'leave'] as $status) {
@@ -210,7 +259,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_valid_qr_token_checks_in_without_storing_the_token(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
 
         $token = (new QrTokenService)->issue($student);
 
@@ -225,7 +274,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_expired_qr_token_is_rejected_but_logged(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         $token = (new QrTokenService)->issue($student);
 
         Date::setTestNow(Date::now()->addSeconds(31));
@@ -240,7 +289,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_tampered_qr_token_reports_unknown_credential(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         $token = (new QrTokenService)->issue($student);
         $segments = explode('.', $token->token);
         $segments[2] = str_repeat('a', 64);
@@ -267,7 +316,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_trusted_device_clock_wins_for_check_in_time(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         // Device 90s behind server (within the 2-minute tolerance).
@@ -284,7 +333,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_device_clock_beyond_tolerance_falls_back_to_server_time(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         $this->scan([
@@ -302,7 +351,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_business_date_follows_the_school_timezone_across_utc_midnight(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         RfidCard::factory()->assigned($student)->create(['rfid_number' => '001234']);
 
         // 17:05 UTC = 00:05 Jakarta on the 22nd.
@@ -315,7 +364,7 @@ class AttendanceScanApiTest extends TestCase
 
     public function test_replayed_qr_token_collapses_into_the_same_record(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->enrolledIn(SchoolClass::factory()->create())->create();
         $token = (new QrTokenService)->issue($student);
 
         $this->scan(['credential_type' => 'dynamic_qr', 'credential' => $token->token]);

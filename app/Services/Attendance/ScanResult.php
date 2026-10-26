@@ -49,6 +49,7 @@ final class ScanResult
             ScanOutcome::IgnoredDebounce,
             ScanOutcome::IgnoredComplete,
             ScanOutcome::IgnoredExcused,
+            ScanOutcome::IgnoredAlumni,
             ScanOutcome::IgnoredInactive => 'ignored',
             ScanOutcome::ErrorExpiredToken, ScanOutcome::ErrorUnknownCredential => 'error',
         };
