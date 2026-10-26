@@ -1,3 +1,4 @@
+import ScannerController from '@/actions/App/Http/Controllers/Attendance/ScannerController';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -67,6 +68,23 @@ const activeItemStyles =
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
     const { auth } = page.props;
+    const isOperator =
+        auth.user.roles?.includes('scanner_operator') ??
+        auth.user.role === 'scanner_operator';
+    const activeRole = auth.active_role ?? auth.user.role;
+    const scannerItem: NavItem = {
+        title: 'Scanner',
+        href: ScannerController.index(),
+        icon: LayoutGrid,
+    };
+    const navigationItems = isOperator
+        ? [scannerItem]
+        : [
+              ...mainNavItems,
+              ...(['admin', 'teacher'].includes(activeRole)
+                  ? [scannerItem]
+                  : []),
+          ];
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
@@ -99,7 +117,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map((item) => (
+                                            {navigationItems.map((item) => (
                                                 <Link
                                                     key={item.title}
                                                     href={item.href}
@@ -114,7 +132,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         </div>
 
                                         <div className="flex flex-col space-y-4">
-                                            {rightNavItems.map((item) => (
+                                            {(isOperator
+                                                ? []
+                                                : rightNavItems
+                                            ).map((item) => (
                                                 <a
                                                     key={item.title}
                                                     href={toUrl(item.href)}
@@ -136,7 +157,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={dashboard()}
+                        href={
+                            isOperator ? ScannerController.index() : dashboard()
+                        }
                         prefetch
                         className="flex items-center space-x-2"
                     >
@@ -147,7 +170,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
+                                {navigationItems.map((item, index) => (
                                     <NavigationMenuItem
                                         key={index}
                                         className="relative flex h-full items-center"
@@ -187,31 +210,33 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
                             <div className="ml-1 hidden gap-1 lg:flex">
-                                {rightNavItems.map((item) => (
-                                    <Tooltip key={item.title}>
-                                        <TooltipTrigger>
-                                            <a
-                                                href={toUrl(item.href)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="group text-accent-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                                            >
-                                                <span className="sr-only">
-                                                    {item.title}
-                                                </span>
-                                                {item.icon && (
-                                                    <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
-                                                )}
-                                            </a>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{item.title}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
+                                {(isOperator ? [] : rightNavItems).map(
+                                    (item) => (
+                                        <Tooltip key={item.title}>
+                                            <TooltipTrigger>
+                                                <a
+                                                    href={toUrl(item.href)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="group text-accent-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                                                >
+                                                    <span className="sr-only">
+                                                        {item.title}
+                                                    </span>
+                                                    {item.icon && (
+                                                        <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
+                                                    )}
+                                                </a>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{item.title}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    ),
+                                )}
                             </div>
                         </div>
-                        <NotificationBell />
+                        {!isOperator && <NotificationBell />}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

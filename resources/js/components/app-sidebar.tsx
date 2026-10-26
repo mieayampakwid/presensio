@@ -1,3 +1,4 @@
+import ScannerController from '@/actions/App/Http/Controllers/Attendance/ScannerController';
 import AnnouncementReaderController from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
@@ -114,6 +115,14 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const activeRole = auth.active_role ?? auth.user.role;
+    const isOperator =
+        auth.user.roles?.includes('scanner_operator') ??
+        auth.user.role === 'scanner_operator';
+    const scannerItem: NavItem = {
+        title: 'Scanner',
+        href: ScannerController.index(),
+        icon: QrCode,
+    };
     const roles: UserRole[] = auth.user.roles ?? [auth.user.role];
 
     const mainNavItems: NavItem[] = [
@@ -501,7 +510,14 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link
+                                href={
+                                    isOperator
+                                        ? ScannerController.index()
+                                        : dashboard()
+                                }
+                                prefetch
+                            >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -553,7 +569,18 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain
+                    items={
+                        isOperator
+                            ? [scannerItem]
+                            : [
+                                  ...mainNavItems,
+                                  ...(['admin', 'teacher'].includes(activeRole)
+                                      ? [scannerItem]
+                                      : []),
+                              ]
+                    }
+                />
                 {financeNavItems.length > 0 && (
                     <NavMain label="Finance" items={financeNavItems} />
                 )}
@@ -563,7 +590,9 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {!isOperator && (
+                    <NavFooter items={footerNavItems} className="mt-auto" />
+                )}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

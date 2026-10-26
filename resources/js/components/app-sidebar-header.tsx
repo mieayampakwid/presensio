@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { NotificationBell } from '@/components/notification-bell';
@@ -8,6 +9,10 @@ export function AppSidebarHeader({
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
+    const { auth } = usePage().props;
+    const isOperator =
+        auth.user.roles?.includes('scanner_operator') ??
+        auth.user.role === 'scanner_operator';
     return (
         <header className="border-sidebar-border/50 flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex items-center gap-2">
@@ -15,7 +20,7 @@ export function AppSidebarHeader({
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <NotificationBell />
+                {!isOperator && <NotificationBell />}
             </div>
         </header>
     );
