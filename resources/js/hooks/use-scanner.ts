@@ -37,6 +37,8 @@ export function useScanner() {
         if (mounted.current) {
             setActive(false);
             setView(session.snapshot());
+            if (session.snapshot().state === 'paused')
+                setErrorKey('scanner.unconfirmed');
             setResult(null);
             setLog([]);
         }
@@ -125,7 +127,11 @@ export function useScanner() {
         request.current = null;
         if (!mounted.current || current !== generation.current) {
             session.settle('unconfirmed');
-            if (mounted.current) setView(session.snapshot());
+            if (mounted.current) {
+                setView(session.snapshot());
+                if (session.snapshot().state === 'paused')
+                    setErrorKey('scanner.unconfirmed');
+            }
             return;
         }
         if (submission.kind === 'confirmed') {
@@ -177,7 +183,8 @@ export function useScanner() {
             },
             () => {
                 void stop();
-                if (mounted.current) setErrorKey('scanner.camera_ended');
+                if (mounted.current && session.snapshot().state === 'idle')
+                    setErrorKey('scanner.camera_ended');
             },
         );
         try {
@@ -191,17 +198,19 @@ export function useScanner() {
                 setView(session.snapshot());
                 const message = String(error);
                 setErrorKey(
-                    message.includes('insecure')
-                        ? 'scanner.insecure'
-                        : message.includes('unsupported')
-                          ? 'scanner.unsupported'
-                          : /NotAllowed|PermissionDenied|Permission denied/i.test(
-                                  message,
-                              )
-                            ? 'scanner.camera_denied'
-                            : /NotFound|DevicesNotFound/i.test(message)
-                              ? 'scanner.no_camera'
-                              : 'scanner.camera_unavailable',
+                    session.snapshot().state === 'paused'
+                        ? 'scanner.unconfirmed'
+                        : message.includes('insecure')
+                          ? 'scanner.insecure'
+                          : message.includes('unsupported')
+                            ? 'scanner.unsupported'
+                            : /NotAllowed|PermissionDenied|Permission denied/i.test(
+                                    message,
+                                )
+                              ? 'scanner.camera_denied'
+                              : /NotFound|DevicesNotFound/i.test(message)
+                                ? 'scanner.no_camera'
+                                : 'scanner.camera_unavailable',
                 );
             }
         } finally {

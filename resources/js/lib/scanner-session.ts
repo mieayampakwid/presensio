@@ -12,7 +12,11 @@ export function createScannerSession(now: () => number): ScannerSession {
 
     return {
         start() {
-            if (pending) return false;
+            if (
+                pending ||
+                ['paused', 'unauthorized', 'throttled'].includes(state)
+            )
+                return false;
             running = true;
             needsRemoval = submitted;
             absentSince = null;
@@ -21,7 +25,9 @@ export function createScannerSession(now: () => number): ScannerSession {
         },
         stop() {
             running = false;
-            state = 'idle';
+            if (pending) state = 'paused';
+            else if (!['paused', 'unauthorized', 'throttled'].includes(state))
+                state = 'idle';
             absentSince = null;
         },
         observe(qrPresent) {
@@ -51,13 +57,17 @@ export function createScannerSession(now: () => number): ScannerSession {
         },
         settle(result, retryAfterMs = 0) {
             pending = false;
-            if (!running) return;
             if (result === 'unconfirmed') state = 'paused';
             else if (result === 'unauthorized') state = 'unauthorized';
             else if (result === 'throttled') {
                 state = 'throttled';
                 retryAt = now() + Math.max(0, retryAfterMs);
-            } else state = needsRemoval ? 'waiting-removal' : 'ready';
+            } else
+                state = !running
+                    ? 'idle'
+                    : needsRemoval
+                      ? 'waiting-removal'
+                      : 'ready';
         },
         resume() {
             if (
@@ -67,10 +77,9 @@ export function createScannerSession(now: () => number): ScannerSession {
             )
                 return false;
             if (state !== 'paused' && state !== 'throttled') return false;
-            running = true;
             needsRemoval = true;
             absentSince = null;
-            state = 'waiting-removal';
+            state = running ? 'waiting-removal' : 'idle';
             return true;
         },
         snapshot: () => ({ state, pending, retryAt }),

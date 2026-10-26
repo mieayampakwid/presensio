@@ -127,7 +127,8 @@ export default function ScannerPage() {
                                     )}
                                 </Button>
                             ) : (
-                                scanner.state !== 'unauthorized' && (
+                                scanner.state !== 'unauthorized' &&
+                                !canResume && (
                                     <Button
                                         disabled={scanner.pending}
                                         onClick={() => void scanner.start()}
@@ -158,8 +159,9 @@ export default function ScannerPage() {
                                     <Button
                                         variant="outline"
                                         disabled={
-                                            scanner.remaining > 0 &&
-                                            scanner.state === 'throttled'
+                                            scanner.pending ||
+                                            (scanner.remaining > 0 &&
+                                                scanner.state === 'throttled')
                                         }
                                         onClick={scanner.resume}
                                     >

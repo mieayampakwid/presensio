@@ -141,3 +141,49 @@ void test('log holds only fifty normalized results newest first', () => {
     assert.equal(log[49].receivedAt, 1);
     assert.equal(JSON.stringify(log).includes('credential":"'), false);
 });
+
+void test('stop during an uncertain request requires recovery before restarting camera', () => {
+    const { scanner, at } = fixture();
+    scanner.start();
+    scanner.observe(true);
+    scanner.stop();
+    assert.equal(scanner.resume(), false);
+    scanner.settle('unconfirmed');
+    assert.equal(scanner.snapshot().state, 'paused');
+    assert.equal(scanner.start(), false);
+    assert.equal(scanner.resume(), true);
+    assert.equal(scanner.snapshot().state, 'idle');
+    assert.equal(scanner.start(), true);
+    at(5000);
+    assert.equal(scanner.observe(true), false);
+    scanner.observe(false);
+    at(6000);
+    scanner.observe(false);
+    assert.equal(scanner.observe(true), true);
+});
+
+void test('stop and restart cannot bypass a throttle deadline or explicit resume', () => {
+    const { scanner, at } = fixture();
+    scanner.start();
+    scanner.observe(true);
+    scanner.settle('throttled', 60000);
+    scanner.stop();
+    at(2000);
+    assert.equal(scanner.start(), false);
+    assert.equal(scanner.resume(), false);
+    at(60000);
+    assert.equal(scanner.start(), false);
+    assert.equal(scanner.resume(), true);
+    assert.equal(scanner.start(), true);
+});
+
+void test('authorization loss survives camera stop and start', () => {
+    const { scanner } = fixture();
+    scanner.start();
+    scanner.observe(true);
+    scanner.settle('unauthorized');
+    scanner.stop();
+    assert.equal(scanner.start(), false);
+    assert.equal(scanner.resume(), false);
+    assert.equal(scanner.snapshot().state, 'unauthorized');
+});
