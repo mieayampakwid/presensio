@@ -1,8 +1,9 @@
 import { Head, Link, router, Form } from '@inertiajs/react';
-import { CalendarRange, Pencil } from 'lucide-react';
+import { CalendarCheck, CalendarRange, Pencil } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import StaffRecapController from '@/actions/App/Http/Controllers/Staff/StaffRecapController';
+import ShiftRosterController from '@/actions/App/Http/Controllers/Staff/ShiftRosterController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -128,6 +129,16 @@ export default function StaffAttendanceIndex({
                     />
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" asChild>
+                            <Link
+                                href={ShiftRosterController.index.url({
+                                    query: { week: date },
+                                })}
+                            >
+                                <CalendarCheck className="mr-2 h-4 w-4" />{' '}
+                                Roster Shift
+                            </Link>
+                        </Button>
                         <Button variant="outline" asChild>
                             <Link
                                 href={StaffRecapController.index.url({
