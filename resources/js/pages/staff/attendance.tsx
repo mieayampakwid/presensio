@@ -27,6 +27,8 @@ type EmployeeRow = {
     employee_number: string | null;
     position: string | null;
     is_teacher: boolean;
+    shift_name: string | null;
+    shift_times: string | null;
     is_expected: boolean;
     status: string;
     status_label: string;
@@ -319,6 +321,13 @@ export default function StaffAttendanceIndex({
                                                     </span>
                                                 )}
                                             </div>
+                                            {row.shift_name !== null && (
+                                                <div className="mt-0.5 text-xs font-medium">
+                                                    {row.shift_name}
+                                                    {row.shift_times !== null &&
+                                                        ` · ${row.shift_times}`}
+                                                </div>
+                                            )}
                                             {row.first_period && (
                                                 <div className="text-muted-foreground mt-1 text-xs">
                                                     Jam pertama:{' '}

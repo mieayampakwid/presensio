@@ -9,6 +9,7 @@ use App\Models\EmployeeAttendance;
 use App\Models\NonSchoolDay;
 use App\Models\SchoolSetting;
 use App\Services\Attendance\EmployeeCalendar;
+use App\Services\Attendance\ShiftResolver;
 use App\Services\SchoolSettings;
 use App\Services\Staff\StaffRecapService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,6 +38,7 @@ class StaffRecapServiceTest extends TestCase
         $this->service = new StaffRecapService(
             new EmployeeCalendar($settings),
             $settings,
+            new ShiftResolver($settings),
         );
     }
 

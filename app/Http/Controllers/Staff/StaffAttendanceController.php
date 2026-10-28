@@ -38,7 +38,6 @@ class StaffAttendanceController extends Controller
         $todayDate = $this->settings->todayDate();
         $date = $this->resolveDate($request, $todayDate);
         $filter = $request->string('filter')->toString() ?: 'all';
-        $isPastDate = $date < $todayDate;
 
         $isSchoolDay = $this->settings->isSchoolDay($date);
 
@@ -46,13 +45,17 @@ class StaffAttendanceController extends Controller
         // first-period enrichment read it without N+1)
         $activeEmployees = Employee::query()->active()->with('teacher')->orderBy('name')->get();
 
-        // Load existing attendance records for the date
+        // Load existing attendance records for the date (shift preloaded:
+        // the no-checkout rule reads the snapshot without N+1)
         $records = EmployeeAttendance::query()
             ->whereDate('date', $date)
             ->whereIn('employee_id', $activeEmployees->pluck('id'))
-            ->with('overrideBy:id,username')
+            ->with('overrideBy:id,username', 'shift')
             ->get()
             ->keyBy('employee_id');
+
+        // Effective shift per employee on the view date (spec 20 §Req 4)
+        $resolutions = $this->shifts->resolveMany($activeEmployees, $date);
 
         $rows = [];
         $summary = [
@@ -84,7 +87,14 @@ class StaffAttendanceController extends Controller
             $hasIn = $record !== null && $record->checked_in_at !== null;
             $hasOut = $record !== null && $record->checked_out_at !== null;
             $notYetArrived = $record === null || ($status === EmployeeAttendanceStatus::Absent && ! $hasIn);
-            $isNoCheckout = $hasIn && ! $hasOut && $isPastDate;
+
+            // Missing checkout once the record's snapshotted window has
+            // ended — including today's view (spec 20 §Req 8 / AC-20-15).
+            $isNoCheckout = $hasIn && ! $hasOut
+                && $this->shifts->windowFor($record->shift, $record->date->toDateString())[1]->isPast();
+
+            $resolution = $resolutions->get($emp->id);
+            $effectiveShift = $resolution->shift;
 
             if ($isNoCheckout) {
                 $summary['no_checkout']++;
@@ -109,6 +119,10 @@ class StaffAttendanceController extends Controller
                 'employee_number' => $emp->employee_number,
                 'position' => $emp->position,
                 'is_teacher' => $emp->isTeacher(),
+                'shift_name' => $effectiveShift?->name,
+                'shift_times' => $effectiveShift !== null
+                    ? $effectiveShift->start_time->format('H:i').' - '.$effectiveShift->end_time->format('H:i')
+                    : null,
                 'is_expected' => $isExpected,
                 'status' => $status instanceof EmployeeAttendanceStatus ? $status->value : 'not_yet_arrived',
                 'status_label' => $status ? $status->label() : 'Belum Hadir',
