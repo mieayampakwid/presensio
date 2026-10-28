@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\UpdateAttendanceSettingsRequest;
 use App\Models\SchoolSetting;
+use App\Models\Shift;
 use App\Services\Audit\AuditLogger;
 use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
@@ -32,7 +33,22 @@ class AttendanceSettingsController extends Controller
                 'scan_debounce_minutes' => $row->scan_debounce_minutes,
                 'scan_drift_tolerance_minutes' => $row->scan_drift_tolerance_minutes,
                 'school_operational_days' => $this->settings->operationalWeekdays(),
+                'staff_start_time' => substr((string) $row->staff_start_time, 0, 5),
+                'staff_end_time' => substr((string) $row->staff_end_time, 0, 5),
+                'staff_absent_sweep_time' => substr((string) $row->staff_absent_sweep_time, 0, 5),
             ],
+            'shifts' => Shift::query()
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Shift $shift): array => [
+                    'id' => $shift->id,
+                    'name' => $shift->name,
+                    'start_time' => $shift->start_time->format('H:i'),
+                    'end_time' => $shift->end_time->format('H:i'),
+                    'crosses_midnight' => $shift->crosses_midnight,
+                    'sweep_offset_minutes' => $shift->sweep_offset_minutes,
+                ])
+                ->all(),
         ]);
     }
 

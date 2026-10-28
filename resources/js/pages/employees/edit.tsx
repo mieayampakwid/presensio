@@ -5,6 +5,7 @@ import EmployeeForm from './employee-form';
 
 type Option = { value: string; label: string };
 type UserOption = { id: number; username: string };
+type ShiftOption = { id: number; name: string };
 
 type EmployeeData = {
     id: number;
@@ -17,6 +18,7 @@ type EmployeeData = {
     is_active: boolean;
     is_teacher: boolean;
     user_id: number | null;
+    shift_id: number | null;
 };
 
 type Props = {
@@ -24,6 +26,7 @@ type Props = {
     employment_types: Option[];
     operational_days: number[];
     available_users: UserOption[];
+    shifts: ShiftOption[];
 };
 
 export default function EditEmployee({
@@ -31,6 +34,7 @@ export default function EditEmployee({
     employment_types,
     operational_days,
     available_users,
+    shifts,
 }: Props) {
     return (
         <>
@@ -43,7 +47,7 @@ export default function EditEmployee({
                 />
 
                 <EmployeeForm
-                    action={EmployeeController.update({
+                    action={EmployeeController.update.form({
                         employee: employee.id,
                     })}
                     cancelUrl={EmployeeController.index().url}
@@ -58,10 +62,12 @@ export default function EditEmployee({
                         isActive: employee.is_active,
                         isTeacher: employee.is_teacher,
                         userId: employee.user_id,
+                        shiftId: employee.shift_id,
                     }}
                     employmentTypes={employment_types}
                     operationalDays={operational_days}
                     availableUsers={available_users}
+                    shifts={shifts}
                 />
             </div>
         </>

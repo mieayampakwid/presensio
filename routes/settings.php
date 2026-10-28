@@ -9,6 +9,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SchoolLogoController;
 use App\Http\Controllers\Settings\SchoolProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\ShiftController;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::put('settings/attendance', [AttendanceSettingsController::class, 'update'])
         ->name('attendance-settings.update');
+
+    Route::post('settings/shifts', [ShiftController::class, 'store'])->name('shifts.store');
+    Route::put('settings/shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
+    Route::delete('settings/shifts/{shift}', [ShiftController::class, 'destroy'])->name('shifts.destroy');
 
     Route::get('settings/school', [SchoolProfileController::class, 'edit'])
         ->name('school-profile.edit');

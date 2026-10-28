@@ -8,6 +8,7 @@ use Database\Factories\ShiftFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Date;
 
 /**
@@ -22,6 +23,9 @@ use Illuminate\Support\Facades\Date;
  * @property int $sweep_offset_minutes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
+ * @property-read Employee $employees
+ * @property-read ShiftRoster $rosters
+ * @property-read EmployeeAttendance $attendances
  */
 #[Fillable(['name', 'start_time', 'end_time', 'crosses_midnight', 'sweep_offset_minutes'])]
 class Shift extends Model
@@ -72,6 +76,36 @@ class Shift extends Model
     public function sweepCronTime(): string
     {
         return $this->start_time->copy()->addMinutes($this->sweep_offset_minutes)->format('H:i');
+    }
+
+    /**
+     * Employees whose default shift is this one.
+     *
+     * @return HasMany<Employee, $this>
+     */
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    /**
+     * Roster rows assigning this shift.
+     *
+     * @return HasMany<ShiftRoster, $this>
+     */
+    public function rosters(): HasMany
+    {
+        return $this->hasMany(ShiftRoster::class);
+    }
+
+    /**
+     * Attendance records snapshotting this shift.
+     *
+     * @return HasMany<EmployeeAttendance, $this>
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(EmployeeAttendance::class);
     }
 
     /**

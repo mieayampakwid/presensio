@@ -45,6 +45,9 @@ class UpdateAttendanceSettingsRequest extends FormRequest
             'scan_drift_tolerance_minutes' => ['required', 'integer', 'min:0', 'max:60'],
             'school_operational_days' => ['required', 'array', 'min:1'],
             'school_operational_days.*' => ['integer', 'between:1,7'],
+            'staff_start_time' => ['required', 'date_format:H:i'],
+            'staff_end_time' => ['required', 'date_format:H:i'],
+            'staff_absent_sweep_time' => ['required', 'date_format:H:i'],
         ];
     }
 }

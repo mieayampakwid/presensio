@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Employees\StoreEmployeeRequest;
 use App\Http\Requests\Employees\UpdateEmployeeRequest;
 use App\Models\Employee;
+use App\Models\Shift;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\SchoolSettings;
@@ -32,7 +33,7 @@ class EmployeeController extends Controller
         $search = $request->string('search')->toString();
 
         $employees = Employee::query()
-            ->with(['user:id,username', 'teacher:id,employee_id'])
+            ->with(['user:id,username', 'teacher:id,employee_id', 'shift:id,name'])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -52,6 +53,7 @@ class EmployeeController extends Controller
                 'employment_type' => $employee->employment_type->value,
                 'employment_type_label' => $employee->employment_type->label(),
                 'position' => $employee->position,
+                'shift_name' => $employee->shift?->name,
                 'working_days' => $employee->working_days,
                 'is_active' => $employee->is_active,
                 'is_teacher' => $employee->teacher !== null,
@@ -77,6 +79,7 @@ class EmployeeController extends Controller
     {
         return Inertia::render('employees/create', [
             'employment_types' => $this->employmentTypeOptions(),
+            'shifts' => $this->shiftOptions(),
             'operational_days' => $this->schoolSettings->operationalWeekdays(),
             'available_users' => $this->availableUsers(),
         ]);
@@ -135,8 +138,10 @@ class EmployeeController extends Controller
                 'is_active' => $employee->is_active,
                 'is_teacher' => $employee->teacher !== null,
                 'user_id' => $employee->user_id,
+                'shift_id' => $employee->shift_id,
             ],
             'employment_types' => $this->employmentTypeOptions(),
+            'shifts' => $this->shiftOptions(),
             'operational_days' => $this->schoolSettings->operationalWeekdays(),
             'available_users' => $this->availableUsers($employee->user_id),
         ]);
@@ -259,6 +264,21 @@ class EmployeeController extends Controller
             'value' => $type->value,
             'label' => $type->label(),
         ], EmploymentType::cases());
+    }
+
+    /**
+     * Shift templates for the employee form select.
+     *
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function shiftOptions(): array
+    {
+        return Shift::query()
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (Shift $shift): array => ['id' => $shift->id, 'name' => $shift->name])
+            ->values()
+            ->all();
     }
 
     /**

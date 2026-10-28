@@ -25,6 +25,7 @@ type EmployeeRow = {
     working_days: number[] | null;
     is_active: boolean;
     is_teacher: boolean;
+    shift_name: string | null;
     user: { id: number; username: string } | null;
 };
 
@@ -151,6 +152,11 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                             <span className="text-muted-foreground text-xs">
                                                 {emp.employment_type_label}
                                             </span>
+                                            {emp.shift_name && (
+                                                <span className="text-muted-foreground text-xs">
+                                                    Shift: {emp.shift_name}
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="text-muted-foreground px-4 py-3">
