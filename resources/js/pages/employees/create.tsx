@@ -5,17 +5,20 @@ import EmployeeForm from './employee-form';
 
 type Option = { value: string; label: string };
 type UserOption = { id: number; username: string };
+type ShiftOption = { id: number; name: string };
 
 type Props = {
     employment_types: Option[];
     operational_days: number[];
     available_users: UserOption[];
+    shifts: ShiftOption[];
 };
 
 export default function CreateEmployee({
     employment_types,
     operational_days,
     available_users,
+    shifts,
 }: Props) {
     return (
         <>
@@ -28,7 +31,7 @@ export default function CreateEmployee({
                 />
 
                 <EmployeeForm
-                    action={EmployeeController.store()}
+                    action={EmployeeController.store.form()}
                     cancelUrl={EmployeeController.index().url}
                     submitLabel="Simpan Pegawai"
                     defaults={{
@@ -39,6 +42,7 @@ export default function CreateEmployee({
                     employmentTypes={employment_types}
                     operationalDays={operational_days}
                     availableUsers={available_users}
+                    shifts={shifts}
                 />
             </div>
         </>

@@ -45,6 +45,9 @@ class AttendanceSettingsTest extends TestCase
                 'scan_debounce_minutes' => '5',
                 'scan_drift_tolerance_minutes' => '3',
                 'school_operational_days' => [1, 2, 3, 4, 5, 6],
+                'staff_start_time' => '08:00',
+                'staff_end_time' => '15:00',
+                'staff_absent_sweep_time' => '10:00',
             ])
             ->assertRedirect(route('attendance-settings.edit'));
 
@@ -56,6 +59,9 @@ class AttendanceSettingsTest extends TestCase
         $this->assertSame(5, $row->scan_debounce_minutes);
         $this->assertSame(3, $row->scan_drift_tolerance_minutes);
         $this->assertSame([1, 2, 3, 4, 5, 6], $row->school_operational_days);
+        $this->assertSame('08:00', substr((string) $row->staff_start_time, 0, 5));
+        $this->assertSame('15:00', substr((string) $row->staff_end_time, 0, 5));
+        $this->assertSame('10:00', substr((string) $row->staff_absent_sweep_time, 0, 5));
 
         // The singleton memoizes per process; a fresh process would re-read.
         app()->forgetInstance(SchoolSettings::class);

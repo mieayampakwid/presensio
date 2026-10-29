@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\SchoolClass;
 use App\Models\SchoolSetting;
+use App\Models\Shift;
 use App\Models\Teacher;
 use App\Models\TimetableSlot;
 use App\Models\User;
@@ -106,6 +107,122 @@ class StaffAttendanceOverviewTest extends TestCase
                 ->where('summary.expected', 2)
                 ->where('summary.arrived', 1)
                 ->where('summary.not_yet_arrived', 1));
+    }
+
+    /**
+     * AC-20-09: rows carry the effective shift of the view date; fallback
+     * employees show null and keep the global staff-hours props.
+     */
+    public function test_rows_show_effective_shift_name_and_times_or_null_for_fallback(): void
+    {
+        Date::setTestNow('2026-10-06 08:00:00', 'Asia/Jakarta');
+        $admin = User::factory()->admin()->create();
+
+        $night = Shift::factory()->night()->create();
+        Employee::factory()->create(['name' => 'Budi Malam', 'shift_id' => $night->id]);
+        Employee::factory()->create(['name' => 'Citra Umum', 'shift_id' => null]);
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => '2026-10-06']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('staff/attendance')
+                ->where('rows.0.shift_name', 'Shift Malam')
+                ->where('rows.0.shift_times', '19:00 - 07:00')
+                ->where('rows.1.shift_name', null)
+                ->where('rows.1.shift_times', null));
+
+        Date::setTestNow();
+    }
+
+    /**
+     * AC-20-15: an open Monday night-shift record is not "tidak absen
+     * pulang" at Tuesday 06:00 but is counted once the 07:00 shift end has
+     * passed; a completed past-day record never counts.
+     */
+    public function test_no_checkout_for_night_shift_counts_only_after_the_shift_end_next_day(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $night = Shift::factory()->night()->create();
+        $open = Employee::factory()->create(['name' => 'Budi Malam', 'shift_id' => $night->id]);
+
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $open->id,
+            'date' => '2026-10-05',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => Date::parse('2026-10-05 19:05:00', 'Asia/Jakarta'),
+            'checked_out_at' => null,
+            'shift_id' => $night->id,
+        ]);
+
+        // Completed past-day record: never no-checkout (regression).
+        $done = Employee::factory()->create(['name' => 'Citra Selesai', 'shift_id' => $night->id]);
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $done->id,
+            'date' => '2026-10-05',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => Date::parse('2026-10-05 19:05:00', 'Asia/Jakarta'),
+            'checked_out_at' => Date::parse('2026-10-06 06:50:00', 'Asia/Jakarta'),
+            'shift_id' => $night->id,
+        ]);
+
+        // Monday 19:00-07:00 window ends Tuesday 07:00.
+        Date::setTestNow(Date::parse('2026-10-06 06:00:00', 'Asia/Jakarta'));
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => '2026-10-05']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.no_checkout', false)
+                ->where('rows.1.no_checkout', false));
+
+        Date::setTestNow(Date::parse('2026-10-06 07:30:00', 'Asia/Jakarta'));
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => '2026-10-05']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.no_checkout', true)
+                ->where('rows.1.no_checkout', false));
+
+        Date::setTestNow();
+    }
+
+    /**
+     * Behavior change (spec 20 §Req 3): a same-day open record now counts
+     * once the staff end time has passed, instead of never counting for
+     * today.
+     */
+    public function test_no_checkout_counts_same_day_once_staff_end_time_passes(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = Employee::factory()->create(['name' => 'Budi Fallback']);
+
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $employee->id,
+            'date' => '2026-10-06',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => Date::parse('2026-10-06 07:30:00', 'Asia/Jakarta'),
+            'checked_out_at' => null,
+        ]);
+
+        Date::setTestNow(Date::parse('2026-10-06 10:00:00', 'Asia/Jakarta'));
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => '2026-10-06']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.no_checkout', false));
+
+        Date::setTestNow(Date::parse('2026-10-06 14:30:00', 'Asia/Jakarta'));
+
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.index', ['date' => '2026-10-06']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.no_checkout', true));
+
+        Date::setTestNow();
     }
 
     public function test_no_checkout_is_derived_for_past_dates(): void

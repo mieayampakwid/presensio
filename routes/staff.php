@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\Staff\LeaveReviewController;
 use App\Http\Controllers\Staff\MyLeaveController;
+use App\Http\Controllers\Staff\ShiftRosterController;
 use App\Http\Controllers\Staff\StaffAttendanceController;
 use App\Http\Controllers\Staff\StaffRecapController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin,principal'])->group(function () {
     Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff-attendance.index');
+
+    // Shift roster grid (spec 20 §Req 3): admins and principals view;
+    // mutations are admin-only below.
+    Route::get('staff-attendance/roster', [ShiftRosterController::class, 'index'])->name('staff-roster.index');
 
     // Monthly recap + CSV export (spec 16 §Req 6): admins and principals only.
     Route::get('staff-attendance/recap', [StaffRecapController::class, 'index'])->name('staff-attendance.recap.index');
@@ -22,6 +27,11 @@ Route::middleware(['auth', 'role:admin,principal'])->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('staff-attendance', [StaffAttendanceController::class, 'upsert'])->name('staff-attendance.upsert');
+
+    // Roster mutations (spec 20 §Req 3): admin only.
+    Route::post('staff-attendance/roster/bulk', [ShiftRosterController::class, 'bulk'])->name('staff-roster.bulk');
+    Route::put('staff-attendance/roster', [ShiftRosterController::class, 'set'])->name('staff-roster.set');
+    Route::delete('staff-attendance/roster', [ShiftRosterController::class, 'clear'])->name('staff-roster.clear');
 });
 
 // Employee self-service leave requests (spec 16 §Req 4): any

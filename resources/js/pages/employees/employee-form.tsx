@@ -17,10 +17,12 @@ export type EmployeeFormDefaults = {
     isActive?: boolean;
     isTeacher?: boolean;
     userId?: number | null;
+    shiftId?: number | null;
 };
 
 type Option = { value: string; label: string };
 type UserOption = { id: number; username: string };
+type ShiftOption = { id: number; name: string };
 
 type EmployeeFormProps = {
     action: Record<string, unknown>;
@@ -29,6 +31,7 @@ type EmployeeFormProps = {
     employmentTypes?: Option[];
     operationalDays?: number[];
     availableUsers?: UserOption[];
+    shifts?: ShiftOption[];
     lockIsTeacher?: boolean;
     cancelUrl: string;
 };
@@ -59,6 +62,7 @@ export default function EmployeeForm({
     employmentTypes = DEFAULT_EMPLOYMENT_TYPES,
     operationalDays = [1, 2, 3, 4, 5],
     availableUsers = [],
+    shifts = [],
     lockIsTeacher = false,
 }: EmployeeFormProps) {
     const [selectedDays, setSelectedDays] = useState<number[]>(
@@ -188,6 +192,30 @@ export default function EmployeeForm({
                                 ))}
                             </select>
                             <InputError message={errors.user_id} />
+                        </div>
+                    )}
+
+                    {shifts.length > 0 && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="shift_id">
+                                Shift Kerja (Opsional)
+                            </Label>
+                            <select
+                                id="shift_id"
+                                name="shift_id"
+                                defaultValue={defaults.shiftId ?? ''}
+                                className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            >
+                                <option value="">
+                                    Tanpa shift (jam kerja umum)
+                                </option>
+                                {shifts.map((shift) => (
+                                    <option key={shift.id} value={shift.id}>
+                                        {shift.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors.shift_id} />
                         </div>
                     )}
 

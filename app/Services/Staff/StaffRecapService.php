@@ -7,6 +7,7 @@ use App\Enums\EmployeeAttendanceStatus;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Services\Attendance\EmployeeCalendar;
+use App\Services\Attendance\ShiftResolver;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -30,6 +31,7 @@ class StaffRecapService
     public function __construct(
         private readonly EmployeeCalendar $calendar,
         private readonly SchoolSettings $settings,
+        private readonly ShiftResolver $shifts,
     ) {}
 
     /**
@@ -50,6 +52,7 @@ class StaffRecapService
             ->whereDate('date', '>=', $start->toDateString())
             ->whereDate('date', '<=', $end->toDateString())
             ->whereIn('employee_id', $employees->pluck('id'))
+            ->with('shift')
             ->get()
             ->groupBy('employee_id')
             ->map(fn ($days) => $days->keyBy(fn (EmployeeAttendance $record) => $record->date->toDateString()));
@@ -235,7 +238,8 @@ class StaffRecapService
         }
 
         if (in_array($status, [EmployeeAttendanceStatus::Present, EmployeeAttendanceStatus::Late], true)
-            && $record->checked_out_at === null) {
+            && $record->checked_out_at === null
+            && $this->shifts->windowFor($record->shift, $record->date->toDateString())[1]->isPast()) {
             $row['tidak_absen_pulang']++;
         }
     }

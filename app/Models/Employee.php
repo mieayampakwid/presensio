@@ -25,10 +25,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $position
  * @property list<int>|null $working_days
  * @property bool $is_active
+ * @property int|null $shift_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User|null $user
  * @property-read Teacher|null $teacher
+ * @property-read Shift|null $shift
  */
 #[Fillable([
     'user_id',
@@ -39,6 +41,7 @@ use Illuminate\Support\Carbon;
     'position',
     'working_days',
     'is_active',
+    'shift_id',
 ])]
 class Employee extends Model
 {
@@ -114,6 +117,26 @@ class Employee extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(EmployeeAttendance::class);
+    }
+
+    /**
+     * The employee's default shift, used on days without a roster row.
+     *
+     * @return BelongsTo<Shift, $this>
+     */
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    /**
+     * Per-date shift overrides (including explicit days off).
+     *
+     * @return HasMany<ShiftRoster, $this>
+     */
+    public function rosters(): HasMany
+    {
+        return $this->hasMany(ShiftRoster::class);
     }
 
     /**

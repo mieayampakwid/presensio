@@ -10,6 +10,7 @@ use App\Http\Requests\Staff\UpsertStaffAttendanceRequest;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Services\Attendance\EmployeeCalendar;
+use App\Services\Attendance\ShiftResolver;
 use App\Services\SchoolSettings;
 use App\Services\Timetable\TodaySchedule;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class StaffAttendanceController extends Controller
         private readonly SchoolSettings $settings,
         private readonly EmployeeCalendar $calendar,
         private readonly TodaySchedule $todaySchedule,
+        private readonly ShiftResolver $shifts,
     ) {}
 
     /**
@@ -36,7 +38,6 @@ class StaffAttendanceController extends Controller
         $todayDate = $this->settings->todayDate();
         $date = $this->resolveDate($request, $todayDate);
         $filter = $request->string('filter')->toString() ?: 'all';
-        $isPastDate = $date < $todayDate;
 
         $isSchoolDay = $this->settings->isSchoolDay($date);
 
@@ -44,13 +45,17 @@ class StaffAttendanceController extends Controller
         // first-period enrichment read it without N+1)
         $activeEmployees = Employee::query()->active()->with('teacher')->orderBy('name')->get();
 
-        // Load existing attendance records for the date
+        // Load existing attendance records for the date (shift preloaded:
+        // the no-checkout rule reads the snapshot without N+1)
         $records = EmployeeAttendance::query()
             ->whereDate('date', $date)
             ->whereIn('employee_id', $activeEmployees->pluck('id'))
-            ->with('overrideBy:id,username')
+            ->with('overrideBy:id,username', 'shift')
             ->get()
             ->keyBy('employee_id');
+
+        // Effective shift per employee on the view date (spec 20 §Req 4)
+        $resolutions = $this->shifts->resolveMany($activeEmployees, $date);
 
         $rows = [];
         $summary = [
@@ -82,7 +87,14 @@ class StaffAttendanceController extends Controller
             $hasIn = $record !== null && $record->checked_in_at !== null;
             $hasOut = $record !== null && $record->checked_out_at !== null;
             $notYetArrived = $record === null || ($status === EmployeeAttendanceStatus::Absent && ! $hasIn);
-            $isNoCheckout = $hasIn && ! $hasOut && $isPastDate;
+
+            // Missing checkout once the record's snapshotted window has
+            // ended — including today's view (spec 20 §Req 8 / AC-20-15).
+            $isNoCheckout = $hasIn && ! $hasOut
+                && $this->shifts->windowFor($record->shift, $record->date->toDateString())[1]->isPast();
+
+            $resolution = $resolutions->get($emp->id);
+            $effectiveShift = $resolution->shift;
 
             if ($isNoCheckout) {
                 $summary['no_checkout']++;
@@ -107,6 +119,10 @@ class StaffAttendanceController extends Controller
                 'employee_number' => $emp->employee_number,
                 'position' => $emp->position,
                 'is_teacher' => $emp->isTeacher(),
+                'shift_name' => $effectiveShift?->name,
+                'shift_times' => $effectiveShift !== null
+                    ? $effectiveShift->start_time->format('H:i').' - '.$effectiveShift->end_time->format('H:i')
+                    : null,
                 'is_expected' => $isExpected,
                 'status' => $status instanceof EmployeeAttendanceStatus ? $status->value : 'not_yet_arrived',
                 'status_label' => $status ? $status->label() : 'Belum Hadir',
@@ -159,8 +175,9 @@ class StaffAttendanceController extends Controller
         $validated = $request->validated();
         $tz = $this->settings->timezone();
         $date = $validated['date'];
+        $shift = $request->effectiveShift();
 
-        DB::transaction(function () use ($validated, $tz, $date, $request): void {
+        DB::transaction(function () use ($validated, $tz, $date, $shift, $request): void {
             $existing = EmployeeAttendance::query()
                 ->where('employee_id', $validated['employee_id'])
                 ->whereDate('date', $date)
@@ -172,14 +189,26 @@ class StaffAttendanceController extends Controller
                 ? Date::parse("{$date} {$validated['checked_in_at']}", $tz)->tz('UTC')
                 : null;
 
+            // On a cross-midnight shift a checkout time earlier than the
+            // check-in parses as the next calendar day (spec 20 §Req 8).
+            $checkoutDate = $date;
+
+            if ($shift?->crosses_midnight
+                && ! empty($validated['checked_in_at'])
+                && ! empty($validated['checked_out_at'])
+                && $validated['checked_out_at'] < $validated['checked_in_at']
+            ) {
+                $checkoutDate = Date::parse($date)->addDay()->toDateString();
+            }
+
             $checkedOutInstant = ! empty($validated['checked_out_at'])
-                ? Date::parse("{$date} {$validated['checked_out_at']}", $tz)->tz('UTC')
+                ? Date::parse("{$checkoutDate} {$validated['checked_out_at']}", $tz)->tz('UTC')
                 : null;
 
             $lateMinutes = 0;
             if ($checkedInInstant !== null) {
                 $localIn = $checkedInInstant->copy()->tz($tz);
-                $staffStartTime = $this->settings->staffStartTimeOn($localIn);
+                $staffStartTime = $this->shifts->windowFor($shift, $date)[0];
                 if ($localIn->greaterThan($staffStartTime)) {
                     $lateMinutes = (int) ceil($staffStartTime->diffInMinutes($localIn, false));
                 }
@@ -188,7 +217,7 @@ class StaffAttendanceController extends Controller
             $earlyLeaveMinutes = 0;
             if ($checkedOutInstant !== null) {
                 $localOut = $checkedOutInstant->copy()->tz($tz);
-                $staffEndTime = $this->settings->staffEndTimeOn($localOut);
+                $staffEndTime = $this->shifts->windowFor($shift, $date)[1];
                 $earlyLeaveMinutes = max(0, (int) ceil($localOut->diffInMinutes($staffEndTime, false)));
             }
 
@@ -203,6 +232,7 @@ class StaffAttendanceController extends Controller
                     'checked_out_at' => $checkedOutInstant,
                     'late_minutes' => $lateMinutes,
                     'early_leave_minutes' => $earlyLeaveMinutes,
+                    'shift_id' => $shift?->id,
                     'scan_method' => ScanMethod::ManualOverride,
                     'override_by_user_id' => $request->user()->id,
                     'overridden_at' => now(),

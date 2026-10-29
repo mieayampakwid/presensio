@@ -6,6 +6,7 @@ use App\Enums\EmployeeAttendanceStatus;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\SchoolSetting;
+use App\Models\Shift;
 use App\Models\User;
 use App\Services\SchoolSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -158,5 +159,63 @@ class StaffRecapTest extends TestCase
             '0',
             '4.5',
         ], str_getcsv($lines[1]));
+    }
+
+    /**
+     * AC-20-15 in the recap: an open record counts as "tidak absen pulang"
+     * only once its effective shift end has passed — the Monday 19:00-07:00
+     * record waits until Tuesday 07:00, the same-day fallback record waits
+     * for the staff end time.
+     */
+    public function test_tidak_absen_pulang_uses_the_effective_shift_end(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $night = Shift::factory()->night()->create();
+
+        $nightEmployee = Employee::factory()->create(['name' => 'Budi Malam', 'shift_id' => $night->id]);
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $nightEmployee->id,
+            'date' => '2026-10-05',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => Date::parse('2026-10-05 19:05:00', 'Asia/Jakarta'),
+            'checked_out_at' => null,
+            'shift_id' => $night->id,
+        ]);
+
+        $fallbackEmployee = Employee::factory()->create(['name' => 'Citra Umum']);
+        EmployeeAttendance::factory()->create([
+            'employee_id' => $fallbackEmployee->id,
+            'date' => '2026-10-06',
+            'status' => EmployeeAttendanceStatus::Present,
+            'checked_in_at' => Date::parse('2026-10-06 07:30:00', 'Asia/Jakarta'),
+            'checked_out_at' => null,
+        ]);
+
+        // Night shift ends Tue 07:00; fallback ends Tue 14:00 (staff hours).
+        Date::setTestNow(Date::parse('2026-10-06 06:00:00', 'Asia/Jakarta'));
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.recap.index', ['month' => '2026-10']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.tidak_absen_pulang', 0)
+                ->where('rows.1.tidak_absen_pulang', 0));
+
+        // Tue 07:30: the night window (Mon 19:00 → Tue 07:00) has passed.
+        Date::setTestNow(Date::parse('2026-10-06 07:30:00', 'Asia/Jakarta'));
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.recap.index', ['month' => '2026-10']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.tidak_absen_pulang', 1)
+                ->where('rows.1.tidak_absen_pulang', 0));
+
+        // Tue 14:30: the staff-hours window (07:00 → 14:00) has also passed.
+        Date::setTestNow(Date::parse('2026-10-06 14:30:00', 'Asia/Jakarta'));
+        $this->actingAs($admin)
+            ->get(route('staff-attendance.recap.index', ['month' => '2026-10']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('rows.0.tidak_absen_pulang', 1)
+                ->where('rows.1.tidak_absen_pulang', 1));
     }
 }

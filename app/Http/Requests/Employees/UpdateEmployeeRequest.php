@@ -5,6 +5,7 @@ namespace App\Http\Requests\Employees;
 use App\Enums\EmploymentType;
 use App\Enums\UserRole;
 use App\Models\Employee;
+use App\Models\Shift;
 use App\Models\User;
 use App\Services\SchoolSettings;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -48,6 +49,7 @@ class UpdateEmployeeRequest extends FormRequest
                 Rule::exists(User::class, 'id'),
                 Rule::unique(Employee::class, 'user_id')->ignore($employee?->id),
             ],
+            'shift_id' => ['nullable', 'integer', Rule::exists(Shift::class, 'id')],
         ];
     }
 

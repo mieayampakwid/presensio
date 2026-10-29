@@ -8,6 +8,7 @@ use App\Enums\ScanOutcome;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\ScanEvent;
+use App\Models\Shift;
 use App\Services\SchoolSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,7 @@ class EmployeeScanService
     public function __construct(
         private readonly SchoolSettings $settings,
         private readonly CredentialResolver $credentials,
+        private readonly ShiftResolver $shifts,
     ) {}
 
     public function scan(ScanMethod $method, string $credential, ?CarbonInterface $deviceScannedAt): ScanResult
@@ -66,6 +68,17 @@ class EmployeeScanService
         return DB::transaction(function () use ($method, $identifier, $employee, $date, $scannedAt, $localTap) {
             $record = $this->recordQuery($employee, $date)->first();
 
+            // A tap at or before the end of yesterday's still-open
+            // cross-midnight record (per its snapshotted shift) closes
+            // that record instead of opening today's (spec 20 §Decisions).
+            if ($record === null) {
+                $closed = $this->closeCrossMidnightRecord($method, $identifier, $employee, $scannedAt, $localTap);
+
+                if ($closed !== null) {
+                    return $closed;
+                }
+            }
+
             // 3a. No record -> check-in. A simultaneous tap or the absence
             // sweep may win the unique insert; then resolve against the
             // winner's row below.
@@ -90,12 +103,14 @@ class EmployeeScanService
 
             // 3b. An absent record from the sweep -> check-in
             if ($record->status === EmployeeAttendanceStatus::Absent && $record->checked_in_at === null) {
-                [$status, $lateMinutes] = $this->checkInStatus($localTap);
+                $shift = $this->shifts->resolve($employee, $date)->shift;
+                [$status, $lateMinutes] = $this->checkInStatus($localTap, $shift);
 
                 $record->update([
                     'status' => $status,
                     'checked_in_at' => $this->utc($scannedAt),
                     'late_minutes' => $lateMinutes,
+                    'shift_id' => $shift?->id,
                     'scan_method' => $method,
                 ]);
                 $record->refresh();
@@ -115,9 +130,11 @@ class EmployeeScanService
                 return new ScanResult(ScanOutcome::IgnoredDebounce, employee: $employee, employeeAttendance: $record);
             }
 
-            // 5. Already checked in, beyond debounce -> checkout (latest tap wins)
-            $staffEndTime = $this->settings->staffEndTimeOn($localTap);
-            $earlyLeaveMinutes = max(0, (int) ceil($localTap->diffInMinutes($staffEndTime, false)));
+            // 5. Already checked in, beyond debounce -> checkout (latest tap wins).
+            // Closing math uses the record's snapshotted shift, never the
+            // tap date's effective shift (spec 20 §Decisions).
+            $shiftEnd = $this->shifts->windowFor($record->shift, $record->date->toDateString())[1];
+            $earlyLeaveMinutes = max(0, (int) ceil($localTap->diffInMinutes($shiftEnd, false)));
 
             $record->update([
                 'checked_out_at' => $this->utc($scannedAt),
@@ -143,7 +160,8 @@ class EmployeeScanService
         CarbonInterface $scannedAt,
         CarbonInterface $localTap
     ): ?EmployeeAttendance {
-        [$status, $lateMinutes] = $this->checkInStatus($localTap);
+        $shift = $this->shifts->resolve($employee, $date)->shift;
+        [$status, $lateMinutes] = $this->checkInStatus($localTap, $shift);
 
         try {
             return DB::transaction(fn () => EmployeeAttendance::create([
@@ -154,11 +172,65 @@ class EmployeeScanService
                 'checked_out_at' => null,
                 'late_minutes' => $lateMinutes,
                 'early_leave_minutes' => 0,
+                'shift_id' => $shift?->id,
                 'scan_method' => $method,
             ]));
         } catch (UniqueConstraintViolationException) {
             return null;
         }
+    }
+
+    /**
+     * A tap at or before the end of yesterday's still-open record whose
+     * snapshotted shift crosses midnight closes that record instead of
+     * opening today's; the debounce still applies against its last tap.
+     * Null when the tap belongs to today's record instead (spec 20).
+     */
+    private function closeCrossMidnightRecord(
+        ScanMethod $method,
+        ?string $identifier,
+        Employee $employee,
+        CarbonInterface $scannedAt,
+        CarbonInterface $localTap
+    ): ?ScanResult {
+        $previous = EmployeeAttendance::query()
+            ->where('employee_id', $employee->id)
+            ->whereDate('date', $localTap->copy()->subDay()->toDateString())
+            ->whereNotNull('checked_in_at')
+            ->whereNull('checked_out_at')
+            ->with('shift')
+            ->first();
+
+        if ($previous === null || ! $previous->shift?->crosses_midnight) {
+            return null;
+        }
+
+        $shiftEnd = $this->shifts->windowFor($previous->shift, $previous->date->toDateString())[1];
+
+        if ($localTap->greaterThan($shiftEnd)) {
+            return null;
+        }
+
+        $lastTap = $previous->checked_out_at ?? $previous->checked_in_at;
+        $debounceEdge = $lastTap?->copy()->addMinutes($this->settings->debounceMinutes());
+
+        if ($debounceEdge !== null && $scannedAt->lessThanOrEqualTo($debounceEdge)) {
+            $this->log($method, $identifier, $employee, ScanOutcome::IgnoredDebounce, $scannedAt);
+
+            return new ScanResult(ScanOutcome::IgnoredDebounce, employee: $employee, employeeAttendance: $previous);
+        }
+
+        $earlyLeaveMinutes = max(0, (int) ceil($localTap->diffInMinutes($shiftEnd, false)));
+
+        $previous->update([
+            'checked_out_at' => $this->utc($scannedAt),
+            'early_leave_minutes' => $earlyLeaveMinutes,
+        ]);
+        $previous->refresh();
+
+        $this->log($method, $identifier, $employee, ScanOutcome::CheckOut, $scannedAt);
+
+        return new ScanResult(ScanOutcome::CheckOut, employee: $employee, employeeAttendance: $previous);
     }
 
     /**
@@ -174,14 +246,14 @@ class EmployeeScanService
     /**
      * @return array{0: EmployeeAttendanceStatus, 1: int}
      */
-    private function checkInStatus(CarbonInterface $localTap): array
+    private function checkInStatus(CarbonInterface $localTap, ?Shift $shift): array
     {
-        $staffStartTime = $this->settings->staffStartTimeOn($localTap);
-        $isLate = $localTap->greaterThan($staffStartTime);
+        $startTime = $this->shifts->windowFor($shift, $localTap)[0];
+        $isLate = $localTap->greaterThan($startTime);
 
         return [
             $isLate ? EmployeeAttendanceStatus::Late : EmployeeAttendanceStatus::Present,
-            $isLate ? (int) ceil($staffStartTime->diffInMinutes($localTap, false)) : 0,
+            $isLate ? (int) ceil($startTime->diffInMinutes($localTap, false)) : 0,
         ];
     }
 
