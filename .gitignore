@@ -50,3 +50,4 @@ frankenphp-worker.php
 
 # Local verification artifacts and usage telemetry
 /docs/testing/
+.playwright-mcp/
