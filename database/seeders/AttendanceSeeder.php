@@ -52,7 +52,9 @@ class AttendanceSeeder extends Seeder
 
         $dayNumber = 0;
 
-        for ($day = $today->copy()->startOfMonth(); $day->lessThan($today); $day = $day->addDay()) {
+        // Trailing window, not month-to-date: on the 1st (or a month starting on a weekend)
+        // a month-to-date window would be empty and seed zero history.
+        for ($day = $today->copy()->subDays(31)->startOfDay(); $day->lessThan($today); $day = $day->addDay()) {
             if ($day->isWeekend() || ! $isSchoolDay($day->toDateString())) {
                 continue;
             }
