@@ -9,6 +9,7 @@ use App\Models\ClassSubject;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\Guardian;
+use App\Models\NonSchoolDay;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
@@ -75,6 +76,11 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas('rfid_cards', ['rfid_number' => 'CARD-001']);
         $this->assertDatabaseHas('rfid_cards', ['rfid_number' => 'CARD-EMP-001']);
         $this->assertDatabaseHas('rfid_cards', ['rfid_number' => 'CARD-EMP-002']);
+
+        // 5b. Non-school days
+        $this->assertSame(2, NonSchoolDay::count());
+        $this->assertDatabaseHas('non_school_days', ['name' => 'Hari pelatihan guru']);
+        $this->assertDatabaseHas('non_school_days', ['name' => 'Isra Mikraj Nabi Muhammad SAW']);
 
         // 6. Student & Employee Attendances
         $this->assertGreaterThan(0, Attendance::count());

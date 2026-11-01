@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             StudentSeeder::class,
             GuardianSeeder::class,
             RfidCardSeeder::class,
+            NonSchoolDaySeeder::class,
             AttendanceSeeder::class,
             EmployeeAttendanceSeeder::class,
         ]);
