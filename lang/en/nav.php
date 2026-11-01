@@ -66,6 +66,7 @@ return [
         'repository' => 'Repository',
         'documentation' => 'Documentation',
     ],
+    'toggle_sidebar' => 'Toggle sidebar',
     'role_selector' => [
         'label' => 'Role:',
     ],

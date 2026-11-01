@@ -1,18 +1,26 @@
 // Components
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        title: t('auth_pages.forgot.layout_title'),
+        description: t('auth_pages.forgot.layout_description'),
+    });
+
     return (
         <>
-            <Head title="Forgot password" />
+            <Head title={t('auth_pages.forgot.title')} />
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
@@ -25,14 +33,18 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="username">Username</Label>
+                                <Label htmlFor="username">
+                                    {t('auth_pages.form.username')}
+                                </Label>
                                 <Input
                                     id="username"
                                     type="text"
                                     name="username"
                                     autoComplete="off"
                                     autoFocus
-                                    placeholder="NIS / NIP / NIK"
+                                    placeholder={t(
+                                        'auth_pages.form.username_placeholder',
+                                    )}
                                 />
 
                                 <InputError message={errors.username} />
@@ -47,7 +59,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Send password reset link
+                                    {t('auth_pages.forgot.submit')}
                                 </Button>
                             </div>
                         </>
@@ -55,16 +67,12 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </Form>
 
                 <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                    <span>{t('auth_pages.forgot.return_to')}</span>
+                    <TextLink href={login()}>
+                        {t('auth_pages.forgot.log_in')}
+                    </TextLink>
                 </div>
             </div>
         </>
     );
 }
-
-ForgotPassword.layout = {
-    title: 'Forgot password',
-    description:
-        'Enter your username and we will send a reset link to your email on file',
-};

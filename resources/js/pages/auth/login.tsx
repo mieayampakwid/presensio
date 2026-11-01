@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import PasskeyVerify from '@/components/passkey-verify';
@@ -17,9 +18,16 @@ type Props = {
 };
 
 export default function Login({ status, canResetPassword }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        title: t('auth_pages.login.layout_title'),
+        description: t('auth_pages.login.layout_description'),
+    });
+
     return (
         <>
-            <Head title="Log in" />
+            <Head title={t('auth_pages.login.title')} />
 
             <PasskeyVerify />
 
@@ -32,7 +40,9 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="username">Username</Label>
+                                <Label htmlFor="username">
+                                    {t('auth_pages.form.username')}
+                                </Label>
                                 <Input
                                     id="username"
                                     type="text"
@@ -41,21 +51,27 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="username"
-                                    placeholder="NIS / NIP / NIK"
+                                    placeholder={t(
+                                        'auth_pages.form.username_placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.username} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">
+                                        {t('auth_pages.form.password')}
+                                    </Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
                                             className="ml-auto text-sm"
                                             tabIndex={5}
                                         >
-                                            Forgot your password?
+                                            {t(
+                                                'auth_pages.login.forgot_password',
+                                            )}
                                         </TextLink>
                                     )}
                                 </div>
@@ -65,7 +81,9 @@ export default function Login({ status, canResetPassword }: Props) {
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder={t(
+                                        'auth_pages.form.password_placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -76,7 +94,9 @@ export default function Login({ status, canResetPassword }: Props) {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember">
+                                    {t('auth_pages.login.remember_me')}
+                                </Label>
                             </div>
 
                             <Button
@@ -87,7 +107,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
-                                Log in
+                                {t('auth_pages.login.submit')}
                             </Button>
                         </div>
                     </>
@@ -102,8 +122,3 @@ export default function Login({ status, canResetPassword }: Props) {
         </>
     );
 }
-
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your username and password below to log in',
-};

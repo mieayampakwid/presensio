@@ -6,6 +6,7 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useTranslation } from "@/hooks/use-translation"
 import { Separator } from "@/components/ui/separator"
 import {
   Sheet,
@@ -246,12 +247,9 @@ function Sidebar({
   )
 }
 
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar, isMobile, state } = useSidebar()
+  const { t } = useTranslation()
 
   return (
     <Button
@@ -267,22 +265,23 @@ function SidebarTrigger({
       {...props}
     >
       {isMobile || state === "collapsed" ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
-      <span className="sr-only">Toggle sidebar</span>
+      <span className="sr-only">{t("nav.toggle_sidebar")}</span>
     </Button>
   )
 }
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   const { toggleSidebar } = useSidebar()
+  const { t } = useTranslation()
 
   return (
     <button
       data-sidebar="rail"
       data-slot="sidebar-rail"
-      aria-label="Toggle sidebar"
+      aria-label={t("nav.toggle_sidebar")}
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle sidebar"
+      title={t("nav.toggle_sidebar")}
       className={cn(
         "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
 import Heading from '@/components/heading';
 import LanguageSwitcher from '@/components/language-switcher';
@@ -7,6 +7,12 @@ import { edit as editAppearance } from '@/routes/appearance';
 
 export default function Appearance() {
     const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            { title: t('settings.appearance.title'), href: editAppearance() },
+        ],
+    });
 
     return (
         <>
@@ -34,12 +40,3 @@ export default function Appearance() {
         </>
     );
 }
-
-Appearance.layout = {
-    breadcrumbs: [
-        {
-            title: 'Appearance settings',
-            href: editAppearance(),
-        },
-    ],
-};

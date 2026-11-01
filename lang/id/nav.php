@@ -66,6 +66,7 @@ return [
         'repository' => 'Repositori',
         'documentation' => 'Dokumentasi',
     ],
+    'toggle_sidebar' => 'Buka/tutup sidebar',
     'role_selector' => [
         'label' => 'Peran:',
     ],

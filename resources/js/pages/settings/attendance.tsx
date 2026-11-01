@@ -66,13 +66,13 @@ const TIMEZONES = [
 ];
 
 const WEEKDAYS = [
-    { value: 1, label: 'Senin (Mon)' },
-    { value: 2, label: 'Selasa (Tue)' },
-    { value: 3, label: 'Rabu (Wed)' },
-    { value: 4, label: 'Kamis (Thu)' },
-    { value: 5, label: 'Jumat (Fri)' },
-    { value: 6, label: 'Sabtu (Sat)' },
-    { value: 7, label: 'Minggu (Sun)' },
+    { value: 1, key: 'monday' },
+    { value: 2, key: 'tuesday' },
+    { value: 3, key: 'wednesday' },
+    { value: 4, key: 'thursday' },
+    { value: 5, key: 'friday' },
+    { value: 6, key: 'saturday' },
+    { value: 7, key: 'sunday' },
 ];
 
 export default function AttendanceSettings({ settings, shifts }: Props) {
@@ -90,9 +90,9 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
 
     return (
         <>
-            <Head title="Attendance settings" />
+            <Head title={t('settings.attendance.title')} />
 
-            <h1 className="sr-only">Attendance settings</h1>
+            <h1 className="sr-only">{t('settings.attendance.title')}</h1>
 
             <Form
                 {...AttendanceSettingsController.update.form()}
@@ -104,13 +104,15 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                         <div className="space-y-6">
                             <Heading
                                 variant="small"
-                                title="Attendance"
-                                description="School-day anchors for scanning, sweeps, and the dashboard. Changes apply live."
+                                title={t('settings.attendance.heading')}
+                                description={t(
+                                    'settings.attendance.description',
+                                )}
                             />
 
                             <div className="grid gap-2">
                                 <Label htmlFor="school_timezone">
-                                    School timezone
+                                    {t('settings.attendance.school_timezone')}
                                 </Label>
                                 <select
                                     id="school_timezone"
@@ -129,13 +131,12 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
 
                             <div className="space-y-2 rounded-lg border p-4">
                                 <Label className="text-sm font-semibold">
-                                    Hari Sekolah Operasional (Operational Days)
+                                    {t('settings.attendance.operational_days')}
                                 </Label>
                                 <p className="text-muted-foreground text-xs">
-                                    Pilih hari-hari kegiatan belajar mengajar
-                                    berlangsung. Absensi otomatis dan
-                                    perhitungan ketidakhadiran hanya aktif pada
-                                    hari operasional.
+                                    {t(
+                                        'settings.attendance.operational_days_note',
+                                    )}
                                 </p>
                                 <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3">
                                     {WEEKDAYS.map((day) => (
@@ -152,7 +153,11 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                                                 )}
                                                 className="border-input text-primary focus:ring-primary h-4 w-4 rounded"
                                             />
-                                            <span>{day.label}</span>
+                                            <span>
+                                                {t(
+                                                    `settings.attendance.days.${day.key}`,
+                                                )}
+                                            </span>
                                         </label>
                                     ))}
                                 </div>
@@ -164,7 +169,7 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                             <div className="grid max-w-xs grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="school_start_time">
-                                        School starts
+                                        {t('settings.attendance.school_starts')}
                                     </Label>
                                     <Input
                                         id="school_start_time"
@@ -180,7 +185,9 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="auto_absent_cron_time">
-                                        Auto-absent sweep
+                                        {t(
+                                            'settings.attendance.auto_absent_sweep',
+                                        )}
                                     </Label>
                                     <Input
                                         id="auto_absent_cron_time"
@@ -216,7 +223,7 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                                     htmlFor="require_checkout"
                                     className="font-normal"
                                 >
-                                    Require check-out scan at end of day
+                                    {t('settings.attendance.require_checkout')}
                                 </Label>
                                 <InputError message={errors.require_checkout} />
                             </div>
@@ -224,7 +231,7 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                             <div className="grid max-w-xs grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="scan_debounce_minutes">
-                                        Scan debounce (min)
+                                        {t('settings.attendance.scan_debounce')}
                                     </Label>
                                     <Input
                                         id="scan_debounce_minutes"
@@ -242,7 +249,9 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="scan_drift_tolerance_minutes">
-                                        Drift tolerance (min)
+                                        {t(
+                                            'settings.attendance.drift_tolerance',
+                                        )}
                                     </Label>
                                     <Input
                                         id="scan_drift_tolerance_minutes"
@@ -325,7 +334,7 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
 
                             <Button type="submit" disabled={processing}>
                                 {processing && <Spinner />}
-                                Save changes
+                                {t('settings.attendance.save_changes')}
                             </Button>
                         </div>
                     </>

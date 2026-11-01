@@ -1,4 +1,4 @@
-import { Form, Head, useForm, usePage } from '@inertiajs/react';
+import { Form, Head, setLayoutProps, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import GuardianContactController from '@/actions/App/Http/Controllers/Settings/GuardianContactController';
+import { useTranslation } from '@/hooks/use-translation';
 import { edit } from '@/routes/profile';
 import type { Auth } from '@/types';
 
@@ -33,23 +34,29 @@ type PageProps = {
 export default function Profile() {
     const { auth, guardian, notification_preferences } =
         usePage<PageProps>().props;
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [{ title: t('settings.profile.title'), href: edit() }],
+    });
+
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title={t('settings.profile.title')} />
 
-            <h1 className="sr-only">Profile settings</h1>
+            <h1 className="sr-only">{t('settings.profile.title')}</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Account"
-                    description="Your account details. Username and role are managed by the school administrator."
+                    title={t('settings.profile.account')}
+                    description={t('settings.profile.account_description')}
                 />
 
                 <div className="grid gap-4">
                     <div className="grid gap-2">
                         <p className="text-sm leading-none font-medium">
-                            Username
+                            {t('settings.profile.username')}
                         </p>
                         <p className="text-muted-foreground text-sm">
                             {auth.user.username}
@@ -58,7 +65,7 @@ export default function Profile() {
 
                     <div className="grid gap-2">
                         <p className="text-sm leading-none font-medium">
-                            Email
+                            {t('settings.profile.email')}
                         </p>
                         <p className="text-muted-foreground text-sm">
                             {auth.user.email ?? '—'}
@@ -66,7 +73,9 @@ export default function Profile() {
                     </div>
 
                     <div className="grid gap-2">
-                        <p className="text-sm leading-none font-medium">Role</p>
+                        <p className="text-sm leading-none font-medium">
+                            {t('settings.profile.role')}
+                        </p>
                         <div>
                             <Badge variant="outline" className="capitalize">
                                 {auth.user.role}
@@ -83,11 +92,9 @@ export default function Profile() {
                     />
                 )}
                 <p className="text-muted-foreground text-sm">
-                    Change your password from the{' '}
-                    <span className="text-foreground font-medium">
-                        Security
-                    </span>{' '}
-                    tab.
+                    {t('settings.profile.change_password_hint', {
+                        tab: t('settings.nav.security'),
+                    })}
                 </p>
             </div>
         </>
@@ -95,6 +102,8 @@ export default function Profile() {
 }
 
 function GuardianContactSection({ guardian }: { guardian: Guardian }) {
+    const { t } = useTranslation();
+
     return (
         <Form
             {...GuardianContactController.update.form()}
@@ -104,13 +113,17 @@ function GuardianContactSection({ guardian }: { guardian: Guardian }) {
                 <div className="space-y-6">
                     <Heading
                         variant="small"
-                        title="Contact details"
-                        description={`Absence notifications for your children go to these details. Your name (${guardian.name}) is managed by the school.`}
+                        title={t('settings.profile.contact.title')}
+                        description={t('settings.profile.contact.description', {
+                            name: guardian.name,
+                        })}
                     />
 
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="phone_number">Phone number</Label>
+                            <Label htmlFor="phone_number">
+                                {t('settings.profile.contact.phone_number')}
+                            </Label>
                             <Input
                                 id="phone_number"
                                 name="phone_number"
@@ -122,7 +135,9 @@ function GuardianContactSection({ guardian }: { guardian: Guardian }) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="work">Occupation (optional)</Label>
+                            <Label htmlFor="work">
+                                {t('settings.profile.contact.occupation')}
+                            </Label>
                             <Input
                                 id="work"
                                 name="work"
@@ -133,7 +148,9 @@ function GuardianContactSection({ guardian }: { guardian: Guardian }) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="address">Address (optional)</Label>
+                            <Label htmlFor="address">
+                                {t('settings.profile.contact.address')}
+                            </Label>
                             <textarea
                                 id="address"
                                 name="address"
@@ -147,7 +164,7 @@ function GuardianContactSection({ guardian }: { guardian: Guardian }) {
 
                     <Button type="submit" disabled={processing}>
                         {processing && <Spinner />}
-                        Save contact details
+                        {t('settings.profile.contact.save')}
                     </Button>
                 </div>
             )}
@@ -160,6 +177,7 @@ function GuardianNotificationPreferencesSection({
 }: {
     preferences: NotificationPreferenceItem[];
 }) {
+    const { t } = useTranslation();
     const initialPrefs = Object.fromEntries(
         preferences.map((p) => [p.key, p.whatsapp_enabled]),
     );
@@ -179,8 +197,10 @@ function GuardianNotificationPreferencesSection({
         <form onSubmit={submit} className="space-y-6">
             <Heading
                 variant="small"
-                title="Preferensi Notifikasi WhatsApp"
-                description="Pilih pemberitahuan mana yang ingin Anda terima melalui WhatsApp. Notifikasi dalam aplikasi tetap akan dikirimkan."
+                title={t('settings.profile.notification_preferences.title')}
+                description={t(
+                    'settings.profile.notification_preferences.description',
+                )}
             />
 
             <div className="border-border divide-border divide-y rounded-lg border">
@@ -214,24 +234,15 @@ function GuardianNotificationPreferencesSection({
             <div className="flex items-center gap-4">
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner className="mr-2" />}
-                    Simpan Preferensi
+                    {t('settings.profile.notification_preferences.save')}
                 </Button>
 
                 {recentlySuccessful && (
                     <span className="text-muted-foreground text-sm">
-                        Tersimpan.
+                        {t('settings.profile.notification_preferences.saved')}
                     </span>
                 )}
             </div>
         </form>
     );
 }
-
-Profile.layout = {
-    breadcrumbs: [
-        {
-            title: 'Profile settings',
-            href: edit(),
-        },
-    ],
-};
