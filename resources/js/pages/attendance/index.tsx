@@ -1,4 +1,4 @@
-import { Head, Form } from '@inertiajs/react';
+import { Head, Form, setLayoutProps } from '@inertiajs/react';
 import { CalendarPlus, Pencil } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import AttendanceController from '@/actions/App/Http/Controllers/Attendance/AttendanceController';
@@ -19,7 +19,8 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
-import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
+import { useTranslation } from '@/hooks/use-translation';
+import { STATUS_BADGES } from '@/lib/attendance';
 
 type ClassOption = {
     id: number;
@@ -53,13 +54,7 @@ type Props = {
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
-const STATUS_OPTIONS = [
-    { value: 'present', label: 'Present' },
-    { value: 'late', label: 'Late' },
-    { value: 'absent', label: 'Absent' },
-    { value: 'sick', label: 'Sick' },
-    { value: 'leave', label: 'Leave' },
-];
+const STATUS_OPTIONS = ['present', 'late', 'absent', 'sick', 'leave'];
 
 function BulkPresentDialog({
     classId,
@@ -71,23 +66,28 @@ function BulkPresentDialog({
     remaining: number;
 }) {
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline">
                     <CalendarPlus className="h-4 w-4" />
-                    Mark remaining present
+                    {t('attendance.index.bulk_present')}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Mark remaining present</DialogTitle>
+                    <DialogTitle>
+                        {t('attendance.index.bulk_present')}
+                    </DialogTitle>
                     <DialogDescription>
-                        This marks the {remaining} student
-                        {remaining === 1 ? '' : 's'} without a record as
-                        present. Existing records — including sick and leave —
-                        are never touched.
+                        {t(
+                            remaining === 1
+                                ? 'attendance.index.bulk_present_description_one'
+                                : 'attendance.index.bulk_present_description_other',
+                            { count: remaining },
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -107,12 +107,17 @@ function BulkPresentDialog({
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
                                     <Button variant="secondary" type="button">
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                 </DialogClose>
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner />}
-                                    Mark {remaining} present
+                                    {t(
+                                        'attendance.index.bulk_present_confirm',
+                                        {
+                                            count: remaining,
+                                        },
+                                    )}
                                 </Button>
                             </DialogFooter>
                         </>
@@ -124,6 +129,7 @@ function BulkPresentDialog({
 }
 
 export default function AttendanceIndex({ classes, filters, rows }: Props) {
+    const { t } = useTranslation();
     const [editingRecord, setEditingRecord] = useState<{
         row: Row;
         date: string;
@@ -134,15 +140,24 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
         event.currentTarget.form?.requestSubmit();
     };
 
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('attendance.index.title'),
+                href: AttendanceController.index().url,
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Attendance" />
+            <Head title={t('attendance.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Attendance"
-                        description="Review, correct, and reconstruct the day's records."
+                        title={t('attendance.index.title')}
+                        description={t('attendance.index.description')}
                     />
 
                     {rows.some((row) => row.attendance === null) && (
@@ -159,7 +174,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="class_id">Class</Label>
+                        <Label htmlFor="class_id">
+                            {t('attendance.index.class')}
+                        </Label>
                         <select
                             id="class_id"
                             name="class_id"
@@ -176,7 +193,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="date">Date</Label>
+                        <Label htmlFor="date">
+                            {t('attendance.index.date')}
+                        </Label>
                         <Input
                             id="date"
                             type="date"
@@ -193,22 +212,22 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Student
+                                    {t('attendance.index.columns.student')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('attendance.index.columns.status')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Check-in
+                                    {t('attendance.index.columns.check_in')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Check-out
+                                    {t('attendance.index.columns.check_out')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Method
+                                    {t('attendance.index.columns.method')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Notes
+                                    {t('attendance.index.columns.notes')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -233,14 +252,15 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                     ]?.variant ?? 'secondary'
                                                 }
                                             >
-                                                {STATUS_BADGES[
-                                                    row.attendance.status
-                                                ]?.label ??
-                                                    row.attendance.status}
+                                                {t(
+                                                    `attendance.statuses.${row.attendance.status}`,
+                                                )}
                                             </Badge>
                                         ) : (
                                             <span className="text-muted-foreground">
-                                                No record
+                                                {t(
+                                                    'attendance.index.no_record',
+                                                )}
                                             </span>
                                         )}
                                     </td>
@@ -252,9 +272,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                     </td>
                                     <td className="text-muted-foreground px-4 py-3">
                                         {row.attendance?.scan_method
-                                            ? (METHOD_LABELS[
-                                                  row.attendance.scan_method
-                                              ] ?? row.attendance.scan_method)
+                                            ? t(
+                                                  `attendance.methods.${row.attendance.scan_method}`,
+                                              )
                                             : '—'}
                                     </td>
                                     <td className="text-muted-foreground max-w-48 truncate px-4 py-3">
@@ -265,7 +285,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                title="Edit record"
+                                                title={t(
+                                                    'attendance.index.edit_record',
+                                                )}
                                                 onClick={() =>
                                                     setEditingRecord({
                                                         row,
@@ -275,7 +297,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit record
+                                                    {t(
+                                                        'attendance.index.edit_record',
+                                                    )}
                                                 </span>
                                             </Button>
                                         </div>
@@ -289,7 +313,7 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                         colSpan={7}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No students in this class.
+                                        {t('attendance.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -306,12 +330,16 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                         <>
                             <DialogHeader>
                                 <DialogTitle>
-                                    Edit record — {editingRecord.row.full_name}
+                                    {t('attendance.index.edit_title', {
+                                        name: editingRecord.row.full_name,
+                                    })}
                                 </DialogTitle>
                                 <DialogDescription>
                                     {editingRecord.row.attendance
-                                        ? 'Manual edits are stamped as overrides and never notify anyone.'
-                                        : 'No record exists for this day — saving one now reconstructs it.'}
+                                        ? t('attendance.index.edit_description')
+                                        : t(
+                                              'attendance.index.edit_description_missing',
+                                          )}
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -338,7 +366,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                             <Label
                                                 htmlFor={`status-${editingRecord.row.student_id}`}
                                             >
-                                                Status
+                                                {t(
+                                                    'attendance.index.columns.status',
+                                                )}
                                             </Label>
                                             <select
                                                 id={`status-${editingRecord.row.student_id}`}
@@ -349,16 +379,16 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                 }
                                                 className={SELECT_CLASS}
                                             >
-                                                {STATUS_OPTIONS.map(
-                                                    (option) => (
-                                                        <option
-                                                            key={option.value}
-                                                            value={option.value}
-                                                        >
-                                                            {option.label}
-                                                        </option>
-                                                    ),
-                                                )}
+                                                {STATUS_OPTIONS.map((value) => (
+                                                    <option
+                                                        key={value}
+                                                        value={value}
+                                                    >
+                                                        {t(
+                                                            `attendance.statuses.${value}`,
+                                                        )}
+                                                    </option>
+                                                ))}
                                             </select>
                                             <InputError
                                                 message={errors.status}
@@ -370,7 +400,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                 <Label
                                                     htmlFor={`in-${editingRecord.row.student_id}`}
                                                 >
-                                                    Check-in
+                                                    {t(
+                                                        'attendance.index.columns.check_in',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id={`in-${editingRecord.row.student_id}`}
@@ -393,7 +425,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                 <Label
                                                     htmlFor={`out-${editingRecord.row.student_id}`}
                                                 >
-                                                    Check-out
+                                                    {t(
+                                                        'attendance.index.columns.check_out',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id={`out-${editingRecord.row.student_id}`}
@@ -418,7 +452,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                             <Label
                                                 htmlFor={`notes-${editingRecord.row.student_id}`}
                                             >
-                                                Notes
+                                                {t(
+                                                    'attendance.index.columns.notes',
+                                                )}
                                             </Label>
                                             <Input
                                                 id={`notes-${editingRecord.row.student_id}`}
@@ -428,7 +464,9 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                         ?.notes ?? ''
                                                 }
                                                 maxLength={255}
-                                                placeholder="Why was this record overridden?"
+                                                placeholder={t(
+                                                    'attendance.index.notes_placeholder',
+                                                )}
                                             />
                                             <InputError
                                                 message={errors.notes}
@@ -443,14 +481,16 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
                                                     setEditingRecord(null)
                                                 }
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Save record
+                                                {t(
+                                                    'attendance.index.save_record',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>
@@ -463,12 +503,3 @@ export default function AttendanceIndex({ classes, filters, rows }: Props) {
         </>
     );
 }
-
-AttendanceIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Attendance',
-            href: AttendanceController.index().url,
-        },
-    ],
-};

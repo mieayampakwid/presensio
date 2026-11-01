@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { UserRoundX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Heading from '@/components/heading';
@@ -11,6 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useTranslation } from '@/hooks/use-translation';
 import type { StudentQr } from '@/types/attendance';
 
 type Props = {
@@ -21,6 +22,7 @@ const ROTATE_AFTER_MS = 25000;
 
 export default function MyQr({ qr }: Props) {
     const { resolvedAppearance } = useAppearance();
+    const { t } = useTranslation();
     const [now, setNow] = useState(() => Date.now());
     const rotatedFor = useRef<string | null>(null);
 
@@ -56,23 +58,34 @@ export default function MyQr({ qr }: Props) {
         }
     }, [secondsLeft, qr]);
 
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('attendance.my_qr.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="My QR" />
+            <Head title={t('attendance.my_qr.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="My QR"
-                    description="Show this code at the school scanner to check in."
+                    title={t('attendance.my_qr.title')}
+                    description={t('attendance.my_qr.description')}
                 />
 
                 {qr ? (
                     <Card className="max-w-md">
                         <CardHeader className="items-center">
-                            <CardTitle>Attendance code</CardTitle>
+                            <CardTitle>
+                                {t('attendance.my_qr.code_title')}
+                            </CardTitle>
                             <CardDescription>
-                                Scan times are recorded in the{' '}
-                                {qr.school_timezone} school timezone.
+                                {t('attendance.timezone_note', {
+                                    timezone: qr.school_timezone,
+                                })}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center gap-4">
@@ -96,12 +109,13 @@ export default function MyQr({ qr }: Props) {
                                 }
                             >
                                 {secondsLeft > 0
-                                    ? `Expires in ${secondsLeft}s`
-                                    : 'Refreshing…'}
+                                    ? t('attendance.my_qr.expires_in', {
+                                          seconds: secondsLeft,
+                                      })
+                                    : t('attendance.my_qr.refreshing')}
                             </Badge>
                             <p className="text-muted-foreground text-center text-sm">
-                                The code renews itself automatically — just keep
-                                this page open.
+                                {t('attendance.my_qr.auto_renew')}
                             </p>
                         </CardContent>
                     </Card>
@@ -110,11 +124,10 @@ export default function MyQr({ qr }: Props) {
                         <CardContent className="text-muted-foreground flex flex-col items-center gap-3 py-12 text-center">
                             <UserRoundX className="size-10" />
                             <p className="text-foreground text-sm font-medium">
-                                No student profile linked
+                                {t('attendance.no_profile.title')}
                             </p>
                             <p className="text-sm">
-                                Your account is not linked to a student profile
-                                yet. Ask the school office to connect it.
+                                {t('attendance.no_profile.description')}
                             </p>
                         </CardContent>
                     </Card>
@@ -123,11 +136,3 @@ export default function MyQr({ qr }: Props) {
         </>
     );
 }
-
-MyQr.layout = {
-    breadcrumbs: [
-        {
-            title: 'My QR',
-        },
-    ],
-};

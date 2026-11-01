@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, UserRoundX } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
+import { useTranslation } from '@/hooks/use-translation';
+import { STATUS_BADGES } from '@/lib/attendance';
 
 type RecordRow = {
     date: string;
@@ -35,9 +36,11 @@ type Props = {
 };
 
 function StatusBadge({ status }: { status: string }) {
+    const { t } = useTranslation();
+
     return (
         <Badge variant={STATUS_BADGES[status]?.variant ?? 'secondary'}>
-            {STATUS_BADGES[status]?.label ?? status}
+            {t(`attendance.statuses.${status}`)}
         </Badge>
     );
 }
@@ -47,14 +50,24 @@ export default function MyAttendance({
     today,
     records,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('attendance.my_attendance.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="My Attendance" />
+            <Head title={t('attendance.my_attendance.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="My Attendance"
-                    description="Your check-in history. Times are shown in the school timezone."
+                    title={t('attendance.my_attendance.title')}
+                    description={t('attendance.my_attendance.description')}
                 />
 
                 {records === null ? (
@@ -62,11 +75,10 @@ export default function MyAttendance({
                         <CardContent className="text-muted-foreground flex flex-col items-center gap-3 py-12 text-center">
                             <UserRoundX className="size-10" />
                             <p className="text-foreground text-sm font-medium">
-                                No student profile linked
+                                {t('attendance.no_profile.title')}
                             </p>
                             <p className="text-sm">
-                                Your account is not linked to a student profile
-                                yet. Ask the school office to connect it.
+                                {t('attendance.no_profile.description')}
                             </p>
                         </CardContent>
                     </Card>
@@ -74,10 +86,13 @@ export default function MyAttendance({
                     <>
                         <Card className="max-w-md">
                             <CardHeader className="items-center">
-                                <CardTitle>Today</CardTitle>
+                                <CardTitle>
+                                    {t('attendance.my_attendance.today')}
+                                </CardTitle>
                                 <CardDescription>
-                                    Scan times are recorded in the{' '}
-                                    {school_timezone} school timezone.
+                                    {t('attendance.timezone_note', {
+                                        timezone: school_timezone,
+                                    })}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center gap-3">
@@ -86,13 +101,17 @@ export default function MyAttendance({
                                         <StatusBadge status={today.status} />
                                         <div className="text-muted-foreground flex gap-6 text-sm">
                                             <span>
-                                                In:{' '}
+                                                {t(
+                                                    'attendance.my_attendance.in',
+                                                )}{' '}
                                                 <span className="text-foreground font-medium">
                                                     {today.checked_in_at ?? '—'}
                                                 </span>
                                             </span>
                                             <span>
-                                                Out:{' '}
+                                                {t(
+                                                    'attendance.my_attendance.out',
+                                                )}{' '}
                                                 <span className="text-foreground font-medium">
                                                     {today.checked_out_at ??
                                                         '—'}
@@ -102,7 +121,9 @@ export default function MyAttendance({
                                     </>
                                 ) : (
                                     <p className="text-muted-foreground text-sm">
-                                        No record yet — check in at the scanner.
+                                        {t(
+                                            'attendance.my_attendance.no_record_today',
+                                        )}
                                     </p>
                                 )}
                             </CardContent>
@@ -113,19 +134,29 @@ export default function MyAttendance({
                                 <thead className="bg-muted/50 text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Date
+                                            {t(
+                                                'attendance.my_attendance.columns.date',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Status
+                                            {t(
+                                                'attendance.my_attendance.columns.status',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Check-in
+                                            {t(
+                                                'attendance.my_attendance.columns.check_in',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Check-out
+                                            {t(
+                                                'attendance.my_attendance.columns.check_out',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Method
+                                            {t(
+                                                'attendance.my_attendance.columns.method',
+                                            )}
                                         </th>
                                     </tr>
                                 </thead>
@@ -151,9 +182,9 @@ export default function MyAttendance({
                                             </td>
                                             <td className="text-muted-foreground px-4 py-3">
                                                 {record.scan_method
-                                                    ? (METHOD_LABELS[
-                                                          record.scan_method
-                                                      ] ?? record.scan_method)
+                                                    ? t(
+                                                          `attendance.methods.${record.scan_method}`,
+                                                      )
                                                     : '—'}
                                             </td>
                                         </tr>
@@ -165,7 +196,9 @@ export default function MyAttendance({
                                                 colSpan={5}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
-                                                No records yet.
+                                                {t(
+                                                    'attendance.my_attendance.empty',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -175,8 +208,10 @@ export default function MyAttendance({
 
                         <div className="flex items-center justify-between">
                             <p className="text-muted-foreground text-sm">
-                                Page {records.current_page} of{' '}
-                                {records.last_page}
+                                {t('common.page_of', {
+                                    current: records.current_page,
+                                    last: records.last_page,
+                                })}
                             </p>
 
                             <div className="flex gap-2">
@@ -188,7 +223,7 @@ export default function MyAttendance({
                                 >
                                     <Link href={records.prev_page_url ?? '#'}>
                                         <ChevronLeft className="h-4 w-4" />
-                                        Previous
+                                        {t('common.previous')}
                                     </Link>
                                 </Button>
                                 <Button
@@ -198,7 +233,7 @@ export default function MyAttendance({
                                     disabled={!records.next_page_url}
                                 >
                                     <Link href={records.next_page_url ?? '#'}>
-                                        Next
+                                        {t('common.next')}
                                         <ChevronRight className="h-4 w-4" />
                                     </Link>
                                 </Button>
@@ -210,11 +245,3 @@ export default function MyAttendance({
         </>
     );
 }
-
-MyAttendance.layout = {
-    breadcrumbs: [
-        {
-            title: 'My Attendance',
-        },
-    ],
-};
