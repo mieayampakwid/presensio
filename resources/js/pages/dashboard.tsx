@@ -1,5 +1,5 @@
 import AnnouncementReaderController from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, setLayoutProps, usePage } from '@inertiajs/react';
 import { UserRoundX } from 'lucide-react';
 import ChildGradeController from '@/actions/App/Http/Controllers/Parent/ChildGradeController';
 import ChildReportCardController from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
@@ -180,6 +180,8 @@ function StaffSection({
     pendingLeaveRequests: number | null;
     role: UserRole;
 }) {
+    const { t } = useTranslation();
+
     return (
         <>
             {board.totals !== null && (
@@ -188,7 +190,7 @@ function StaffSection({
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    In building — evacuation headcount
+                                    {t('dashboard.in_building_headcount')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.in_building}
@@ -198,7 +200,7 @@ function StaffSection({
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Checked out
+                                    {t('dashboard.checked_out')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.checked_out}
@@ -208,7 +210,7 @@ function StaffSection({
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Not checked in
+                                    {t('dashboard.not_checked_in')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.not_checked_in}
@@ -218,7 +220,7 @@ function StaffSection({
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Enrolled
+                                    {t('dashboard.enrolled')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.enrolled}
@@ -234,19 +236,19 @@ function StaffSection({
                     <thead className="bg-muted/50 text-muted-foreground">
                         <tr>
                             <th className="px-4 py-3 text-left font-medium">
-                                Class
+                                {t('dashboard.class_column')}
                             </th>
                             <th className="px-4 py-3 text-left font-medium">
-                                Enrolled
+                                {t('dashboard.enrolled')}
                             </th>
                             <th className="px-4 py-3 text-left font-medium">
-                                In building
+                                {t('dashboard.in_building')}
                             </th>
                             <th className="px-4 py-3 text-left font-medium">
-                                Checked out
+                                {t('dashboard.checked_out')}
                             </th>
                             <th className="px-4 py-3 text-left font-medium">
-                                Not checked in
+                                {t('dashboard.not_checked_in')}
                             </th>
                         </tr>
                     </thead>
@@ -284,7 +286,7 @@ function StaffSection({
                                     colSpan={5}
                                     className="text-muted-foreground px-4 py-8 text-center"
                                 >
-                                    No classes assigned to you.
+                                    {t('dashboard.empty_classes')}
                                 </td>
                             </tr>
                         )}
@@ -296,7 +298,7 @@ function StaffSection({
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-muted-foreground text-sm font-medium">
-                            Pending excuses
+                            {t('dashboard.pending_excuses')}
                         </CardTitle>
                         <CardTitle className="text-4xl">
                             {pendingExcuses}
@@ -305,7 +307,7 @@ function StaffSection({
                     <CardContent>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={ExcuseReviewController.index().url}>
-                                Review queue
+                                {t('dashboard.excuse_review_queue')}
                             </Link>
                         </Button>
                     </CardContent>
@@ -315,7 +317,7 @@ function StaffSection({
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-muted-foreground text-sm font-medium">
-                                Pending leave requests
+                                {t('dashboard.pending_leave')}
                             </CardTitle>
                             <CardTitle className="text-4xl">
                                 {pendingLeaveRequests}
@@ -324,7 +326,7 @@ function StaffSection({
                         <CardContent>
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={LeaveReviewController.index().url}>
-                                    Leave review queue
+                                    {t('dashboard.leave_review_queue')}
                                 </Link>
                             </Button>
                         </CardContent>
@@ -334,13 +336,13 @@ function StaffSection({
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-muted-foreground text-sm font-medium">
-                            Quick links
+                            {t('dashboard.quick_links')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" asChild>
                             <Link href={AttendanceController.index().url}>
-                                Attendance
+                                {t('dashboard.quick_link.attendance')}
                             </Link>
                         </Button>
                         {role === 'teacher' && (
@@ -348,18 +350,18 @@ function StaffSection({
                                 <Link
                                     href={PresenceBoardController.index().url}
                                 >
-                                    Presence Board
+                                    {t('dashboard.quick_link.presence_board')}
                                 </Link>
                             </Button>
                         )}
                         <Button variant="outline" size="sm" asChild>
                             <Link href={StudentReportController.index().url}>
-                                Student Report
+                                {t('dashboard.quick_link.student_report')}
                             </Link>
                         </Button>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={ClassReportController.index().url}>
-                                Class Report
+                                {t('dashboard.quick_link.class_report')}
                             </Link>
                         </Button>
                     </CardContent>
@@ -375,8 +377,8 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
     if (cards === null) {
         return (
             <PortalEmptyState
-                title="No guardian profile linked"
-                body="Your account is not linked to a guardian profile yet. Ask the school office to connect it."
+                title={t('dashboard.parent.no_guardian')}
+                body={t('dashboard.parent.no_guardian_body')}
             />
         );
     }
@@ -384,8 +386,8 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
     if (cards.length === 0) {
         return (
             <PortalEmptyState
-                title="No children linked"
-                body="Your guardian profile is not linked to any children yet. Ask the school office to connect them."
+                title={t('dashboard.parent.no_children')}
+                body={t('dashboard.parent.no_children_body')}
             />
         );
     }
@@ -401,7 +403,7 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                 <StatusBadge status={child.today_status} />
                             ) : (
                                 <span className="text-muted-foreground text-xs">
-                                    No record yet
+                                    {t('dashboard.parent.no_record')}
                                 </span>
                             )}
                         </div>
@@ -442,7 +444,9 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                         )}
                         <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" asChild>
-                                <Link href={my().url}>My Excuses</Link>
+                                <Link href={my().url}>
+                                    {t('dashboard.parent.my_excuses')}
+                                </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
                                 <Link
@@ -454,7 +458,7 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                         }).url
                                     }
                                 >
-                                    Child report
+                                    {t('dashboard.parent.child_report')}
                                 </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
@@ -465,7 +469,7 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                         }).url
                                     }
                                 >
-                                    Nilai
+                                    {t('dashboard.parent.grades')}
                                 </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
@@ -476,7 +480,7 @@ function ParentSection({ cards }: { cards: ChildCard[] | null }) {
                                         }).url
                                     }
                                 >
-                                    Rapor
+                                    {t('dashboard.parent.report_card')}
                                 </Link>
                             </Button>
                         </div>
@@ -492,11 +496,13 @@ function StudentSection({
 }: {
     profile: { today: TodayRow | null } | null;
 }) {
+    const { t } = useTranslation();
+
     if (profile === null) {
         return (
             <PortalEmptyState
-                title="No student profile linked"
-                body="Your account is not linked to a student profile yet. Ask the school office to connect it."
+                title={t('dashboard.student.no_profile')}
+                body={t('dashboard.student.no_profile_body')}
             />
         );
     }
@@ -504,7 +510,7 @@ function StudentSection({
     return (
         <Card className="max-w-md">
             <CardHeader className="items-center">
-                <CardTitle>Today</CardTitle>
+                <CardTitle>{t('dashboard.student.today')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3">
                 {profile.today ? (
@@ -512,13 +518,13 @@ function StudentSection({
                         <StatusBadge status={profile.today.status} />
                         <div className="text-muted-foreground flex gap-6 text-sm">
                             <span>
-                                In:{' '}
+                                {t('dashboard.student.check_in')}{' '}
                                 <span className="text-foreground font-medium">
                                     {profile.today.checked_in_at ?? '—'}
                                 </span>
                             </span>
                             <span>
-                                Out:{' '}
+                                {t('dashboard.student.check_out')}{' '}
                                 <span className="text-foreground font-medium">
                                     {profile.today.checked_out_at ?? '—'}
                                 </span>
@@ -531,12 +537,14 @@ function StudentSection({
                             </p>
                         )}
                         <Button variant="outline" size="sm" asChild>
-                            <Link href={myAttendance().url}>My Attendance</Link>
+                            <Link href={myAttendance().url}>
+                                {t('dashboard.student.my_attendance')}
+                            </Link>
                         </Button>
                     </>
                 ) : (
                     <p className="text-muted-foreground text-sm">
-                        No record yet — check in at the scanner.
+                        {t('dashboard.student.no_record')}
                     </p>
                 )}
             </CardContent>
@@ -545,12 +553,14 @@ function StudentSection({
 }
 
 function EmployeeLeaveBanner({ leave }: { leave: LeaveToday }) {
+    const { t } = useTranslation();
+
     return (
         <Card>
             <CardContent className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p className="text-sm font-medium">
-                        Anda sedang cuti/izin hari ini
+                        {t('dashboard.employee.on_leave_today')}
                     </p>
                     <p className="text-muted-foreground text-sm">
                         {leave.start_date} – {leave.end_date}
@@ -582,33 +592,46 @@ export default function Dashboard({
         role,
     );
 
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('dashboard.title'),
+                href: dashboard(),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title={t('dashboard.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Dashboard"
-                    description="Today at a glance — every widget deep-links to its own page."
+                    title={t('dashboard.title')}
+                    description={t('dashboard.description')}
                 />
 
                 {!is_school_day && (
                     <p className="text-muted-foreground rounded-lg border px-4 py-3 text-sm">
-                        Not a school day — attendance is not being taken.
+                        {t('dashboard.not_school_day')}
                     </p>
                 )}
 
                 <section
                     className="space-y-3 rounded-lg border p-5"
-                    aria-label="Pengumuman terbaru"
+                    aria-label={t('dashboard.announcements.title')}
                 >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <h2 className="font-semibold">
-                            Pengumuman terbaru{' '}
+                            {t('dashboard.announcements.title')}{' '}
                             {announcementSummary.unacknowledged_count > 0 && (
                                 <Badge variant="secondary">
-                                    {announcementSummary.unacknowledged_count}{' '}
-                                    perlu konfirmasi
+                                    {t(
+                                        'dashboard.announcements.needs_acknowledgment',
+                                        {
+                                            count: announcementSummary.unacknowledged_count,
+                                        },
+                                    )}
                                 </Badge>
                             )}
                         </h2>
@@ -616,7 +639,7 @@ export default function Dashboard({
                             className="text-sm underline underline-offset-4"
                             href={AnnouncementReaderController.index()}
                         >
-                            Semua pengumuman
+                            {t('dashboard.announcements.view_all')}
                         </Link>
                     </div>
                     {announcementSummary.items.length ? (
@@ -642,7 +665,7 @@ export default function Dashboard({
                         </ul>
                     ) : (
                         <p className="text-muted-foreground text-sm">
-                            Belum ada pengumuman untuk Anda.
+                            {t('dashboard.announcements.empty')}
                         </p>
                     )}
                 </section>
@@ -679,12 +702,3 @@ export default function Dashboard({
         </>
     );
 }
-
-Dashboard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-        },
-    ],
-};
