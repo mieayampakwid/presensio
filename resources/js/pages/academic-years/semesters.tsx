@@ -1,4 +1,4 @@
-import { Head, Form, Link } from '@inertiajs/react';
+import { Head, Form, Link, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Semester = {
     id: number;
@@ -55,6 +56,21 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
 
     const [ganjilEnd, setGanjilEnd] = useState(ganjil.ends_at);
     const [genapStart, setGenapStart] = useState(genap.starts_at);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('academic_years.index.title'),
+                href: AcademicYearController.index().url,
+            },
+            {
+                title: t('academic_years.semesters.title', {
+                    name: academic_year.name,
+                }),
+            },
+        ],
+    });
 
     const handleGanjilEndChange = (newEnd: string) => {
         setGanjilEnd(newEnd);
@@ -67,31 +83,39 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
 
     return (
         <>
-            <Head title={`Semesters — ${academic_year.name}`} />
+            <Head
+                title={t('academic_years.semesters.title', {
+                    name: academic_year.name,
+                })}
+            />
 
             <div className="mx-auto max-w-4xl space-y-6 p-4">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={AcademicYearController.index().url}>
                             <ArrowLeft className="h-4 w-4" />
-                            Back to Academic Years
+                            {t('academic_years.semesters.back')}
                         </Link>
                     </Button>
                 </div>
 
                 <Heading
-                    title={`Semester Boundaries — ${academic_year.name}`}
-                    description={`Year span: ${academic_year.starts_at} to ${academic_year.ends_at}. Semesters must be contiguous and fill the academic year.`}
+                    title={t('academic_years.semesters.heading', {
+                        name: academic_year.name,
+                    })}
+                    description={t('academic_years.semesters.description', {
+                        starts: academic_year.starts_at,
+                        ends: academic_year.ends_at,
+                    })}
                 />
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Adjust Semesters</CardTitle>
+                        <CardTitle>
+                            {t('academic_years.semesters.adjust_heading')}
+                        </CardTitle>
                         <CardDescription>
-                            Semester Ganjil begins on the academic year start
-                            date. Semester Genap must begin the day after
-                            Semester Ganjil ends and conclude on the academic
-                            year end date.
+                            {t('academic_years.semesters.adjust_description')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -114,7 +138,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                     <div className="grid gap-6 md:grid-cols-2">
                                         <div className="space-y-4 rounded-lg border p-4">
                                             <h3 className="font-semibold">
-                                                Semester 1 (Ganjil)
+                                                {t(
+                                                    'academic_years.semesters.semester_one',
+                                                )}
                                             </h3>
                                             <input
                                                 type="hidden"
@@ -128,7 +154,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                             />
                                             <div className="space-y-2">
                                                 <Label htmlFor="ganjil_start">
-                                                    Start Date
+                                                    {t(
+                                                        'academic_years.semesters.start_date',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="ganjil_start"
@@ -140,8 +168,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                                     className="bg-muted"
                                                 />
                                                 <p className="text-muted-foreground text-xs">
-                                                    Locked to academic year
-                                                    start
+                                                    {t(
+                                                        'academic_years.semesters.locked_start',
+                                                    )}
                                                 </p>
                                                 <InputError
                                                     message={
@@ -153,7 +182,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="ganjil_end">
-                                                    End Date
+                                                    {t(
+                                                        'academic_years.semesters.end_date',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="ganjil_end"
@@ -179,7 +210,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
 
                                         <div className="space-y-4 rounded-lg border p-4">
                                             <h3 className="font-semibold">
-                                                Semester 2 (Genap)
+                                                {t(
+                                                    'academic_years.semesters.semester_two',
+                                                )}
                                             </h3>
                                             <input
                                                 type="hidden"
@@ -193,7 +226,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                             />
                                             <div className="space-y-2">
                                                 <Label htmlFor="genap_start">
-                                                    Start Date
+                                                    {t(
+                                                        'academic_years.semesters.start_date',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="genap_start"
@@ -217,7 +252,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="genap_end">
-                                                    End Date
+                                                    {t(
+                                                        'academic_years.semesters.end_date',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="genap_end"
@@ -229,7 +266,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                                     className="bg-muted"
                                                 />
                                                 <p className="text-muted-foreground text-xs">
-                                                    Locked to academic year end
+                                                    {t(
+                                                        'academic_years.semesters.locked_end',
+                                                    )}
                                                 </p>
                                                 <InputError
                                                     message={
@@ -247,7 +286,9 @@ export default function SemestersPage({ academic_year, semesters }: Props) {
                                             type="submit"
                                             disabled={processing}
                                         >
-                                            Save Semester Boundaries
+                                            {t(
+                                                'academic_years.semesters.submit',
+                                            )}
                                         </Button>
                                     </div>
                                 </>

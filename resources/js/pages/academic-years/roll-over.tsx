@@ -1,4 +1,4 @@
-import { Head, Form, Link, router } from '@inertiajs/react';
+import { Head, Form, Link, router, setLayoutProps } from '@inertiajs/react';
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type YearOption = {
     id: number;
@@ -88,15 +89,26 @@ export default function AcademicYearsRollOver({
         ),
     );
     const [confirming, setConfirming] = useState(false);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('academic_years.index.title'),
+                href: AcademicYearController.index().url,
+            },
+            { title: t('academic_years.roll_over.title') },
+        ],
+    });
 
     if (source === null) {
         return (
             <>
-                <Head title="Roll over" />
+                <Head title={t('academic_years.roll_over.title')} />
                 <div className="space-y-6 p-4">
-                    <Heading title="Roll over" />
+                    <Heading title={t('academic_years.roll_over.title')} />
                     <p className="text-muted-foreground text-sm">
-                        No active year — set one first.
+                        {t('academic_years.roll_over.no_active_year')}
                     </p>
                 </div>
             </>
@@ -126,17 +138,19 @@ export default function AcademicYearsRollOver({
 
     return (
         <>
-            <Head title="Roll over" />
+            <Head title={t('academic_years.roll_over.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Roll over"
-                        description={`Promote ${source.name} rosters into the target year — the target becomes the active year.`}
+                        title={t('academic_years.roll_over.title')}
+                        description={t('academic_years.roll_over.description', {
+                            source: source.name,
+                        })}
                     />
                     <Button variant="outline" asChild>
                         <Link href={AcademicYearController.index().url}>
-                            Back
+                            {t('academic_years.roll_over.back')}
                         </Link>
                     </Button>
                 </div>
@@ -145,15 +159,16 @@ export default function AcademicYearsRollOver({
                     <Alert>
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription>
-                            The selected target year already has enrollments —
-                            it was promoted before. Applying again does nothing.
+                            {t('academic_years.roll_over.already_promoted')}
                         </AlertDescription>
                     </Alert>
                 )}
 
                 <div className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="target_year_id">Target year</Label>
+                        <Label htmlFor="target_year_id">
+                            {t('academic_years.roll_over.target_year')}
+                        </Label>
                         <select
                             id="target_year_id"
                             defaultValue={target_year_id ?? ''}
@@ -187,7 +202,9 @@ export default function AcademicYearsRollOver({
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="effective_on">
-                                        Effective on
+                                        {t(
+                                            'academic_years.roll_over.effective_on',
+                                        )}
                                     </Label>
                                     <Input
                                         id="effective_on"
@@ -206,16 +223,25 @@ export default function AcademicYearsRollOver({
                                         <thead className="bg-muted/50 text-muted-foreground">
                                             <tr>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    {source.name} class
+                                                    {t(
+                                                        'academic_years.roll_over.columns.source_class',
+                                                        { year: source.name },
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Students
+                                                    {t(
+                                                        'academic_years.roll_over.columns.students',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Destination in target year
+                                                    {t(
+                                                        'academic_years.roll_over.columns.destination',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Details
+                                                    {t(
+                                                        'academic_years.roll_over.columns.details',
+                                                    )}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -271,19 +297,19 @@ export default function AcademicYearsRollOver({
                                                                     className={`${SELECT_CLASS} w-56`}
                                                                 >
                                                                     <option value="existing">
-                                                                        Map to
-                                                                        existing
-                                                                        class
+                                                                        {t(
+                                                                            'academic_years.roll_over.mode_existing',
+                                                                        )}
                                                                     </option>
                                                                     <option value="new">
-                                                                        Create
-                                                                        new
-                                                                        class
+                                                                        {t(
+                                                                            'academic_years.roll_over.mode_new',
+                                                                        )}
                                                                     </option>
                                                                     <option value="none">
-                                                                        No
-                                                                        successor
-                                                                        (alumni)
+                                                                        {t(
+                                                                            'academic_years.roll_over.mode_none',
+                                                                        )}
                                                                     </option>
                                                                 </select>
                                                             </td>
@@ -312,9 +338,9 @@ export default function AcademicYearsRollOver({
                                                                             className={`${SELECT_CLASS} w-56`}
                                                                         >
                                                                             <option value="">
-                                                                                Choose
-                                                                                target
-                                                                                class…
+                                                                                {t(
+                                                                                    'academic_years.roll_over.target_class_placeholder',
+                                                                                )}
                                                                             </option>
                                                                             {target_classes.map(
                                                                                 (
@@ -352,7 +378,9 @@ export default function AcademicYearsRollOver({
                                                                             defaultValue={
                                                                                 mapping.new_name
                                                                             }
-                                                                            placeholder="Class name in target year"
+                                                                            placeholder={t(
+                                                                                'academic_years.roll_over.new_class_name_placeholder',
+                                                                            )}
                                                                             className="w-56"
                                                                         />
                                                                         <select
@@ -363,9 +391,9 @@ export default function AcademicYearsRollOver({
                                                                             className={`${SELECT_CLASS} w-56`}
                                                                         >
                                                                             <option value="">
-                                                                                Homeroom
-                                                                                teacher
-                                                                                (optional)
+                                                                                {t(
+                                                                                    'academic_years.roll_over.new_homeroom_teacher',
+                                                                                )}
                                                                             </option>
                                                                             {teachers.map(
                                                                                 (
@@ -391,16 +419,15 @@ export default function AcademicYearsRollOver({
                                                                 {mapping.mode ===
                                                                     'none' && (
                                                                     <span className="text-muted-foreground text-xs">
-                                                                        {
-                                                                            schoolClass.students_count
-                                                                        }{' '}
-                                                                        student
-                                                                        {schoolClass.students_count ===
-                                                                        1
-                                                                            ? ''
-                                                                            : 's'}{' '}
-                                                                        become
-                                                                        alumni
+                                                                        {t(
+                                                                            schoolClass.students_count ===
+                                                                                1
+                                                                                ? 'academic_years.roll_over.alumni_one'
+                                                                                : 'academic_years.roll_over.alumni_many',
+                                                                            {
+                                                                                count: schoolClass.students_count,
+                                                                            },
+                                                                        )}
                                                                     </span>
                                                                 )}
                                                                 {mapping.mode !==
@@ -434,8 +461,9 @@ export default function AcademicYearsRollOver({
                                                                             className="h-3.5 w-3.5 rounded border-gray-300"
                                                                         />
                                                                         <span>
-                                                                            Salin
-                                                                            Mapel
+                                                                            {t(
+                                                                                'academic_years.roll_over.copy_subjects',
+                                                                            )}
                                                                         </span>
                                                                     </label>
                                                                 )}
@@ -451,8 +479,9 @@ export default function AcademicYearsRollOver({
                                                         colSpan={4}
                                                         className="text-muted-foreground px-4 py-8 text-center"
                                                     >
-                                                        No classes in the active
-                                                        year.
+                                                        {t(
+                                                            'academic_years.roll_over.empty',
+                                                        )}
                                                     </td>
                                                 </tr>
                                             )}
@@ -462,9 +491,13 @@ export default function AcademicYearsRollOver({
 
                                 <div className="flex items-center justify-between gap-4">
                                     <p className="text-muted-foreground text-sm">
-                                        {mappedCount} of {source_classes.length}{' '}
-                                        classes have a successor — unmapped
-                                        students stay in history as alumni.
+                                        {t(
+                                            'academic_years.roll_over.successor_summary',
+                                            {
+                                                mapped: mappedCount,
+                                                total: source_classes.length,
+                                            },
+                                        )}
                                     </p>
                                     <Button
                                         type="button"
@@ -474,7 +507,7 @@ export default function AcademicYearsRollOver({
                                         }
                                         onClick={() => setConfirming(true)}
                                     >
-                                        Apply roll-over
+                                        {t('academic_years.roll_over.apply')}
                                     </Button>
                                 </div>
 
@@ -489,18 +522,22 @@ export default function AcademicYearsRollOver({
                                     <DialogContent>
                                         <DialogHeader>
                                             <DialogTitle>
-                                                Apply roll-over?
+                                                {t(
+                                                    'academic_years.roll_over.confirm_title',
+                                                )}
                                             </DialogTitle>
                                             <DialogDescription>
-                                                All {source.name} enrollments
-                                                end the day before the effective
-                                                date, mapped students start in
-                                                their target classes, and{' '}
-                                                {targetYear?.name ??
-                                                    'the target year'}{' '}
-                                                becomes the active year.
-                                                Historical reports keep last
-                                                year's attribution.
+                                                {t(
+                                                    'academic_years.roll_over.confirm_description',
+                                                    {
+                                                        source: source.name,
+                                                        target:
+                                                            targetYear?.name ??
+                                                            t(
+                                                                'academic_years.roll_over.default_target',
+                                                            ),
+                                                    },
+                                                )}
                                             </DialogDescription>
                                         </DialogHeader>
                                         <DialogFooter className="gap-2">
@@ -509,7 +546,7 @@ export default function AcademicYearsRollOver({
                                                     variant="secondary"
                                                     type="button"
                                                 >
-                                                    Cancel
+                                                    {t('common.cancel')}
                                                 </Button>
                                             </DialogClose>
                                             <Button
@@ -517,7 +554,9 @@ export default function AcademicYearsRollOver({
                                                 form="roll-over-form"
                                                 disabled={processing}
                                             >
-                                                Apply roll-over
+                                                {t(
+                                                    'academic_years.roll_over.apply',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </DialogContent>
@@ -530,10 +569,3 @@ export default function AcademicYearsRollOver({
         </>
     );
 }
-
-AcademicYearsRollOver.layout = {
-    breadcrumbs: [
-        { title: 'Academic Years', href: AcademicYearController.index().url },
-        { title: 'Roll over' },
-    ],
-};

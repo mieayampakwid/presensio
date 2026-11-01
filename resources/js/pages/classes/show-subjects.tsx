@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 
 type ClassSubjectRow = {
     id: number;
@@ -37,9 +38,22 @@ export default function ShowClassSubjects({
     schoolClass,
     classSubjects,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            { title: t('classes.index.title'), href: '/classes' },
+            { title: t('classes.subjects.breadcrumb') },
+        ],
+    });
+
     return (
         <>
-            <Head title={`Mata Pelajaran & Guru — ${schoolClass.name}`} />
+            <Head
+                title={t('classes.subjects.title', {
+                    name: schoolClass.name,
+                })}
+            />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
@@ -48,13 +62,20 @@ export default function ShowClassSubjects({
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/classes">
                                     <ChevronLeft className="h-4 w-4" />
-                                    Classes
+                                    {t('classes.index.title')}
                                 </Link>
                             </Button>
                         </div>
                         <Heading
-                            title={`Mata Pelajaran & Guru — ${schoolClass.name}`}
-                            description={`Tahun Ajaran: ${schoolClass.academic_year?.name ?? '-'} | Wali Kelas: ${schoolClass.teacher?.name ?? 'Belum ditentukan'}`}
+                            title={t('classes.subjects.title', {
+                                name: schoolClass.name,
+                            })}
+                            description={t('classes.subjects.description', {
+                                year: schoolClass.academic_year?.name ?? '-',
+                                teacher:
+                                    schoolClass.teacher?.name ??
+                                    t('classes.subjects.teacher_not_set'),
+                            })}
                         />
                     </div>
                 </div>
@@ -63,15 +84,17 @@ export default function ShowClassSubjects({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Kode</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Mata Pelajaran
+                                    {t('classes.subjects.columns.code')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Kelompok
+                                    {t('classes.subjects.columns.subject')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Guru Pengajar
+                                    {t('classes.subjects.columns.group')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('classes.subjects.columns.teacher')}
                                 </th>
                             </tr>
                         </thead>
@@ -101,8 +124,7 @@ export default function ShowClassSubjects({
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada mata pelajaran yang ditugaskan
-                                        ke kelas ini.
+                                        {t('classes.subjects.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -113,15 +135,3 @@ export default function ShowClassSubjects({
         </>
     );
 }
-
-ShowClassSubjects.layout = {
-    breadcrumbs: [
-        {
-            title: 'Classes',
-            href: '/classes',
-        },
-        {
-            title: 'Subjects & Teachers',
-        },
-    ],
-};

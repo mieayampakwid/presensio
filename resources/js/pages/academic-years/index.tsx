@@ -1,4 +1,4 @@
-import { Head, Form, Link } from '@inertiajs/react';
+import { Head, Form, Link, setLayoutProps } from '@inertiajs/react';
 import { CalendarDays, Pencil, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import AcademicYearController from '@/actions/App/Http/Controllers/AcademicYears/AcademicYearController';
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Year = {
     id: number;
@@ -35,21 +36,32 @@ type Props = {
 
 export default function AcademicYearsIndex({ years }: Props) {
     const [editingYear, setEditingYear] = useState<Year | null>(null);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('academic_years.index.title'),
+                href: AcademicYearController.index().url,
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Academic Years" />
+            <Head title={t('academic_years.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Academic Years"
-                        description="Year-scoped classes and the annual roll-over."
+                        title={t('academic_years.index.title')}
+                        description={t('academic_years.index.description')}
                     />
 
                     <Button variant="outline" asChild>
                         <Link href={AcademicYearController.rollOver().url}>
                             <RotateCcw className="h-4 w-4" />
-                            Roll over
+                            {t('academic_years.index.roll_over')}
                         </Link>
                     </Button>
                 </div>
@@ -59,16 +71,16 @@ export default function AcademicYearsIndex({ years }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Year
+                                    {t('academic_years.index.columns.year')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Period
+                                    {t('academic_years.index.columns.period')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Classes
+                                    {t('academic_years.index.columns.classes')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('academic_years.index.columns.status')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -87,7 +99,11 @@ export default function AcademicYearsIndex({ years }: Props) {
                                     </td>
                                     <td className="px-4 py-3">
                                         {year.is_active ? (
-                                            <Badge>Active</Badge>
+                                            <Badge>
+                                                {t(
+                                                    'academic_years.index.active',
+                                                )}
+                                            </Badge>
                                         ) : (
                                             <Form
                                                 {...AcademicYearController.activate.form(
@@ -103,7 +119,9 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                         type="submit"
                                                         disabled={processing}
                                                     >
-                                                        Set active
+                                                        {t(
+                                                            'academic_years.index.set_active',
+                                                        )}
                                                     </Button>
                                                 )}
                                             </Form>
@@ -125,7 +143,9 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                             },
                                                         ).url
                                                     }
-                                                    title="Manage semesters"
+                                                    title={t(
+                                                        'academic_years.index.manage_semesters',
+                                                    )}
                                                 >
                                                     <CalendarDays className="h-4 w-4" />
                                                 </Link>
@@ -133,14 +153,18 @@ export default function AcademicYearsIndex({ years }: Props) {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                title="Edit year"
+                                                title={t(
+                                                    'academic_years.index.edit_year',
+                                                )}
                                                 onClick={() =>
                                                     setEditingYear(year)
                                                 }
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit year
+                                                    {t(
+                                                        'academic_years.index.edit_year',
+                                                    )}
                                                 </span>
                                             </Button>
                                             {!year.is_active && (
@@ -165,11 +189,17 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                             title={
                                                                 year.classes_count >
                                                                 0
-                                                                    ? 'Cannot delete: classes exist in this year.'
-                                                                    : 'Delete year'
+                                                                    ? t(
+                                                                          'academic_years.index.delete_blocked',
+                                                                      )
+                                                                    : t(
+                                                                          'academic_years.index.delete_title',
+                                                                      )
                                                             }
                                                         >
-                                                            Delete
+                                                            {t(
+                                                                'academic_years.index.delete',
+                                                            )}
                                                         </Button>
                                                     )}
                                                 </Form>
@@ -185,7 +215,7 @@ export default function AcademicYearsIndex({ years }: Props) {
                                         colSpan={5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No academic years yet.
+                                        {t('academic_years.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -206,12 +236,12 @@ export default function AcademicYearsIndex({ years }: Props) {
                         <>
                             <DialogHeader>
                                 <DialogTitle>
-                                    Edit — {editingYear.name}
+                                    {t('academic_years.edit.title', {
+                                        name: editingYear.name,
+                                    })}
                                 </DialogTitle>
                                 <DialogDescription>
-                                    Date bounds seed roll-over defaults;
-                                    changing them never rewrites existing
-                                    enrollments.
+                                    {t('academic_years.edit.description')}
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -229,7 +259,7 @@ export default function AcademicYearsIndex({ years }: Props) {
                                             <Label
                                                 htmlFor={`name-${editingYear.id}`}
                                             >
-                                                Name
+                                                {t('academic_years.form.name')}
                                             </Label>
                                             <Input
                                                 id={`name-${editingYear.id}`}
@@ -243,7 +273,9 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                 <Label
                                                     htmlFor={`starts-${editingYear.id}`}
                                                 >
-                                                    Starts
+                                                    {t(
+                                                        'academic_years.form.starts_at',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id={`starts-${editingYear.id}`}
@@ -261,7 +293,9 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                 <Label
                                                     htmlFor={`ends-${editingYear.id}`}
                                                 >
-                                                    Ends
+                                                    {t(
+                                                        'academic_years.form.ends_at',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id={`ends-${editingYear.id}`}
@@ -285,13 +319,15 @@ export default function AcademicYearsIndex({ years }: Props) {
                                                     setEditingYear(null)
                                                 }
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
                                             >
-                                                Save
+                                                {t(
+                                                    'academic_years.form.submit_update',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>
@@ -307,18 +343,20 @@ export default function AcademicYearsIndex({ years }: Props) {
 
 function CreateYearDialog() {
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create year</Button>
+                <Button>{t('academic_years.index.create_year')}</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create academic year</DialogTitle>
+                    <DialogTitle>
+                        {t('academic_years.create.title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        New years start inactive — use roll-over or “Set active”
-                        when the year begins.
+                        {t('academic_years.create.description')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -330,17 +368,23 @@ function CreateYearDialog() {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">
+                                    {t('academic_years.form.name')}
+                                </Label>
                                 <Input
                                     id="name"
                                     name="name"
-                                    placeholder="2027/2028"
+                                    placeholder={t(
+                                        'academic_years.form.name_placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.name} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="starts_at">Starts</Label>
+                                    <Label htmlFor="starts_at">
+                                        {t('academic_years.form.starts_at')}
+                                    </Label>
                                     <Input
                                         id="starts_at"
                                         type="date"
@@ -349,7 +393,9 @@ function CreateYearDialog() {
                                     <InputError message={errors.starts_at} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="ends_at">Ends</Label>
+                                    <Label htmlFor="ends_at">
+                                        {t('academic_years.form.ends_at')}
+                                    </Label>
                                     <Input
                                         id="ends_at"
                                         type="date"
@@ -362,11 +408,11 @@ function CreateYearDialog() {
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
                                     <Button variant="secondary" type="button">
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                 </DialogClose>
                                 <Button type="submit" disabled={processing}>
-                                    Create
+                                    {t('academic_years.form.submit_create')}
                                 </Button>
                             </DialogFooter>
                         </>
@@ -376,12 +422,3 @@ function CreateYearDialog() {
         </Dialog>
     );
 }
-
-AcademicYearsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Academic Years',
-            href: AcademicYearController.index().url,
-        },
-    ],
-};

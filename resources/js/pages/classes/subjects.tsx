@@ -1,4 +1,4 @@
-import { Head, Link, router, Form } from '@inertiajs/react';
+import { Head, Link, router, Form, setLayoutProps } from '@inertiajs/react';
 import {
     ChevronLeft,
     ExternalLink,
@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type SubjectOption = {
     id: number;
@@ -95,6 +96,17 @@ export default function ClassSubjects({
     const [deletingItem, setDeletingItem] = useState<ClassSubjectRow | null>(
         null,
     );
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('classes.index.title'),
+                href: SchoolClassController.index().url,
+            },
+            { title: t('classes.subjects.breadcrumb') },
+        ],
+    });
 
     const isActiveYear = schoolClass.academic_year?.is_active ?? true;
 
@@ -117,7 +129,11 @@ export default function ClassSubjects({
 
     return (
         <>
-            <Head title={`Mata Pelajaran & Guru — ${schoolClass.name}`} />
+            <Head
+                title={t('classes.subjects.title', {
+                    name: schoolClass.name,
+                })}
+            />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
@@ -126,13 +142,20 @@ export default function ClassSubjects({
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href={SchoolClassController.index().url}>
                                     <ChevronLeft className="h-4 w-4" />
-                                    Classes
+                                    {t('classes.index.title')}
                                 </Link>
                             </Button>
                         </div>
                         <Heading
-                            title={`Mata Pelajaran & Guru — ${schoolClass.name}`}
-                            description={`Tahun Ajaran: ${schoolClass.academic_year?.name ?? '-'} | Wali Kelas: ${schoolClass.teacher?.name ?? 'Belum ditentukan'}`}
+                            title={t('classes.subjects.title', {
+                                name: schoolClass.name,
+                            })}
+                            description={t('classes.subjects.description', {
+                                year: schoolClass.academic_year?.name ?? '-',
+                                teacher:
+                                    schoolClass.teacher?.name ??
+                                    t('classes.subjects.teacher_not_set'),
+                            })}
                         />
                     </div>
                     <div className="flex items-center gap-2">
@@ -145,7 +168,7 @@ export default function ClassSubjects({
                                 }
                             >
                                 <GraduationCap className="mr-1.5 h-4 w-4" />
-                                Rapor Kelas
+                                {t('classes.subjects.report_card')}
                             </Link>
                         </Button>
                     </div>
@@ -153,16 +176,14 @@ export default function ClassSubjects({
 
                 {!isActiveYear && (
                     <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200">
-                        Kelas ini berada pada tahun ajaran yang tidak aktif.
-                        Penugasan mata pelajaran bersifat hanya-baca
-                        (read-only).
+                        {t('classes.subjects.read_only_notice')}
                     </div>
                 )}
 
                 {isActiveYear && unassignedSubjects.length > 0 && (
                     <div className="bg-card rounded-lg border p-4 shadow-xs">
                         <h3 className="mb-4 text-base font-semibold">
-                            Tambah Penugasan Mata Pelajaran
+                            {t('classes.subjects.assign_heading')}
                         </h3>
                         <Form
                             action={ClassSubjectController.store.url({
@@ -175,7 +196,7 @@ export default function ClassSubjects({
                                 <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="subject_id">
-                                            Mata Pelajaran
+                                            {t('classes.subjects.form.subject')}
                                         </Label>
                                         <select
                                             id="subject_id"
@@ -185,7 +206,9 @@ export default function ClassSubjects({
                                             className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                         >
                                             <option value="" disabled>
-                                                Pilih mata pelajaran
+                                                {t(
+                                                    'classes.subjects.form.subject_placeholder',
+                                                )}
                                             </option>
                                             {unassignedSubjects.map(
                                                 (subject) => (
@@ -206,7 +229,7 @@ export default function ClassSubjects({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="teacher_id">
-                                            Guru Pengajar
+                                            {t('classes.subjects.form.teacher')}
                                         </Label>
                                         <select
                                             id="teacher_id"
@@ -216,7 +239,9 @@ export default function ClassSubjects({
                                             className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                         >
                                             <option value="" disabled>
-                                                Pilih guru pengajar
+                                                {t(
+                                                    'classes.subjects.form.teacher_placeholder',
+                                                )}
                                             </option>
                                             {teachers.map((teacher) => (
                                                 <option
@@ -234,7 +259,9 @@ export default function ClassSubjects({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="passing_threshold">
-                                            KKTP (Passing Threshold)
+                                            {t(
+                                                'classes.subjects.form.passing_threshold',
+                                            )}
                                         </Label>
                                         <Input
                                             id="passing_threshold"
@@ -263,7 +290,7 @@ export default function ClassSubjects({
                                                 <Spinner className="mr-2" />
                                             )}
                                             <Plus className="mr-1 h-4 w-4" />
-                                            Tugaskan
+                                            {t('classes.subjects.form.assign')}
                                         </Button>
                                     </div>
                                 </div>
@@ -276,19 +303,25 @@ export default function ClassSubjects({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Kode</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Mata Pelajaran
+                                    {t('classes.subjects.columns.code')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Kelompok
+                                    {t('classes.subjects.columns.subject')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Guru Pengajar
+                                    {t('classes.subjects.columns.group')}
                                 </th>
-                                <th className="px-4 py-3 font-medium">KKTP</th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('classes.subjects.columns.teacher')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t(
+                                        'classes.subjects.columns.passing_threshold',
+                                    )}
+                                </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Aksi
+                                    {t('classes.subjects.columns.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -316,14 +349,18 @@ export default function ClassSubjects({
                                                 variant="ghost"
                                                 size="icon"
                                                 asChild
-                                                title="Buku Nilai (Gradebook)"
+                                                title={t(
+                                                    'classes.subjects.gradebook',
+                                                )}
                                             >
                                                 <Link
                                                     href={`/courses/${item.id}/gradebook`}
                                                 >
                                                     <FileSpreadsheet className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Buku Nilai
+                                                        {t(
+                                                            'classes.subjects.gradebook',
+                                                        )}
                                                     </span>
                                                 </Link>
                                             </Button>
@@ -331,14 +368,18 @@ export default function ClassSubjects({
                                                 variant="ghost"
                                                 size="icon"
                                                 asChild
-                                                title="Detail Kelas"
+                                                title={t(
+                                                    'classes.subjects.class_detail',
+                                                )}
                                             >
                                                 <Link
                                                     href={`/courses/${item.id}`}
                                                 >
                                                     <ExternalLink className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Detail Kelas
+                                                        {t(
+                                                            'classes.subjects.class_detail',
+                                                        )}
                                                     </span>
                                                 </Link>
                                             </Button>
@@ -353,7 +394,7 @@ export default function ClassSubjects({
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Edit
+                                                            {t('common.edit')}
                                                         </span>
                                                     </Button>
                                                     <Button
@@ -368,7 +409,9 @@ export default function ClassSubjects({
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Hapus
+                                                            {t(
+                                                                'classes.subjects.delete.confirm',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 </>
@@ -384,8 +427,7 @@ export default function ClassSubjects({
                                         colSpan={6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada mata pelajaran yang ditugaskan
-                                        ke kelas ini.
+                                        {t('classes.subjects.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -400,11 +442,12 @@ export default function ClassSubjects({
                     >
                         <DialogContent>
                             <DialogTitle>
-                                Edit Penugasan — {editingItem.subject?.name}
+                                {t('classes.subjects.edit.title', {
+                                    subject: editingItem.subject?.name ?? '',
+                                })}
                             </DialogTitle>
                             <DialogDescription>
-                                Perbarui guru pengajar atau ambang batas
-                                kelulusan (KKTP).
+                                {t('classes.subjects.edit.description')}
                             </DialogDescription>
 
                             <Form
@@ -420,7 +463,9 @@ export default function ClassSubjects({
                                     <div className="space-y-4">
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit_teacher_id">
-                                                Guru Pengajar
+                                                {t(
+                                                    'classes.subjects.form.teacher',
+                                                )}
                                             </Label>
                                             <select
                                                 id="edit_teacher_id"
@@ -447,7 +492,9 @@ export default function ClassSubjects({
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit_passing_threshold">
-                                                KKTP (Passing Threshold)
+                                                {t(
+                                                    'classes.subjects.form.passing_threshold',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="edit_passing_threshold"
@@ -476,7 +523,7 @@ export default function ClassSubjects({
                                                     setEditingItem(null)
                                                 }
                                             >
-                                                Batal
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -485,7 +532,9 @@ export default function ClassSubjects({
                                                 {processing && (
                                                     <Spinner className="mr-2" />
                                                 )}
-                                                Simpan
+                                                {t(
+                                                    'classes.subjects.form.save',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </div>
@@ -500,17 +549,21 @@ export default function ClassSubjects({
                     onOpenChange={(open) => !open && setDeletingItem(null)}
                 >
                     <DialogContent>
-                        <DialogTitle>Hapus Penugasan</DialogTitle>
+                        <DialogTitle>
+                            {t('classes.subjects.delete.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Hapus penugasan {deletingItem?.subject?.name} dari{' '}
-                            {schoolClass.name}?
+                            {t('classes.subjects.delete.description', {
+                                subject: deletingItem?.subject?.name ?? '',
+                                class: schoolClass.name,
+                            })}
                         </DialogDescription>
                         <DialogFooter className="gap-2">
                             <Button
                                 variant="outline"
                                 onClick={() => setDeletingItem(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 variant="destructive"
@@ -521,7 +574,7 @@ export default function ClassSubjects({
                                     }
                                 }}
                             >
-                                Hapus
+                                {t('classes.subjects.delete.confirm')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -530,15 +583,3 @@ export default function ClassSubjects({
         </>
     );
 }
-
-ClassSubjects.layout = {
-    breadcrumbs: [
-        {
-            title: 'Classes',
-            href: SchoolClassController.index().url,
-        },
-        {
-            title: 'Subjects & Teachers',
-        },
-    ],
-};
