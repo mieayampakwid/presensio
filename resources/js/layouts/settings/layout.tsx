@@ -4,6 +4,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAttendance } from '@/routes/attendance-settings';
 import { edit as editNotificationSettings } from '@/routes/notification-settings';
@@ -14,42 +15,42 @@ import { edit as editSecurity } from '@/routes/security';
 import type { Auth, NavItem } from '@/types';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { t } = useTranslation();
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const { auth } = usePage<{ auth: Auth }>().props;
-
     const isAdmin =
         auth.user.roles?.includes('admin') || auth.user.role === 'admin';
 
     const sidebarNavItems: NavItem[] = [
         {
-            title: 'Profile',
+            title: t('settings.nav.profile'),
             href: edit(),
             icon: null,
         },
         {
-            title: 'Security',
+            title: t('settings.nav.security'),
             href: editSecurity(),
             icon: null,
         },
         {
-            title: 'Appearance',
+            title: t('settings.nav.appearance'),
             href: editAppearance(),
             icon: null,
         },
         ...(isAdmin
             ? [
                   {
-                      title: 'School Profile',
+                      title: t('settings.nav.school_profile'),
                       href: editSchoolProfile(),
                       icon: null,
                   },
                   {
-                      title: 'Attendance',
+                      title: t('settings.nav.attendance'),
                       href: editAttendance(),
                       icon: null,
                   },
                   {
-                      title: 'Notifications',
+                      title: t('settings.nav.notifications'),
                       href: editNotificationSettings(),
                       icon: null,
                   },
@@ -60,10 +61,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="px-4 py-6">
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title={t('settings.title')}
+                description={t('settings.description')}
             />
-
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav

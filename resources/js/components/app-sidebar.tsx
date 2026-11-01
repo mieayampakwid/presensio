@@ -97,29 +97,18 @@ import {
 import { dashboard } from '@/routes';
 import { myAttendance, myQr } from '@/routes/attendance';
 import { my } from '@/routes/excuses';
+import { useTranslation } from '@/hooks/use-translation';
 import type { Auth, NavItem, UserRole } from '@/types';
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
 
 export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
+    const { t } = useTranslation();
     const activeRole = auth.active_role ?? auth.user.role;
     const isOperator =
         auth.user.roles?.includes('scanner_operator') ??
         auth.user.role === 'scanner_operator';
     const scannerItem: NavItem = {
-        title: 'Scanner',
+        title: t('scanner.title'),
         href: ScannerController.index(),
         icon: QrCode,
     };
@@ -127,80 +116,80 @@ export function AppSidebar() {
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: t('nav.items.dashboard'),
             href: dashboard(),
             icon: LayoutGrid,
         },
         {
-            title: 'Pengumuman',
+            title: t('nav.items.announcements'),
             href: AnnouncementReaderController.index().url,
             icon: FileText,
         },
         ...(activeRole === 'admin'
             ? [
-                  { title: 'Users', href: '/users', icon: Users },
+                  { title: t('nav.items.users'), href: '/users', icon: Users },
                   {
-                      title: 'Employees',
+                      title: t('nav.items.employees'),
                       href: EmployeeController.index().url,
                       icon: Briefcase,
                   },
                   {
-                      title: 'Teachers',
+                      title: t('nav.items.teachers'),
                       href: TeacherController.index().url,
                       icon: UserRound,
                   },
                   {
-                      title: 'Guardians',
+                      title: t('nav.items.guardians'),
                       href: GuardianController.index().url,
                       icon: Users,
                   },
                   {
-                      title: 'Students',
+                      title: t('nav.items.students'),
                       href: StudentController.index().url,
                       icon: GraduationCap,
                   },
                   {
-                      title: 'Classes',
+                      title: t('nav.items.classes'),
                       href: SchoolClassController.index().url,
                       icon: School,
                   },
                   {
-                      title: 'Subjects',
+                      title: t('nav.items.subjects'),
                       href: SubjectController.index().url,
                       icon: BookOpen,
                   },
                   {
-                      title: 'Bell Schedules',
+                      title: t('nav.items.bell_schedules'),
                       href: BellScheduleController.index().url,
                       icon: AlarmClock,
                   },
                   {
-                      title: 'Courses',
+                      title: t('nav.items.courses'),
                       href: '/courses',
                       icon: BookMarked,
                   },
                   {
-                      title: 'Learning Objectives',
+                      title: t('nav.items.learning_objectives'),
                       href: '/objectives',
                       icon: Target,
                   },
                   {
-                      title: 'Academic Years',
+                      title: t('nav.items.academic_years'),
                       href: AcademicYearController.index().url,
                       icon: CalendarRange,
                   },
                   {
-                      title: 'RFID Cards',
+                      title: t('nav.items.rfid_cards'),
                       href: RfidCardController.index().url,
                       icon: IdCard,
                   },
                   {
-                      title: 'Non-School Days',
+                      title: t('nav.items.non_school_days'),
                       href: NonSchoolDayController.index().url,
                       icon: CalendarOff,
                   },
                   {
-                      title: 'Audit Logs',
+                      title: t('nav.items.audit_logs'),
                       href: '/admin/audit-logs',
                       icon: FileText,
                   },
@@ -209,12 +198,12 @@ export function AppSidebar() {
         ...(activeRole === 'principal'
             ? [
                   {
-                      title: 'Classes',
+                      title: t('nav.items.classes'),
                       href: SchoolClassController.index().url,
                       icon: School,
                   },
                   {
-                      title: 'Audit Logs',
+                      title: t('nav.items.audit_logs'),
                       href: '/admin/audit-logs',
                       icon: FileText,
                   },
@@ -223,22 +212,22 @@ export function AppSidebar() {
         ...(['admin', 'principal'].includes(activeRole)
             ? [
                   {
-                      title: 'Staff Attendance',
+                      title: t('nav.items.staff_attendance'),
                       href: StaffAttendanceController.index().url,
                       icon: CalendarClock,
                   },
                   {
-                      title: 'Staff Leave',
+                      title: t('nav.items.staff_leave'),
                       href: LeaveReviewController.index().url,
                       icon: ClipboardList,
                   },
                   {
-                      title: 'Staff Recap',
+                      title: t('nav.items.staff_recap'),
                       href: StaffRecapController.index().url,
                       icon: FileSpreadsheet,
                   },
                   {
-                      title: 'Notification Deliveries',
+                      title: t('nav.items.notification_deliveries'),
                       href: NotificationDeliveryController.index().url,
                       icon: BellRing,
                   },
@@ -247,12 +236,12 @@ export function AppSidebar() {
         ...(activeRole === 'staff'
             ? [
                   {
-                      title: 'My QR',
+                      title: t('nav.items.my_qr'),
                       href: myQr().url,
                       icon: QrCode,
                   },
                   {
-                      title: 'My Leave',
+                      title: t('nav.items.my_leave'),
                       href: MyLeaveController.index().url,
                       icon: Palmtree,
                   },
@@ -261,32 +250,32 @@ export function AppSidebar() {
         ...(activeRole === 'student'
             ? [
                   {
-                      title: 'My QR',
+                      title: t('nav.items.my_qr'),
                       href: myQr().url,
                       icon: QrCode,
                   },
                   {
-                      title: 'My Attendance',
+                      title: t('nav.items.my_attendance'),
                       href: myAttendance().url,
                       icon: CalendarCheck,
                   },
                   {
-                      title: 'My Report',
+                      title: t('nav.items.my_report'),
                       href: StudentReportController.index().url,
                       icon: ClipboardList,
                   },
                   {
-                      title: 'My Grades',
+                      title: t('nav.items.my_grades'),
                       href: '/my-grades',
                       icon: FileSpreadsheet,
                   },
                   {
-                      title: 'Rapor Saya',
+                      title: t('nav.items.my_report_cards'),
                       href: '/my-report-cards',
                       icon: GraduationCap,
                   },
                   {
-                      title: 'Biaya Sekolah',
+                      title: t('nav.items.school_fees'),
                       href: StudentFeeController.index().url,
                       icon: Wallet,
                   },
@@ -295,32 +284,32 @@ export function AppSidebar() {
         ...(activeRole === 'teacher'
             ? [
                   {
-                      title: 'My QR',
+                      title: t('nav.items.my_qr'),
                       href: myQr().url,
                       icon: QrCode,
                   },
                   {
-                      title: 'My Leave',
+                      title: t('nav.items.my_leave'),
                       href: MyLeaveController.index().url,
                       icon: Palmtree,
                   },
                   {
-                      title: 'Classes',
+                      title: t('nav.items.classes'),
                       href: SchoolClassController.index().url,
                       icon: School,
                   },
                   {
-                      title: 'My Schedule',
+                      title: t('nav.items.my_schedule'),
                       href: ScheduleController.index().url,
                       icon: CalendarClock,
                   },
                   {
-                      title: 'My Courses',
+                      title: t('nav.items.my_courses'),
                       href: '/courses',
                       icon: BookOpen,
                   },
                   {
-                      title: 'Learning Objectives',
+                      title: t('nav.items.learning_objectives'),
                       href: '/objectives',
                       icon: Target,
                   },
@@ -329,12 +318,12 @@ export function AppSidebar() {
         ...(activeRole === 'teacher' || activeRole === 'admin'
             ? [
                   {
-                      title: 'Attendance',
+                      title: t('nav.items.attendance'),
                       href: AttendanceController.index().url,
                       icon: CalendarCheck,
                   },
                   {
-                      title: 'Excuses',
+                      title: t('nav.items.excuses'),
                       href: ExcuseReviewController.index().url,
                       icon: FileText,
                   },
@@ -343,22 +332,22 @@ export function AppSidebar() {
         ...(activeRole === 'parent'
             ? [
                   {
-                      title: 'My Excuses',
+                      title: t('nav.items.my_excuses'),
                       href: my().url,
                       icon: FileText,
                   },
                   {
-                      title: 'Rapor Anak',
+                      title: t('nav.items.child_report_cards'),
                       href: ChildReportCardController.landing().url,
                       icon: GraduationCap,
                   },
                   {
-                      title: 'Biaya Sekolah',
+                      title: t('nav.items.school_fees'),
                       href: ParentFeeController.index().url,
                       icon: Wallet,
                   },
                   {
-                      title: 'Child Report',
+                      title: t('nav.items.child_report'),
                       href: StudentReportController.index().url,
                       icon: ClipboardList,
                   },
@@ -373,59 +362,59 @@ export function AppSidebar() {
     ].includes(activeRole)
         ? [
               {
-                  title: 'Chart of Accounts',
+                  title: t('nav.items.chart_of_accounts'),
                   href: AccountController.index().url,
                   icon: Landmark,
               },
               {
-                  title: 'Journals',
+                  title: t('nav.items.journals'),
                   href: ManualJournalController.index().url,
                   icon: Receipt,
               },
               {
-                  title: 'Accounting Periods',
+                  title: t('nav.items.accounting_periods'),
                   href: PeriodController.index().url,
                   icon: CalendarClock,
               },
               {
-                  title: 'Fee Types',
+                  title: t('nav.items.fee_types'),
                   href: FeeTypeController.index().url,
                   icon: Tags,
               },
               {
-                  title: 'Fee Discounts',
+                  title: t('nav.items.fee_discounts'),
                   href: DiscountController.index().url,
                   icon: Percent,
               },
               {
-                  title: 'Bills',
+                  title: t('nav.items.bills'),
                   href: BillController.index().url,
                   icon: ReceiptText,
               },
               {
-                  title: 'Kelebihan Pembayaran',
+                  title: t('nav.items.overpayments'),
                   href: OverpaymentController.index().url,
                   icon: Banknote,
               },
               {
-                  title: 'Payments',
+                  title: t('nav.items.payments'),
                   href: PaymentController.index().url,
                   icon: CreditCard,
               },
               {
-                  title: 'Verifikasi Transfer',
+                  title: t('nav.items.transfer_verification'),
                   href: VerificationController.index().url,
                   icon: BadgeCheck,
               },
               ...(['admin', 'finance'].includes(activeRole)
                   ? [
                         {
-                            title: 'Generate Bills',
+                            title: t('nav.items.generate_bills'),
                             href: BillGenerationController.index().url,
                             icon: FilePlus2,
                         },
                         {
-                            title: 'Cashier',
+                            title: t('nav.items.cashier'),
                             href: CashierController.index().url,
                             icon: Banknote,
                         },
@@ -438,19 +427,19 @@ export function AppSidebar() {
         ...(['admin', 'teacher', 'principal', 'counselor'].includes(activeRole)
             ? [
                   {
-                      title: 'Student Report',
+                      title: t('nav.items.student_report'),
                       href: StudentReportController.index().url,
                       icon: FileSpreadsheet,
                   },
                   {
-                      title: 'Class Report',
+                      title: t('nav.items.class_report'),
                       href: ClassReportController.index().url,
                       icon: Table2,
                   },
                   ...(['admin', 'teacher', 'principal'].includes(activeRole)
                       ? [
                             {
-                                title: 'Presence Board',
+                                title: t('nav.items.presence_board'),
                                 href: PresenceBoardController.index().url,
                                 icon: Monitor,
                             },
@@ -461,42 +450,42 @@ export function AppSidebar() {
         ...(['admin', 'finance', 'principal'].includes(activeRole)
             ? [
                   {
-                      title: 'General Journal',
+                      title: t('nav.items.general_journal'),
                       href: ReportController.generalJournal().url,
                       icon: FileText,
                   },
                   {
-                      title: 'General Ledger',
+                      title: t('nav.items.general_ledger'),
                       href: ReportController.generalLedger().url,
                       icon: BookOpen,
                   },
                   {
-                      title: 'Trial Balance',
+                      title: t('nav.items.trial_balance'),
                       href: ReportController.trialBalance().url,
                       icon: Scale,
                   },
                   {
-                      title: 'Cash Book',
+                      title: t('nav.items.cash_book'),
                       href: ReportController.cashBook().url,
                       icon: Wallet,
                   },
                   {
-                      title: 'Rekonsiliasi Piutang',
+                      title: t('nav.items.receivables_reconciliation'),
                       href: ReportController.receivablesReconciliation().url,
                       icon: Landmark,
                   },
                   {
-                      title: 'Kartu Piutang Siswa',
+                      title: t('nav.items.student_receivable_cards'),
                       href: ReportController.studentReceivableCard().url,
                       icon: IdCard,
                   },
                   {
-                      title: 'Umur Piutang',
+                      title: t('nav.items.receivables_aging'),
                       href: ReportController.receivablesAging().url,
                       icon: Table2,
                   },
                   {
-                      title: 'Penerimaan per Kelas',
+                      title: t('nav.items.collections_by_class'),
                       href: ReportController.collectionsByClass().url,
                       icon: Receipt,
                   },
@@ -530,11 +519,11 @@ export function AppSidebar() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <SidebarMenuButton className="justify-between border text-xs">
-                                        <span className="flex items-center gap-1.5 font-medium capitalize">
+                                        <span className="flex items-center gap-1.5 font-medium">
                                             <span className="text-muted-foreground text-[10px] tracking-wider uppercase">
-                                                Role:
+                                                {t('nav.role_selector.label')}
                                             </span>
-                                            {activeRole}
+                                            {t(`roles.${activeRole}`)}
                                         </span>
                                         <ChevronsUpDown className="size-3.5 opacity-50" />
                                     </SidebarMenuButton>
@@ -546,7 +535,7 @@ export function AppSidebar() {
                                     {roles.map((r) => (
                                         <DropdownMenuItem
                                             key={r}
-                                            className={`cursor-pointer capitalize ${r === activeRole ? 'bg-accent text-accent-foreground font-semibold' : ''}`}
+                                            className={`cursor-pointer ${r === activeRole ? 'bg-accent text-accent-foreground font-semibold' : ''}`}
                                             onClick={() => {
                                                 if (r !== activeRole) {
                                                     router.post(
@@ -558,7 +547,7 @@ export function AppSidebar() {
                                                 }
                                             }}
                                         >
-                                            {r}
+                                            {t(`roles.${r}`)}
                                         </DropdownMenuItem>
                                     ))}
                                 </DropdownMenuContent>
@@ -570,6 +559,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain
+                    label={t('nav.groups.platform')}
                     items={
                         isOperator
                             ? [scannerItem]
@@ -582,16 +572,36 @@ export function AppSidebar() {
                     }
                 />
                 {financeNavItems.length > 0 && (
-                    <NavMain label="Finance" items={financeNavItems} />
+                    <NavMain
+                        label={t('nav.groups.finance')}
+                        items={financeNavItems}
+                    />
                 )}
                 {reportNavItems.length > 0 && (
-                    <NavMain label="Reports" items={reportNavItems} />
+                    <NavMain
+                        label={t('nav.groups.reports')}
+                        items={reportNavItems}
+                    />
                 )}
             </SidebarContent>
 
             <SidebarFooter>
                 {!isOperator && (
-                    <NavFooter items={footerNavItems} className="mt-auto" />
+                    <NavFooter
+                        items={[
+                            {
+                                title: t('nav.items.repository'),
+                                href: 'https://github.com/laravel/react-starter-kit',
+                                icon: FolderGit2,
+                            },
+                            {
+                                title: t('nav.items.documentation'),
+                                href: 'https://laravel.com/docs/starter-kits#react',
+                                icon: BookOpen,
+                            },
+                        ]}
+                        className="mt-auto"
+                    />
                 )}
                 <NavUser />
             </SidebarFooter>
