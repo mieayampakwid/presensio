@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 import RfidCardController from '@/actions/App/Http/Controllers/RfidCards/RfidCardController';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type CardRow = {
     id: number;
@@ -53,9 +54,19 @@ const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
 
 export default function RfidCardsIndex({ cards, filters, students }: Props) {
+    const { t } = useTranslation();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingCard, setEditingCard] = useState<CardRow | null>(null);
     const [deleting, setDeleting] = useState<CardRow | null>(null);
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('rfid_cards.index.title'),
+                href: RfidCardController.index().url,
+            },
+        ],
+    });
 
     const openCreate = () => {
         if (!students) {
@@ -86,23 +97,25 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
 
     return (
         <>
-            <Head title="RFID Cards" />
+            <Head title={t('rfid_cards.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="RFID Cards"
-                        description="Registered scan cards; assign them to students for attendance."
+                        title={t('rfid_cards.index.title')}
+                        description={t('rfid_cards.index.description')}
                     />
 
-                    <Button onClick={openCreate}>Create card</Button>
+                    <Button onClick={openCreate}>
+                        {t('rfid_cards.index.create')}
+                    </Button>
                 </div>
 
                 <form className="max-w-sm">
                     <Input
                         name="search"
                         defaultValue={filters.search}
-                        placeholder="Search by card or student…"
+                        placeholder={t('rfid_cards.index.search_placeholder')}
                     />
                 </form>
 
@@ -111,13 +124,13 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Card number
+                                    {t('rfid_cards.index.columns.card_number')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Assigned to
+                                    {t('rfid_cards.index.columns.assigned_to')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('rfid_cards.index.columns.status')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -133,10 +146,14 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                     </td>
                                     <td className="px-4 py-3">
                                         {card.student ? (
-                                            <Badge>Assigned</Badge>
+                                            <Badge>
+                                                {t(
+                                                    'rfid_cards.status.assigned',
+                                                )}
+                                            </Badge>
                                         ) : (
                                             <Badge variant="secondary">
-                                                Spare
+                                                {t('rfid_cards.status.spare')}
                                             </Badge>
                                         )}
                                     </td>
@@ -146,12 +163,16 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    title="Revoke"
+                                                    title={t(
+                                                        'rfid_cards.index.revoke',
+                                                    )}
                                                     onClick={() => revoke(card)}
                                                 >
                                                     <Undo2 className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Revoke
+                                                        {t(
+                                                            'rfid_cards.index.revoke',
+                                                        )}
                                                     </span>
                                                 </Button>
                                             )}
@@ -163,7 +184,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit
+                                                    {t('common.edit')}
                                                 </span>
                                             </Button>
                                             <Button
@@ -176,7 +197,9 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Delete
+                                                    {t(
+                                                        'rfid_cards.index.delete',
+                                                    )}
                                                 </span>
                                             </Button>
                                         </div>
@@ -190,7 +213,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No cards found.
+                                        {t('rfid_cards.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -200,7 +223,10 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {cards.current_page} of {cards.last_page}
+                        {t('common.page_of', {
+                            current: cards.current_page,
+                            last: cards.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -212,7 +238,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                         >
                             <Link href={cards.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -222,7 +248,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                             disabled={!cards.next_page_url}
                         >
                             <Link href={cards.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -234,17 +260,20 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete card</DialogTitle>
+                    <DialogTitle>
+                        {t('rfid_cards.index.remove_title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete card "
-                        {deleting?.rfid_number}"?
+                        {t('rfid_cards.index.remove_description', {
+                            number: deleting?.rfid_number ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -255,7 +284,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('rfid_cards.index.remove_confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -264,10 +293,11 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Create card</DialogTitle>
+                        <DialogTitle>
+                            {t('rfid_cards.form.create_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Register a new RFID card number and optionally
-                            assign it to a student.
+                            {t('rfid_cards.form.create_description')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -280,7 +310,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-rfid_number">
-                                        Card number
+                                        {t('rfid_cards.form.card_number')}
                                     </Label>
                                     <Input
                                         id="create-rfid_number"
@@ -288,14 +318,16 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                         required
                                         autoFocus
                                         autoComplete="off"
-                                        placeholder="Number printed on the card"
+                                        placeholder={t(
+                                            'rfid_cards.form.card_number_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.rfid_number} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-student_id">
-                                        Assigned student
+                                        {t('rfid_cards.form.assigned_student')}
                                     </Label>
                                     <select
                                         id="create-student_id"
@@ -304,7 +336,7 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                         className={SELECT_CLASS}
                                     >
                                         <option value="">
-                                            Spare (not assigned)
+                                            {t('rfid_cards.form.spare_option')}
                                         </option>
                                         {(students ?? []).map((student) => (
                                             <option
@@ -324,11 +356,11 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                         type="button"
                                         onClick={() => setIsCreateOpen(false)}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         {processing && <Spinner />}
-                                        Create card
+                                        {t('rfid_cards.form.submit_create')}
                                     </Button>
                                 </DialogFooter>
                             </>
@@ -346,11 +378,12 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                         <>
                             <DialogHeader>
                                 <DialogTitle>
-                                    Edit card {editingCard.rfid_number}
+                                    {t('rfid_cards.form.edit_title', {
+                                        number: editingCard.rfid_number,
+                                    })}
                                 </DialogTitle>
                                 <DialogDescription>
-                                    Change the assignment or return the card to
-                                    the spare pool.
+                                    {t('rfid_cards.form.edit_description')}
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -366,7 +399,9 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-rfid_number">
-                                                Card number
+                                                {t(
+                                                    'rfid_cards.form.card_number',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="edit-rfid_number"
@@ -384,7 +419,9 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-student_id">
-                                                Assigned student
+                                                {t(
+                                                    'rfid_cards.form.assigned_student',
+                                                )}
                                             </Label>
                                             <select
                                                 id="edit-student_id"
@@ -400,7 +437,9 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                                 className={SELECT_CLASS}
                                             >
                                                 <option value="">
-                                                    Spare (not assigned)
+                                                    {t(
+                                                        'rfid_cards.form.spare_option',
+                                                    )}
                                                 </option>
                                                 {(students ?? []).map(
                                                     (student) => (
@@ -426,14 +465,16 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
                                                     setEditingCard(null)
                                                 }
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Save changes
+                                                {t(
+                                                    'rfid_cards.form.submit_update',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>
@@ -446,12 +487,3 @@ export default function RfidCardsIndex({ cards, filters, students }: Props) {
         </>
     );
 }
-
-RfidCardsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'RFID Cards',
-            href: RfidCardController.index().url,
-        },
-    ],
-};

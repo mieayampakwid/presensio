@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import NonSchoolDayController from '@/actions/App/Http/Controllers/Calendar/NonSchoolDayController';
@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Day = {
     id: number;
@@ -34,8 +35,18 @@ type Paginator = {
 };
 
 export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
+    const { t } = useTranslation();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleting, setDeleting] = useState<Day | null>(null);
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('non_school_days.index.title'),
+                href: NonSchoolDayController.index().url,
+            },
+        ],
+    });
     const destroy = (day: Day) => {
         router.delete(
             NonSchoolDayController.destroy({ non_school_day: day.id }).url,
@@ -45,17 +56,17 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
 
     return (
         <>
-            <Head title="Non-School Days" />
+            <Head title={t('non_school_days.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Non-School Days"
-                        description="Holidays and school closures — the sweep and scanner respect these."
+                        title={t('non_school_days.index.title')}
+                        description={t('non_school_days.index.description')}
                     />
 
                     <Button onClick={() => setIsCreateOpen(true)}>
-                        Add date
+                        {t('non_school_days.index.add')}
                     </Button>
                 </div>
 
@@ -64,13 +75,13 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Date
+                                    {t('non_school_days.index.columns.date')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Name
+                                    {t('non_school_days.index.columns.name')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Source
+                                    {t('non_school_days.index.columns.source')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -87,10 +98,16 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                     <td className="px-4 py-3">
                                         {day.source === 'sync' ? (
                                             <Badge variant="secondary">
-                                                Sync
+                                                {t(
+                                                    'non_school_days.source.sync',
+                                                )}
                                             </Badge>
                                         ) : (
-                                            <Badge>Manual</Badge>
+                                            <Badge>
+                                                {t(
+                                                    'non_school_days.source.manual',
+                                                )}
+                                            </Badge>
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-right">
@@ -102,7 +119,9 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                         >
                                             <Trash2 className="h-4 w-4" />
                                             <span className="sr-only">
-                                                Delete
+                                                {t(
+                                                    'non_school_days.index.delete',
+                                                )}
                                             </span>
                                         </Button>
                                     </td>
@@ -115,7 +134,7 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No non-school days recorded.
+                                        {t('non_school_days.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -125,7 +144,10 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {days.current_page} of {days.last_page}
+                        {t('common.page_of', {
+                            current: days.current_page,
+                            last: days.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -137,7 +159,7 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                         >
                             <Link href={days.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -147,7 +169,7 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                             disabled={!days.next_page_url}
                         >
                             <Link href={days.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -159,18 +181,21 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete non-school day</DialogTitle>
+                    <DialogTitle>
+                        {t('non_school_days.index.remove_title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Remove {deleting?.date} — "{deleting?.name}"? Note: a
-                        synced date deleted while the national feed still lists
-                        it will re-import at the next weekly sync.
+                        {t('non_school_days.index.remove_description', {
+                            date: deleting?.date ?? '',
+                            name: deleting?.name ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -181,7 +206,7 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('non_school_days.index.remove_confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -190,10 +215,11 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add non-school day</DialogTitle>
+                        <DialogTitle>
+                            {t('non_school_days.form.create_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Declare a school closure. Only one entry per date is
-                            allowed.
+                            {t('non_school_days.form.create_description')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -205,7 +231,9 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                         {({ processing, errors }) => (
                             <>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-date">Date</Label>
+                                    <Label htmlFor="create-date">
+                                        {t('non_school_days.form.date')}
+                                    </Label>
                                     <Input
                                         id="create-date"
                                         type="date"
@@ -217,13 +245,17 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-name">Name</Label>
+                                    <Label htmlFor="create-name">
+                                        {t('non_school_days.form.name')}
+                                    </Label>
                                     <Input
                                         id="create-name"
                                         name="name"
                                         required
                                         maxLength={255}
-                                        placeholder="e.g. Teacher training day"
+                                        placeholder={t(
+                                            'non_school_days.form.name_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -234,11 +266,13 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
                                         type="button"
                                         onClick={() => setIsCreateOpen(false)}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         {processing && <Spinner />}
-                                        Add date
+                                        {t(
+                                            'non_school_days.form.submit_create',
+                                        )}
                                     </Button>
                                 </DialogFooter>
                             </>
@@ -249,12 +283,3 @@ export default function NonSchoolDaysIndex({ days }: { days: Paginator }) {
         </>
     );
 }
-
-NonSchoolDaysIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Non-School Days',
-            href: NonSchoolDayController.index().url,
-        },
-    ],
-};
