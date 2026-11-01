@@ -59,7 +59,7 @@ class RfidCardController extends Controller
     {
         RfidCard::create($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Card created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.rfid_cards.created')]);
 
         return to_route('rfid-cards.index');
     }
@@ -71,7 +71,7 @@ class RfidCardController extends Controller
     {
         $rfidCard->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Card updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.rfid_cards.updated')]);
 
         return to_route('rfid-cards.index');
     }
@@ -83,7 +83,7 @@ class RfidCardController extends Controller
     {
         $rfidCard->update(['student_id' => null, 'employee_id' => null]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Card revoked.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.rfid_cards.revoked')]);
 
         return back();
     }
@@ -95,7 +95,7 @@ class RfidCardController extends Controller
     {
         $rfidCard->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Card deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.rfid_cards.deleted')]);
 
         return to_route('rfid-cards.index');
     }

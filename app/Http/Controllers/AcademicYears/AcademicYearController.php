@@ -51,7 +51,7 @@ class AcademicYearController extends Controller
             $this->semesterService->createFor($academicYear);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Academic year created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.academic_years.created')]);
 
         return to_route('academic-years.index');
     }
@@ -60,7 +60,7 @@ class AcademicYearController extends Controller
     {
         $academicYear->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Academic year updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.academic_years.updated')]);
 
         return to_route('academic-years.index');
     }
@@ -72,7 +72,7 @@ class AcademicYearController extends Controller
             $academicYear->forceFill(['is_active' => true])->save();
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "{$academicYear->name} is now the active year."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.academic_years.activated', ['name' => $academicYear->name])]);
 
         return to_route('academic-years.index');
     }
@@ -80,14 +80,14 @@ class AcademicYearController extends Controller
     public function destroy(AcademicYear $academicYear): RedirectResponse
     {
         if ($academicYear->classes()->exists()) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Cannot delete: classes exist in this year.']);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('toasts.academic_years.delete_blocked')]);
 
             return back();
         }
 
         $academicYear->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Academic year deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.academic_years.deleted')]);
 
         return to_route('academic-years.index');
     }
@@ -162,16 +162,16 @@ class AcademicYearController extends Controller
             return back();
         }
 
-        $message = "Rolled over to {$target->name} — it is now the active year.";
+        $message = __('toasts.academic_years.rolled_over', ['name' => $target->name]);
         if ($summary['copied'] > 0 || ! empty($summary['skipped'])) {
-            $message .= " ({$summary['copied']} subject assignments copied";
+            $message .= ' '.__('toasts.academic_years.rolled_over_copied', ['copied' => $summary['copied']]);
             if (! empty($summary['skipped'])) {
-                $message .= ', '.count($summary['skipped']).' skipped';
+                $message .= __('toasts.academic_years.rolled_over_skipped', ['skipped' => count($summary['skipped'])]);
             }
-            $message .= ').';
+            $message .= __('toasts.academic_years.rolled_over_close');
         }
         if ($summary['needs_review'] > 0) {
-            $message .= " {$summary['needs_review']} bill(s) of departing students are partially paid and need treasurer review.";
+            $message .= ' '.__('toasts.academic_years.rolled_over_needs_review', ['needs_review' => $summary['needs_review']]);
         }
         $request->session()->flash('roll_over_summary', $summary);
         Inertia::flash('toast', ['type' => 'success', 'message' => $message]);

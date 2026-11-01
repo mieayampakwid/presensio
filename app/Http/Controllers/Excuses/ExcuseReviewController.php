@@ -73,7 +73,7 @@ class ExcuseReviewController extends Controller
     {
         return $this->resolve(
             fn (): bool => $this->approver->approve($excuse, $request->user(), $request->validated('review_note')),
-            'Excuse approved — attendance updated.',
+            __('toasts.excuses.approved'),
         );
     }
 
@@ -81,7 +81,7 @@ class ExcuseReviewController extends Controller
     {
         return $this->resolve(
             fn (): bool => $this->approver->reject($excuse, $request->user(), $request->validated('review_note')),
-            'Excuse rejected.',
+            __('toasts.excuses.rejected'),
         );
     }
 
@@ -96,7 +96,7 @@ class ExcuseReviewController extends Controller
         // no-op info flash, not an error (spec 04 decision).
         Inertia::flash('toast', $applied
             ? ['type' => 'success', 'message' => $successMessage]
-            : ['type' => 'info', 'message' => 'Excuse was already resolved.']);
+            : ['type' => 'info', 'message' => __('toasts.excuses.already_resolved')]);
 
         return back();
     }

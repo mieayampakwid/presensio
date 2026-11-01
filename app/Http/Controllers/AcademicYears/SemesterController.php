@@ -67,7 +67,7 @@ class SemesterController extends Controller
             );
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Semester boundaries updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.semesters.updated')]);
 
         return to_route('academic-years.semesters.edit', $academicYear);
     }

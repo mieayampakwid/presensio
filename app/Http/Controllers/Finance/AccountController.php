@@ -89,7 +89,7 @@ class AccountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Akun berhasil ditambahkan.',
+            'message' => __('toasts.finance.account_created'),
         ]);
 
         return to_route('finance.accounts.index');
@@ -110,7 +110,7 @@ class AccountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Akun berhasil diperbarui.',
+            'message' => __('toasts.finance.account_updated'),
         ]);
 
         return to_route('finance.accounts.index');
@@ -122,11 +122,11 @@ class AccountController extends Controller
     public function destroy(Account $account): RedirectResponse
     {
         if ($account->journalLines()->exists()) {
-            abort(422, 'Akun dengan transaksi tidak dapat dihapus. Nonaktifkan akun sebagai gantinya.');
+            abort(422, __('toasts.finance.account_delete_has_transactions'));
         }
 
         if ($account->children()->exists()) {
-            abort(422, 'Akun dengan sub-akun tidak dapat dihapus.');
+            abort(422, __('toasts.finance.account_delete_has_children'));
         }
 
         $parentId = $account->parent_id;
@@ -140,7 +140,7 @@ class AccountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Akun berhasil dihapus.',
+            'message' => __('toasts.finance.account_deleted'),
         ]);
 
         return to_route('finance.accounts.index');

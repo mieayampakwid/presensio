@@ -22,7 +22,7 @@ class ReportCardTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const NOT_PUBLISHED_MESSAGE = 'Rapor belum diterbitkan untuk periode ini.';
+    private const NOT_PUBLISHED_MESSAGE = 'toasts.report_cards.not_published';
 
     private User $studentUser;
 
@@ -114,7 +114,7 @@ class ReportCardTest extends TestCase
         $this->index()->assertStatus(403);
         $this->pdf()
             ->assertStatus(403)
-            ->assertSeeText(self::NOT_PUBLISHED_MESSAGE);
+            ->assertSeeText(__(self::NOT_PUBLISHED_MESSAGE));
 
         $this->publish();
         $this->retract();

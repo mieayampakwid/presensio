@@ -50,7 +50,7 @@ class GuardianController extends Controller
     {
         Guardian::create($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Guardian created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.guardians.created')]);
 
         return to_route('guardians.index');
     }
@@ -62,7 +62,7 @@ class GuardianController extends Controller
     {
         $guardian->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Guardian updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.guardians.updated')]);
 
         return to_route('guardians.index');
     }
@@ -73,13 +73,13 @@ class GuardianController extends Controller
     public function destroy(Guardian $guardian): RedirectResponse
     {
         if (Overpayment::where('guardian_id', $guardian->id)->exists()) {
-            return back()->withErrors(['guardian' => 'Wali memiliki riwayat kelebihan pembayaran dan tidak dapat dihapus.']);
+            return back()->withErrors(['guardian' => __('toasts.guardians.delete_blocked_overpayment')]);
         }
 
         if ($guardian->user_id !== null) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Cannot delete: linked to a user account. Unlink it first.',
+                'message' => __('toasts.common.delete_blocked_user_link'),
             ]);
 
             return back();
@@ -92,7 +92,7 @@ class GuardianController extends Controller
             $guardian->delete();
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Guardian deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.guardians.deleted')]);
 
         return to_route('guardians.index');
     }

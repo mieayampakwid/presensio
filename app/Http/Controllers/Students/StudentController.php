@@ -75,7 +75,7 @@ class StudentController extends Controller
             return $student;
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Student {$student->full_name} created."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.students.created', ['name' => $student->full_name])]);
 
         return to_route('students.index');
     }
@@ -107,7 +107,7 @@ class StudentController extends Controller
             $this->assignClass($request, $student);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Student updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.students.updated')]);
 
         return to_route('students.edit', $student);
     }
@@ -131,7 +131,7 @@ class StudentController extends Controller
             $student->delete();
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Student deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.students.deleted')]);
 
         return to_route('students.index');
     }
@@ -178,17 +178,17 @@ class StudentController extends Controller
         $blockers = [];
 
         if ($student->user_id !== null) {
-            $blockers[] = 'Cannot delete: linked to a user account. Unlink it first.';
+            $blockers[] = __('toasts.common.delete_blocked_user_link');
         }
 
         if ($student->attendances()->exists()) {
-            $blockers[] = 'Cannot delete: student has attendance history.';
+            $blockers[] = __('toasts.students.delete_blocked_attendance');
         }
 
         // Spec 04: excuse history survives too (the RESTRICT foreign key
         // would otherwise turn the delete into a 500).
         if ($student->excuses()->exists()) {
-            $blockers[] = 'Cannot delete: student has absence excuses.';
+            $blockers[] = __('toasts.students.delete_blocked_excuses');
         }
 
         return $blockers;

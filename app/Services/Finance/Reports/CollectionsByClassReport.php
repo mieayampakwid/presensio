@@ -112,13 +112,18 @@ class CollectionsByClassReport
 
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['Kelas', 'Siswa Membayar', 'Terkumpul', 'Piutang']);
+            fputcsv($out, [
+                __('toasts.csv.common.class'),
+                __('toasts.csv.collections_by_class.paying_students'),
+                __('toasts.csv.collections_by_class.collected'),
+                __('toasts.csv.collections_by_class.arrears'),
+            ]);
 
             foreach ($data['classes'] as $class) {
                 fputcsv($out, [$class['name'], $class['paying_students'], $class['collected'], $class['arrears']]);
             }
 
-            fputcsv($out, ['Total', $data['totals']['paying_students'], $data['totals']['collected'], $data['totals']['arrears']]);
+            fputcsv($out, [__('toasts.csv.common.total'), $data['totals']['paying_students'], $data['totals']['collected'], $data['totals']['arrears']]);
 
             fclose($out);
         }, 'penerimaan-per-kelas-'.$data['from'].'-sd-'.$data['to'].'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

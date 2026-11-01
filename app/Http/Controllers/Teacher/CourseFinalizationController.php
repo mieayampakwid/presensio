@@ -38,11 +38,11 @@ class CourseFinalizationController extends Controller
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
 
         $this->courseFinalizer->finalize($classSubject, $semester, $user);
 
-        return back()->with('success', 'Mata pelajaran berhasil difinalisasi.');
+        return back()->with('success', __('toasts.grading.course_finalized'));
     }
 
     /**
@@ -67,10 +67,10 @@ class CourseFinalizationController extends Controller
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
 
         $this->courseFinalizer->undo($classSubject, $semester, $user);
 
-        return back()->with('success', 'Finalisasi mata pelajaran berhasil dibatalkan.');
+        return back()->with('success', __('toasts.grading.course_unfinalized'));
     }
 }

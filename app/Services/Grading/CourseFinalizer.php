@@ -104,7 +104,7 @@ class CourseFinalizer
 
         if (! empty($missing)) {
             abort(response()->json([
-                'message' => 'Terdapat nilai asesmen sumatif yang belum terisi.',
+                'message' => __('toasts.report_cards.missing_scores'),
                 'missing' => $missing,
             ], 422));
         }
@@ -234,7 +234,7 @@ class CourseFinalizer
         }
 
         if ($this->reportCardGuard->isPublished($classSubject, $semester)) {
-            abort(422, 'Tidak dapat membatalkan finalisasi karena rapor untuk kelas ini pada semester tersebut sudah diterbitkan.');
+            abort(422, __('toasts.report_cards.undo_blocked_published'));
         }
 
         $oldValues = [

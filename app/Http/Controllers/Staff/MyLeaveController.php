@@ -83,7 +83,7 @@ class MyLeaveController extends Controller
             dedupeBase: "leave_request:{$leaveRequest->id}:submitted",
         );
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Leave request submitted — awaiting review.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.staff.leave_submitted')]);
 
         return to_route('my-leave.index');
     }
@@ -95,12 +95,12 @@ class MyLeaveController extends Controller
         abort_unless($leave_request->employee_id === $employee->id, 403);
 
         if ($leave_request->status !== LeaveRequestStatus::Pending) {
-            abort(422, 'Only pending leave requests can be cancelled.');
+            abort(422, __('toasts.staff.leave_only_pending'));
         }
 
         $leave_request->update(['status' => LeaveRequestStatus::Cancelled]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Leave request cancelled.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.staff.leave_cancelled')]);
 
         return to_route('my-leave.index');
     }

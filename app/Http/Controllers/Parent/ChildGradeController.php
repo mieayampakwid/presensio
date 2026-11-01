@@ -44,7 +44,7 @@ class ChildGradeController extends Controller
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
 
         $enrollment = Enrollment::query()
             ->where('student_id', $student->id)

@@ -48,7 +48,7 @@ class AnnouncementReaderController extends Controller
     public function acknowledge(Request $request, Announcement $announcement, AnnouncementService $service): RedirectResponse
     {
         $service->read($request->user(), $announcement, true);
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Konfirmasi membaca tersimpan.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.announcements.acknowledged')]);
 
         return to_route('announcements.show', $announcement);
     }

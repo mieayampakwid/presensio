@@ -109,7 +109,7 @@ class LearningObjectiveController extends Controller
     {
         LearningObjective::create($request->validated());
 
-        return back()->with('success', 'Tujuan pembelajaran berhasil dibuat.');
+        return back()->with('success', __('toasts.grading.objective_created'));
     }
 
     /**
@@ -119,7 +119,7 @@ class LearningObjectiveController extends Controller
     {
         $learningObjective->update($request->validated());
 
-        return back()->with('success', 'Tujuan pembelajaran berhasil diperbarui.');
+        return back()->with('success', __('toasts.grading.objective_updated'));
     }
 
     /**
@@ -139,12 +139,12 @@ class LearningObjectiveController extends Controller
         );
 
         if ($learningObjective->assessments()->exists()) {
-            abort(422, 'Tujuan pembelajaran tidak dapat dihapus karena sudah ditautkan ke asesmen.');
+            abort(422, __('toasts.grading.objective_delete_linked'));
         }
 
         $learningObjective->delete();
 
-        return back()->with('success', 'Tujuan pembelajaran berhasil dihapus.');
+        return back()->with('success', __('toasts.grading.objective_deleted'));
     }
 
     /**
@@ -179,7 +179,7 @@ class LearningObjectiveController extends Controller
             ->first();
 
         if ($prevYear === null) {
-            return back()->with('info', 'Tidak ada tahun ajaran sebelumnya untuk menyalin tujuan pembelajaran.');
+            return back()->with('info', __('toasts.grading.no_previous_year'));
         }
 
         $previousObjectives = LearningObjective::query()
@@ -211,6 +211,6 @@ class LearningObjectiveController extends Controller
             $copiedCount++;
         }
 
-        return back()->with('success', "{$copiedCount} tujuan pembelajaran berhasil disalin.");
+        return back()->with('success', __('toasts.grading.objectives_copied', ['count' => $copiedCount]));
     }
 }

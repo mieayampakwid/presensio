@@ -19,7 +19,7 @@ use Inertia\Response as InertiaResponse;
 
 class ChildReportCardController extends Controller
 {
-    private const NOT_PUBLISHED_MESSAGE = 'Rapor belum diterbitkan untuk periode ini.';
+    private const NOT_PUBLISHED_MESSAGE = 'toasts.report_cards.not_published';
 
     public function __construct(
         private readonly ReportCardArchiveService $archive,
@@ -47,7 +47,7 @@ class ChildReportCardController extends Controller
                 ->exists())
             ?? $children->first();
 
-        abort_if($student === null, 404, 'Belum ada anak yang terhubung.');
+        abort_if($student === null, 404, __('toasts.report_cards.no_children'));
 
         return redirect()->route('children.report-cards.index', $student);
     }
@@ -63,7 +63,7 @@ class ChildReportCardController extends Controller
 
         $cards = $this->archive->currentCards($student);
         $selected = $this->archive->selected($cards, $this->requestedSemesterId($request));
-        abort_if($selected === null, 403, self::NOT_PUBLISHED_MESSAGE);
+        abort_if($selected === null, 403, __(self::NOT_PUBLISHED_MESSAGE));
 
         return Inertia::render('parent/child-report-cards', [
             'child' => ['id' => $student->id, 'name' => $student->full_name],
@@ -83,7 +83,7 @@ class ChildReportCardController extends Controller
 
         $cards = $this->archive->currentCards($student);
         $card = $this->archive->selected($cards, $semester->id);
-        abort_if($card === null, 403, self::NOT_PUBLISHED_MESSAGE);
+        abort_if($card === null, 403, __(self::NOT_PUBLISHED_MESSAGE));
 
         return $this->pdfResponse($card, $student);
     }

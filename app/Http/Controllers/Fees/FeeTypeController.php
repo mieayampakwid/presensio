@@ -66,7 +66,7 @@ class FeeTypeController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jenis biaya berhasil ditambahkan.',
+            'message' => __('toasts.fees.fee_type_created'),
         ]);
 
         return to_route('fees.types.index');
@@ -81,7 +81,7 @@ class FeeTypeController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jenis biaya berhasil diperbarui.',
+            'message' => __('toasts.fees.fee_type_updated'),
         ]);
 
         return to_route('fees.types.index');
@@ -93,14 +93,14 @@ class FeeTypeController extends Controller
     public function destroy(FeeType $feeType): RedirectResponse
     {
         if ($feeType->bills()->exists() || $feeType->discounts()->exists()) {
-            abort(422, 'Jenis biaya yang sudah dipakai tagihan atau diskon tidak dapat dihapus. Nonaktifkan sebagai gantinya.');
+            abort(422, __('toasts.fees.fee_type_delete_blocked'));
         }
 
         $feeType->delete();
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jenis biaya berhasil dihapus.',
+            'message' => __('toasts.fees.fee_type_deleted'),
         ]);
 
         return to_route('fees.types.index');

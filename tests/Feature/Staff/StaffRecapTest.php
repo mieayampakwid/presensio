@@ -122,22 +122,22 @@ class StaffRecapTest extends TestCase
         $lines = explode("\n", rtrim(preg_replace('/^\xEF\xBB\xBF/', '', $content)));
 
         $this->assertSame([
-            'NIP/NIK',
-            'Nama',
-            'Hari Kerja (Expected)',
-            'Hadir',
-            'Terlambat (kali)',
-            'Terlambat (menit)',
-            'Pulang Cepat (kali)',
-            'Pulang Cepat (menit)',
-            'Tidak Absen Pulang',
-            'Sakit',
-            'Izin',
-            'Cuti',
-            'Dinas Luar',
-            'Alpa',
-            'Hari Tambahan (Extra)',
-            'Persentase Kehadiran (%)',
+            __('toasts.csv.staff_recap.employee_number'),
+            __('toasts.csv.staff_recap.name'),
+            __('toasts.csv.staff_recap.expected_days'),
+            __('toasts.csv.staff_recap.present'),
+            __('toasts.csv.staff_recap.late_count'),
+            __('toasts.csv.staff_recap.late_minutes'),
+            __('toasts.csv.staff_recap.early_leave_count'),
+            __('toasts.csv.staff_recap.early_leave_minutes'),
+            __('toasts.csv.staff_recap.no_checkout'),
+            __('toasts.csv.staff_recap.sick'),
+            __('toasts.csv.staff_recap.leave'),
+            __('toasts.csv.staff_recap.paid_leave'),
+            __('toasts.csv.staff_recap.official_duty'),
+            __('toasts.csv.staff_recap.absent'),
+            __('toasts.csv.staff_recap.extra_days'),
+            __('toasts.csv.staff_recap.rate_pct'),
         ], str_getcsv($lines[0]));
 
         // 1 of 22 Mon–Fri days attended → (1 / 22) × 100 = 4.5%.

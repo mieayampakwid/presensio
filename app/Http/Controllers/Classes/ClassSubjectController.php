@@ -176,7 +176,7 @@ class ClassSubjectController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Subject assigned to class.',
+            'message' => __('toasts.class_subjects.assigned'),
         ]);
 
         return back();
@@ -211,7 +211,7 @@ class ClassSubjectController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Class subject updated.',
+            'message' => __('toasts.class_subjects.updated'),
         ]);
 
         return back();
@@ -226,11 +226,11 @@ class ClassSubjectController extends Controller
 
         // Non-active year check (AC-09-09)
         if (! $schoolClass->academicYear?->is_active) {
-            abort(422, 'Cannot modify class subjects in an inactive academic year.');
+            abort(422, __('toasts.class_subjects.inactive_year'));
         }
 
         if ($classSubject->isInUse()) {
-            abort(422, 'Cannot delete class subject that is in use.');
+            abort(422, __('toasts.class_subjects.delete_in_use'));
         }
 
         $old = $classSubject->only(['class_id', 'subject_id', 'teacher_id', 'passing_threshold']);
@@ -248,7 +248,7 @@ class ClassSubjectController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Class subject removed.',
+            'message' => __('toasts.class_subjects.removed'),
         ]);
 
         return back();

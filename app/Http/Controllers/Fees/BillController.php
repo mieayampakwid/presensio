@@ -104,7 +104,7 @@ class BillController extends Controller
     {
         $billService->adjustDiscount($bill, $request->string('discount_amount')->toString(), $request->string('reason')->toString());
 
-        return $this->done('Diskon tagihan berhasil diubah.');
+        return $this->done(__('toasts.fees.bill_discount_adjusted'));
     }
 
     /**
@@ -114,7 +114,7 @@ class BillController extends Controller
     {
         $billService->cancel($bill, $request->string('reason')->toString());
 
-        return $this->done('Tagihan berhasil dibatalkan.');
+        return $this->done(__('toasts.fees.bill_cancelled'));
     }
 
     /**
@@ -124,7 +124,7 @@ class BillController extends Controller
     {
         $billService->writeOff($bill, $request->string('reason')->toString());
 
-        return $this->done('Piutang berhasil dihapusbukukan.');
+        return $this->done(__('toasts.fees.bill_written_off'));
     }
 
     private function done(string $message): RedirectResponse

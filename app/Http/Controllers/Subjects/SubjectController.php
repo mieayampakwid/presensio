@@ -54,7 +54,7 @@ class SubjectController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Subject created.',
+            'message' => __('toasts.subjects.created'),
         ]);
 
         return to_route('subjects.index');
@@ -69,7 +69,7 @@ class SubjectController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Subject updated.',
+            'message' => __('toasts.subjects.updated'),
         ]);
 
         return to_route('subjects.index');
@@ -81,14 +81,14 @@ class SubjectController extends Controller
     public function destroy(Subject $subject): RedirectResponse
     {
         if ($this->hasAssignments($subject)) {
-            abort(422, 'Cannot delete subject that is assigned to classes.');
+            abort(422, __('toasts.subjects.delete_in_use'));
         }
 
         $subject->delete();
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Subject deleted.',
+            'message' => __('toasts.subjects.deleted'),
         ]);
 
         return to_route('subjects.index');

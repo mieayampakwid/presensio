@@ -45,7 +45,7 @@ class ReportCardWorkspaceController extends Controller
             ->orderBy('name')
             ->first();
 
-        abort_if($class === null, 404, 'Tidak ada kelas yang dapat dilihat.');
+        abort_if($class === null, 404, __('toasts.report_cards.no_class'));
 
         return redirect()->route('classes.report-cards.show', ['school_class' => $class->id]);
     }
@@ -93,7 +93,7 @@ class ReportCardWorkspaceController extends Controller
         /** @var Semester $semester */
         $semester = Semester::query()->findOrFail((int) $request->validated('semester_id'));
 
-        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, 'Siswa tidak terdaftar di kelas ini.');
+        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, __('toasts.report_cards.student_not_in_roster'));
 
         $this->workspace->saveEntry($schoolClass, $semester, $student, $request->validated());
 
@@ -113,7 +113,7 @@ class ReportCardWorkspaceController extends Controller
 
         $semester = $this->resolveSemester($request, $schoolClass);
 
-        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, 'Siswa tidak terdaftar di kelas ini.');
+        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, __('toasts.report_cards.student_not_in_roster'));
 
         return response()->json($this->workspace->preview($schoolClass, $semester, $student));
     }
@@ -141,7 +141,7 @@ class ReportCardWorkspaceController extends Controller
             ->where('semester_id', $semester->id)
             ->current()
             ->first();
-        abort_if($publication === null, 403, 'Rapor belum diterbitkan untuk periode ini.');
+        abort_if($publication === null, 403, __('toasts.report_cards.not_published'));
 
         /** @var ReportCard $card */
         $card = $publication->reportCards()
@@ -167,7 +167,7 @@ class ReportCardWorkspaceController extends Controller
         );
 
         $semester = $this->resolveSemester($request, $schoolClass);
-        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, 'Siswa tidak terdaftar di kelas ini.');
+        abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, __('toasts.report_cards.student_not_in_roster'));
 
         $payload = $this->workspace->preview($schoolClass, $semester, $student);
         $curriculum = $schoolClass->curriculum instanceof Curriculum
@@ -217,7 +217,7 @@ class ReportCardWorkspaceController extends Controller
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
 
         return $semester;
     }

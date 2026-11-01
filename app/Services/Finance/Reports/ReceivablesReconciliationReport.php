@@ -38,21 +38,41 @@ class ReceivablesReconciliationReport
 
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['Akun', 'Nama Akun', 'Saldo Buku Besar', 'Saldo Subledger', 'Selisih']);
+            fputcsv($out, [
+                __('toasts.csv.common.account'),
+                __('toasts.csv.common.account_name'),
+                __('toasts.csv.receivables_reconciliation.gl_balance'),
+                __('toasts.csv.receivables_reconciliation.subledger_balance'),
+                __('toasts.csv.receivables_reconciliation.difference'),
+            ]);
 
             foreach ([...$data['receivables'], $data['prepaid']] as $row) {
                 fputcsv($out, [$row['code'], $row['name'], $row['gl_balance'], $row['subledger_balance'], $row['difference']]);
             }
 
             fputcsv($out, []);
-            fputcsv($out, ['ID Tagihan', 'Siswa', 'Tagihan', 'Akun', 'Jenis', 'Seharusnya', 'Buku Besar']);
+            fputcsv($out, [
+                __('toasts.csv.receivables_reconciliation.bill_id'),
+                __('toasts.csv.common.student'),
+                __('toasts.csv.receivables_aging.bill'),
+                __('toasts.csv.common.account'),
+                __('toasts.csv.receivables_reconciliation.kind'),
+                __('toasts.csv.receivables_reconciliation.expected'),
+                __('toasts.csv.receivables_reconciliation.actual'),
+            ]);
 
             foreach ($data['mismatches'] as $row) {
                 fputcsv($out, [$row['bill_id'], $row['student_name'], $row['title'], $row['account_code'], $row['kind'], $row['expected'], $row['actual']]);
             }
 
             fputcsv($out, []);
-            fputcsv($out, ['Titipan Wali', 'Nama Akun', 'Saldo Buku Besar', 'Saldo Subledger', 'Selisih']);
+            fputcsv($out, [
+                __('toasts.csv.receivables_reconciliation.guardian_deposits'),
+                __('toasts.csv.common.account_name'),
+                __('toasts.csv.receivables_reconciliation.gl_balance'),
+                __('toasts.csv.receivables_reconciliation.subledger_balance'),
+                __('toasts.csv.receivables_reconciliation.difference'),
+            ]);
             foreach ($data['guardian_deposits']['accounts'] as $row) {
                 fputcsv($out, [$row['code'], $row['name'], $row['gl_balance'], $row['subledger_balance'], $row['difference']]);
             }

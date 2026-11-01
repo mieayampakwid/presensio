@@ -244,7 +244,7 @@ class StaffAttendanceController extends Controller
             $record->recordAudit($action, $old, $record->toArray(), 'manual_override');
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Presensi pegawai berhasil diperbarui.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.staff.attendance_updated')]);
 
         return to_route('staff-attendance.index', ['date' => $date]);
     }

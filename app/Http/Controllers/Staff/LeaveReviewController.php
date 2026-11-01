@@ -65,7 +65,7 @@ class LeaveReviewController extends Controller
     {
         return $this->resolve(
             fn (): bool => $this->approver->approve($leave_request, $formRequest->user(), $formRequest->validated('review_note')),
-            'Leave request approved — attendance updated.',
+            __('toasts.staff.leave_approved'),
         );
     }
 
@@ -73,7 +73,7 @@ class LeaveReviewController extends Controller
     {
         return $this->resolve(
             fn (): bool => $this->approver->reject($leave_request, $formRequest->user(), (string) $formRequest->validated('review_note')),
-            'Leave request rejected.',
+            __('toasts.staff.leave_rejected'),
         );
     }
 
@@ -103,7 +103,7 @@ class LeaveReviewController extends Controller
         // no-op info flash, not an error (same decision as excuses).
         Inertia::flash('toast', $applied
             ? ['type' => 'success', 'message' => $successMessage]
-            : ['type' => 'info', 'message' => 'Leave request was already resolved.']);
+            : ['type' => 'info', 'message' => __('toasts.staff.leave_already_resolved')]);
 
         return back();
     }

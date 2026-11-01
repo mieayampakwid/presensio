@@ -36,7 +36,7 @@ class NonSchoolDayController extends Controller
             'source' => NonSchoolDaySource::Manual,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Non-school day added.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.calendar.non_school_day_added')]);
 
         return to_route('non-school-days.index');
     }
@@ -45,7 +45,7 @@ class NonSchoolDayController extends Controller
     {
         $nonSchoolDay->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Non-school day removed.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.calendar.non_school_day_removed')]);
 
         return to_route('non-school-days.index');
     }

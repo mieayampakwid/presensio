@@ -114,21 +114,34 @@ class ReceivablesAgingReport
 
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['Kelas', 'Siswa', 'NIS', ...array_values(self::BUCKETS), 'Total']);
+            fputcsv($out, [
+                __('toasts.csv.common.class'),
+                __('toasts.csv.common.student'),
+                __('toasts.csv.common.nis'),
+                ...array_map(fn (string $key) => __("toasts.csv.receivables_aging.bucket_{$key}"), array_keys(self::BUCKETS)),
+                __('toasts.csv.common.total'),
+            ]);
 
             foreach ($data['classes'] as $class) {
                 foreach ($class['students'] as $student) {
                     fputcsv($out, [$class['name'], $student['student_name'], $student['student_number'], ...$this->bucketValues($student)]);
                 }
 
-                fputcsv($out, [$class['name'], 'Subtotal', '', ...$this->bucketValues($class['subtotals'])]);
+                fputcsv($out, [$class['name'], __('toasts.csv.common.subtotal'), '', ...$this->bucketValues($class['subtotals'])]);
             }
 
-            fputcsv($out, ['Total', '', '', ...$this->bucketValues($data['totals'])]);
+            fputcsv($out, [__('toasts.csv.common.total'), '', '', ...$this->bucketValues($data['totals'])]);
 
             fputcsv($out, []);
-            fputcsv($out, ['Perlu ditinjau']);
-            fputcsv($out, ['Siswa', 'NIS', 'Tagihan', 'Jatuh Tempo', 'Dibayar', 'Sisa']);
+            fputcsv($out, [__('toasts.csv.receivables_aging.needs_review')]);
+            fputcsv($out, [
+                __('toasts.csv.common.student'),
+                __('toasts.csv.common.nis'),
+                __('toasts.csv.receivables_aging.bill'),
+                __('toasts.csv.receivables_aging.due_date'),
+                __('toasts.csv.receivables_aging.paid'),
+                __('toasts.csv.receivables_aging.remaining'),
+            ]);
 
             foreach ($data['needs_review'] as $row) {
                 fputcsv($out, [$row['student_name'], $row['student_number'], $row['title'], $row['due_date'], $row['paid_amount'], $row['remaining_amount']]);

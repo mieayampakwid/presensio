@@ -91,7 +91,7 @@ class SchoolClassController extends Controller
             'academic_year_id' => AcademicYear::active()?->id,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Class created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.classes.created')]);
 
         return to_route('classes.index');
     }
@@ -103,7 +103,7 @@ class SchoolClassController extends Controller
     {
         $schoolClass->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Class updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.classes.updated')]);
 
         return to_route('classes.index');
     }
@@ -123,7 +123,7 @@ class SchoolClassController extends Controller
 
         $schoolClass->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Class deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.classes.deleted')]);
 
         return to_route('classes.index');
     }
@@ -141,7 +141,7 @@ class SchoolClassController extends Controller
         $blockers = [];
 
         if ($schoolClass->enrollments()->exists()) {
-            $blockers[] = 'Cannot delete: students have enrollment history in this class.';
+            $blockers[] = __('toasts.classes.delete_blocked_enrollment');
         }
 
         return $blockers;

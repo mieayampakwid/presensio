@@ -110,7 +110,7 @@ class GuardianExcuseController extends Controller
             message: $message,
             dedupeBase: "excuse:{$excuse->id}:submitted",
         );
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Excuse submitted — awaiting review.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.excuses.submitted')]);
 
         return to_route('excuses.my');
     }

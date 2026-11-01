@@ -91,7 +91,7 @@ class FeeController extends Controller
             throw ValidationException::withMessages(['allocations' => $exception->getMessage()]);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Bukti transfer terkirim, menunggu verifikasi.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.parent.transfer_submitted')]);
 
         return to_route('parent.fees.index');
     }
@@ -99,7 +99,7 @@ class FeeController extends Controller
     public function cancel(Request $request, Payment $payment, PaymentService $payments): RedirectResponse
     {
         $payments->cancelByGuardian($payment, $request->user());
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Transfer berhasil dibatalkan.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.parent.transfer_cancelled')]);
 
         return to_route('parent.fees.index', [
             'transfers_page' => max(1, $request->integer('transfers_page', 1)),

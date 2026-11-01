@@ -81,7 +81,7 @@ class AttendanceSettingsController extends Controller
 
         $this->settings->refresh();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Attendance settings updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.settings.attendance_updated')]);
 
         return to_route('attendance-settings.edit');
     }

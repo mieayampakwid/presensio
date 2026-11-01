@@ -14,7 +14,7 @@ use Inertia\Response as InertiaResponse;
 
 class ReportCardController extends Controller
 {
-    private const NOT_PUBLISHED_MESSAGE = 'Rapor belum diterbitkan untuk periode ini.';
+    private const NOT_PUBLISHED_MESSAGE = 'toasts.report_cards.not_published';
 
     public function __construct(
         private readonly ReportCardArchiveService $archive,
@@ -31,7 +31,7 @@ class ReportCardController extends Controller
         $cards = $this->archive->currentCards($student);
         $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
         $selected = $this->archive->selected($cards, $semesterId);
-        abort_if($selected === null, 403, self::NOT_PUBLISHED_MESSAGE);
+        abort_if($selected === null, 403, __(self::NOT_PUBLISHED_MESSAGE));
 
         return Inertia::render('student/report-cards', [
             'semesters' => $this->archive->summaries($cards),
@@ -48,7 +48,7 @@ class ReportCardController extends Controller
         $student = $this->ownStudent();
 
         $card = $this->archive->selected($this->archive->currentCards($student), $semester->id);
-        abort_if($card === null, 403, self::NOT_PUBLISHED_MESSAGE);
+        abort_if($card === null, 403, __(self::NOT_PUBLISHED_MESSAGE));
 
         $bytes = $this->pdf->pdf($card->payload, $card->curriculum->value);
 
@@ -69,7 +69,7 @@ class ReportCardController extends Controller
 
         /** @var Student|null $student */
         $student = Student::query()->where('user_id', $user->id)->first();
-        abort_if($student === null, 403, self::NOT_PUBLISHED_MESSAGE);
+        abort_if($student === null, 403, __(self::NOT_PUBLISHED_MESSAGE));
 
         return $student;
     }

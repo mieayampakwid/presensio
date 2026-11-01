@@ -89,14 +89,23 @@ class StudentReceivableCardReport
 
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['Tanggal', 'No. Jurnal', 'Keterangan', 'Sumber', 'Tagihan', 'Debit', 'Kredit', 'Saldo']);
+            fputcsv($out, [
+                __('toasts.csv.common.date'),
+                __('toasts.csv.common.journal_number'),
+                __('toasts.csv.common.description'),
+                __('toasts.csv.student_receivable_card.source'),
+                __('toasts.csv.student_receivable_card.bill'),
+                __('toasts.csv.common.debit'),
+                __('toasts.csv.common.credit'),
+                __('toasts.csv.student_receivable_card.balance'),
+            ]);
 
             foreach ($data['ledger'] as $row) {
                 fputcsv($out, [$row['date'], $row['number'], $row['description'], $row['source'], $row['bill_title'], $row['debit'], $row['credit'], $row['balance']]);
             }
 
-            fputcsv($out, ['Saldo Buku Besar', '', '', '', '', '', '', $data['balance']]);
-            fputcsv($out, ['Saldo Subledger', '', '', '', '', '', '', $data['subledger']]);
+            fputcsv($out, [__('toasts.csv.student_receivable_card.gl_balance'), '', '', '', '', '', '', $data['balance']]);
+            fputcsv($out, [__('toasts.csv.student_receivable_card.subledger_balance'), '', '', '', '', '', '', $data['subledger']]);
 
             fclose($out);
         }, 'kartu-piutang-'.($data['student']['student_number'] ?? $data['student']['id'] ?? 'siswa').'-per-'.$data['as_of'].'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

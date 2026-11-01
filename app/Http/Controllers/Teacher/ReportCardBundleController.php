@@ -56,13 +56,13 @@ class ReportCardBundleController extends Controller
             ->whereKey((int) $request->query('semester'))
             ->where('academic_year_id', $schoolClass->academic_year_id)
             ->first();
-        abort_if($semester === null, 404, 'Rapor belum diterbitkan untuk periode ini.');
+        abort_if($semester === null, 404, __('toasts.report_cards.not_published'));
 
         $publication = $this->currentPublication($schoolClass, $semester);
-        abort_if($publication === null, 404, 'Rapor belum diterbitkan untuk periode ini.');
+        abort_if($publication === null, 404, __('toasts.report_cards.not_published'));
 
         $path = BuildClassReportCardPdf::path($publication);
-        abort_unless(Storage::disk('local')->exists($path), 404, 'Berkas cetak semua belum siap.');
+        abort_unless(Storage::disk('local')->exists($path), 404, __('toasts.report_cards.bundle_not_ready'));
 
         return response((string) Storage::disk('local')->get($path), 200, [
             'Content-Type' => 'application/pdf',

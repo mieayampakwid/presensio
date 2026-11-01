@@ -124,7 +124,7 @@ class AssessmentController extends Controller
             );
         });
 
-        return back()->with('success', 'Asesmen berhasil ditambahkan.');
+        return back()->with('success', __('toasts.grading.assessment_created'));
     }
 
     /**
@@ -169,7 +169,7 @@ class AssessmentController extends Controller
             );
         });
 
-        return back()->with('success', 'Asesmen berhasil diperbarui.');
+        return back()->with('success', __('toasts.grading.assessment_updated'));
     }
 
     /**
@@ -185,7 +185,7 @@ class AssessmentController extends Controller
         $courseSemester->assertOpen();
 
         if ($assessment->scores()->exists() && ! $request->boolean('confirm')) {
-            abort(422, 'Asesmen ini sudah memiliki nilai. Konfirmasi diperlukan untuk menghapus.');
+            abort(422, __('toasts.grading.assessment_has_scores'));
         }
 
         DB::transaction(function () use ($assessment) {
@@ -206,6 +206,6 @@ class AssessmentController extends Controller
             $assessment->delete();
         });
 
-        return back()->with('success', 'Asesmen berhasil dihapus.');
+        return back()->with('success', __('toasts.grading.assessment_deleted'));
     }
 }

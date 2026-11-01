@@ -17,6 +17,7 @@ use App\Services\Finance\PostableLine;
 use App\Services\Finance\ReceivablesReconciliation;
 use App\Services\Finance\Reports\TrialBalanceReport;
 use App\Services\SchoolSettings;
+use App\Support\Money;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +93,7 @@ class GuardianDepositReconciliationTest extends TestCase
         $this->assertFalse($result['is_balanced']);
         $this->assertSame('200.00', $result['total_difference']);
         $this->assertCount(2, $result['accounts']);
-        $this->postJson(route('finance.periods.close', '2026-11'))->assertUnprocessable()->assertSee('Titipan Wali');
+        $this->postJson(route('finance.periods.close', '2026-11'))->assertUnprocessable()->assertSee(__('toasts.finance.deposits_unbalanced', ['difference' => Money::format($result['total_difference'])]));
         $this->assertDatabaseHas('accounting_periods', ['period' => '2026-11', 'status' => 'open']);
         SchoolSetting::first()->update(['guardian_deposit_account_id' => null]);
         app(SchoolSettings::class)->refresh();

@@ -17,7 +17,7 @@ class GuardianDepositReconciliationPrecondition implements ClosePrecondition
     {
         $result = $this->reconciliation->asOf(Carbon::parse($period->period.'-01')->endOfMonth());
         if (! $result['is_balanced']) {
-            throw new RuntimeException('Rekonsiliasi Titipan Wali tidak seimbang: selisih '.Money::format($result['total_difference']).'. Periksa bagian Titipan Wali di Laporan Rekonsiliasi.');
+            throw new RuntimeException(__('toasts.finance.deposits_unbalanced', ['difference' => Money::format($result['total_difference'])]));
         }
     }
 }

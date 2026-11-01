@@ -104,7 +104,7 @@ class AttendanceController extends Controller
             );
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Record saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.attendance.record_saved')]);
 
         return to_route('attendance.index', [
             'class_id' => $request->integer('class_id') ?: null,
@@ -153,7 +153,7 @@ class AttendanceController extends Controller
             return $students->count();
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Marked {$count} students present."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.attendance.bulk_present', ['count' => $count])]);
 
         return to_route('attendance.index', [
             'class_id' => $validated['class_id'],

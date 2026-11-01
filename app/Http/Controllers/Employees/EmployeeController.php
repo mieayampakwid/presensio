@@ -114,7 +114,7 @@ class EmployeeController extends Controller
             $employee->recordAudit('created', null, $employee->toArray());
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Employee created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.employees.created')]);
 
         return to_route('employees.index');
     }
@@ -193,7 +193,7 @@ class EmployeeController extends Controller
             $employee->recordAudit('updated', $old, $employee->toArray());
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Employee updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.employees.updated')]);
 
         return to_route('employees.edit', $employee);
     }
@@ -220,7 +220,7 @@ class EmployeeController extends Controller
             $employee->recordAudit('deleted', $old, null);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Employee deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.employees.deleted')]);
 
         return to_route('employees.index');
     }
@@ -236,20 +236,20 @@ class EmployeeController extends Controller
 
         if ($employee->isTeacher() && $employee->teacher !== null) {
             if ($employee->teacher->classes()->exists()) {
-                $blockers[] = 'Cannot delete: this employee is the homeroom teacher of a class.';
+                $blockers[] = __('toasts.employees.delete_blocked_homeroom');
             }
 
             if ($employee->teacher->classSubjects()->exists()) {
-                $blockers[] = 'Cannot delete: this employee has subject teaching assignments.';
+                $blockers[] = __('toasts.employees.delete_blocked_assignments');
             }
         }
 
         if ($employee->user_id !== null) {
-            $blockers[] = 'Cannot delete: linked to a user account. Unlink it first.';
+            $blockers[] = __('toasts.common.delete_blocked_user_link');
         }
 
         if ($employee->attendances()->exists()) {
-            $blockers[] = 'Cannot delete: this employee has attendance history. Deactivate them instead.';
+            $blockers[] = __('toasts.employees.delete_blocked_attendance');
         }
 
         return $blockers;

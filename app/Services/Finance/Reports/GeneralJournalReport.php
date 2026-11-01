@@ -92,15 +92,15 @@ class GeneralJournalReport
             fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM
 
             fputcsv($out, [
-                'Tanggal',
-                'Nomor Jurnal',
-                'Deskripsi',
-                'Kode Akun',
-                'Nama Akun',
-                'Debit',
-                'Kredit',
-                'Siswa',
-                'Memo',
+                __('toasts.csv.common.date'),
+                __('toasts.csv.common.journal_number'),
+                __('toasts.csv.general_journal.description'),
+                __('toasts.csv.common.account_code'),
+                __('toasts.csv.common.account_name'),
+                __('toasts.csv.common.debit'),
+                __('toasts.csv.common.credit'),
+                __('toasts.csv.common.student'),
+                __('toasts.csv.common.memo'),
             ]);
 
             foreach ($data['entries'] as $entry) {
@@ -120,7 +120,7 @@ class GeneralJournalReport
             }
 
             fputcsv($out, []);
-            fputcsv($out, ['', '', 'TOTAL', '', '', $data['total_debit'], $data['total_credit']]);
+            fputcsv($out, ['', '', __('toasts.csv.common.total_upper'), '', '', $data['total_debit'], $data['total_credit']]);
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);

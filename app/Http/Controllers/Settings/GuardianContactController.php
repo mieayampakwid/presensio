@@ -18,7 +18,7 @@ class GuardianContactController extends Controller
     {
         $request->user()->guardian->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Contact details updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.settings.contact_updated')]);
 
         return to_route('profile.edit');
     }

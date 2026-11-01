@@ -35,20 +35,20 @@ class AttendanceReportService
 
     private const STATUS_ORDER = ['present', 'late', 'absent', 'sick', 'leave'];
 
-    /** Matches STATUS_BADGES labels in resources/js/lib/attendance.ts. */
+    /** CSV status labels; same keys as the STATUS_BADGES labels in resources/js/lib/attendance.ts. */
     private const STATUS_LABELS = [
-        'present' => 'Present',
-        'late' => 'Late',
-        'absent' => 'Absent',
-        'sick' => 'Sick',
-        'leave' => 'Leave',
+        'present' => 'toasts.csv.attendance_student.status_present',
+        'late' => 'toasts.csv.attendance_student.status_late',
+        'absent' => 'toasts.csv.attendance_student.status_absent',
+        'sick' => 'toasts.csv.attendance_student.status_sick',
+        'leave' => 'toasts.csv.attendance_student.status_leave',
     ];
 
-    /** Matches METHOD_LABELS in resources/js/lib/attendance.ts. */
+    /** CSV scan-method labels; same keys as METHOD_LABELS in resources/js/lib/attendance.ts. */
     private const METHOD_LABELS = [
-        'rfid' => 'RFID',
-        'dynamic_qr' => 'QR',
-        'manual_override' => 'Manual override',
+        'rfid' => 'toasts.csv.attendance_student.method_rfid',
+        'dynamic_qr' => 'toasts.csv.attendance_student.method_dynamic_qr',
+        'manual_override' => 'toasts.csv.attendance_student.method_manual_override',
     ];
 
     public function __construct(private readonly SchoolSettings $settings) {}
@@ -339,27 +339,33 @@ class AttendanceReportService
         return response()->streamDownload(function () use ($student, $report, $from, $to, $includeExcused): void {
             $out = $this->openCsv();
 
-            fputcsv($out, ['Student Report', $student->full_name]);
-            fputcsv($out, ['NIS', $student->student_number ?? '']);
-            fputcsv($out, ['Period', $from->toDateString(), 'to', $to->toDateString()]);
-            fputcsv($out, ['Include sick/leave in rate', $includeExcused ? 'Yes' : 'No']);
+            fputcsv($out, [__('toasts.csv.attendance_student.title'), $student->full_name]);
+            fputcsv($out, [__('toasts.csv.common.nis'), $student->student_number ?? '']);
+            fputcsv($out, [__('toasts.csv.common.period'), $from->toDateString(), __('toasts.csv.common.to'), $to->toDateString()]);
+            fputcsv($out, [__('toasts.csv.attendance_student.include_excused'), $includeExcused ? __('toasts.csv.attendance_student.yes') : __('toasts.csv.attendance_student.no')]);
             fputcsv($out, []);
 
             foreach (self::STATUS_ORDER as $status) {
-                fputcsv($out, [self::STATUS_LABELS[$status], $report['counts'][$status]]);
+                fputcsv($out, [__(self::STATUS_LABELS[$status]), $report['counts'][$status]]);
             }
 
-            fputcsv($out, ['Attendance rate', $this->formatRate($report['rate'])]);
+            fputcsv($out, [__('toasts.csv.attendance_student.rate'), $this->formatRate($report['rate'])]);
             fputcsv($out, []);
-            fputcsv($out, ['Date', 'Status', 'Check-in', 'Check-out', 'Method']);
+            fputcsv($out, [
+                __('toasts.csv.common.date'),
+                __('toasts.csv.attendance_student.status'),
+                __('toasts.csv.attendance_student.check_in'),
+                __('toasts.csv.attendance_student.check_out'),
+                __('toasts.csv.attendance_student.method'),
+            ]);
 
             foreach ($report['records'] as $record) {
                 fputcsv($out, [
                     $record['date'],
-                    self::STATUS_LABELS[$record['status']],
+                    __(self::STATUS_LABELS[$record['status']]),
                     $record['checked_in_at'] ?? '',
                     $record['checked_out_at'] ?? '',
-                    $record['scan_method'] === null ? '' : self::METHOD_LABELS[$record['scan_method']],
+                    $record['scan_method'] === null ? '' : __(self::METHOD_LABELS[$record['scan_method']]),
                 ]);
             }
 
@@ -384,12 +390,21 @@ class AttendanceReportService
         return response()->streamDownload(function () use ($class, $report, $from, $to, $includeExcused): void {
             $out = $this->openCsv();
 
-            fputcsv($out, ['Class Report', $class->name]);
-            fputcsv($out, ['Period', $from->toDateString(), 'to', $to->toDateString()]);
-            fputcsv($out, ['Include sick/leave in rate', $includeExcused ? 'Yes' : 'No']);
+            fputcsv($out, [__('toasts.csv.attendance_class.title'), $class->name]);
+            fputcsv($out, [__('toasts.csv.common.period'), $from->toDateString(), __('toasts.csv.common.to'), $to->toDateString()]);
+            fputcsv($out, [__('toasts.csv.attendance_class.include_excused'), $includeExcused ? __('toasts.csv.attendance_student.yes') : __('toasts.csv.attendance_student.no')]);
             fputcsv($out, []);
 
-            $header = ['NIS', 'Name', 'Present', 'Late', 'Absent', 'Sick', 'Leave', 'Rate %'];
+            $header = [
+                __('toasts.csv.common.nis'),
+                __('toasts.csv.attendance_class.name'),
+                __('toasts.csv.attendance_class.present'),
+                __('toasts.csv.attendance_class.late'),
+                __('toasts.csv.attendance_class.absent'),
+                __('toasts.csv.attendance_class.sick'),
+                __('toasts.csv.attendance_class.leave'),
+                __('toasts.csv.attendance_class.rate_pct'),
+            ];
 
             foreach ($report['dates'] as $date) {
                 $header[] = Date::parse($date)->format('j/n');

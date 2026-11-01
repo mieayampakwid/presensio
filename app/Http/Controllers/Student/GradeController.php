@@ -24,7 +24,7 @@ class GradeController extends Controller
         abort_if($user === null, 401);
 
         $student = $user->student;
-        abort_if($student === null, 403, 'Profil siswa tidak ditemukan.');
+        abort_if($student === null, 403, __('toasts.report_cards.student_profile_missing'));
 
         $activeYear = AcademicYear::active() ?? AcademicYear::latest('id')->first();
         $semesters = $activeYear !== null
@@ -37,7 +37,7 @@ class GradeController extends Controller
 
         /** @var Semester|null $semester */
         $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, 'Semester tidak ditemukan.');
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
 
         $enrollment = Enrollment::query()
             ->where('student_id', $student->id)

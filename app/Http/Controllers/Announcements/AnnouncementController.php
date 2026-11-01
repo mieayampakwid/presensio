@@ -78,7 +78,7 @@ class AnnouncementController extends Controller
     public function store(SaveAnnouncementRequest $request, AnnouncementService $service, ?SchoolClass $schoolClass = null): RedirectResponse
     {
         $item = $service->save($request->user(), $request->validated(), attachment: $request->file('attachment'));
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Pengumuman disimpan.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.announcements.created')]);
 
         return to_route('announcements.show', $item);
     }
@@ -86,7 +86,7 @@ class AnnouncementController extends Controller
     public function update(SaveAnnouncementRequest $request, Announcement $announcement, AnnouncementService $service): RedirectResponse
     {
         $item = $service->save($request->user(), $request->validated(), $announcement, $request->file('attachment'));
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Pengumuman diperbarui.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.announcements.updated')]);
 
         return to_route('announcements.show', $item);
     }
@@ -94,7 +94,7 @@ class AnnouncementController extends Controller
     public function destroy(Request $request, Announcement $announcement, AnnouncementService $service): RedirectResponse
     {
         $service->delete($request->user(), $announcement);
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Pengumuman dihapus.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.announcements.deleted')]);
 
         return to_route('announcements.index');
     }

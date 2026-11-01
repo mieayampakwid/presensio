@@ -27,7 +27,7 @@ class ReceivablesReconciliationPrecondition implements ClosePrecondition
         $result = $this->reconciliation->asOf($endOfMonth);
 
         if (! $result['is_balanced']) {
-            throw new RuntimeException('Rekonsiliasi piutang tidak seimbang: selisih '.Money::format($result['total_difference']).'; periksa Laporan Rekonsiliasi Piutang.');
+            throw new RuntimeException(__('toasts.finance.receivables_unbalanced', ['difference' => Money::format($result['total_difference'])]));
         }
     }
 }

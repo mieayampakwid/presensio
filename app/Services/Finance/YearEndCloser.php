@@ -39,13 +39,13 @@ class YearEndCloser
         $start = Carbon::parse($fiscalYearStart)->startOfDay();
 
         if ($start->day !== 1 || $start->month !== $this->startMonth()) {
-            throw new RuntimeException('Tanggal awal tahun buku tidak valid.');
+            throw new RuntimeException(__('toasts.finance.fiscal_year_invalid_start'));
         }
 
         $closingAccountId = $this->settings->row()->net_assets_closing_account_id;
 
         if ($closingAccountId === null || ! Account::query()->whereKey($closingAccountId)->exists()) {
-            throw new RuntimeException('Akun penutup aset neto belum diatur pada pengaturan sekolah.');
+            throw new RuntimeException(__('toasts.finance.closing_account_not_set'));
         }
 
         $keys = $this->periodKeys($start);
@@ -63,25 +63,25 @@ class YearEndCloser
                 ->keyBy('period');
 
             if ($periods->contains(fn (AccountingPeriod $period) => $period->isLocked())) {
-                throw new RuntimeException('Tahun buku sudah ditutup.');
+                throw new RuntimeException(__('toasts.finance.fiscal_year_already_closed'));
             }
 
             $lastKey = array_pop($keys);
 
             foreach ($keys as $key) {
                 if (! $periods[$key]->isClosed()) {
-                    throw new RuntimeException("Periode {$key} harus sudah ditutup sebelum tutup buku tahunan.");
+                    throw new RuntimeException(__('toasts.finance.period_must_be_closed', ['period' => $key]));
                 }
             }
 
             if (! $periods[$lastKey]->isOpen()) {
-                throw new RuntimeException("Periode terakhir tahun buku ({$lastKey}) harus berstatus terbuka.");
+                throw new RuntimeException(__('toasts.finance.last_period_must_be_open', ['period' => $lastKey]));
             }
 
             if (($blocking = $this->unclosedEarlierYear($start)) !== null) {
                 $blockingKeys = $this->periodKeys($blocking);
 
-                throw new RuntimeException("Tahun buku {$blockingKeys[0]} s.d. {$blockingKeys[11]} harus ditutup terlebih dahulu.");
+                throw new RuntimeException(__('toasts.finance.fiscal_years_must_be_closed', ['from' => $blockingKeys[0], 'to' => $blockingKeys[11]]));
             }
 
             $entry = $this->postClosingEntry($start, $end, $closingAccountId, $userId);

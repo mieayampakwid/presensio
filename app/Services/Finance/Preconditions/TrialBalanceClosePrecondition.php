@@ -28,7 +28,7 @@ class TrialBalanceClosePrecondition implements ClosePrecondition
         $tb = $this->trialBalanceReport->generate($endOfMonth);
 
         if (! $tb['is_balanced']) {
-            throw new RuntimeException("Neraca saldo belum seimbang (selisih: Rp {$tb['difference']}). Periode tidak dapat ditutup.");
+            throw new RuntimeException(__('toasts.finance.trial_balance_unbalanced', ['difference' => $tb['difference']]));
         }
     }
 }

@@ -109,12 +109,12 @@ class TrialBalanceReport
             fwrite($out, "\xEF\xBB\xBF");
 
             fputcsv($out, [
-                'Kode Akun',
-                'Nama Akun',
-                'Klasifikasi',
-                'Saldo Normal',
-                'Saldo Debit',
-                'Saldo Kredit',
+                __('toasts.csv.common.account_code'),
+                __('toasts.csv.common.account_name'),
+                __('toasts.csv.trial_balance.classification'),
+                __('toasts.csv.trial_balance.normal_balance'),
+                __('toasts.csv.trial_balance.debit_balance'),
+                __('toasts.csv.trial_balance.credit_balance'),
             ]);
 
             foreach ($data['accounts'] as $acc) {
@@ -131,7 +131,7 @@ class TrialBalanceReport
             fputcsv($out, []);
             fputcsv($out, [
                 '',
-                'TOTAL',
+                __('toasts.csv.common.total_upper'),
                 '',
                 '',
                 $data['total_debit'],

@@ -10,6 +10,7 @@ use App\Models\FeeType;
 use App\Models\User;
 use App\Services\Finance\Contracts\ClosePrecondition;
 use App\Services\Finance\PeriodService;
+use App\Support\Money;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -104,7 +105,7 @@ class PeriodTest extends TestCase
         $this->actingAs($finance)
             ->postJson(route('finance.periods.close', '2026-09'))
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'Rekonsiliasi piutang tidak seimbang: selisih Rp 350.000; periksa Laporan Rekonsiliasi Piutang.']);
+            ->assertJsonFragment(['message' => __('toasts.finance.receivables_unbalanced', ['difference' => Money::format('350000.00')])]);
 
         $this->assertSame('open', AccountingPeriod::where('period', '2026-09')->firstOrFail()->status);
     }

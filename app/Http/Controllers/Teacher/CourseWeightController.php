@@ -32,7 +32,7 @@ class CourseWeightController extends Controller
         ]);
 
         if ((float) $data['scope_weight'] + (float) $data['final_weight'] <= 0) {
-            abort(422, 'Total bobot nilai harus lebih besar dari 0.');
+            abort(422, __('toasts.grading.weights_required'));
         }
 
         /** @var Semester $semester */
@@ -61,7 +61,7 @@ class CourseWeightController extends Controller
         );
 
         return response()->json([
-            'message' => 'Bobot penilaian berhasil diperbarui.',
+            'message' => __('toasts.grading.weights_updated'),
             'weights' => [
                 'scope' => (float) $courseSemester->scope_weight,
                 'final' => (float) $courseSemester->final_weight,

@@ -89,7 +89,7 @@ class CashierController extends Controller
             $request->validated('notes'),
         );
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Pembayaran tercatat. Kuitansi {$payment->receipt_number}."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.payment_recorded', ['receipt' => $payment->receipt_number])]);
         Inertia::flash('payment', ['id' => $payment->id, 'receipt_number' => $payment->receipt_number]);
 
         return to_route('fees.cashier.index');

@@ -83,7 +83,7 @@ class TeacherController extends Controller
             ]);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Teacher created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.created')]);
 
         return to_route('teachers.index');
     }
@@ -133,7 +133,7 @@ class TeacherController extends Controller
             $teacher->employee?->update($updateData);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Teacher updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.updated')]);
 
         return to_route('teachers.edit', $teacher);
     }
@@ -162,7 +162,7 @@ class TeacherController extends Controller
             }
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Teacher deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.deleted')]);
 
         return to_route('teachers.index');
     }
@@ -177,20 +177,20 @@ class TeacherController extends Controller
         $blockers = [];
 
         if ($teacher->classes()->exists()) {
-            $blockers[] = 'Cannot delete: this teacher is the homeroom teacher of a class.';
+            $blockers[] = __('toasts.teachers.delete_blocked_homeroom');
         }
 
         if ($teacher->classSubjects()->exists()) {
-            $blockers[] = 'Cannot delete: this teacher has subject teaching assignments.';
+            $blockers[] = __('toasts.teachers.delete_blocked_assignments');
         }
 
         $teacher->loadMissing('employee');
         if ($teacher->employee?->user_id !== null) {
-            $blockers[] = 'Cannot delete: linked to a user account. Unlink it first.';
+            $blockers[] = __('toasts.common.delete_blocked_user_link');
         }
 
         if ($teacher->employee?->attendances()->exists()) {
-            $blockers[] = 'Cannot delete: this teacher has attendance history. Deactivate them instead.';
+            $blockers[] = __('toasts.teachers.delete_blocked_attendance');
         }
 
         return $blockers;

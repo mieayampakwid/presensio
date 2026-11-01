@@ -50,7 +50,7 @@ class OverpaymentController extends Controller
     {
         $file = $request->file('proof');
         $path = $file->store('overpayments', 'local');
-        abort_unless(is_string($path), 500, 'Bukti tidak berhasil disimpan.');
+        abort_unless(is_string($path), 500, __('toasts.fees.proof_store_failed'));
         try {
             $record = $service->record([
                 'guardian_id' => $request->integer('guardian_id'),
@@ -68,7 +68,7 @@ class OverpaymentController extends Controller
             Storage::disk('local')->delete($path);
             throw $e;
         }
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Kelebihan pembayaran berhasil dicatat.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.overpayment_recorded')]);
 
         return to_route('fees.overpayments.show', $record);
     }
@@ -77,7 +77,7 @@ class OverpaymentController extends Controller
     {
         $file = $request->file('proof');
         $path = $file?->store('overpayments', 'local');
-        abort_if($path === false, 500, 'Bukti tidak berhasil disimpan.');
+        abort_if($path === false, 500, __('toasts.fees.proof_store_failed'));
         try {
             $data = [
                 'refund_date' => $request->string('refund_date')->toString(),
@@ -98,7 +98,7 @@ class OverpaymentController extends Controller
             }
             throw $e;
         }
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Pengembalian berhasil dicatat.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.refund_recorded')]);
 
         return to_route('fees.overpayments.show', $overpayment);
     }
@@ -106,7 +106,7 @@ class OverpaymentController extends Controller
     public function cancel(CancelOverpaymentRequest $request, Overpayment $overpayment, OverpaymentService $service): RedirectResponse
     {
         $service->cancel($overpayment, $request->validated('date'), $request->validated('reason'), $request->user());
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Penerimaan kelebihan pembayaran dibatalkan.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.overpayment_cancelled')]);
 
         return to_route('fees.overpayments.show', $overpayment);
     }

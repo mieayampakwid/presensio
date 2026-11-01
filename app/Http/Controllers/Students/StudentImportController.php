@@ -125,8 +125,8 @@ class StudentImportController extends Controller
         Storage::disk(self::DISK)->delete($this->relativePath($token, $extension));
 
         $message = $result->errors === []
-            ? "Imported {$result->validCount} students."
-            : 'Imported '.$result->validCount.' students. '.count($result->errors).' rows had errors.';
+            ? __('toasts.students.imported', ['count' => $result->validCount])
+            : __('toasts.students.imported_with_errors', ['count' => $result->validCount, 'errors' => count($result->errors)]);
 
         Inertia::flash('toast', [
             'type' => $result->errors === [] ? 'success' : 'warning',
@@ -162,7 +162,7 @@ class StudentImportController extends Controller
         $handle = fopen($path, 'r');
 
         if ($handle === false) {
-            abort(419, 'This import session has expired — upload the file again.');
+            abort(419, __('toasts.students.import_session_expired'));
         }
 
         return new CsvRowReader($handle);
@@ -182,7 +182,7 @@ class StudentImportController extends Controller
         $path = Storage::disk(self::DISK)->path($this->relativePath($token, $extension));
 
         if (! file_exists($path)) {
-            abort(419, 'This import session has expired — upload the file again.');
+            abort(419, __('toasts.students.import_session_expired'));
         }
 
         return $path;
@@ -196,7 +196,7 @@ class StudentImportController extends Controller
             }
         }
 
-        abort(419, 'This import session has expired — upload the file again.');
+        abort(419, __('toasts.students.import_session_expired'));
     }
 
     private function relativePath(string $token, string $extension): string

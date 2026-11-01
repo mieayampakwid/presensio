@@ -59,7 +59,11 @@ class BillGenerationController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => "{$summary['created']} tagihan dibuat, {$summary['skipped']} dilewati, {$summary['discounted']} berdiskon.",
+            'message' => __('toasts.fees.bills_generated', [
+                'created' => $summary['created'],
+                'skipped' => $summary['skipped'],
+                'discounted' => $summary['discounted'],
+            ]),
         ]);
 
         return to_route('fees.generate.index');

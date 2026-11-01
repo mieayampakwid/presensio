@@ -81,11 +81,11 @@ class PeriodService
         $period = $this->ensure($periodKey);
 
         if ($period->isLocked()) {
-            throw new RuntimeException('Periode terkunci oleh tutup buku tahunan.');
+            throw new RuntimeException(__('toasts.finance.period_locked_by_year_end'));
         }
 
         if ($period->isClosed()) {
-            throw new RuntimeException("Periode {$periodKey} sudah dalam status ditutup.");
+            throw new RuntimeException(__('toasts.finance.period_already_closed', ['period' => $periodKey]));
         }
 
         foreach ($this->preconditions as $precondition) {
@@ -129,11 +129,11 @@ class PeriodService
         $period = $this->ensure($periodKey);
 
         if ($period->isLocked()) {
-            throw new RuntimeException('Periode terkunci oleh tutup buku tahunan dan tidak dapat dibuka kembali.');
+            throw new RuntimeException(__('toasts.finance.period_locked_no_reopen'));
         }
 
         if ($period->isOpen()) {
-            throw new RuntimeException("Periode {$periodKey} sudah dalam status terbuka.");
+            throw new RuntimeException(__('toasts.finance.period_already_open', ['period' => $periodKey]));
         }
 
         return DB::transaction(function () use ($period, $trimmedReason) {

@@ -26,7 +26,7 @@ class ChildReportCardTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const NOT_PUBLISHED_MESSAGE = 'Rapor belum diterbitkan untuk periode ini.';
+    private const NOT_PUBLISHED_MESSAGE = 'toasts.report_cards.not_published';
 
     private User $guardianUser;
 
@@ -128,7 +128,7 @@ class ChildReportCardTest extends TestCase
         $this->index($this->guardianUser)->assertStatus(403);
         $this->pdf($this->guardianUser)
             ->assertStatus(403)
-            ->assertSeeText(self::NOT_PUBLISHED_MESSAGE);
+            ->assertSeeText(__(self::NOT_PUBLISHED_MESSAGE));
 
         // Republishing restores the archive as version 2.
         $this->publish($this->semester);

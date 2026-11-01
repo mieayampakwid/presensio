@@ -157,31 +157,31 @@ class CashBookReport
             fwrite($out, "\xEF\xBB\xBF");
 
             fputcsv($out, [
-                'Akun Kas/Bank',
+                __('toasts.csv.cash_book.account'),
                 ($data['account']['code'] ?? '').' - '.($data['account']['name'] ?? ''),
             ]);
             fputcsv($out, [
-                'Periode',
-                ($data['from'] ?? 'Awal').' s.d. '.($data['to'] ?? 'Akhir'),
+                __('toasts.csv.common.period'),
+                ($data['from'] ?? __('toasts.csv.common.from_default')).' '.__('toasts.csv.common.to').' '.($data['to'] ?? __('toasts.csv.common.to_default')),
             ]);
             fputcsv($out, []);
 
             fputcsv($out, [
-                'Tanggal',
-                'Nomor Jurnal',
-                'Keterangan',
-                'Penerimaan (Debit)',
-                'Pengeluaran (Kredit)',
-                'Saldo Kas',
-                'Siswa',
-                'Memo',
+                __('toasts.csv.common.date'),
+                __('toasts.csv.common.journal_number'),
+                __('toasts.csv.common.description'),
+                __('toasts.csv.cash_book.receipts'),
+                __('toasts.csv.cash_book.payments'),
+                __('toasts.csv.cash_book.cash_balance'),
+                __('toasts.csv.common.student'),
+                __('toasts.csv.common.memo'),
             ]);
 
             // Opening balance row
             fputcsv($out, [
                 $data['from'] ?? '-',
                 '',
-                'SALDO AWAL',
+                __('toasts.csv.common.opening_balance'),
                 '',
                 '',
                 $data['opening_balance'],
@@ -206,7 +206,7 @@ class CashBookReport
             fputcsv($out, [
                 $data['to'] ?? '-',
                 '',
-                'SALDO AKHIR',
+                __('toasts.csv.common.closing_balance'),
                 $data['period_debits'],
                 $data['period_credits'],
                 $data['closing_balance'],

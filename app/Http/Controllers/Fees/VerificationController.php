@@ -47,7 +47,7 @@ class VerificationController extends Controller
 
         $verified = $payments->verify($payment, $reallocation, (int) $request->validated('deposit_account_id'), $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Pembayaran terverifikasi. Kuitansi {$verified->receipt_number}."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.payment_verified', ['receipt' => $verified->receipt_number])]);
 
         return to_route('fees.verifications.index');
     }
@@ -59,7 +59,7 @@ class VerificationController extends Controller
     {
         $payments->reject($payment, $request->string('reason')->toString(), $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Transfer ditolak.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.transfer_rejected')]);
 
         return to_route('fees.verifications.index');
     }

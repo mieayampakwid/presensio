@@ -13,11 +13,13 @@ use App\Models\JournalLine;
 use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Finance\GuardianDepositReconciliation;
 use App\Services\Finance\JournalPoster;
 use App\Services\Finance\PaymentService;
 use App\Services\Finance\PostableEntry;
 use App\Services\Finance\PostableLine;
 use App\Services\SchoolSettings;
+use App\Support\Money;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
@@ -60,7 +62,8 @@ class YearEndClosingTest extends TestCase
         $this->journal('2027-06-25', '1-1200', '2-1200', '1000.00');
         $this->closeFirstElevenMonths();
         $count = JournalEntry::count();
-        $this->actingAs($this->finance)->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])->assertUnprocessable()->assertSee('Titipan Wali');
+        $difference = app(GuardianDepositReconciliation::class)->asOf('2027-06-30')['total_difference'];
+        $this->actingAs($this->finance)->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])->assertUnprocessable()->assertSee(__('toasts.finance.deposits_unbalanced', ['difference' => Money::format($difference)]));
         $this->assertSame($count, JournalEntry::count());
         $this->assertDatabaseMissing('accounting_periods', ['status' => 'locked']);
         $this->assertDatabaseMissing('journal_entries', ['source_type' => 'closing']);
@@ -234,7 +237,7 @@ class YearEndClosingTest extends TestCase
         $this->actingAs($this->finance)
             ->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])
             ->assertUnprocessable()
-            ->assertJsonFragment(['message' => 'Rekonsiliasi piutang tidak seimbang: selisih Rp 350.000; periksa Laporan Rekonsiliasi Piutang.']);
+            ->assertJsonFragment(['message' => __('toasts.finance.receivables_unbalanced', ['difference' => Money::format('350000.00')])]);
 
         $this->assertNothingClosed();
         $this->assertSame('open', AccountingPeriod::findOrFail('2027-06')->status);
@@ -249,7 +252,7 @@ class YearEndClosingTest extends TestCase
         $this->actingAs($this->finance)
             ->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])
             ->assertUnprocessable()
-            ->assertJsonFragment(['message' => 'Tahun buku sudah ditutup.']);
+            ->assertJsonFragment(['message' => __('toasts.finance.fiscal_year_already_closed')]);
 
         $this->assertSame(1, JournalEntry::where('source_type', JournalSource::Closing)->count());
     }
@@ -263,7 +266,7 @@ class YearEndClosingTest extends TestCase
         $this->actingAs($this->finance)
             ->postJson(route('finance.periods.reopen', '2026-09'), ['reason' => 'Koreksi'])
             ->assertUnprocessable()
-            ->assertJsonFragment(['message' => 'Periode terkunci oleh tutup buku tahunan dan tidak dapat dibuka kembali.']);
+            ->assertJsonFragment(['message' => __('toasts.finance.period_locked_no_reopen')]);
         $this->assertSame('locked', AccountingPeriod::findOrFail('2026-09')->status);
 
         $this->actingAs($this->finance)->postJson(route('finance.journals.store'), [
@@ -338,7 +341,7 @@ class YearEndClosingTest extends TestCase
         $this->actingAs($this->finance)
             ->postJson(route('finance.periods.year-end'), ['fiscal_year_start' => self::YEAR_START])
             ->assertUnprocessable()
-            ->assertJsonFragment(['message' => 'Tahun buku 2025-07 s.d. 2026-06 harus ditutup terlebih dahulu.']);
+            ->assertJsonFragment(['message' => __('toasts.finance.fiscal_years_must_be_closed', ['from' => '2025-07', 'to' => '2026-06'])]);
 
         $this->assertNothingClosed();
 

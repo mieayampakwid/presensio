@@ -66,7 +66,7 @@ class PeriodController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => "Periode {$period} berhasil ditutup.",
+            'message' => __('toasts.finance.period_closed', ['period' => $period]),
         ]);
 
         return to_route('finance.periods.index');
@@ -89,7 +89,7 @@ class PeriodController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => "Periode {$period} berhasil dibuka kembali.",
+            'message' => __('toasts.finance.period_reopened', ['period' => $period]),
         ]);
 
         return to_route('finance.periods.index');
@@ -112,7 +112,7 @@ class PeriodController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Tahun buku berhasil ditutup dan seluruh periodenya dikunci.',
+            'message' => __('toasts.finance.fiscal_year_closed'),
         ]);
 
         return to_route('finance.periods.index');

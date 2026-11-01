@@ -69,7 +69,7 @@ class DiscountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Diskon berhasil ditambahkan.',
+            'message' => __('toasts.fees.discount_created'),
         ]);
 
         return to_route('fees.discounts.index');
@@ -84,7 +84,7 @@ class DiscountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Diskon berhasil diperbarui.',
+            'message' => __('toasts.fees.discount_updated'),
         ]);
 
         return to_route('fees.discounts.index');
@@ -99,7 +99,7 @@ class DiscountController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Diskon berhasil dihapus.',
+            'message' => __('toasts.fees.discount_deleted'),
         ]);
 
         return to_route('fees.discounts.index');

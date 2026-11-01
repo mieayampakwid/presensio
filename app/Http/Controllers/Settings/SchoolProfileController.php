@@ -104,7 +104,7 @@ class SchoolProfileController extends Controller
 
         $this->schoolSettings->refresh();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'School profile updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.settings.school_profile_updated')]);
 
         return to_route('school-profile.edit');
     }

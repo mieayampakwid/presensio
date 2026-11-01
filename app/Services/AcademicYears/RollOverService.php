@@ -38,7 +38,7 @@ class RollOverService
             $source = AcademicYear::active();
 
             if ($source === null || $source->id === $target->id) {
-                throw new InvalidArgumentException('Roll-over needs a target year other than the active one.');
+                throw new InvalidArgumentException(__('toasts.academic_years.roll_over_target_required'));
             }
 
             $alreadyPromoted = Enrollment::query()
@@ -108,7 +108,7 @@ class RollOverService
         foreach ($mappings as $sourceClassId => $mapping) {
             $sourceClass = $sourceClasses->get((int) $sourceClassId);
             if ($sourceClass === null) {
-                throw new InvalidArgumentException('A mapped source class does not belong to the active year.');
+                throw new InvalidArgumentException(__('toasts.academic_years.roll_over_source_mismatch'));
             }
 
             $suggestedGradeLevel = min(12, max(1, $sourceClass->grade_level > 0 ? $sourceClass->grade_level + 1 : 1));
@@ -118,7 +118,7 @@ class RollOverService
                 'existing' => $mapping['target_class_id'] ?? null,
                 'new' => $created[$sourceClassId] ??= SchoolClass::query()->create([
                     'academic_year_id' => $target->id,
-                    'name' => $mapping['new_name'] ?? throw new InvalidArgumentException('A new target class needs a name.'),
+                    'name' => $mapping['new_name'] ?? throw new InvalidArgumentException(__('toasts.academic_years.roll_over_name_required')),
                     'grade_level' => $suggestedGradeLevel,
                     'curriculum' => $defaultCurriculum,
                     'teacher_id' => $mapping['new_teacher_id'] ?? null,
@@ -129,7 +129,7 @@ class RollOverService
                 $targetClass = SchoolClass::query()->find($targetClassId);
 
                 if ($targetClass === null || $targetClass->academic_year_id !== $target->id) {
-                    throw new InvalidArgumentException('A mapped target class does not belong to the target year.');
+                    throw new InvalidArgumentException(__('toasts.academic_years.roll_over_target_mismatch'));
                 }
             }
 

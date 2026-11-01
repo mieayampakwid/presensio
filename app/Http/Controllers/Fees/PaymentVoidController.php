@@ -18,7 +18,7 @@ class PaymentVoidController extends Controller
     {
         $paymentService->void($payment, $request->string('reason')->toString(), $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Pembayaran berhasil dibatalkan.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.fees.payment_voided')]);
 
         return back();
     }

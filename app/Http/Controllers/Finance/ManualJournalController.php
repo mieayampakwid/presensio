@@ -158,7 +158,7 @@ class ManualJournalController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => 'Draf jurnal berhasil disimpan.',
+                'message' => __('toasts.finance.journal_draft_saved'),
             ]);
 
             return to_route('finance.journals.show', $journal);
@@ -189,7 +189,7 @@ class ManualJournalController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jurnal berhasil diposting.',
+            'message' => __('toasts.finance.journal_posted'),
         ]);
 
         return to_route('finance.journals.show', $journal);
@@ -261,7 +261,7 @@ class ManualJournalController extends Controller
     public function edit(JournalEntry $journal): Response
     {
         if ($journal->isPosted()) {
-            abort(422, 'Jurnal yang telah diposting tidak dapat diedit.');
+            abort(422, __('toasts.finance.journal_posted_no_edit'));
         }
 
         $journal->load(['lines']);
@@ -316,7 +316,7 @@ class ManualJournalController extends Controller
     public function update(SaveJournalRequest $request, JournalEntry $journal, JournalPoster $poster): RedirectResponse
     {
         if ($journal->isPosted()) {
-            abort(422, 'Jurnal yang telah diposting tidak dapat diedit.');
+            abort(422, __('toasts.finance.journal_posted_no_edit'));
         }
 
         $action = $request->input('action', 'post');
@@ -355,7 +355,7 @@ class ManualJournalController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => 'Draf jurnal berhasil diperbarui.',
+                'message' => __('toasts.finance.journal_draft_updated'),
             ]);
 
             return to_route('finance.journals.show', $journal);
@@ -391,7 +391,7 @@ class ManualJournalController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jurnal berhasil diposting.',
+            'message' => __('toasts.finance.journal_posted'),
         ]);
 
         return to_route('finance.journals.show', $posted);
@@ -403,7 +403,7 @@ class ManualJournalController extends Controller
     public function destroy(JournalEntry $journal): RedirectResponse
     {
         if ($journal->isPosted()) {
-            abort(422, 'Jurnal yang telah diposting tidak dapat dihapus.');
+            abort(422, __('toasts.finance.journal_posted_no_delete'));
         }
 
         if ($journal->attachment_path) {
@@ -415,7 +415,7 @@ class ManualJournalController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Draf jurnal berhasil dihapus.',
+            'message' => __('toasts.finance.journal_draft_deleted'),
         ]);
 
         return to_route('finance.journals.index');
@@ -427,7 +427,7 @@ class ManualJournalController extends Controller
     public function post(JournalEntry $journal, JournalPoster $poster): RedirectResponse
     {
         if ($journal->isPosted()) {
-            abort(422, 'Jurnal ini sudah diposting sebelumnya.');
+            abort(422, __('toasts.finance.journal_already_posted'));
         }
 
         $journal->loadMissing('lines');
@@ -461,7 +461,7 @@ class ManualJournalController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => 'Jurnal berhasil diposting.',
+            'message' => __('toasts.finance.journal_posted'),
         ]);
 
         return to_route('finance.journals.show', $posted);
@@ -472,7 +472,7 @@ class ManualJournalController extends Controller
      */
     public function reverse(Request $request, JournalEntry $journal, JournalPoster $poster, SchoolSettings $settings): RedirectResponse
     {
-        abort_if($this->isOverpaymentJournal($journal), 422, 'Gunakan pembatalan pada detail kelebihan pembayaran; jurnal otomatis tidak dapat dibalik langsung.');
+        abort_if($this->isOverpaymentJournal($journal), 422, __('toasts.finance.journal_overpayment_reverse'));
 
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:255'],
@@ -480,7 +480,7 @@ class ManualJournalController extends Controller
         ]);
 
         if (! $journal->isPosted()) {
-            abort(422, 'Hanya jurnal yang telah diposting yang dapat dibalik.');
+            abort(422, __('toasts.finance.journal_reverse_needs_posted'));
         }
 
         $targetDate = ! empty($validated['date'])
@@ -495,7 +495,7 @@ class ManualJournalController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => "Jurnal pembalik {$reversal->number} berhasil dibuat.",
+            'message' => __('toasts.finance.journal_reversed', ['number' => $reversal->number]),
         ]);
 
         return to_route('finance.journals.show', $reversal);
@@ -521,7 +521,7 @@ class ManualJournalController extends Controller
     public function attachment(JournalEntry $journal): StreamedResponse
     {
         if (! $journal->attachment_path || ! Storage::disk('local')->exists($journal->attachment_path)) {
-            abort(404, 'Lampiran nota/kuitansi tidak ditemukan.');
+            abort(404, __('toasts.finance.attachment_not_found'));
         }
 
         return Storage::disk('local')->download($journal->attachment_path);

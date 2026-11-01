@@ -24,7 +24,7 @@ class ScoreController extends Controller
         $this->scoreRecorder->record($scores, $request->user());
 
         return response()->json([
-            'message' => 'Nilai berhasil disimpan.',
+            'message' => __('toasts.grading.scores_saved'),
         ]);
     }
 }

@@ -143,16 +143,16 @@ class GeneralLedgerReport
             fwrite($out, "\xEF\xBB\xBF");
 
             fputcsv($out, [
-                'Kode Akun',
-                'Nama Akun',
-                'Tanggal',
-                'Nomor Jurnal',
-                'Keterangan',
-                'Debit',
-                'Kredit',
-                'Saldo Berjalan',
-                'Siswa',
-                'Memo',
+                __('toasts.csv.common.account_code'),
+                __('toasts.csv.common.account_name'),
+                __('toasts.csv.common.date'),
+                __('toasts.csv.common.journal_number'),
+                __('toasts.csv.common.description'),
+                __('toasts.csv.common.debit'),
+                __('toasts.csv.common.credit'),
+                __('toasts.csv.general_ledger.running_balance'),
+                __('toasts.csv.common.student'),
+                __('toasts.csv.common.memo'),
             ]);
 
             foreach ($data['accounts'] as $acc) {
@@ -161,7 +161,7 @@ class GeneralLedgerReport
                     $acc['name'],
                     $data['from'] ?? '-',
                     '',
-                    'SALDO AWAL',
+                    __('toasts.csv.common.opening_balance'),
                     '',
                     '',
                     $acc['opening_balance'],
@@ -189,7 +189,7 @@ class GeneralLedgerReport
                     $acc['name'],
                     $data['to'] ?? '-',
                     '',
-                    'SALDO AKHIR',
+                    __('toasts.csv.common.closing_balance'),
                     $acc['period_debits'],
                     $acc['period_credits'],
                     $acc['closing_balance'],

@@ -20,7 +20,7 @@ class ActiveRoleController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole($target)) {
-            abort(403, 'You do not hold this role.');
+            abort(403, __('toasts.auth.role_not_held'));
         }
 
         $request->session()->put('active_role', $target->value);

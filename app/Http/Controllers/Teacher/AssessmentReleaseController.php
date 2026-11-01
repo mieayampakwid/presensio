@@ -39,6 +39,6 @@ class AssessmentReleaseController extends Controller
             );
         }
 
-        return back()->with('success', 'Nilai asesmen berhasil dirilis.');
+        return back()->with('success', __('toasts.grading.scores_released'));
     }
 }

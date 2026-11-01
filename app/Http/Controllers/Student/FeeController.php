@@ -20,7 +20,7 @@ class FeeController extends Controller
         abort_if($user === null, 401);
 
         $student = $user->student;
-        abort_if($student === null, 403, 'Profil siswa tidak ditemukan.');
+        abort_if($student === null, 403, __('toasts.report_cards.student_profile_missing'));
 
         $school = $settings->row();
 
