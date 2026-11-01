@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import StudentForm from './student-form';
 
 type ClassOption = {
@@ -42,14 +43,32 @@ export default function EditStudent({
     current_guardian_ids,
     current_guardians,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('students.index.title'),
+                href: StudentController.index().url,
+            },
+            {
+                title: t('common.edit'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title={`Edit ${student.full_name}`} />
+            <Head
+                title={t('students.edit.head', {
+                    name: student.full_name,
+                })}
+            />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Edit student"
-                    description="Moving to another class replaces enrollment; attendance history stays untouched."
+                    title={t('students.edit.title')}
+                    description={t('students.edit.description')}
                 />
 
                 <StudentForm
@@ -57,7 +76,7 @@ export default function EditStudent({
                         student: student.id,
                     })}
                     cancelUrl={StudentController.index().url}
-                    submitLabel="Save changes"
+                    submitLabel={t('common.save_changes')}
                     defaults={{
                         fullName: student.full_name,
                         nickname: student.nickname ?? '',
@@ -80,15 +99,3 @@ export default function EditStudent({
         </>
     );
 }
-
-EditStudent.layout = {
-    breadcrumbs: [
-        {
-            title: 'Students',
-            href: StudentController.index().url,
-        },
-        {
-            title: 'Edit',
-        },
-    ],
-};

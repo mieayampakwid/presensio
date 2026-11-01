@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
@@ -7,6 +7,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     Dialog,
     DialogContent,
@@ -37,6 +38,17 @@ type Props = {
 
 export default function StudentsIndex({ students, filters }: Props) {
     const [deleting, setDeleting] = useState<StudentRow | null>(null);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('students.index.title'),
+                href: StudentController.index().url,
+            },
+        ],
+    });
+
     const destroy = (student: StudentRow) => {
         router.delete(StudentController.destroy({ student: student.id }).url, {
             preserveScroll: true,
@@ -45,24 +57,24 @@ export default function StudentsIndex({ students, filters }: Props) {
 
     return (
         <>
-            <Head title="Students" />
+            <Head title={t('students.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Students"
-                        description="Master data for enrollment, guardians, and RFID cards."
+                        title={t('students.index.title')}
+                        description={t('students.index.description')}
                     />
 
                     <div className="flex gap-2">
                         <Button variant="outline" asChild>
                             <Link href={StudentImportController.create().url}>
-                                Import students
+                                {t('students.index.import')}
                             </Link>
                         </Button>
                         <Button asChild>
                             <Link href={StudentController.create().url}>
-                                Create student
+                                {t('students.index.create')}
                             </Link>
                         </Button>
                     </div>
@@ -72,7 +84,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                     <Input
                         name="search"
                         defaultValue={filters.search}
-                        placeholder="Search by name, NIS, or guardian…"
+                        placeholder={t('students.index.search_placeholder')}
                     />
                 </form>
 
@@ -81,13 +93,13 @@ export default function StudentsIndex({ students, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Name
+                                    {t('common.name')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Student number
+                                    {t('students.index.columns.student_number')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Class
+                                    {t('students.index.columns.class')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -128,7 +140,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Edit
+                                                        {t('common.edit')}
                                                     </span>
                                                 </Link>
                                             </Button>
@@ -143,7 +155,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Delete
+                                                    {t('common.delete')}
                                                 </span>
                                             </Button>
                                         </div>
@@ -157,7 +169,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No students found.
+                                        {t('students.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -167,7 +179,10 @@ export default function StudentsIndex({ students, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {students.current_page} of {students.last_page}
+                        {t('common.page_of', {
+                            current: students.current_page,
+                            last: students.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -179,7 +194,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                         >
                             <Link href={students.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -189,7 +204,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                             disabled={!students.next_page_url}
                         >
                             <Link href={students.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -201,18 +216,18 @@ export default function StudentsIndex({ students, filters }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete student</DialogTitle>
+                    <DialogTitle>{t('students.delete.title')}</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete "{deleting?.full_name}"?
-                        Their guardian links are removed and any RFID card
-                        returns to the spare pool.
+                        {t('students.delete.description', {
+                            name: deleting?.full_name ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -223,7 +238,7 @@ export default function StudentsIndex({ students, filters }: Props) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -231,12 +246,3 @@ export default function StudentsIndex({ students, filters }: Props) {
         </>
     );
 }
-
-StudentsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Students',
-            href: StudentController.index().url,
-        },
-    ],
-};

@@ -1,23 +1,38 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import TeacherForm from './teacher-form';
 
 export default function CreateTeacher() {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('teachers.index.title'),
+                href: TeacherController.index().url,
+            },
+            {
+                title: t('common.create'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Create teacher" />
+            <Head title={t('teachers.create.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Create teacher"
-                    description="Master data for homeroom assignment. A login account can be linked later."
+                    title={t('teachers.create.title')}
+                    description={t('teachers.create.description')}
                 />
 
                 <TeacherForm
                     action={TeacherController.store.form()}
                     cancelUrl={TeacherController.index().url}
-                    submitLabel="Create teacher"
+                    submitLabel={t('teachers.create.submit')}
                     defaults={{
                         name: '',
                         teacherNumber: null,
@@ -28,15 +43,3 @@ export default function CreateTeacher() {
         </>
     );
 }
-
-CreateTeacher.layout = {
-    breadcrumbs: [
-        {
-            title: 'Teachers',
-            href: TeacherController.index().url,
-        },
-        {
-            title: 'Create',
-        },
-    ],
-};

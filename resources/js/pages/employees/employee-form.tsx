@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 export type EmployeeFormDefaults = {
     name: string;
@@ -65,6 +66,8 @@ export default function EmployeeForm({
     shifts = [],
     lockIsTeacher = false,
 }: EmployeeFormProps) {
+    const { t } = useTranslation();
+
     const [selectedDays, setSelectedDays] = useState<number[]>(
         defaults.workingDays ?? operationalDays,
     );
@@ -354,7 +357,7 @@ export default function EmployeeForm({
 
                     <div className="flex gap-3">
                         <Button variant="outline" asChild>
-                            <Link href={cancelUrl}>Cancel</Link>
+                            <Link href={cancelUrl}>{t('common.cancel')}</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}

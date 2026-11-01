@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import StudentImportController from '@/actions/App/Http/Controllers/Students/StudentImportController';
 import Heading from '@/components/heading';
@@ -6,6 +6,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Props = {
     token: string;
@@ -16,20 +17,36 @@ type Props = {
     autoCreateClasses: boolean;
 };
 
-const FIELDS: { key: string; label: string; required?: boolean }[] = [
-    { key: 'full_name', label: 'Full name', required: true },
-    { key: 'nickname', label: 'Nickname' },
-    { key: 'dob', label: 'Date of birth' },
-    { key: 'student_number', label: 'Student number (NIS)' },
-    { key: 'gender', label: 'Gender (L/P)' },
-    { key: 'birth_place', label: 'Birth place' },
-    { key: 'religion', label: 'Religion' },
-    { key: 'address', label: 'Student address' },
-    { key: 'class', label: 'Class', required: true },
-    { key: 'guardian_name', label: 'Guardian name' },
-    { key: 'guardian_phone', label: 'Guardian phone' },
-    { key: 'guardian_work', label: 'Guardian occupation' },
-    { key: 'guardian_address', label: 'Guardian address' },
+const FIELDS: { key: string; labelKey: string; required?: boolean }[] = [
+    {
+        key: 'full_name',
+        labelKey: 'students.import.fields.full_name',
+        required: true,
+    },
+    { key: 'nickname', labelKey: 'students.import.fields.nickname' },
+    { key: 'dob', labelKey: 'students.import.fields.dob' },
+    {
+        key: 'student_number',
+        labelKey: 'students.import.fields.student_number',
+    },
+    { key: 'gender', labelKey: 'students.import.fields.gender' },
+    { key: 'birth_place', labelKey: 'students.import.fields.birth_place' },
+    { key: 'religion', labelKey: 'students.import.fields.religion' },
+    { key: 'address', labelKey: 'students.import.fields.address' },
+    { key: 'class', labelKey: 'students.import.fields.class', required: true },
+    { key: 'guardian_name', labelKey: 'students.import.fields.guardian_name' },
+    {
+        key: 'guardian_phone',
+        labelKey: 'students.import.fields.guardian_phone',
+    },
+    {
+        key: 'guardian_work',
+        labelKey: 'students.import.fields.guardian_work',
+    },
+    {
+        key: 'guardian_address',
+        labelKey: 'students.import.fields.guardian_address',
+    },
 ];
 
 const SELECT_CLASS =
@@ -43,14 +60,32 @@ export default function ImportMap({
     guessedMapping,
     autoCreateClasses,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('students.index.title'),
+                href: StudentController.index().url,
+            },
+            {
+                title: t('students.import.crumb'),
+                href: StudentImportController.create().url,
+            },
+            {
+                title: t('students.import.map.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Map import columns" />
+            <Head title={t('students.import.map.head')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Map columns"
-                    description="Match the spreadsheet columns to student fields. Guesses are preselected — override anything that looks wrong."
+                    title={t('students.import.map.title')}
+                    description={t('students.import.map.description')}
                 />
 
                 <div className="overflow-x-auto rounded-lg border">
@@ -95,7 +130,7 @@ export default function ImportMap({
                             {FIELDS.map((field) => (
                                 <div key={field.key} className="grid gap-2">
                                     <Label htmlFor={`mapping_${field.key}`}>
-                                        {field.label}
+                                        {t(field.labelKey)}
                                         {field.required && ' *'}
                                     </Label>
                                     <select
@@ -106,7 +141,9 @@ export default function ImportMap({
                                         }
                                         className={SELECT_CLASS}
                                     >
-                                        <option value="">— ignored —</option>
+                                        <option value="">
+                                            {t('students.import.map.ignored')}
+                                        </option>
                                         {headers.map((header) => (
                                             <option key={header} value={header}>
                                                 {header || '—'}
@@ -133,19 +170,18 @@ export default function ImportMap({
                                     className="border-input dark:bg-input/30 accent-primary size-4 shrink-0 rounded-[4px] border shadow-xs outline-none"
                                 />
                                 <Label htmlFor="auto_create_classes">
-                                    Create classes from the file when they don't
-                                    exist yet
+                                    {t('students.import.auto_create_classes')}
                                 </Label>
                             </div>
 
                             <div className="flex gap-2">
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner />}
-                                    Preview import
+                                    {t('students.import.map.preview')}
                                 </Button>
                                 <Button variant="outline" asChild>
                                     <a href={StudentController.index().url}>
-                                        Cancel
+                                        {t('common.cancel')}
                                     </a>
                                 </Button>
                             </div>
@@ -154,26 +190,9 @@ export default function ImportMap({
                 </Form>
 
                 <p className="text-muted-foreground max-w-xl text-sm">
-                    File type: .{extension}. Dates are read day-first
-                    (dd/mm/yyyy). Student numbers keep their leading zeros.
+                    {t('students.import.map.file_type', { extension })}
                 </p>
             </div>
         </>
     );
 }
-
-ImportMap.layout = {
-    breadcrumbs: [
-        {
-            title: 'Students',
-            href: StudentController.index().url,
-        },
-        {
-            title: 'Import',
-            href: StudentImportController.create().url,
-        },
-        {
-            title: 'Map columns',
-        },
-    ],
-};

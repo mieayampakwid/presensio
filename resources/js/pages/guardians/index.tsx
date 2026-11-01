@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import GuardianController from '@/actions/App/Http/Controllers/Guardians/GuardianController';
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type GuardianRow = {
     id: number;
@@ -44,6 +45,17 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
         null,
     );
     const [deleting, setDeleting] = useState<GuardianRow | null>(null);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('guardians.index.title'),
+                href: GuardianController.index().url,
+            },
+        ],
+    });
+
     const destroy = (guardian: GuardianRow) => {
         router.delete(
             GuardianController.destroy({ guardian: guardian.id }).url,
@@ -53,17 +65,17 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
     return (
         <>
-            <Head title="Guardians" />
+            <Head title={t('guardians.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Guardians"
-                        description="Absence notifications go to these contacts; the phone number is the guardian identity."
+                        title={t('guardians.index.title')}
+                        description={t('guardians.index.description')}
                     />
 
                     <Button onClick={() => setIsCreateOpen(true)}>
-                        Create guardian
+                        {t('guardians.index.create')}
                     </Button>
                 </div>
 
@@ -71,7 +83,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                     <Input
                         name="search"
                         defaultValue={filters.search}
-                        placeholder="Search by name or phone…"
+                        placeholder={t('guardians.index.search_placeholder')}
                     />
                 </form>
 
@@ -80,13 +92,13 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Name
+                                    {t('common.name')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Phone
+                                    {t('common.phone')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Occupation
+                                    {t('guardians.index.columns.occupation')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -114,7 +126,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit
+                                                    {t('common.edit')}
                                                 </span>
                                             </Button>
 
@@ -128,7 +140,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Delete
+                                                    {t('common.delete')}
                                                 </span>
                                             </Button>
                                         </div>
@@ -142,7 +154,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No guardians found.
+                                        {t('guardians.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -152,7 +164,10 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {guardians.current_page} of {guardians.last_page}
+                        {t('common.page_of', {
+                            current: guardians.current_page,
+                            last: guardians.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -164,7 +179,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                         >
                             <Link href={guardians.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -174,7 +189,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                             disabled={!guardians.next_page_url}
                         >
                             <Link href={guardians.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -186,17 +201,18 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete guardian</DialogTitle>
+                    <DialogTitle>{t('guardians.delete.title')}</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete "{deleting?.name}"?
-                        Their links to children are removed with them.
+                        {t('guardians.delete.description', {
+                            name: deleting?.name ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -207,7 +223,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -216,10 +232,9 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Create guardian</DialogTitle>
+                        <DialogTitle>{t('guardians.create.title')}</DialogTitle>
                         <DialogDescription>
-                            Add a new guardian contact for notifications and
-                            student linkage.
+                            {t('guardians.create.description')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -231,35 +246,41 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                         {({ processing, errors }) => (
                             <>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-name">Name</Label>
+                                    <Label htmlFor="create-name">
+                                        {t('common.name')}
+                                    </Label>
                                     <Input
                                         id="create-name"
                                         name="name"
                                         required
                                         autoFocus
                                         autoComplete="off"
-                                        placeholder="Full name"
+                                        placeholder={t(
+                                            'guardians.form.name_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.name} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-phone_number">
-                                        Phone number
+                                        {t('guardians.form.phone_number')}
                                     </Label>
                                     <Input
                                         id="create-phone_number"
                                         name="phone_number"
                                         required
                                         autoComplete="off"
-                                        placeholder="e.g. +6281234567890"
+                                        placeholder={t(
+                                            'guardians.form.phone_number_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.phone_number} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-work">
-                                        Occupation (optional)
+                                        {t('guardians.form.occupation')}
                                     </Label>
                                     <Input
                                         id="create-work"
@@ -271,7 +292,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-address">
-                                        Address (optional)
+                                        {t('guardians.form.address')}
                                     </Label>
                                     <textarea
                                         id="create-address"
@@ -288,11 +309,11 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                         type="button"
                                         onClick={() => setIsCreateOpen(false)}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         {processing && <Spinner />}
-                                        Create guardian
+                                        {t('guardians.create.submit')}
                                     </Button>
                                 </DialogFooter>
                             </>
@@ -310,10 +331,12 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                         <>
                             <DialogHeader>
                                 <DialogTitle>
-                                    Edit {editingGuardian.name}
+                                    {t('guardians.edit.title', {
+                                        name: editingGuardian.name,
+                                    })}
                                 </DialogTitle>
                                 <DialogDescription>
-                                    Update contact details.
+                                    {t('guardians.edit.description')}
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -329,7 +352,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-name">
-                                                Name
+                                                {t('common.name')}
                                             </Label>
                                             <Input
                                                 id="edit-name"
@@ -345,7 +368,9 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-phone_number">
-                                                Phone number
+                                                {t(
+                                                    'guardians.form.phone_number',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="edit-phone_number"
@@ -363,7 +388,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-work">
-                                                Occupation (optional)
+                                                {t('guardians.form.occupation')}
                                             </Label>
                                             <Input
                                                 id="edit-work"
@@ -378,7 +403,7 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="edit-address">
-                                                Address (optional)
+                                                {t('guardians.form.address')}
                                             </Label>
                                             <textarea
                                                 id="edit-address"
@@ -403,14 +428,14 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
                                                     setEditingGuardian(null)
                                                 }
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Save changes
+                                                {t('common.save_changes')}
                                             </Button>
                                         </DialogFooter>
                                     </>
@@ -423,12 +448,3 @@ export default function GuardiansIndex({ guardians, filters }: Props) {
         </>
     );
 }
-
-GuardiansIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Guardians',
-            href: GuardianController.index().url,
-        },
-    ],
-};

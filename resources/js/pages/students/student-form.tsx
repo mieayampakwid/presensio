@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type ClassOption = {
     id: number;
@@ -37,6 +38,17 @@ type StudentFormProps = {
     currentGuardians?: { id: number; relationship_type: string }[];
 };
 
+const RELIGIONS = [
+    'Islam',
+    'Kristen',
+    'Katolik',
+    'Hindu',
+    'Buddha',
+    'Konghucu',
+];
+
+const RELATIONSHIPS = ['father', 'mother', 'guardian'];
+
 export default function StudentForm({
     action,
     cancelUrl,
@@ -47,12 +59,16 @@ export default function StudentForm({
     currentGuardianIds = [],
     currentGuardians,
 }: StudentFormProps) {
+    const { t } = useTranslation();
+
     return (
         <Form {...action} className="space-y-6">
             {({ processing, errors }) => (
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="full_name">Full name</Label>
+                        <Label htmlFor="full_name">
+                            {t('students.form.full_name')}
+                        </Label>
                         <Input
                             id="full_name"
                             name="full_name"
@@ -60,13 +76,17 @@ export default function StudentForm({
                             required
                             autoFocus
                             autoComplete="off"
-                            placeholder="Full name as on school records"
+                            placeholder={t(
+                                'students.form.full_name_placeholder',
+                            )}
                         />
                         <InputError message={errors.full_name} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="nickname">Nickname (optional)</Label>
+                        <Label htmlFor="nickname">
+                            {t('students.form.nickname')}
+                        </Label>
                         <Input
                             id="nickname"
                             name="nickname"
@@ -77,7 +97,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="dob">Date of birth</Label>
+                        <Label htmlFor="dob">{t('students.form.dob')}</Label>
                         <Input
                             id="dob"
                             name="dob"
@@ -89,7 +109,9 @@ export default function StudentForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="gender">Gender</Label>
+                        <Label htmlFor="gender">
+                            {t('students.form.gender')}
+                        </Label>
                         <select
                             id="gender"
                             name="gender"
@@ -97,80 +119,95 @@ export default function StudentForm({
                             required
                             className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
-                            <option value="L">Laki-laki (L)</option>
-                            <option value="P">Perempuan (P)</option>
+                            <option value="L">{t('common.gender.male')}</option>
+                            <option value="P">
+                                {t('common.gender.female')}
+                            </option>
                         </select>
                         <InputError message={errors.gender} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="birth_place">
-                            Birth place (optional)
+                            {t('students.form.birth_place')}
                         </Label>
                         <Input
                             id="birth_place"
                             name="birth_place"
                             defaultValue={defaults.birthPlace ?? ''}
-                            placeholder="e.g. Jakarta"
+                            placeholder={t(
+                                'students.form.birth_place_placeholder',
+                            )}
                             autoComplete="off"
                         />
                         <InputError message={errors.birth_place} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="religion">Religion (optional)</Label>
+                        <Label htmlFor="religion">
+                            {t('students.form.religion')}
+                        </Label>
                         <select
                             id="religion"
                             name="religion"
                             defaultValue={defaults.religion ?? ''}
                             className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
-                            <option value="">Select religion</option>
-                            <option value="Islam">Islam</option>
-                            <option value="Kristen">Kristen</option>
-                            <option value="Katolik">Katolik</option>
-                            <option value="Hindu">Hindu</option>
-                            <option value="Buddha">Buddha</option>
-                            <option value="Konghucu">Konghucu</option>
+                            <option value="">
+                                {t('students.form.religion_placeholder')}
+                            </option>
+                            {RELIGIONS.map((religion) => (
+                                <option key={religion} value={religion}>
+                                    {t(`students.form.religions.${religion}`)}
+                                </option>
+                            ))}
                         </select>
                         <InputError message={errors.religion} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="address">Address (optional)</Label>
+                        <Label htmlFor="address">
+                            {t('students.form.address')}
+                        </Label>
                         <textarea
                             id="address"
                             name="address"
                             defaultValue={defaults.address ?? ''}
                             rows={3}
-                            placeholder="Home address"
+                            placeholder={t('students.form.address_placeholder')}
                             className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                         />
                         <InputError message={errors.address} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="student_number">
-                            Student number (optional)
+                            {t('students.form.student_number')}
                         </Label>
                         <Input
                             id="student_number"
                             name="student_number"
                             defaultValue={defaults.studentNumber}
                             autoComplete="off"
-                            placeholder="NIS — leading zeros are kept"
+                            placeholder={t(
+                                'students.form.student_number_placeholder',
+                            )}
                         />
                         <InputError message={errors.student_number} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="class_id">Class (optional)</Label>
+                        <Label htmlFor="class_id">
+                            {t('students.form.class')}
+                        </Label>
                         <select
                             id="class_id"
                             name="class_id"
                             defaultValue={defaults.classId}
                             className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                         >
-                            <option value="">No class yet</option>
+                            <option value="">
+                                {t('students.form.class_empty')}
+                            </option>
                             {classes.map((schoolClass) => (
                                 <option
                                     key={schoolClass.id}
@@ -184,11 +221,10 @@ export default function StudentForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Guardians</Label>
+                        <Label>{t('students.form.guardians')}</Label>
                         {guardians.length === 0 ? (
                             <p className="text-muted-foreground text-sm">
-                                No guardians recorded yet. Create guardians
-                                first to link them here.
+                                {t('students.form.guardians_empty')}
                             </p>
                         ) : (
                             <div className="grid gap-3">
@@ -230,7 +266,9 @@ export default function StudentForm({
                                                     htmlFor={`rel_${guardian.id}`}
                                                     className="text-muted-foreground text-xs"
                                                 >
-                                                    Relationship
+                                                    {t(
+                                                        'students.form.relationship',
+                                                    )}
                                                 </Label>
                                                 <select
                                                     id={`rel_${guardian.id}`}
@@ -240,15 +278,22 @@ export default function StudentForm({
                                                     }
                                                     className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-8 rounded-md border bg-transparent px-2 py-0.5 text-xs shadow-xs outline-none focus-visible:ring-[2px]"
                                                 >
-                                                    <option value="father">
-                                                        Ayah (Father)
-                                                    </option>
-                                                    <option value="mother">
-                                                        Ibu (Mother)
-                                                    </option>
-                                                    <option value="guardian">
-                                                        Wali (Guardian)
-                                                    </option>
+                                                    {RELATIONSHIPS.map(
+                                                        (relationship) => (
+                                                            <option
+                                                                key={
+                                                                    relationship
+                                                                }
+                                                                value={
+                                                                    relationship
+                                                                }
+                                                            >
+                                                                {t(
+                                                                    `students.form.relationships.${relationship}`,
+                                                                )}
+                                                            </option>
+                                                        ),
+                                                    )}
                                                 </select>
                                             </div>
                                         </div>
@@ -261,7 +306,7 @@ export default function StudentForm({
 
                     <div className="flex gap-3">
                         <Button variant="outline" asChild>
-                            <Link href={cancelUrl}>Cancel</Link>
+                            <Link href={cancelUrl}>{t('common.cancel')}</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}

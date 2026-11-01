@@ -10,4 +10,13 @@ return [
     'hide_password' => 'Sembunyikan kata sandi',
     'settings' => 'Pengaturan',
     'log_out' => 'Keluar',
+    'create' => 'Buat',
+    'delete' => 'Hapus',
+    'save_changes' => 'Simpan perubahan',
+    'name' => 'Nama',
+    'phone' => 'Telepon',
+    'gender' => [
+        'male' => 'Laki-laki',
+        'female' => 'Perempuan',
+    ],
 ];

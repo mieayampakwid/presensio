@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import StudentForm from './student-form';
 
 type ClassOption = {
@@ -20,20 +21,34 @@ type Props = {
 };
 
 export default function CreateStudent({ classes, guardians }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('students.index.title'),
+                href: StudentController.index().url,
+            },
+            {
+                title: t('common.create'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Create student" />
+            <Head title={t('students.create.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Create student"
-                    description="Link guardians so absence notifications reach the right people."
+                    title={t('students.create.title')}
+                    description={t('students.create.description')}
                 />
 
                 <StudentForm
                     action={StudentController.store.form()}
                     cancelUrl={StudentController.index().url}
-                    submitLabel="Create student"
+                    submitLabel={t('students.create.submit')}
                     defaults={{
                         fullName: '',
                         nickname: '',
@@ -52,15 +67,3 @@ export default function CreateStudent({ classes, guardians }: Props) {
         </>
     );
 }
-
-CreateStudent.layout = {
-    breadcrumbs: [
-        {
-            title: 'Students',
-            href: StudentController.index().url,
-        },
-        {
-            title: 'Create',
-        },
-    ],
-};

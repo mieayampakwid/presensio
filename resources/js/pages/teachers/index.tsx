@@ -1,10 +1,11 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import TeacherController from '@/actions/App/Http/Controllers/Teachers/TeacherController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     Dialog,
     DialogContent,
@@ -35,6 +36,17 @@ type Props = {
 
 export default function TeachersIndex({ teachers, filters }: Props) {
     const [deleting, setDeleting] = useState<TeacherRow | null>(null);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('teachers.index.title'),
+                href: TeacherController.index().url,
+            },
+        ],
+    });
+
     const destroy = (teacher: TeacherRow) => {
         router.delete(TeacherController.destroy({ teacher: teacher.id }).url, {
             preserveScroll: true,
@@ -43,18 +55,18 @@ export default function TeachersIndex({ teachers, filters }: Props) {
 
     return (
         <>
-            <Head title="Teachers" />
+            <Head title={t('teachers.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Teachers"
-                        description="Master data for homeroom assignment and login linking."
+                        title={t('teachers.index.title')}
+                        description={t('teachers.index.description')}
                     />
 
                     <Button asChild>
                         <Link href={TeacherController.create().url}>
-                            Create teacher
+                            {t('teachers.index.create')}
                         </Link>
                     </Button>
                 </div>
@@ -63,7 +75,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                     <Input
                         name="search"
                         defaultValue={filters.search}
-                        placeholder="Search by name, NIP/NUPTK, or phone…"
+                        placeholder={t('teachers.index.search_placeholder')}
                     />
                 </form>
 
@@ -72,13 +84,13 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Name
+                                    {t('common.name')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Teacher number
+                                    {t('teachers.index.columns.teacher_number')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Phone
+                                    {t('common.phone')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -111,7 +123,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Edit
+                                                        {t('common.edit')}
                                                     </span>
                                                 </Link>
                                             </Button>
@@ -126,7 +138,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Delete
+                                                    {t('common.delete')}
                                                 </span>
                                             </Button>
                                         </div>
@@ -140,7 +152,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                         colSpan={4}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No teachers found.
+                                        {t('teachers.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -150,7 +162,10 @@ export default function TeachersIndex({ teachers, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {teachers.current_page} of {teachers.last_page}
+                        {t('common.page_of', {
+                            current: teachers.current_page,
+                            last: teachers.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -162,7 +177,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                         >
                             <Link href={teachers.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -172,7 +187,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                             disabled={!teachers.next_page_url}
                         >
                             <Link href={teachers.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -184,18 +199,18 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete teacher</DialogTitle>
+                    <DialogTitle>{t('teachers.delete.title')}</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete "{deleting?.name}"?
-                        Teachers homerooming a class or linked to a login
-                        account cannot be deleted.
+                        {t('teachers.delete.description', {
+                            name: deleting?.name ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -206,7 +221,7 @@ export default function TeachersIndex({ teachers, filters }: Props) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -214,12 +229,3 @@ export default function TeachersIndex({ teachers, filters }: Props) {
         </>
     );
 }
-
-TeachersIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Teachers',
-            href: TeacherController.index().url,
-        },
-    ],
-};

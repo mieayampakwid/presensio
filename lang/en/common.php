@@ -10,4 +10,13 @@ return [
     'hide_password' => 'Hide password',
     'settings' => 'Settings',
     'log_out' => 'Log out',
+    'create' => 'Create',
+    'delete' => 'Delete',
+    'save_changes' => 'Save changes',
+    'name' => 'Name',
+    'phone' => 'Phone',
+    'gender' => [
+        'male' => 'Male',
+        'female' => 'Female',
+    ],
 ];

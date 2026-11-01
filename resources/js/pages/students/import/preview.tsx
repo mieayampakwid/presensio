@@ -1,9 +1,10 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import StudentImportController from '@/actions/App/Http/Controllers/Students/StudentImportController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 
 type ImportError = {
     row: number;
@@ -31,29 +32,51 @@ export default function ImportPreview({
     errors,
     rows,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('students.index.title'),
+                href: StudentController.index().url,
+            },
+            {
+                title: t('students.import.crumb'),
+                href: StudentImportController.create().url,
+            },
+            {
+                title: t('students.import.preview.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Preview import" />
+            <Head title={t('students.import.preview.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Preview import"
-                    description="Nothing is written yet. Review the summary, then run the import — valid rows commit, broken rows are skipped and reported."
+                    title={t('students.import.preview.title')}
+                    description={t('students.import.preview.description')}
                 />
 
                 <div className="flex flex-wrap items-center gap-4">
                     <Badge variant="secondary">
-                        {validCount} ready to import
+                        {t('students.import.preview.ready', {
+                            count: validCount,
+                        })}
                     </Badge>
                     <Badge
                         variant={errors.length > 0 ? 'destructive' : 'outline'}
                     >
-                        {errors.length} with errors
+                        {t('students.import.preview.with_errors', {
+                            count: errors.length,
+                        })}
                     </Badge>
                     <span className="text-muted-foreground text-sm">
-                        File type: .{extension}
+                        {t('students.import.preview.file_type', { extension })}
                         {options.auto_create_classes
-                            ? ' · auto-create classes on'
+                            ? ` · ${t('students.import.preview.auto_create_on')}`
                             : ''}
                     </span>
                 </div>
@@ -61,12 +84,15 @@ export default function ImportPreview({
                 {errors.length > 0 && (
                     <div className="border-destructive/40 bg-destructive/5 rounded-lg border p-4">
                         <p className="text-destructive mb-2 text-sm font-medium">
-                            Rows that will be skipped
+                            {t('students.import.preview.skipped')}
                         </p>
                         <ul className="text-destructive list-disc space-y-1 pl-5 text-sm">
                             {errors.map((error) => (
                                 <li key={error.row}>
-                                    Row {error.row}: {error.errors.join(' ')}
+                                    {t('students.import.preview.row_error', {
+                                        row: error.row,
+                                        errors: error.errors.join(' '),
+                                    })}
                                 </li>
                             ))}
                         </ul>
@@ -78,19 +104,23 @@ export default function ImportPreview({
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Full name
+                                    {t(
+                                        'students.import.preview.columns.full_name',
+                                    )}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Date of birth
+                                    {t('students.import.preview.columns.dob')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    NIS
+                                    {t('students.import.preview.columns.nis')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Class
+                                    {t('students.import.preview.columns.class')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Guardian
+                                    {t(
+                                        'students.import.preview.columns.guardian',
+                                    )}
                                 </th>
                             </tr>
                         </thead>
@@ -122,7 +152,7 @@ export default function ImportPreview({
                                         colSpan={5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Nothing to import.
+                                        {t('students.import.preview.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -155,12 +185,14 @@ export default function ImportPreview({
                                 disabled={processing || validCount === 0}
                             >
                                 {processing
-                                    ? 'Importing…'
-                                    : `Import ${validCount} students`}
+                                    ? t('students.import.preview.importing')
+                                    : t('students.import.preview.run', {
+                                          count: validCount,
+                                      })}
                             </Button>
                             <Button variant="outline" asChild>
                                 <a href={StudentImportController.create().url}>
-                                    Start over
+                                    {t('students.import.preview.start_over')}
                                 </a>
                             </Button>
                         </>
@@ -170,19 +202,3 @@ export default function ImportPreview({
         </>
     );
 }
-
-ImportPreview.layout = {
-    breadcrumbs: [
-        {
-            title: 'Students',
-            href: StudentController.index().url,
-        },
-        {
-            title: 'Import',
-            href: StudentImportController.create().url,
-        },
-        {
-            title: 'Preview',
-        },
-    ],
-};
