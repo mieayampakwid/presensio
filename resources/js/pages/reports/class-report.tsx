@@ -1,10 +1,11 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import { type ChangeEvent } from 'react';
 import ClassReportController from '@/actions/App/Http/Controllers/Reports/ClassReportController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 import { STATUS_BADGES } from '@/lib/attendance';
 
 type ClassOption = {
@@ -69,12 +70,12 @@ const VARIANT_CELL: Record<
     outline: 'border border-foreground/40',
 };
 
-const SUMMARY_COLUMNS: { key: keyof Counts; label: string }[] = [
-    { key: 'present', label: 'Present' },
-    { key: 'late', label: 'Late' },
-    { key: 'absent', label: 'Absent' },
-    { key: 'sick', label: 'Sick' },
-    { key: 'leave', label: 'Leave' },
+const SUMMARY_COLUMNS: { key: keyof Counts }[] = [
+    { key: 'present' },
+    { key: 'late' },
+    { key: 'absent' },
+    { key: 'sick' },
+    { key: 'leave' },
 ];
 
 export default function ClassReport({
@@ -83,6 +84,17 @@ export default function ClassReport({
     filters,
     report,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('reports.class_report.title'),
+                href: ClassReportController.index().url,
+            },
+        ],
+    });
+
     const submitFilters = (
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
@@ -104,13 +116,13 @@ export default function ClassReport({
 
     return (
         <>
-            <Head title="Class Report" />
+            <Head title={t('reports.class_report.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Class Report"
-                        description="Per-student counts and the students × dates grid."
+                        title={t('reports.class_report.title')}
+                        description={t('reports.class_report.description')}
                     />
 
                     {filters.class_id !== null && (
@@ -123,14 +135,16 @@ export default function ClassReport({
                                     }).url;
                             }}
                         >
-                            Export CSV
+                            {t('reports.class_report.export_csv')}
                         </Button>
                     )}
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="year_id">Academic year</Label>
+                        <Label htmlFor="year_id">
+                            {t('reports.class_report.filters.academic_year')}
+                        </Label>
                         <select
                             id="year_id"
                             name="year_id"
@@ -141,14 +155,20 @@ export default function ClassReport({
                             {years.map((year) => (
                                 <option key={year.id} value={year.id}>
                                     {year.name}
-                                    {year.is_active ? ' — active' : ''}
+                                    {year.is_active
+                                        ? t(
+                                              'reports.class_report.filters.active_suffix',
+                                          )
+                                        : ''}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="class_id">Class</Label>
+                        <Label htmlFor="class_id">
+                            {t('reports.class_report.filters.class')}
+                        </Label>
                         <select
                             id="class_id"
                             name="class_id"
@@ -165,7 +185,9 @@ export default function ClassReport({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="from">From</Label>
+                        <Label htmlFor="from">
+                            {t('reports.class_report.filters.from')}
+                        </Label>
                         <Input
                             id="from"
                             type="date"
@@ -176,7 +198,9 @@ export default function ClassReport({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="to">To</Label>
+                        <Label htmlFor="to">
+                            {t('reports.class_report.filters.to')}
+                        </Label>
                         <Input
                             id="to"
                             type="date"
@@ -198,14 +222,14 @@ export default function ClassReport({
                             className="accent-primary size-4"
                         />
                         <Label htmlFor="include_excused">
-                            Include sick/leave in rate
+                            {t('reports.class_report.filters.include_excused')}
                         </Label>
                     </div>
                 </form>
 
                 {report === null ? (
                     <p className="text-muted-foreground text-sm">
-                        No classes yet.
+                        {t('reports.class_report.empty')}
                     </p>
                 ) : (
                     <>
@@ -214,18 +238,24 @@ export default function ClassReport({
                                 <thead className="bg-muted/50 text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Student
+                                            {t(
+                                                'reports.class_report.columns.student',
+                                            )}
                                         </th>
                                         {SUMMARY_COLUMNS.map((column) => (
                                             <th
                                                 key={column.key}
                                                 className="px-4 py-3 text-left font-medium"
                                             >
-                                                {column.label}
+                                                {t(
+                                                    `reports.class_report.summary.${column.key}`,
+                                                )}
                                             </th>
                                         ))}
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Rate
+                                            {t(
+                                                'reports.class_report.columns.rate',
+                                            )}
                                         </th>
                                     </tr>
                                 </thead>
@@ -262,7 +292,9 @@ export default function ClassReport({
                                                 colSpan={7}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
-                                                No students in this class.
+                                                {t(
+                                                    'reports.class_report.no_students',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -275,7 +307,9 @@ export default function ClassReport({
                                 <thead className="bg-muted/50 text-muted-foreground">
                                     <tr>
                                         <th className="bg-muted/50 sticky left-0 px-4 py-3 text-left font-medium">
-                                            Student
+                                            {t(
+                                                'reports.class_report.columns.student',
+                                            )}
                                         </th>
                                         {report.dates.map((date) => (
                                             <th
@@ -312,8 +346,12 @@ export default function ClassReport({
                                                         title={`${date} — ${
                                                             badge?.label ??
                                                             (isNonSchool
-                                                                ? 'Non-school day'
-                                                                : 'No record')
+                                                                ? t(
+                                                                      'reports.class_report.legend.non_school_day',
+                                                                  )
+                                                                : t(
+                                                                      'reports.class_report.legend.no_record',
+                                                                  ))
                                                         }`}
                                                         className={`size-6 min-w-6 p-0 text-center ${
                                                             isNonSchool
@@ -352,11 +390,13 @@ export default function ClassReport({
                             )}
                             <span className="flex items-center gap-1.5">
                                 <span className="bg-muted/60 inline-block size-3 rounded-sm" />
-                                Non-school day
+                                {t(
+                                    'reports.class_report.legend.non_school_day',
+                                )}
                             </span>
                             <span className="flex items-center gap-1.5">
                                 <span className="border-border inline-block size-3 rounded-sm border" />
-                                No record
+                                {t('reports.class_report.legend.no_record')}
                             </span>
                         </div>
                     </>
@@ -365,12 +405,3 @@ export default function ClassReport({
         </>
     );
 }
-
-ClassReport.layout = {
-    breadcrumbs: [
-        {
-            title: 'Class Report',
-            href: ClassReportController.index().url,
-        },
-    ],
-};

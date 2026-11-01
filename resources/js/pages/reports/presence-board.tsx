@@ -1,9 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useEffect } from 'react';
 import PresenceBoardController from '@/actions/App/Http/Controllers/Reports/PresenceBoardController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from '@/hooks/use-translation';
 import { STATUS_BADGES } from '@/lib/attendance';
 
 type NotInStudent = {
@@ -42,6 +43,8 @@ type Props = {
 const REFRESH_MS = 30000;
 
 export default function PresenceBoard({ board, is_school_day }: Props) {
+    const { t } = useTranslation();
+
     // A wall screen — polls unconditionally, non-school days included.
     useEffect(() => {
         const refresh = setInterval(() => {
@@ -51,28 +54,39 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
         return () => clearInterval(refresh);
     }, []);
 
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('reports.presence_board.title'),
+                href: PresenceBoardController.index().url,
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Presence Board" />
+            <Head title={t('reports.presence_board.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Presence Board"
-                        description="Today as it happens — the in-building count doubles as the evacuation headcount."
+                        title={t('reports.presence_board.title')}
+                        description={t('reports.presence_board.description')}
                     />
 
                     <div className="text-muted-foreground text-right text-sm">
                         <div className="text-foreground font-medium">
-                            As of {board.as_of}
+                            {t('reports.presence_board.as_of', {
+                                time: board.as_of,
+                            })}
                         </div>
-                        <div>Auto-refreshes every 30 seconds</div>
+                        <div>{t('reports.presence_board.auto_refresh')}</div>
                     </div>
                 </div>
 
                 {!is_school_day && (
                     <p className="text-muted-foreground rounded-lg border px-4 py-3 text-sm">
-                        Not a school day — attendance is not being taken.
+                        {t('reports.presence_board.not_school_day')}
                     </p>
                 )}
 
@@ -81,7 +95,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    In building — evacuation headcount
+                                    {t(
+                                        'reports.presence_board.in_building_headcount',
+                                    )}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.in_building}
@@ -91,7 +107,7 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Checked out
+                                    {t('reports.presence_board.checked_out')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.checked_out}
@@ -101,7 +117,7 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Not checked in
+                                    {t('reports.presence_board.not_checked_in')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.not_checked_in}
@@ -111,7 +127,7 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                                    Enrolled
+                                    {t('reports.presence_board.enrolled')}
                                 </CardTitle>
                                 <CardTitle className="text-4xl">
                                     {board.totals.enrolled}
@@ -128,7 +144,12 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                 <div className="flex items-center justify-between">
                                     <CardTitle>{schoolClass.name}</CardTitle>
                                     <Badge variant="secondary">
-                                        {schoolClass.enrolled} enrolled
+                                        {t(
+                                            'reports.presence_board.enrolled_badge',
+                                            {
+                                                count: schoolClass.enrolled,
+                                            },
+                                        )}
                                     </Badge>
                                 </div>
                             </CardHeader>
@@ -139,7 +160,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                             {schoolClass.in_building}
                                         </div>
                                         <div className="text-xs opacity-80">
-                                            In building
+                                            {t(
+                                                'reports.presence_board.in_building',
+                                            )}
                                         </div>
                                     </div>
                                     <div className="rounded-md border px-2 py-3">
@@ -147,7 +170,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                             {schoolClass.checked_out}
                                         </div>
                                         <div className="text-muted-foreground text-xs">
-                                            Checked out
+                                            {t(
+                                                'reports.presence_board.checked_out',
+                                            )}
                                         </div>
                                     </div>
                                     <div className="rounded-md border px-2 py-3">
@@ -155,7 +180,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                             {schoolClass.not_checked_in}
                                         </div>
                                         <div className="text-muted-foreground text-xs">
-                                            Not checked in
+                                            {t(
+                                                'reports.presence_board.not_checked_in',
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -163,7 +190,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                 {schoolClass.not_in.length > 0 && (
                                     <div>
                                         <div className="text-muted-foreground mb-2 text-xs font-medium">
-                                            Not yet checked in
+                                            {t(
+                                                'reports.presence_board.not_yet_checked_in',
+                                            )}
                                         </div>
                                         <ul className="space-y-1.5">
                                             {schoolClass.not_in.map(
@@ -195,7 +224,9 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
                                                             </Badge>
                                                         ) : (
                                                             <span className="text-muted-foreground text-xs">
-                                                                No record yet
+                                                                {t(
+                                                                    'reports.presence_board.no_record',
+                                                                )}
                                                             </span>
                                                         )}
                                                     </li>
@@ -210,7 +241,7 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
 
                     {board.classes.length === 0 && (
                         <p className="text-muted-foreground text-sm">
-                            No classes assigned to you.
+                            {t('reports.presence_board.empty')}
                         </p>
                     )}
                 </div>
@@ -218,12 +249,3 @@ export default function PresenceBoard({ board, is_school_day }: Props) {
         </>
     );
 }
-
-PresenceBoard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Presence Board',
-            href: PresenceBoardController.index().url,
-        },
-    ],
-};

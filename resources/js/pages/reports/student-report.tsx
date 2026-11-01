@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, setLayoutProps, usePage } from '@inertiajs/react';
 import { Search, UserRoundX } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import StudentReportController from '@/actions/App/Http/Controllers/Reports/StudentReportController';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 import { METHOD_LABELS, STATUS_BADGES } from '@/lib/attendance';
 import type { Auth } from '@/types';
 
@@ -74,7 +75,17 @@ export default function StudentReport({
     records,
 }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('reports.student_report.title'),
+                href: StudentReportController.index().url,
+            },
+        ],
+    });
 
     const submitFilters = (
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
@@ -103,13 +114,13 @@ export default function StudentReport({
 
     return (
         <>
-            <Head title="Student Report" />
+            <Head title={t('reports.student_report.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
-                        title="Student Report"
-                        description="Status counts, the attendance rate, and the day-by-day records."
+                        title={t('reports.student_report.title')}
+                        description={t('reports.student_report.description')}
                     />
 
                     {filters.student_id !== null && (
@@ -122,7 +133,7 @@ export default function StudentReport({
                                     }).url;
                             }}
                         >
-                            Export CSV
+                            {t('reports.student_report.export_csv')}
                         </Button>
                     )}
                 </div>
@@ -134,14 +145,20 @@ export default function StudentReport({
                             <p className="text-foreground text-sm font-medium">
                                 {auth.user.role === 'student' ||
                                 auth.user.role === 'parent'
-                                    ? 'No student profile linked'
-                                    : 'No students yet'}
+                                    ? t(
+                                          'reports.student_report.empty.no_profile',
+                                      )
+                                    : t('reports.student_report.empty.none')}
                             </p>
                             <p className="text-sm">
                                 {auth.user.role === 'student' ||
                                 auth.user.role === 'parent'
-                                    ? 'Your account is not linked to a student profile yet. Ask the school office to connect it.'
-                                    : 'Add students to see their attendance reports.'}
+                                    ? t(
+                                          'reports.student_report.empty.no_profile_body',
+                                      )
+                                    : t(
+                                          'reports.student_report.empty.none_body',
+                                      )}
                             </p>
                         </CardContent>
                     </Card>
@@ -152,7 +169,9 @@ export default function StudentReport({
                                 {auth.user.role !== 'student' && (
                                     <div className="grid gap-2">
                                         <Label htmlFor="student-search">
-                                            Find student
+                                            {t(
+                                                'reports.student_report.filters.find_student',
+                                            )}
                                         </Label>
                                         <div className="relative">
                                             <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-2.5 size-4" />
@@ -164,7 +183,9 @@ export default function StudentReport({
                                                         event.target.value,
                                                     )
                                                 }
-                                                placeholder="Name or NIS…"
+                                                placeholder={t(
+                                                    'reports.student_report.filters.search_placeholder',
+                                                )}
                                                 className="w-56 pl-8"
                                             />
                                         </div>
@@ -174,7 +195,9 @@ export default function StudentReport({
                                 {auth.user.role !== 'student' && (
                                     <div className="grid gap-2">
                                         <Label htmlFor="student_id">
-                                            Student
+                                            {t(
+                                                'reports.student_report.filters.student',
+                                            )}
                                         </Label>
                                         <select
                                             id="student_id"
@@ -201,7 +224,11 @@ export default function StudentReport({
                                 )}
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="from">From</Label>
+                                    <Label htmlFor="from">
+                                        {t(
+                                            'reports.student_report.filters.from',
+                                        )}
+                                    </Label>
                                     <Input
                                         id="from"
                                         type="date"
@@ -212,7 +239,9 @@ export default function StudentReport({
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="to">To</Label>
+                                    <Label htmlFor="to">
+                                        {t('reports.student_report.filters.to')}
+                                    </Label>
                                     <Input
                                         id="to"
                                         type="date"
@@ -234,7 +263,9 @@ export default function StudentReport({
                                         className="accent-primary size-4"
                                     />
                                     <Label htmlFor="include_excused">
-                                        Include sick/leave in rate
+                                        {t(
+                                            'reports.student_report.filters.include_excused',
+                                        )}
                                     </Label>
                                 </div>
                             </form>
@@ -242,7 +273,7 @@ export default function StudentReport({
 
                         {summary === null ? (
                             <p className="text-muted-foreground text-sm">
-                                Pick a student to see their report.
+                                {t('reports.student_report.pick_student')}
                             </p>
                         ) : (
                             <>
@@ -262,7 +293,9 @@ export default function StudentReport({
                                     <Card>
                                         <CardHeader className="pb-2">
                                             <CardDescription>
-                                                Attendance rate
+                                                {t(
+                                                    'reports.student_report.attendance_rate',
+                                                )}
                                             </CardDescription>
                                             <CardTitle className="text-3xl">
                                                 {summary.rate === null
@@ -271,10 +304,16 @@ export default function StudentReport({
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="text-muted-foreground text-xs">
-                                            (present + late)
+                                            {t(
+                                                'reports.student_report.rate_formula',
+                                            )}
                                             {filters.include_excused
-                                                ? ' ÷ all records'
-                                                : ' ÷ present + late + absent'}
+                                                ? t(
+                                                      'reports.student_report.rate_formula_all',
+                                                  )
+                                                : t(
+                                                      'reports.student_report.rate_formula_strict',
+                                                  )}
                                         </CardContent>
                                     </Card>
                                 </div>
@@ -284,19 +323,29 @@ export default function StudentReport({
                                         <thead className="bg-muted/50 text-muted-foreground">
                                             <tr>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Date
+                                                    {t(
+                                                        'reports.student_report.columns.date',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Status
+                                                    {t(
+                                                        'reports.student_report.columns.status',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Check-in
+                                                    {t(
+                                                        'reports.student_report.columns.check_in',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Check-out
+                                                    {t(
+                                                        'reports.student_report.columns.check_out',
+                                                    )}
                                                 </th>
                                                 <th className="px-4 py-3 text-left font-medium">
-                                                    Method
+                                                    {t(
+                                                        'reports.student_report.columns.method',
+                                                    )}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -351,8 +400,9 @@ export default function StudentReport({
                                                         colSpan={5}
                                                         className="text-muted-foreground px-4 py-8 text-center"
                                                     >
-                                                        No records in this
-                                                        period.
+                                                        {t(
+                                                            'reports.student_report.empty_records',
+                                                        )}
                                                     </td>
                                                 </tr>
                                             )}
@@ -367,12 +417,3 @@ export default function StudentReport({
         </>
     );
 }
-
-StudentReport.layout = {
-    breadcrumbs: [
-        {
-            title: 'Student Report',
-            href: StudentReportController.index().url,
-        },
-    ],
-};
