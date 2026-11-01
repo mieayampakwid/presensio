@@ -37,16 +37,6 @@ type EmployeeFormProps = {
     cancelUrl: string;
 };
 
-const DAY_NAMES: Record<number, string> = {
-    1: 'Senin',
-    2: 'Selasa',
-    3: 'Rabu',
-    4: 'Kamis',
-    5: 'Jumat',
-    6: 'Sabtu',
-    7: 'Minggu',
-};
-
 const DEFAULT_EMPLOYMENT_TYPES: Option[] = [
     { value: 'pns', label: 'PNS' },
     { value: 'pppk', label: 'PPPK' },
@@ -93,9 +83,7 @@ export default function EmployeeForm({
             {({ processing, errors }) => (
                 <div className="grid max-w-2xl gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">
-                            Nama Lengkap (dengan gelar)
-                        </Label>
+                        <Label htmlFor="name">{t('employees.form.name')}</Label>
                         <Input
                             id="name"
                             name="name"
@@ -103,7 +91,7 @@ export default function EmployeeForm({
                             required
                             autoFocus
                             autoComplete="off"
-                            placeholder="e.g. Budi Santoso, S.Pd."
+                            placeholder={t('employees.form.name_placeholder')}
                         />
                         <InputError message={errors.name} />
                     </div>
@@ -111,28 +99,32 @@ export default function EmployeeForm({
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
                             <Label htmlFor="employee_number">
-                                Nomor Identitas Pegawai (NIP / NUPTK / NIY)
+                                {t('employees.form.employee_number')}
                             </Label>
                             <Input
                                 id="employee_number"
                                 name="employee_number"
                                 defaultValue={defaults.employeeNumber ?? ''}
                                 autoComplete="off"
-                                placeholder="e.g. 197501012000031002"
+                                placeholder={t(
+                                    'employees.form.employee_number_placeholder',
+                                )}
                             />
                             <InputError message={errors.employee_number} />
                         </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="phone_number">
-                                Nomor Telepon / WhatsApp
+                                {t('employees.form.phone')}
                             </Label>
                             <Input
                                 id="phone_number"
                                 name="phone_number"
                                 defaultValue={defaults.phoneNumber ?? ''}
                                 autoComplete="off"
-                                placeholder="e.g. +6281234567890"
+                                placeholder={t(
+                                    'employees.form.phone_placeholder',
+                                )}
                             />
                             <InputError message={errors.phone_number} />
                         </div>
@@ -141,7 +133,7 @@ export default function EmployeeForm({
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
                             <Label htmlFor="employment_type">
-                                Status Kepegawaian
+                                {t('employees.form.employment_type')}
                             </Label>
                             <select
                                 id="employment_type"
@@ -154,7 +146,9 @@ export default function EmployeeForm({
                             >
                                 {employmentTypes.map((type) => (
                                     <option key={type.value} value={type.value}>
-                                        {type.label}
+                                        {t(
+                                            `employees.employment_type.${type.value}`,
+                                        )}
                                     </option>
                                 ))}
                             </select>
@@ -162,13 +156,17 @@ export default function EmployeeForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="position">Jabatan / Posisi</Label>
+                            <Label htmlFor="position">
+                                {t('employees.form.position')}
+                            </Label>
                             <Input
                                 id="position"
                                 name="position"
                                 defaultValue={defaults.position ?? ''}
                                 autoComplete="off"
-                                placeholder="e.g. Guru Kelas / Staf TU / Satpam"
+                                placeholder={t(
+                                    'employees.form.position_placeholder',
+                                )}
                             />
                             <InputError message={errors.position} />
                         </div>
@@ -177,7 +175,7 @@ export default function EmployeeForm({
                     {availableUsers.length > 0 && (
                         <div className="grid gap-2">
                             <Label htmlFor="user_id">
-                                Akun Login Pengguna (Opsional)
+                                {t('employees.form.user')}
                             </Label>
                             <select
                                 id="user_id"
@@ -186,7 +184,7 @@ export default function EmployeeForm({
                                 className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             >
                                 <option value="">
-                                    Belum ditautkan ke akun
+                                    {t('employees.form.user_empty')}
                                 </option>
                                 {availableUsers.map((u) => (
                                     <option key={u.id} value={u.id}>
@@ -201,7 +199,7 @@ export default function EmployeeForm({
                     {shifts.length > 0 && (
                         <div className="grid gap-2">
                             <Label htmlFor="shift_id">
-                                Shift Kerja (Opsional)
+                                {t('employees.form.shift')}
                             </Label>
                             <select
                                 id="shift_id"
@@ -210,7 +208,7 @@ export default function EmployeeForm({
                                 className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             >
                                 <option value="">
-                                    Tanpa shift (jam kerja umum)
+                                    {t('employees.form.shift_empty')}
                                 </option>
                                 {shifts.map((shift) => (
                                     <option key={shift.id} value={shift.id}>
@@ -223,7 +221,7 @@ export default function EmployeeForm({
                     )}
 
                     <div className="space-y-3 rounded-lg border p-4">
-                        <Label>Hari Kerja Pegawai</Label>
+                        <Label>{t('employees.form.working_days')}</Label>
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 id="all_operational"
@@ -240,14 +238,14 @@ export default function EmployeeForm({
                                 htmlFor="all_operational"
                                 className="cursor-pointer text-sm font-medium select-none"
                             >
-                                Mengikuti semua hari operasional sekolah
+                                {t('employees.form.all_operational')}
                             </label>
                         </div>
 
                         {!allOperational && (
                             <div className="pt-2">
                                 <p className="text-muted-foreground mb-2 text-xs">
-                                    Pilih hari kerja khusus untuk pegawai ini:
+                                    {t('employees.form.custom_days_hint')}
                                 </p>
                                 <div className="flex flex-wrap gap-4">
                                     {operationalDays.map((day) => (
@@ -268,8 +266,7 @@ export default function EmployeeForm({
                                                 htmlFor={`day_${day}`}
                                                 className="cursor-pointer text-sm select-none"
                                             >
-                                                {DAY_NAMES[day] ??
-                                                    `Hari ${day}`}
+                                                {t(`timetable.weekdays.${day}`)}
                                             </label>
                                         </div>
                                     ))}
@@ -298,7 +295,7 @@ export default function EmployeeForm({
                     </div>
 
                     <div className="space-y-4 rounded-lg border p-4">
-                        <Label>Konfigurasi Peran & Status</Label>
+                        <Label>{t('employees.form.roles')}</Label>
                         <div className="flex flex-col gap-3">
                             {!lockIsTeacher ? (
                                 <div className="flex items-center gap-2">
@@ -318,8 +315,7 @@ export default function EmployeeForm({
                                         htmlFor="is_teacher"
                                         className="cursor-pointer text-sm select-none"
                                     >
-                                        Pegawai ini adalah Guru / Tenaga
-                                        Pengajar
+                                        {t('employees.form.is_teacher')}
                                     </label>
                                 </div>
                             ) : (
@@ -348,7 +344,7 @@ export default function EmployeeForm({
                                     htmlFor="is_active"
                                     className="cursor-pointer text-sm select-none"
                                 >
-                                    Status Aktif
+                                    {t('employees.form.is_active')}
                                 </label>
                             </div>
                             <InputError message={errors.is_active} />

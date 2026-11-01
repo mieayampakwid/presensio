@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import EmployeeForm from './employee-form';
 
 type Option = { value: string; label: string };
@@ -36,14 +37,30 @@ export default function EditEmployee({
     available_users,
     shifts,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('employees.index.title'),
+                href: EmployeeController.index().url,
+            },
+            {
+                title: t('employees.edit.breadcrumb'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title={`Edit Pegawai - ${employee.name}`} />
+            <Head
+                title={t('employees.edit.head_title', { name: employee.name })}
+            />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Edit Pegawai"
-                    description="Perbarui informasi guru atau tenaga kependidikan."
+                    title={t('employees.edit.title')}
+                    description={t('employees.edit.description')}
                 />
 
                 <EmployeeForm
@@ -51,7 +68,7 @@ export default function EditEmployee({
                         employee: employee.id,
                     })}
                     cancelUrl={EmployeeController.index().url}
-                    submitLabel="Simpan Perubahan"
+                    submitLabel={t('common.save_changes')}
                     defaults={{
                         name: employee.name,
                         employeeNumber: employee.employee_number,
@@ -73,15 +90,3 @@ export default function EditEmployee({
         </>
     );
 }
-
-EditEmployee.layout = {
-    breadcrumbs: [
-        {
-            title: 'Pegawai',
-            href: EmployeeController.index().url,
-        },
-        {
-            title: 'Edit',
-        },
-    ],
-};

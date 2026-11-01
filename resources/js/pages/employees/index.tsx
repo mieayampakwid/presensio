@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 
 type EmployeeRow = {
     id: number;
@@ -44,6 +45,17 @@ type Props = {
 
 export default function EmployeesIndex({ employees, filters }: Props) {
     const [deleting, setDeleting] = useState<EmployeeRow | null>(null);
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('employees.index.title'),
+                href: EmployeeController.index().url,
+            },
+        ],
+    });
+
     const destroy = (employee: EmployeeRow) => {
         router.delete(
             EmployeeController.destroy({ employee: employee.id }).url,
@@ -64,19 +76,19 @@ export default function EmployeesIndex({ employees, filters }: Props) {
 
     return (
         <>
-            <Head title="Pegawai & Guru" />
+            <Head title={t('employees.index.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Pegawai & Guru"
-                        description="Data induk pendidik (guru) dan tenaga kependidikan (tendik)."
+                        title={t('employees.index.title')}
+                        description={t('employees.index.description')}
                     />
 
                     <Button asChild>
                         <Link href={EmployeeController.create().url}>
                             <Plus className="mr-2 h-4 w-4" />
-                            Tambah Pegawai
+                            {t('employees.index.create')}
                         </Link>
                     </Button>
                 </div>
@@ -84,7 +96,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                 <div className="max-w-sm">
                     <Input
                         defaultValue={filters.search}
-                        placeholder="Cari berdasarkan nama, NIP, atau jabatan…"
+                        placeholder={t('employees.index.search_placeholder')}
                         onChange={submitFilters}
                     />
                 </div>
@@ -94,19 +106,19 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Nama / NIP
+                                    {t('employees.index.columns.name')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Kontak
+                                    {t('employees.index.columns.contact')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Jabatan & Status
+                                    {t('employees.index.columns.position')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Akun Login
+                                    {t('employees.index.columns.account')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Aksi
+                                    {t('employees.index.columns.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -137,7 +149,9 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                                         variant="secondary"
                                                         className="text-xs"
                                                     >
-                                                        Guru
+                                                        {t(
+                                                            'employees.index.teacher',
+                                                        )}
                                                     </Badge>
                                                 )}
                                                 {!emp.is_active && (
@@ -145,16 +159,25 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                                         variant="destructive"
                                                         className="text-xs"
                                                     >
-                                                        Non-Aktif
+                                                        {t(
+                                                            'employees.index.inactive',
+                                                        )}
                                                     </Badge>
                                                 )}
                                             </div>
                                             <span className="text-muted-foreground text-xs">
-                                                {emp.employment_type_label}
+                                                {t(
+                                                    `employees.employment_type.${emp.employment_type}`,
+                                                )}
                                             </span>
                                             {emp.shift_name && (
                                                 <span className="text-muted-foreground text-xs">
-                                                    Shift: {emp.shift_name}
+                                                    {t(
+                                                        'employees.index.shift',
+                                                        {
+                                                            name: emp.shift_name,
+                                                        },
+                                                    )}
                                                 </span>
                                             )}
                                         </div>
@@ -187,7 +210,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Edit
+                                                        {t('common.edit')}
                                                     </span>
                                                 </Link>
                                             </Button>
@@ -200,7 +223,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Hapus
+                                                    {t('common.delete')}
                                                 </span>
                                             </Button>
                                         </div>
@@ -214,7 +237,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                         colSpan={5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Tidak ada data pegawai.
+                                        {t('employees.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -224,8 +247,10 @@ export default function EmployeesIndex({ employees, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Halaman {employees.current_page} dari{' '}
-                        {employees.last_page}
+                        {t('common.page_of', {
+                            current: employees.current_page,
+                            last: employees.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -237,7 +262,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                         >
                             <Link href={employees.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Sebelumnya
+                                {t('common.previous')}
                             </Link>
                         </Button>
 
@@ -248,7 +273,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                             disabled={!employees.next_page_url}
                         >
                             <Link href={employees.next_page_url ?? '#'}>
-                                Berikutnya
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -260,19 +285,20 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Hapus Pegawai</DialogTitle>
+                    <DialogTitle>
+                        {t('employees.index.delete_title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Apakah Anda yakin ingin menghapus "{deleting?.name}"?
-                        Pegawai yang menjadi wali kelas, mengajar mata
-                        pelajaran, atau terhubung ke akun login tidak dapat
-                        dihapus.
+                        {t('employees.index.delete_description', {
+                            name: deleting?.name ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="secondary"
                             onClick={() => setDeleting(null)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -283,7 +309,7 @@ export default function EmployeesIndex({ employees, filters }: Props) {
                                 }
                             }}
                         >
-                            Hapus
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -291,12 +317,3 @@ export default function EmployeesIndex({ employees, filters }: Props) {
         </>
     );
 }
-
-EmployeesIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Pegawai',
-            href: EmployeeController.index().url,
-        },
-    ],
-};

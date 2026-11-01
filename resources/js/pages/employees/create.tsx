@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import EmployeeController from '@/actions/App/Http/Controllers/Employees/EmployeeController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import EmployeeForm from './employee-form';
 
 type Option = { value: string; label: string };
@@ -20,20 +21,34 @@ export default function CreateEmployee({
     available_users,
     shifts,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('employees.index.title'),
+                href: EmployeeController.index().url,
+            },
+            {
+                title: t('employees.create.breadcrumb'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Tambah Pegawai" />
+            <Head title={t('employees.create.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Tambah Pegawai"
-                    description="Tambahkan data master guru atau tenaga kependidikan."
+                    title={t('employees.create.title')}
+                    description={t('employees.create.description')}
                 />
 
                 <EmployeeForm
                     action={EmployeeController.store.form()}
                     cancelUrl={EmployeeController.index().url}
-                    submitLabel="Simpan Pegawai"
+                    submitLabel={t('employees.create.submit')}
                     defaults={{
                         name: '',
                         isTeacher: false,
@@ -48,15 +63,3 @@ export default function CreateEmployee({
         </>
     );
 }
-
-CreateEmployee.layout = {
-    breadcrumbs: [
-        {
-            title: 'Pegawai',
-            href: EmployeeController.index().url,
-        },
-        {
-            title: 'Tambah',
-        },
-    ],
-};
