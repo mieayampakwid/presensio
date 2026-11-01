@@ -60,6 +60,7 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 20 | [Work Shifts](20-work-shifts.md) | Draft v1.1 (2026-10-26) — reviewed against shipped spec 16, ready for implementation planning | Shift Scheduling & Per-Shift Sweep |
 | 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
 | 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Implemented 2026-10-23 (v1.3); accountant go-live review pending | Excess money held as liability, refund to guardian (amends 14) |
+| 23 | [Cashier Default Cash Account](23-cashier-default-account.md) | Draft v1.0 (2026-11-01) | Configurable cashier cash-account pre-selection (amends 14) |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 
