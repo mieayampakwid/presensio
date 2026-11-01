@@ -10,6 +10,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application running on PHP 8.5. You are an expert with the Laravel ecosystem. Always use the APIs that match the installed major version of each package — do not assume a version.
 
 Before relying on a package's API, confirm its installed version:
+
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
 - JS packages: check `package.json` for the installed versions.
 
@@ -85,7 +86,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
 - Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
+    - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
 
 === php rules ===
 
@@ -223,13 +224,12 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Full CI check: `composer ci:check` (JS check, TS types, then Pint, PHPStan, artisan tests).
 - Hooks in `.claude/settings.json` auto-run Pint on edited PHP and block edits to `.env*`, lockfiles and `resources/js/{actions,routes,wayfinder}`. Regenerate those with `sail artisan wayfinder:generate`, `composer`, or `npm`.
 - Navigation, Authorization & IA:
-  - Every new or updated user-facing surface MUST have a documented, clickable entry path in the UI for each authorized role persona. Direct URL access alone is considered incomplete implementation.
-  - Primary destinations (top-level entity listings, e.g. `/classes`, `/courses`, `/attendance`) belong in `resources/js/components/app-sidebar.tsx` for all applicable roles.
-  - Contextual destinations / sub-resources (parameterized or per-entity actions, e.g. `/classes/{id}/report-cards`, `/courses/{id}/gradebook`): NEVER manufacture a fake sidebar item by redirecting to an arbitrary first record. Users must navigate via the parent listing (e.g. `/classes` table actions) or an explicit entity chooser.
-  - When opening a parent listing to new roles, ensure data is securely scoped (`ClassAccess::academicClassIds` for teachers) and mutation actions (create, edit, delete) remain strictly protected for authorized roles only (e.g. admin).
-  - UI verification for navigation changes requires door-to-door validation (Login/Switch Role → Dashboard/Sidebar → Parent Listing → Target Feature).
+    - Every new or updated user-facing surface MUST have a documented, clickable entry path in the UI for each authorized role persona. Direct URL access alone is considered incomplete implementation.
+    - Primary destinations (top-level entity listings, e.g. `/classes`, `/courses`, `/attendance`) belong in `resources/js/components/app-sidebar.tsx` for all applicable roles.
+    - Contextual destinations / sub-resources (parameterized or per-entity actions, e.g. `/classes/{id}/report-cards`, `/courses/{id}/gradebook`): NEVER manufacture a fake sidebar item by redirecting to an arbitrary first record. Users must navigate via the parent listing (e.g. `/classes` table actions) or an explicit entity chooser.
+    - When opening a parent listing to new roles, ensure data is securely scoped (`ClassAccess::academicClassIds` for teachers) and mutation actions (create, edit, delete) remain strictly protected for authorized roles only (e.g. admin).
+    - UI verification for navigation changes requires door-to-door validation (Login/Switch Role → Dashboard/Sidebar → Parent Listing → Target Feature).
 
 ## Multi-ADE session rule
 
 Several AI dev environments work in this repo (Claude Code, Codex, omp, agy). Shared state is git history and the `CLAUDE.md` status block. Check `git log` before starting; never assume the last commit is yours. An implementation session, in any ADE, is done only when commits are pushed and the status block records what shipped and what was verified. Vault MOC updates are swept by the daily Claude `/handoff`.
-
