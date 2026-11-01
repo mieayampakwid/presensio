@@ -1,4 +1,4 @@
-import { router, Head, Link } from '@inertiajs/react';
+import { router, Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import ExcuseReviewController from '@/actions/App/Http/Controllers/Excuses/ExcuseReviewController';
@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 import { STATUS_BADGES } from '@/lib/attendance';
-import { EXCUSE_STATUS_BADGES, EXCUSE_TYPE_LABELS } from '@/lib/excuses';
+import { EXCUSE_STATUS_BADGES } from '@/lib/excuses';
 
 type DayState = {
     date: string;
@@ -61,14 +62,17 @@ const TEXTAREA_CLASS =
     'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm';
 
 function StatusBadge({ status }: { status: string }) {
+    const { t } = useTranslation();
+
     return (
         <Badge variant={EXCUSE_STATUS_BADGES[status]?.variant ?? 'secondary'}>
-            {EXCUSE_STATUS_BADGES[status]?.label ?? status}
+            {t(`excuses.statuses.${status}`)}
         </Badge>
     );
 }
 
 export default function Excuses({ excuses, can_review }: Props) {
+    const { t } = useTranslation();
     const [target, setTarget] = useState<ReviewTarget | null>(null);
     const [note, setNote] = useState('');
     const [processing, setProcessing] = useState(false);
@@ -104,14 +108,22 @@ export default function Excuses({ excuses, can_review }: Props) {
         );
     };
 
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('excuses.index.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="Excuses" />
+            <Head title={t('excuses.index.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Excuses"
-                    description="Guardian-submitted sick and leave excuses. Approval updates attendance for every school day in the range."
+                    title={t('excuses.index.title')}
+                    description={t('excuses.index.description')}
                 />
 
                 <div className="overflow-x-auto rounded-lg border">
@@ -119,32 +131,34 @@ export default function Excuses({ excuses, can_review }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Student
+                                    {t('excuses.index.columns.student')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Dates
+                                    {t('excuses.index.columns.dates')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Category
+                                    {t('excuses.index.columns.category')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Reason
+                                    {t('excuses.index.columns.reason')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Attendance in range
+                                    {t(
+                                        'excuses.index.columns.attendance_in_range',
+                                    )}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Proof
+                                    {t('excuses.index.columns.proof')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('excuses.index.columns.status')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Review note
+                                    {t('excuses.index.columns.review_note')}
                                 </th>
                                 {can_review && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Actions
+                                        {t('excuses.index.columns.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -168,8 +182,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                                             : `${excuse.start_date} – ${excuse.end_date}`}
                                     </td>
                                     <td className="px-4 py-3">
-                                        {EXCUSE_TYPE_LABELS[excuse.type] ??
-                                            excuse.type}
+                                        {t(`excuses.types.${excuse.type}`)}
                                     </td>
                                     <td
                                         className="max-w-48 truncate px-4 py-3"
@@ -184,11 +197,12 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                     key={day.date}
                                                     title={`${day.date}: ${
                                                         day.status
-                                                            ? (STATUS_BADGES[
-                                                                  day.status
-                                                              ]?.label ??
-                                                              day.status)
-                                                            : 'No record'
+                                                            ? t(
+                                                                  `attendance.statuses.${day.status}`,
+                                                              )
+                                                            : t(
+                                                                  'attendance.index.no_record',
+                                                              )
                                                     }`}
                                                 >
                                                     <Badge
@@ -218,7 +232,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                 href={excuse.attachment_url}
                                                 className="text-primary underline-offset-4 hover:underline"
                                             >
-                                                Download
+                                                {t('excuses.index.download')}
                                             </a>
                                         ) : (
                                             <span className="text-muted-foreground">
@@ -246,7 +260,9 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                             });
                                                         }}
                                                     >
-                                                        Approve
+                                                        {t(
+                                                            'excuses.index.approve',
+                                                        )}
                                                     </Button>
                                                     <Button
                                                         size="sm"
@@ -260,7 +276,9 @@ export default function Excuses({ excuses, can_review }: Props) {
                                                             });
                                                         }}
                                                     >
-                                                        Reject
+                                                        {t(
+                                                            'excuses.index.reject',
+                                                        )}
                                                     </Button>
                                                 </div>
                                             ) : (
@@ -279,7 +297,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                                         colSpan={can_review ? 9 : 8}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No excuses submitted yet.
+                                        {t('excuses.index.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -289,7 +307,10 @@ export default function Excuses({ excuses, can_review }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {excuses.current_page} of {excuses.last_page}
+                        {t('common.page_of', {
+                            current: excuses.current_page,
+                            last: excuses.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -301,7 +322,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                         >
                             <Link href={excuses.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -311,7 +332,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                             disabled={!excuses.next_page_url}
                         >
                             <Link href={excuses.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -331,30 +352,38 @@ export default function Excuses({ excuses, can_review }: Props) {
                     <DialogHeader>
                         <DialogTitle>
                             {target?.action === 'approve'
-                                ? 'Approve excuse'
-                                : 'Reject excuse'}
+                                ? t('excuses.index.approve_title')
+                                : t('excuses.index.reject_title')}
                         </DialogTitle>
                         <DialogDescription>
                             {target?.action === 'approve'
-                                ? `Attendance for ${target.excuse.student_name} (${target.excuse.start_date} – ${target.excuse.end_date}) becomes ${
-                                      EXCUSE_TYPE_LABELS[target.excuse.type] ??
-                                      target.excuse.type
-                                  }. Existing records in the range are replaced.`
-                                : `Attendance for ${target?.excuse.student_name ?? ''} stays untouched.`}{' '}
-                            The review note is visible to the guardian.
+                                ? t('excuses.index.approve_description', {
+                                      name: target.excuse.student_name,
+                                      start: target.excuse.start_date,
+                                      end: target.excuse.end_date,
+                                      type: t(
+                                          `excuses.types.${target.excuse.type}`,
+                                      ),
+                                  })
+                                : t('excuses.index.reject_description', {
+                                      name: target?.excuse.student_name ?? '',
+                                  })}{' '}
+                            {t('excuses.index.review_note_visible')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-2">
                         <Label htmlFor="review_note">
-                            Review note (optional)
+                            {t('excuses.index.review_note_optional')}
                         </Label>
                         <textarea
                             id="review_note"
                             rows={3}
                             value={note}
                             onChange={(event) => setNote(event.target.value)}
-                            placeholder="e.g. Proof received — approved."
+                            placeholder={t(
+                                'excuses.index.review_note_placeholder',
+                            )}
                             className={TEXTAREA_CLASS}
                         />
                     </div>
@@ -365,7 +394,7 @@ export default function Excuses({ excuses, can_review }: Props) {
                             onClick={closeDialog}
                             disabled={processing}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant={
@@ -378,8 +407,8 @@ export default function Excuses({ excuses, can_review }: Props) {
                         >
                             {processing && <Spinner />}
                             {target?.action === 'approve'
-                                ? 'Approve'
-                                : 'Reject'}
+                                ? t('excuses.index.approve')
+                                : t('excuses.index.reject')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -387,11 +416,3 @@ export default function Excuses({ excuses, can_review }: Props) {
         </>
     );
 }
-
-Excuses.layout = {
-    breadcrumbs: [
-        {
-            title: 'Excuses',
-        },
-    ],
-};

@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, UserRoundX } from 'lucide-react';
 import GuardianExcuseController from '@/actions/App/Http/Controllers/Excuses/GuardianExcuseController';
 import Heading from '@/components/heading';
@@ -15,7 +15,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { EXCUSE_STATUS_BADGES, EXCUSE_TYPE_LABELS } from '@/lib/excuses';
+import { useTranslation } from '@/hooks/use-translation';
+import { EXCUSE_STATUS_BADGES } from '@/lib/excuses';
 
 const SELECT_CLASS =
     'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50';
@@ -58,22 +59,34 @@ type Props = {
 };
 
 function StatusBadge({ status }: { status: string }) {
+    const { t } = useTranslation();
+
     return (
         <Badge variant={EXCUSE_STATUS_BADGES[status]?.variant ?? 'secondary'}>
-            {EXCUSE_STATUS_BADGES[status]?.label ?? status}
+            {t(`excuses.statuses.${status}`)}
         </Badge>
     );
 }
 
 export default function MyExcuses({ children, excuses }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('excuses.my_excuses.title'),
+            },
+        ],
+    });
+
     return (
         <>
-            <Head title="My Excuses" />
+            <Head title={t('excuses.my_excuses.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="My Excuses"
-                    description="Submit sick or leave excuses for your children. An administrator reviews every submission."
+                    title={t('excuses.my_excuses.title')}
+                    description={t('excuses.my_excuses.description')}
                 />
 
                 {excuses === null ? (
@@ -81,11 +94,10 @@ export default function MyExcuses({ children, excuses }: Props) {
                         <CardContent className="text-muted-foreground flex flex-col items-center gap-3 py-12 text-center">
                             <UserRoundX className="size-10" />
                             <p className="text-foreground text-sm font-medium">
-                                No guardian profile linked
+                                {t('excuses.my_excuses.no_profile_title')}
                             </p>
                             <p className="text-sm">
-                                Your account is not linked to a guardian profile
-                                yet. Ask the school office to connect it.
+                                {t('excuses.my_excuses.no_profile_description')}
                             </p>
                         </CardContent>
                     </Card>
@@ -93,11 +105,11 @@ export default function MyExcuses({ children, excuses }: Props) {
                     <>
                         <Card className="max-w-2xl">
                             <CardHeader>
-                                <CardTitle>New excuse</CardTitle>
+                                <CardTitle>
+                                    {t('excuses.my_excuses.new_title')}
+                                </CardTitle>
                                 <CardDescription>
-                                    One child and one date range per submission.
-                                    Attach proof such as a doctor's note or
-                                    invitation (JPG, PNG, or PDF).
+                                    {t('excuses.my_excuses.new_description')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -110,7 +122,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                                             <div className="grid gap-4 sm:grid-cols-2">
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="student_id">
-                                                        Child
+                                                        {t(
+                                                            'excuses.my_excuses.child',
+                                                        )}
                                                     </Label>
                                                     <select
                                                         id="student_id"
@@ -123,7 +137,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                             value=""
                                                             disabled
                                                         >
-                                                            Select a child…
+                                                            {t(
+                                                                'excuses.my_excuses.child_placeholder',
+                                                            )}
                                                         </option>
                                                         {children.map(
                                                             (child) => (
@@ -154,7 +170,9 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="type">
-                                                        Category
+                                                        {t(
+                                                            'excuses.my_excuses.category',
+                                                        )}
                                                     </Label>
                                                     <select
                                                         id="type"
@@ -164,10 +182,14 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                         className={SELECT_CLASS}
                                                     >
                                                         <option value="sick">
-                                                            Sick (Sakit)
+                                                            {t(
+                                                                'excuses.types.sick',
+                                                            )}
                                                         </option>
                                                         <option value="leave">
-                                                            Leave (Izin)
+                                                            {t(
+                                                                'excuses.types.leave',
+                                                            )}
                                                         </option>
                                                     </select>
                                                     <InputError
@@ -177,7 +199,9 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="start_date">
-                                                        First day
+                                                        {t(
+                                                            'excuses.my_excuses.first_day',
+                                                        )}
                                                     </Label>
                                                     <Input
                                                         id="start_date"
@@ -194,7 +218,9 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="end_date">
-                                                        Last day
+                                                        {t(
+                                                            'excuses.my_excuses.last_day',
+                                                        )}
                                                     </Label>
                                                     <Input
                                                         id="end_date"
@@ -212,14 +238,18 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                                             <div className="grid gap-2">
                                                 <Label htmlFor="reason">
-                                                    Reason
+                                                    {t(
+                                                        'excuses.my_excuses.reason',
+                                                    )}
                                                 </Label>
                                                 <textarea
                                                     id="reason"
                                                     name="reason"
                                                     rows={3}
                                                     required
-                                                    placeholder="Tell the school why your child will be absent…"
+                                                    placeholder={t(
+                                                        'excuses.my_excuses.reason_placeholder',
+                                                    )}
                                                     className={TEXTAREA_CLASS}
                                                 />
                                                 <InputError
@@ -229,7 +259,9 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                                             <div className="grid gap-2">
                                                 <Label htmlFor="attachment">
-                                                    Proof (optional)
+                                                    {t(
+                                                        'excuses.my_excuses.proof_optional',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="attachment"
@@ -247,7 +279,7 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Submit excuse
+                                                {t('excuses.my_excuses.submit')}
                                             </Button>
                                         </div>
                                     )}
@@ -260,25 +292,39 @@ export default function MyExcuses({ children, excuses }: Props) {
                                 <thead className="bg-muted/50 text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Child
+                                            {t(
+                                                'excuses.my_excuses.columns.child',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Dates
+                                            {t(
+                                                'excuses.my_excuses.columns.dates',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Category
+                                            {t(
+                                                'excuses.my_excuses.columns.category',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Reason
+                                            {t(
+                                                'excuses.my_excuses.columns.reason',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Proof
+                                            {t(
+                                                'excuses.my_excuses.columns.proof',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Status
+                                            {t(
+                                                'excuses.my_excuses.columns.status',
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left font-medium">
-                                            Review note
+                                            {t(
+                                                'excuses.my_excuses.columns.review_note',
+                                            )}
                                         </th>
                                     </tr>
                                 </thead>
@@ -298,9 +344,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                     : `${excuse.start_date} – ${excuse.end_date}`}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {EXCUSE_TYPE_LABELS[
-                                                    excuse.type
-                                                ] ?? excuse.type}
+                                                {t(
+                                                    `excuses.types.${excuse.type}`,
+                                                )}
                                             </td>
                                             <td
                                                 className="max-w-48 truncate px-4 py-3"
@@ -316,7 +362,9 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                         }
                                                         className="text-primary underline-offset-4 hover:underline"
                                                     >
-                                                        Download
+                                                        {t(
+                                                            'excuses.index.download',
+                                                        )}
                                                     </a>
                                                 ) : (
                                                     <span className="text-muted-foreground">
@@ -341,7 +389,7 @@ export default function MyExcuses({ children, excuses }: Props) {
                                                 colSpan={7}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
-                                                No excuses submitted yet.
+                                                {t('excuses.my_excuses.empty')}
                                             </td>
                                         </tr>
                                     )}
@@ -351,8 +399,10 @@ export default function MyExcuses({ children, excuses }: Props) {
 
                         <div className="flex items-center justify-between">
                             <p className="text-muted-foreground text-sm">
-                                Page {excuses.current_page} of{' '}
-                                {excuses.last_page}
+                                {t('common.page_of', {
+                                    current: excuses.current_page,
+                                    last: excuses.last_page,
+                                })}
                             </p>
 
                             <div className="flex gap-2">
@@ -364,7 +414,7 @@ export default function MyExcuses({ children, excuses }: Props) {
                                 >
                                     <Link href={excuses.prev_page_url ?? '#'}>
                                         <ChevronLeft className="h-4 w-4" />
-                                        Previous
+                                        {t('common.previous')}
                                     </Link>
                                 </Button>
                                 <Button
@@ -374,7 +424,7 @@ export default function MyExcuses({ children, excuses }: Props) {
                                     disabled={!excuses.next_page_url}
                                 >
                                     <Link href={excuses.next_page_url ?? '#'}>
-                                        Next
+                                        {t('common.next')}
                                         <ChevronRight className="h-4 w-4" />
                                     </Link>
                                 </Button>
@@ -386,11 +436,3 @@ export default function MyExcuses({ children, excuses }: Props) {
         </>
     );
 }
-
-MyExcuses.layout = {
-    breadcrumbs: [
-        {
-            title: 'My Excuses',
-        },
-    ],
-};
