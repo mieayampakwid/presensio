@@ -10,6 +10,7 @@
         "check": "vp check",
         "check:fix": "vp check --fix",
         "types:check": "tsc --noEmit",
+        "test:i18n": "node tests/frontend/i18n-jsx-text.mjs",
         "test:scanner": "node --experimental-strip-types --test tests/frontend/scanner-*.test.mjs"
     },
     "dependencies": {

@@ -1,0 +1,1118 @@
+resources/js/pages/admin/audit-logs/index.tsx	Action
+resources/js/pages/admin/audit-logs/index.tsx	Actor
+resources/js/pages/admin/audit-logs/index.tsx	Changes
+resources/js/pages/admin/audit-logs/index.tsx	Entity ID
+resources/js/pages/admin/audit-logs/index.tsx	Entity Type
+resources/js/pages/admin/audit-logs/index.tsx	Filter
+resources/js/pages/admin/audit-logs/index.tsx	From Date
+resources/js/pages/admin/audit-logs/index.tsx	Next
+resources/js/pages/admin/audit-logs/index.tsx	No audit log entries found.
+resources/js/pages/admin/audit-logs/index.tsx	Page
+resources/js/pages/admin/audit-logs/index.tsx	Previous
+resources/js/pages/admin/audit-logs/index.tsx	Reason / IP
+resources/js/pages/admin/audit-logs/index.tsx	Reset
+resources/js/pages/admin/audit-logs/index.tsx	System
+resources/js/pages/admin/audit-logs/index.tsx	Target
+resources/js/pages/admin/audit-logs/index.tsx	Timestamp
+resources/js/pages/admin/audit-logs/index.tsx	To Date
+resources/js/pages/admin/audit-logs/index.tsx	User ID
+resources/js/pages/admin/audit-logs/index.tsx	entries)
+resources/js/pages/admin/audit-logs/index.tsx	of
+resources/js/pages/admin/notifications/deliveries.tsx	Berikutnya
+resources/js/pages/admin/notifications/deliveries.tsx	Detail / Error
+resources/js/pages/admin/notifications/deliveries.tsx	Halaman
+resources/js/pages/admin/notifications/deliveries.tsx	ID:
+resources/js/pages/admin/notifications/deliveries.tsx	Jadwal:
+resources/js/pages/admin/notifications/deliveries.tsx	Jenis
+resources/js/pages/admin/notifications/deliveries.tsx	Percobaan
+resources/js/pages/admin/notifications/deliveries.tsx	Saluran
+resources/js/pages/admin/notifications/deliveries.tsx	Sebelumnya
+resources/js/pages/admin/notifications/deliveries.tsx	Semua Jenis
+resources/js/pages/admin/notifications/deliveries.tsx	Semua Saluran
+resources/js/pages/admin/notifications/deliveries.tsx	Semua Status
+resources/js/pages/admin/notifications/deliveries.tsx	Status
+resources/js/pages/admin/notifications/deliveries.tsx	Tanggal
+resources/js/pages/admin/notifications/deliveries.tsx	Tidak ada riwayat pengiriman notifikasi yang cocok.
+resources/js/pages/admin/notifications/deliveries.tsx	Tujuan
+resources/js/pages/admin/notifications/deliveries.tsx	Waktu
+resources/js/pages/admin/notifications/deliveries.tsx	dari
+resources/js/pages/admin/notifications/deliveries.tsx	total)
+resources/js/pages/announcements/form.tsx	Batal
+resources/js/pages/announcements/form.tsx	Hapus lampiran:
+resources/js/pages/announcements/form.tsx	Isi pengumuman
+resources/js/pages/announcements/form.tsx	Judul
+resources/js/pages/announcements/form.tsx	Kelas
+resources/js/pages/announcements/form.tsx	Kelas tertentu
+resources/js/pages/announcements/form.tsx	Kirim notifikasi penting sesuai pengaturan kanal sekolah
+resources/js/pages/announcements/form.tsx	Kosongkan untuk menyimpan draf, atau pilih waktu mendatang untuk menjadwalkan.
+resources/js/pages/announcements/form.tsx	Lampiran PDF/JPG/PNG (maks. 5 MB)
+resources/js/pages/announcements/form.tsx	Mendukung Markdown: judul, daftar, penekanan, dan tautan. HTML dinonaktifkan.
+resources/js/pages/announcements/form.tsx	Minta konfirmasi membaca
+resources/js/pages/announcements/form.tsx	Penerbitan dan konfirmasi
+resources/js/pages/announcements/form.tsx	Penerima
+resources/js/pages/announcements/form.tsx	Pengumuman sudah terbit. Target, waktu terbit, dan aturan konfirmasi tetap; perubahan isi tidak meminta konfirmasi ulang.
+resources/js/pages/announcements/form.tsx	Peran
+resources/js/pages/announcements/form.tsx	Peran tertentu
+resources/js/pages/announcements/form.tsx	Periksa kolom formulir.
+resources/js/pages/announcements/form.tsx	Pilih kelas
+resources/js/pages/announcements/form.tsx	Pilih peran
+resources/js/pages/announcements/form.tsx	Sematkan di atas
+resources/js/pages/announcements/form.tsx	Semua pengguna
+resources/js/pages/announcements/form.tsx	Target pengumuman
+resources/js/pages/announcements/form.tsx	Terbitkan sekarang
+resources/js/pages/announcements/form.tsx	Tingkat kelas
+resources/js/pages/announcements/form.tsx	Waktu terbit (
+resources/js/pages/announcements/index.tsx	Baca pengumuman
+resources/js/pages/announcements/index.tsx	Belum ada pengumuman
+resources/js/pages/announcements/index.tsx	Berikutnya
+resources/js/pages/announcements/index.tsx	Buat pengumuman
+resources/js/pages/announcements/index.tsx	Cari judul atau isi
+resources/js/pages/announcements/index.tsx	Dari tanggal
+resources/js/pages/announcements/index.tsx	Disematkan
+resources/js/pages/announcements/index.tsx	Edit
+resources/js/pages/announcements/index.tsx	Halaman
+resources/js/pages/announcements/index.tsx	Kelola pengumuman
+resources/js/pages/announcements/index.tsx	Lampiran:
+resources/js/pages/announcements/index.tsx	Pengumuman yang sesuai dengan akun Anda akan muncul di sini.
+resources/js/pages/announcements/index.tsx	Sampai tanggal
+resources/js/pages/announcements/index.tsx	Sebelumnya
+resources/js/pages/announcements/index.tsx	Semua pengumuman
+resources/js/pages/announcements/index.tsx	Tampilkan
+resources/js/pages/announcements/index.tsx	dari
+resources/js/pages/announcements/index.tsx	pengumuman
+resources/js/pages/announcements/recipients.tsx	Belum konfirmasi
+resources/js/pages/announcements/recipients.tsx	Belum membaca
+resources/js/pages/announcements/recipients.tsx	Berikutnya
+resources/js/pages/announcements/recipients.tsx	Filter status
+resources/js/pages/announcements/recipients.tsx	Halaman
+resources/js/pages/announcements/recipients.tsx	Kembali ke pengumuman
+resources/js/pages/announcements/recipients.tsx	Konfirmasi
+resources/js/pages/announcements/recipients.tsx	Membaca
+resources/js/pages/announcements/recipients.tsx	Sebelumnya
+resources/js/pages/announcements/recipients.tsx	Semua penerima
+resources/js/pages/announcements/recipients.tsx	Sudah konfirmasi:
+resources/js/pages/announcements/recipients.tsx	Sudah membaca:
+resources/js/pages/announcements/recipients.tsx	Tidak ada penerima dengan status ini.
+resources/js/pages/announcements/recipients.tsx	Total:
+resources/js/pages/announcements/recipients.tsx	Wali
+resources/js/pages/announcements/recipients.tsx	Wali tanpa akun aktif:
+resources/js/pages/announcements/recipients.tsx	dari
+resources/js/pages/announcements/recipients.tsx	· Belum memiliki akun aktif
+resources/js/pages/announcements/show.tsx	Batal
+resources/js/pages/announcements/show.tsx	Diperbarui
+resources/js/pages/announcements/show.tsx	Disematkan
+resources/js/pages/announcements/show.tsx	Edit pengumuman
+resources/js/pages/announcements/show.tsx	Hapus pengumuman
+resources/js/pages/announcements/show.tsx	Hapus pengumuman?
+resources/js/pages/announcements/show.tsx	Kembali ke pengumuman
+resources/js/pages/announcements/show.tsx	Konfirmasi membaca
+resources/js/pages/announcements/show.tsx	Konfirmasi menyatakan Anda telah membaca pengumuman ini, bukan memberikan persetujuan kegiatan.
+resources/js/pages/announcements/show.tsx	Konfirmasi tersedia setelah pengumuman terbit.
+resources/js/pages/announcements/show.tsx	Pengumuman, lampiran, dan catatan konfirmasi akan dihapus. Tindakan ini tidak dapat dibatalkan.
+resources/js/pages/announcements/show.tsx	Status penerima
+resources/js/pages/announcements/show.tsx	Sudah dikonfirmasi
+resources/js/pages/announcements/show.tsx	Unduh lampiran:
+resources/js/pages/announcements/show.tsx	Ya, hapus
+resources/js/pages/auth/two-factor-challenge.tsx	or you can
+resources/js/pages/fees/bills.tsx	Aksi
+resources/js/pages/fees/bills.tsx	Alasan
+resources/js/pages/fees/bills.tsx	Batal
+resources/js/pages/fees/bills.tsx	Batalkan
+resources/js/pages/fees/bills.tsx	Belum ada tagihan.
+resources/js/pages/fees/bills.tsx	Berikutnya
+resources/js/pages/fees/bills.tsx	Cari
+resources/js/pages/fees/bills.tsx	Dibayar
+resources/js/pages/fees/bills.tsx	Diskon
+resources/js/pages/fees/bills.tsx	Diskon (Rp)
+resources/js/pages/fees/bills.tsx	Halaman
+resources/js/pages/fees/bills.tsx	Hapusbukukan
+resources/js/pages/fees/bills.tsx	Jatuh Tempo
+resources/js/pages/fees/bills.tsx	Jenis Biaya
+resources/js/pages/fees/bills.tsx	Kartu piutang
+resources/js/pages/fees/bills.tsx	Kelas
+resources/js/pages/fees/bills.tsx	Netto
+resources/js/pages/fees/bills.tsx	Periode
+resources/js/pages/fees/bills.tsx	Sebelumnya
+resources/js/pages/fees/bills.tsx	Semua
+resources/js/pages/fees/bills.tsx	Siswa
+resources/js/pages/fees/bills.tsx	Status
+resources/js/pages/fees/bills.tsx	Tagihan
+resources/js/pages/fees/bills.tsx	dari
+resources/js/pages/fees/cashier.tsx	Akun Penerima
+resources/js/pages/fees/cashier.tsx	Cari
+resources/js/pages/fees/cashier.tsx	Catatan
+resources/js/pages/fees/cashier.tsx	Cetak Kuitansi
+resources/js/pages/fees/cashier.tsx	Jumlah Diterima (Rp)
+resources/js/pages/fees/cashier.tsx	Pembayaran tercatat. Nomor kuitansi
+resources/js/pages/fees/cashier.tsx	Pilih
+resources/js/pages/fees/cashier.tsx	Saudara (wali sama), dapat dibayar bersamaan:
+resources/js/pages/fees/cashier.tsx	Simpan Pembayaran
+resources/js/pages/fees/cashier.tsx	Sisa
+resources/js/pages/fees/cashier.tsx	Teralokasi
+resources/js/pages/fees/cashier.tsx	Tidak ada tagihan terbuka.
+resources/js/pages/fees/cashier.tsx	Total alokasi harus sama dengan jumlah diterima.
+resources/js/pages/fees/cashier.tsx	dari diterima
+resources/js/pages/fees/cashier.tsx	· jatuh tempo
+resources/js/pages/fees/discounts.tsx	? Tagihan yang sudah dibuat tidak berubah.
+resources/js/pages/fees/discounts.tsx	Aksi
+resources/js/pages/fees/discounts.tsx	Alasan
+resources/js/pages/fees/discounts.tsx	Batal
+resources/js/pages/fees/discounts.tsx	Belum ada diskon.
+resources/js/pages/fees/discounts.tsx	Berikutnya
+resources/js/pages/fees/discounts.tsx	Cari
+resources/js/pages/fees/discounts.tsx	Halaman
+resources/js/pages/fees/discounts.tsx	Hapus
+resources/js/pages/fees/discounts.tsx	Hapus Diskon
+resources/js/pages/fees/discounts.tsx	Hapus diskon
+resources/js/pages/fees/discounts.tsx	Isi salah satu: persentase atau nominal tetap.
+resources/js/pages/fees/discounts.tsx	Jenis Biaya
+resources/js/pages/fees/discounts.tsx	Nominal Tetap (Rp)
+resources/js/pages/fees/discounts.tsx	Persentase (%)
+resources/js/pages/fees/discounts.tsx	Perubahan hanya berlaku untuk tagihan berikutnya.
+resources/js/pages/fees/discounts.tsx	Pilih jenis biaya...
+resources/js/pages/fees/discounts.tsx	Pilih siswa...
+resources/js/pages/fees/discounts.tsx	Pilih tahun ajaran...
+resources/js/pages/fees/discounts.tsx	Potongan
+resources/js/pages/fees/discounts.tsx	Satu diskon per siswa, jenis biaya, dan tahun ajaran.
+resources/js/pages/fees/discounts.tsx	Sebelumnya
+resources/js/pages/fees/discounts.tsx	Simpan
+resources/js/pages/fees/discounts.tsx	Siswa
+resources/js/pages/fees/discounts.tsx	Tahun Ajaran
+resources/js/pages/fees/discounts.tsx	Tambah Diskon
+resources/js/pages/fees/discounts.tsx	Ubah
+resources/js/pages/fees/discounts.tsx	Ubah Diskon
+resources/js/pages/fees/discounts.tsx	dari
+resources/js/pages/fees/discounts.tsx	untuk
+resources/js/pages/fees/generate.tsx	Akan dibuat
+resources/js/pages/fees/generate.tsx	Berdiskon
+resources/js/pages/fees/generate.tsx	Buat Tagihan
+resources/js/pages/fees/generate.tsx	Dari Bulan
+resources/js/pages/fees/generate.tsx	Dilewati
+resources/js/pages/fees/generate.tsx	Jatuh Tempo
+resources/js/pages/fees/generate.tsx	Jenis Biaya
+resources/js/pages/fees/generate.tsx	Kelas
+resources/js/pages/fees/generate.tsx	Nominal (Rp)
+resources/js/pages/fees/generate.tsx	Pilih jenis biaya...
+resources/js/pages/fees/generate.tsx	Pilih kelas...
+resources/js/pages/fees/generate.tsx	Pilih tingkat...
+resources/js/pages/fees/generate.tsx	Pratinjau
+resources/js/pages/fees/generate.tsx	Sampai Bulan
+resources/js/pages/fees/generate.tsx	Sasaran
+resources/js/pages/fees/generate.tsx	Satu kelas
+resources/js/pages/fees/generate.tsx	Satu tingkat
+resources/js/pages/fees/generate.tsx	Semua siswa aktif
+resources/js/pages/fees/generate.tsx	Tanggal Jatuh Tempo
+resources/js/pages/fees/generate.tsx	Tingkat
+resources/js/pages/fees/overpayment.tsx	. Oleh
+resources/js/pages/fees/overpayment.tsx	. Tanggal efektif:
+resources/js/pages/fees/overpayment.tsx	Akun Titipan Wali asli tidak aktif. Minta admin mengaktifkan kembali akun
+resources/js/pages/fees/overpayment.tsx	Akun pembayaran
+resources/js/pages/fees/overpayment.tsx	Alasan pembatalan
+resources/js/pages/fees/overpayment.tsx	Batal
+resources/js/pages/fees/overpayment.tsx	Batalkan penerimaan
+resources/js/pages/fees/overpayment.tsx	Biaya bank ditanggung wali (Rp)
+resources/js/pages/fees/overpayment.tsx	Bukti ini juga digunakan pada catatan lain. Periksa apakah ini bagian transfer gabungan atau penerimaan ganda.
+resources/js/pages/fees/overpayment.tsx	Bukti pembayaran #
+resources/js/pages/fees/overpayment.tsx	Bukti refund (opsional, maks. 5 MB)
+resources/js/pages/fees/overpayment.tsx	Catat refund
+resources/js/pages/fees/overpayment.tsx	Jurnal
+resources/js/pages/fees/overpayment.tsx	Kelebihan #
+resources/js/pages/fees/overpayment.tsx	Kembali
+resources/js/pages/fees/overpayment.tsx	Kembali ke kelebihan pembayaran
+resources/js/pages/fees/overpayment.tsx	Lihat bukti penerimaan
+resources/js/pages/fees/overpayment.tsx	Lihat bukti refund
+resources/js/pages/fees/overpayment.tsx	Pembatalan
+resources/js/pages/fees/overpayment.tsx	Penerimaan
+resources/js/pages/fees/overpayment.tsx	Pengembalian
+resources/js/pages/fees/overpayment.tsx	Pilih kas/bank
+resources/js/pages/fees/overpayment.tsx	Referensi bank
+resources/js/pages/fees/overpayment.tsx	Tanggal diminta:
+resources/js/pages/fees/overpayment.tsx	Tanggal pembatalan
+resources/js/pages/fees/overpayment.tsx	Tanggal refund
+resources/js/pages/fees/overpayment.tsx	sebelum memproses.
+resources/js/pages/fees/overpayments.tsx	Akun Titipan Wali belum diatur. Minta admin mengaturnya di Profil Sekolah.
+resources/js/pages/fees/overpayments.tsx	Akun penerimaan
+resources/js/pages/fees/overpayments.tsx	Alasan
+resources/js/pages/fees/overpayments.tsx	Batal
+resources/js/pages/fees/overpayments.tsx	Belum ada kelebihan pembayaran yang sesuai.
+resources/js/pages/fees/overpayments.tsx	Berikutnya
+resources/js/pages/fees/overpayments.tsx	Buka Profil Sekolah
+resources/js/pages/fees/overpayments.tsx	Bukti mutasi bank (JPG, PNG, PDF; maks. 5 MB)
+resources/js/pages/fees/overpayments.tsx	Cara mencatat transfer gabungan tagihan dan kelebihan
+resources/js/pages/fees/overpayments.tsx	Catat penerimaan
+resources/js/pages/fees/overpayments.tsx	Catat penerimaan kelebihan
+resources/js/pages/fees/overpayments.tsx	Catatan
+resources/js/pages/fees/overpayments.tsx	Dari tanggal
+resources/js/pages/fees/overpayments.tsx	Detail #
+resources/js/pages/fees/overpayments.tsx	Dibatalkan
+resources/js/pages/fees/overpayments.tsx	Dikembalikan
+resources/js/pages/fees/overpayments.tsx	Dititipkan
+resources/js/pages/fees/overpayments.tsx	Halaman
+resources/js/pages/fees/overpayments.tsx	ID pembayaran terkait (opsional)
+resources/js/pages/fees/overpayments.tsx	Jumlah kelebihan (Rp)
+resources/js/pages/fees/overpayments.tsx	Nama wali
+resources/js/pages/fees/overpayments.tsx	Pastikan dana sudah diterima di bank. Penerimaan tersimpan sebagai kewajiban kepada wali.
+resources/js/pages/fees/overpayments.tsx	Pilih kas/bank
+resources/js/pages/fees/overpayments.tsx	Pilih wali
+resources/js/pages/fees/overpayments.tsx	Refund menyelesaikan seluruh titipan; biaya bank dipotong dari dana yang diterima wali. Jika seluruh transfer dikembalikan sebelum pembayaran tagihan diverifikasi, catat seluruhnya sebagai kelebihan dan biarkan tagihan belum dibayar.
+resources/js/pages/fees/overpayments.tsx	Sampai tanggal
+resources/js/pages/fees/overpayments.tsx	Sebelumnya
+resources/js/pages/fees/overpayments.tsx	Semua
+resources/js/pages/fees/overpayments.tsx	Semua wali
+resources/js/pages/fees/overpayments.tsx	Siswa (opsional)
+resources/js/pages/fees/overpayments.tsx	Status
+resources/js/pages/fees/overpayments.tsx	Tampilkan
+resources/js/pages/fees/overpayments.tsx	Tanpa siswa
+resources/js/pages/fees/overpayments.tsx	Untuk transfer Rp 3.000.000 dengan tagihan Rp 300.000: wali mengunggah pembayaran Rp 300.000 dengan alokasi Rp 300.000, bukti transfer penuh, dan catatan nominal bruto. Verifikasi pembayaran itu terlebih dahulu. Lalu catat kelebihan Rp 2.700.000 dengan ID pembayaran terkait, akun bank dan tanggal posting jurnal yang sama. Cantumkan nominal bruto, bagian tagihan, dan referensi bank di catatan. Bukti yang sama akan memunculkan peringatan duplikat untuk diperiksa.
+resources/js/pages/fees/overpayments.tsx	Wali
+resources/js/pages/fees/overpayments.tsx	dari
+resources/js/pages/fees/payments.tsx	. Jurnal pembayaran dibalik dan tagihan kembali belum lunas.
+resources/js/pages/fees/payments.tsx	Aksi
+resources/js/pages/fees/payments.tsx	Alasan
+resources/js/pages/fees/payments.tsx	Batal
+resources/js/pages/fees/payments.tsx	Batalkan
+resources/js/pages/fees/payments.tsx	Batalkan Pembayaran
+resources/js/pages/fees/payments.tsx	Belum ada pembayaran.
+resources/js/pages/fees/payments.tsx	Berikutnya
+resources/js/pages/fees/payments.tsx	Dari Tanggal
+resources/js/pages/fees/payments.tsx	Halaman
+resources/js/pages/fees/payments.tsx	Jumlah
+resources/js/pages/fees/payments.tsx	Kuitansi
+resources/js/pages/fees/payments.tsx	Metode
+resources/js/pages/fees/payments.tsx	No. Kuitansi
+resources/js/pages/fees/payments.tsx	Sampai Tanggal
+resources/js/pages/fees/payments.tsx	Sebelumnya
+resources/js/pages/fees/payments.tsx	Semua
+resources/js/pages/fees/payments.tsx	Siswa
+resources/js/pages/fees/payments.tsx	Status
+resources/js/pages/fees/payments.tsx	Tanggal
+resources/js/pages/fees/payments.tsx	dari
+resources/js/pages/fees/types.tsx	)? Tindakan ini tidak dapat dibatalkan.
+resources/js/pages/fees/types.tsx	Aksi
+resources/js/pages/fees/types.tsx	Aktif
+resources/js/pages/fees/types.tsx	Batal
+resources/js/pages/fees/types.tsx	Belum ada jenis biaya.
+resources/js/pages/fees/types.tsx	Deskripsi (opsional)
+resources/js/pages/fees/types.tsx	Hapus
+resources/js/pages/fees/types.tsx	Hapus Jenis Biaya
+resources/js/pages/fees/types.tsx	Jenis
+resources/js/pages/fees/types.tsx	Kode
+resources/js/pages/fees/types.tsx	Nama
+resources/js/pages/fees/types.tsx	Nominal Default
+resources/js/pages/fees/types.tsx	Nominal Default (Rp)
+resources/js/pages/fees/types.tsx	Perubahan hanya berlaku untuk tagihan berikutnya.
+resources/js/pages/fees/types.tsx	Pilih akun...
+resources/js/pages/fees/types.tsx	Semua tahun ajaran
+resources/js/pages/fees/types.tsx	Simpan
+resources/js/pages/fees/types.tsx	Status
+resources/js/pages/fees/types.tsx	Tahun Ajaran (opsional)
+resources/js/pages/fees/types.tsx	Tambah Jenis Biaya
+resources/js/pages/fees/types.tsx	Tentukan nominal default dan pemetaan tiga akun.
+resources/js/pages/fees/types.tsx	Ubah
+resources/js/pages/fees/types.tsx	Ubah Jenis Biaya
+resources/js/pages/fees/verifications.tsx	- diunggah oleh
+resources/js/pages/fees/verifications.tsx	. Jurnal pembayaran dibuat dan kuitansi diterbitkan.
+resources/js/pages/fees/verifications.tsx	. Tagihan tetap seperti semula dan tidak ada jurnal yang dibuat.
+resources/js/pages/fees/verifications.tsx	Akun Penerima
+resources/js/pages/fees/verifications.tsx	Alasan
+resources/js/pages/fees/verifications.tsx	Batal
+resources/js/pages/fees/verifications.tsx	Bukti serupa dengan pembayaran #
+resources/js/pages/fees/verifications.tsx	Catatan:
+resources/js/pages/fees/verifications.tsx	Dialokasikan
+resources/js/pages/fees/verifications.tsx	Jatuh Tempo
+resources/js/pages/fees/verifications.tsx	Lihat bukti
+resources/js/pages/fees/verifications.tsx	Sisa
+resources/js/pages/fees/verifications.tsx	Siswa
+resources/js/pages/fees/verifications.tsx	Tagihan
+resources/js/pages/fees/verifications.tsx	Tanggal transfer
+resources/js/pages/fees/verifications.tsx	Tidak ada transfer menunggu verifikasi.
+resources/js/pages/fees/verifications.tsx	Tolak
+resources/js/pages/fees/verifications.tsx	Tolak Transfer
+resources/js/pages/fees/verifications.tsx	Total alokasi
+resources/js/pages/fees/verifications.tsx	Ubah alokasi
+resources/js/pages/fees/verifications.tsx	Verifikasi
+resources/js/pages/fees/verifications.tsx	Verifikasi Transfer
+resources/js/pages/fees/verifications.tsx	dari
+resources/js/pages/finance/accounts.tsx	(Contra)
+resources/js/pages/finance/accounts.tsx	? Tindakan ini tidak dapat dibatalkan.
+resources/js/pages/finance/accounts.tsx	ASET LANCAR, BEBAN OPERASIONAL (hanya judul hierarki)
+resources/js/pages/finance/accounts.tsx	Ada Transaksi
+resources/js/pages/finance/accounts.tsx	Aksi
+resources/js/pages/finance/accounts.tsx	Aktif
+resources/js/pages/finance/accounts.tsx	Akumulasi Penyusutan Gedung
+resources/js/pages/finance/accounts.tsx	Akun Aktif
+resources/js/pages/finance/accounts.tsx	Akun Contra
+resources/js/pages/finance/accounts.tsx	Akun Induk
+resources/js/pages/finance/accounts.tsx	Akun aktif dapat dipilih pada transaksi dan laporan. Nonaktifkan jika akun tidak lagi digunakan.
+resources/js/pages/finance/accounts.tsx	Akun kas tunai fisik atau rekening bank aktif untuk Buku Kas &amp; Arus Kas.
+resources/js/pages/finance/accounts.tsx	Akun yang mengurangi saldo kelompok akun utamanya dan memiliki saldo normal berlawanan (misal: Aset normalnya di Debit, tetapi akun contra Aset bersaldo normal Kredit).
+resources/js/pages/finance/accounts.tsx	Apakah Anda yakin ingin menghapus akun
+resources/js/pages/finance/accounts.tsx	Atribut & Perilaku Akun
+resources/js/pages/finance/accounts.tsx	Bank BSI Giro Operasional
+resources/js/pages/finance/accounts.tsx	Bank Mandiri Penampung SPP
+resources/js/pages/finance/accounts.tsx	Batal
+resources/js/pages/finance/accounts.tsx	Belum ada akun dalam kategori ini.
+resources/js/pages/finance/accounts.tsx	Cadangan Kerugian Piutang SPP
+resources/js/pages/finance/accounts.tsx	Contoh:
+resources/js/pages/finance/accounts.tsx	Dapat dipilih langsung pada transaksi jurnal harian.
+resources/js/pages/finance/accounts.tsx	Edit Akun
+resources/js/pages/finance/accounts.tsx	Grup
+resources/js/pages/finance/accounts.tsx	Hapus Akun
+resources/js/pages/finance/accounts.tsx	Isi parameter akun untuk ditambahkan ke bagan akun (Chart of Accounts).
+resources/js/pages/finance/accounts.tsx	Karakteristik
+resources/js/pages/finance/accounts.tsx	Karakteristik & Perilaku Akun
+resources/js/pages/finance/accounts.tsx	Kas / Bank
+resources/js/pages/finance/accounts.tsx	Kas Kecil (Petty Cash) Bendahara
+resources/js/pages/finance/accounts.tsx	Kas Operasional Tata Usaha
+resources/js/pages/finance/accounts.tsx	Kas Tunai, Beban ATK &amp; Fotokopi (dapat dijurnal)
+resources/js/pages/finance/accounts.tsx	Kas/Bank
+resources/js/pages/finance/accounts.tsx	Klasifikasi
+resources/js/pages/finance/accounts.tsx	Kode
+resources/js/pages/finance/accounts.tsx	Kode Akun
+resources/js/pages/finance/accounts.tsx	Konfirmasi Hapus Akun
+resources/js/pages/finance/accounts.tsx	Menandai akun likuid berupa uang tunai fisik atau rekening bank aktif yayasan/sekolah. Menjadi acuan transaksi pada Buku Kas (Cash Book) &amp; Laporan Arus Kas.
+resources/js/pages/finance/accounts.tsx	Menentukan apakah akun dapat dipilih langsung saat mencatat transaksi jurnal umum. Jika tidak dicentang (Non-Postable), akun hanya berfungsi sebagai penampung hierarki/kategori (Header).
+resources/js/pages/finance/accounts.tsx	Mengurangi saldo kelompok akun utama (saldo normal berlawanan).
+resources/js/pages/finance/accounts.tsx	Nama Akun
+resources/js/pages/finance/accounts.tsx	Non-Postable:
+resources/js/pages/finance/accounts.tsx	Nonaktif
+resources/js/pages/finance/accounts.tsx	Opsional
+resources/js/pages/finance/accounts.tsx	Pembatasan (ISAK 35)
+resources/js/pages/finance/accounts.tsx	Postable
+resources/js/pages/finance/accounts.tsx	Postable (Akun Posting)
+resources/js/pages/finance/accounts.tsx	Postable (Dapat Menerima Jurnal)
+resources/js/pages/finance/accounts.tsx	Postable:
+resources/js/pages/finance/accounts.tsx	Potongan &amp; Beasiswa Siswa
+resources/js/pages/finance/accounts.tsx	Reset saran kode
+resources/js/pages/finance/accounts.tsx	Saldo Normal
+resources/js/pages/finance/accounts.tsx	Semua (
+resources/js/pages/finance/accounts.tsx	Simpan Akun
+resources/js/pages/finance/accounts.tsx	Simpan Perubahan
+resources/js/pages/finance/accounts.tsx	Status
+resources/js/pages/finance/accounts.tsx	Struktur akun terkunci karena telah memiliki jurnal posted. Hanya nama dan status aktif yang dapat diubah.
+resources/js/pages/finance/accounts.tsx	Tambah Akun
+resources/js/pages/finance/accounts.tsx	Tambah Akun Baru
+resources/js/pages/finance/accounts.tsx	Tanpa induk (Tingkat Utama)
+resources/js/pages/finance/journals/form.tsx	- Tidak ada -
+resources/js/pages/finance/journals/form.tsx	. Saldo piutang per-siswa akan diatur melalui modul tagihan siswa.
+resources/js/pages/finance/journals/form.tsx	3-1000 Aset Neto Tanpa Pembatasan
+resources/js/pages/finance/journals/form.tsx	Akun Perkiraan
+resources/js/pages/finance/journals/form.tsx	Baris
+resources/js/pages/finance/journals/form.tsx	Debit (Rp)
+resources/js/pages/finance/journals/form.tsx	Deskripsi / Keterangan Transaksi
+resources/js/pages/finance/journals/form.tsx	Format: JPG, PNG, atau PDF (maks. 5 MB). Disimpan di private storage.
+resources/js/pages/finance/journals/form.tsx	Jurnal Seimbang (Balanced)
+resources/js/pages/finance/journals/form.tsx	Kembali ke Daftar
+resources/js/pages/finance/journals/form.tsx	Kredit (Rp)
+resources/js/pages/finance/journals/form.tsx	Lampiran Nota / Kuitansi (Opsional)
+resources/js/pages/finance/journals/form.tsx	Memo / Catatan
+resources/js/pages/finance/journals/form.tsx	Petunjuk Saldo Awal (Opening Balance):
+resources/js/pages/finance/journals/form.tsx	Posting ke Buku Besar
+resources/js/pages/finance/journals/form.tsx	Rincian Ayat Jurnal
+resources/js/pages/finance/journals/form.tsx	Rp
+resources/js/pages/finance/journals/form.tsx	Selisih: Rp
+resources/js/pages/finance/journals/form.tsx	Simpan sebagai Draf
+resources/js/pages/finance/journals/form.tsx	Siswa (Subledger)
+resources/js/pages/finance/journals/form.tsx	Tambah Baris
+resources/js/pages/finance/journals/form.tsx	Tanggal Transaksi
+resources/js/pages/finance/journals/form.tsx	Total Debit:
+resources/js/pages/finance/journals/form.tsx	Total Kredit:
+resources/js/pages/finance/journals/form.tsx	Untuk mencatat saldo awal buku besar sebelum tanggal go-live, gunakan tanggal H-1 (misal 30 Juni 2026). Masukkan aset/kas di sisi Debit, dan akun lawan di sisi Kredit menggunakan
+resources/js/pages/finance/journals/index.tsx	(Draf)
+resources/js/pages/finance/journals/index.tsx	Aksi
+resources/js/pages/finance/journals/index.tsx	Buat Jurnal Baru
+resources/js/pages/finance/journals/index.tsx	Dari Tanggal
+resources/js/pages/finance/journals/index.tsx	Deskripsi
+resources/js/pages/finance/journals/index.tsx	Detail
+resources/js/pages/finance/journals/index.tsx	Diposting
+resources/js/pages/finance/journals/index.tsx	Draf
+resources/js/pages/finance/journals/index.tsx	Lampiran
+resources/js/pages/finance/journals/index.tsx	Menampilkan halaman
+resources/js/pages/finance/journals/index.tsx	Nomor Jurnal
+resources/js/pages/finance/journals/index.tsx	Oleh:
+resources/js/pages/finance/journals/index.tsx	Pembalik
+resources/js/pages/finance/journals/index.tsx	Pencarian
+resources/js/pages/finance/journals/index.tsx	Rp
+resources/js/pages/finance/journals/index.tsx	Sampai Tanggal
+resources/js/pages/finance/journals/index.tsx	Semua Status
+resources/js/pages/finance/journals/index.tsx	Status
+resources/js/pages/finance/journals/index.tsx	Sumber
+resources/js/pages/finance/journals/index.tsx	Tanggal
+resources/js/pages/finance/journals/index.tsx	Tidak ada ayat jurnal ditemukan.
+resources/js/pages/finance/journals/index.tsx	Total Nominal
+resources/js/pages/finance/journals/index.tsx	baris
+resources/js/pages/finance/journals/index.tsx	dari
+resources/js/pages/finance/journals/index.tsx	total)
+resources/js/pages/finance/journals/show.tsx	Alasan Pembalikan
+resources/js/pages/finance/journals/show.tsx	Apakah Anda yakin ingin menghapus draf jurnal ini?
+resources/js/pages/finance/journals/show.tsx	Ayat Jurnal (Debit & Kredit)
+resources/js/pages/finance/journals/show.tsx	Batal
+resources/js/pages/finance/journals/show.tsx	Buat Jurnal Pembalik
+resources/js/pages/finance/journals/show.tsx	Buat Jurnal Pembalik (Reversal)
+resources/js/pages/finance/journals/show.tsx	Catatan / Memo
+resources/js/pages/finance/journals/show.tsx	Debit (Rp)
+resources/js/pages/finance/journals/show.tsx	Dibalikkan Oleh Jurnal:
+resources/js/pages/finance/journals/show.tsx	Dibuat Oleh
+resources/js/pages/finance/journals/show.tsx	Diposting
+resources/js/pages/finance/journals/show.tsx	Draf
+resources/js/pages/finance/journals/show.tsx	Edit Draf
+resources/js/pages/finance/journals/show.tsx	Hapus
+resources/js/pages/finance/journals/show.tsx	Hapus Draf
+resources/js/pages/finance/journals/show.tsx	Hapus Draf Jurnal
+resources/js/pages/finance/journals/show.tsx	Kelebihan pembayaran #
+resources/js/pages/finance/journals/show.tsx	Kembali ke Daftar Jurnal
+resources/js/pages/finance/journals/show.tsx	Kode
+resources/js/pages/finance/journals/show.tsx	Konfirmasi Balikkan Jurnal
+resources/js/pages/finance/journals/show.tsx	Kredit (Rp)
+resources/js/pages/finance/journals/show.tsx	Membalikkan Jurnal:
+resources/js/pages/finance/journals/show.tsx	Nama Akun
+resources/js/pages/finance/journals/show.tsx	Posting ke Buku Besar
+resources/js/pages/finance/journals/show.tsx	Rp
+resources/js/pages/finance/journals/show.tsx	Seimbang (Balanced)
+resources/js/pages/finance/journals/show.tsx	Sistem akan membuat ayat jurnal baru yang membalik debit dan kredit dari jurnal
+resources/js/pages/finance/journals/show.tsx	Siswa
+resources/js/pages/finance/journals/show.tsx	Status
+resources/js/pages/finance/journals/show.tsx	Sumber Transaksi
+resources/js/pages/finance/journals/show.tsx	Tanggal Pembalikan
+resources/js/pages/finance/journals/show.tsx	Tanggal Transaksi
+resources/js/pages/finance/journals/show.tsx	Tidak Seimbang
+resources/js/pages/finance/journals/show.tsx	Total Debit:
+resources/js/pages/finance/journals/show.tsx	Total Kredit:
+resources/js/pages/finance/journals/show.tsx	Unduh Lampiran Nota/Kuitansi
+resources/js/pages/finance/journals/show.tsx	secara otomatis.
+resources/js/pages/finance/periods.tsx	? Setelah ditutup, tidak ada transaksi yang dapat diposting pada tanggal bulan ini.
+resources/js/pages/finance/periods.tsx	Aksi
+resources/js/pages/finance/periods.tsx	Alasan Pembukaan Kembali
+resources/js/pages/finance/periods.tsx	Apakah Anda yakin ingin menutup periode akuntansi
+resources/js/pages/finance/periods.tsx	Batal
+resources/js/pages/finance/periods.tsx	Buka Kembali
+resources/js/pages/finance/periods.tsx	Buka Kembali Periode
+resources/js/pages/finance/periods.tsx	Bulan 1-11 tahun buku harus sudah ditutup. Saldo pendapatan dan beban dipindahkan ke akun aset neto, lalu seluruh 12 periode dikunci.
+resources/js/pages/finance/periods.tsx	Ditutup
+resources/js/pages/finance/periods.tsx	Ditutup Oleh
+resources/js/pages/finance/periods.tsx	Konfirmasi Buka Periode
+resources/js/pages/finance/periods.tsx	Konfirmasi Tutup Buku Tahunan
+resources/js/pages/finance/periods.tsx	Konfirmasi Tutup Periode
+resources/js/pages/finance/periods.tsx	Membuka kembali periode
+resources/js/pages/finance/periods.tsx	Neraca Saldo (Trial Balance)
+resources/js/pages/finance/periods.tsx	Periode
+resources/js/pages/finance/periods.tsx	Prasyarat Tutup Buku Bulanan:
+resources/js/pages/finance/periods.tsx	Sebelum periode ditutup, sistem akan memverifikasi bahwa
+resources/js/pages/finance/periods.tsx	Status Buku
+resources/js/pages/finance/periods.tsx	Tahun buku
+resources/js/pages/finance/periods.tsx	Terbuka
+resources/js/pages/finance/periods.tsx	Terkunci
+resources/js/pages/finance/periods.tsx	Tutup Buku Tahunan
+resources/js/pages/finance/periods.tsx	Tutup Periode
+resources/js/pages/finance/periods.tsx	Waktu Ditutup
+resources/js/pages/finance/periods.tsx	Ya, Tutup Buku Tahunan
+resources/js/pages/finance/periods.tsx	Ya, Tutup Periode
+resources/js/pages/finance/periods.tsx	akan ditutup: jurnal penutup diposting dan seluruh 12 periode dikunci. Periode terkunci tidak dapat dibuka kembali.
+resources/js/pages/finance/periods.tsx	memerlukan alasan resmi untuk dicatat pada log audit.
+resources/js/pages/finance/periods.tsx	per akhir bulan tersebut seimbang (Total Debit = Total Kredit). Setelah ditutup, transaksi baru atau pembalikan tidak dapat dimasukkan ke tanggal periode ini.
+resources/js/pages/finance/reports/cash-book.tsx	Belum ada akun kas atau bank yang dipilih.
+resources/js/pages/finance/reports/cash-book.tsx	Dari Tanggal
+resources/js/pages/finance/reports/cash-book.tsx	Ekspor CSV
+resources/js/pages/finance/reports/cash-book.tsx	Kelebihan #
+resources/js/pages/finance/reports/cash-book.tsx	Keluar / Kredit (Rp)
+resources/js/pages/finance/reports/cash-book.tsx	Keterangan
+resources/js/pages/finance/reports/cash-book.tsx	Masuk / Debit (Rp)
+resources/js/pages/finance/reports/cash-book.tsx	Memo
+resources/js/pages/finance/reports/cash-book.tsx	No. Jurnal
+resources/js/pages/finance/reports/cash-book.tsx	Pilih Rekening Kas/Bank
+resources/js/pages/finance/reports/cash-book.tsx	Rp
+resources/js/pages/finance/reports/cash-book.tsx	SALDO AWAL KAS
+resources/js/pages/finance/reports/cash-book.tsx	Saldo Akhir:
+resources/js/pages/finance/reports/cash-book.tsx	Saldo Awal:
+resources/js/pages/finance/reports/cash-book.tsx	Saldo Kas (Rp)
+resources/js/pages/finance/reports/cash-book.tsx	Sampai Tanggal
+resources/js/pages/finance/reports/cash-book.tsx	TOTAL PENERIMAAN / PENGELUARAN & SALDO AKHIR:
+resources/js/pages/finance/reports/cash-book.tsx	Tampilkan
+resources/js/pages/finance/reports/cash-book.tsx	Tanggal
+resources/js/pages/finance/reports/cash-book.tsx	Tidak ada mutasi kas pada periode ini.
+resources/js/pages/finance/reports/collections-by-class.tsx	Dari
+resources/js/pages/finance/reports/collections-by-class.tsx	Ekspor CSV
+resources/js/pages/finance/reports/collections-by-class.tsx	Kelas
+resources/js/pages/finance/reports/collections-by-class.tsx	Piutang (Rp)
+resources/js/pages/finance/reports/collections-by-class.tsx	Sampai
+resources/js/pages/finance/reports/collections-by-class.tsx	Siswa Membayar
+resources/js/pages/finance/reports/collections-by-class.tsx	Tampilkan
+resources/js/pages/finance/reports/collections-by-class.tsx	Terkumpul (Rp)
+resources/js/pages/finance/reports/collections-by-class.tsx	Tidak ada data pada periode ini.
+resources/js/pages/finance/reports/collections-by-class.tsx	Total
+resources/js/pages/finance/reports/general-journal.tsx	Akun
+resources/js/pages/finance/reports/general-journal.tsx	Dari Tanggal
+resources/js/pages/finance/reports/general-journal.tsx	Debit (Rp)
+resources/js/pages/finance/reports/general-journal.tsx	Ekspor CSV
+resources/js/pages/finance/reports/general-journal.tsx	Kredit (Rp)
+resources/js/pages/finance/reports/general-journal.tsx	No. Jurnal & Deskripsi
+resources/js/pages/finance/reports/general-journal.tsx	Rp
+resources/js/pages/finance/reports/general-journal.tsx	Sampai Tanggal
+resources/js/pages/finance/reports/general-journal.tsx	TOTAL:
+resources/js/pages/finance/reports/general-journal.tsx	Tampilkan
+resources/js/pages/finance/reports/general-journal.tsx	Tanggal
+resources/js/pages/finance/reports/general-journal.tsx	Tidak ada transaksi pada periode ini.
+resources/js/pages/finance/reports/general-ledger.tsx	Contra
+resources/js/pages/finance/reports/general-ledger.tsx	Dari Tanggal
+resources/js/pages/finance/reports/general-ledger.tsx	Debit (Rp)
+resources/js/pages/finance/reports/general-ledger.tsx	Ekspor CSV
+resources/js/pages/finance/reports/general-ledger.tsx	Kelebihan #
+resources/js/pages/finance/reports/general-ledger.tsx	Keterangan
+resources/js/pages/finance/reports/general-ledger.tsx	Kredit (Rp)
+resources/js/pages/finance/reports/general-ledger.tsx	No. Jurnal
+resources/js/pages/finance/reports/general-ledger.tsx	Pilih Akun
+resources/js/pages/finance/reports/general-ledger.tsx	Rp
+resources/js/pages/finance/reports/general-ledger.tsx	SALDO AWAL
+resources/js/pages/finance/reports/general-ledger.tsx	Saldo Akhir:
+resources/js/pages/finance/reports/general-ledger.tsx	Saldo Awal:
+resources/js/pages/finance/reports/general-ledger.tsx	Saldo Berjalan (Rp)
+resources/js/pages/finance/reports/general-ledger.tsx	Sampai Tanggal
+resources/js/pages/finance/reports/general-ledger.tsx	Semua Akun
+resources/js/pages/finance/reports/general-ledger.tsx	Siswa
+resources/js/pages/finance/reports/general-ledger.tsx	TOTAL MUTASI & SALDO AKHIR:
+resources/js/pages/finance/reports/general-ledger.tsx	Tampilkan
+resources/js/pages/finance/reports/general-ledger.tsx	Tanggal
+resources/js/pages/finance/reports/general-ledger.tsx	Tidak ada data buku besar untuk akun/periode ini.
+resources/js/pages/finance/reports/receivables-aging.tsx	(Rp)
+resources/js/pages/finance/reports/receivables-aging.tsx	Dibayar (Rp)
+resources/js/pages/finance/reports/receivables-aging.tsx	Ekspor CSV
+resources/js/pages/finance/reports/receivables-aging.tsx	Jatuh Tempo
+resources/js/pages/finance/reports/receivables-aging.tsx	Kelas
+resources/js/pages/finance/reports/receivables-aging.tsx	Kelas / Siswa
+resources/js/pages/finance/reports/receivables-aging.tsx	Perlu ditinjau (
+resources/js/pages/finance/reports/receivables-aging.tsx	Posisi Per Tanggal
+resources/js/pages/finance/reports/receivables-aging.tsx	Semua kelas
+resources/js/pages/finance/reports/receivables-aging.tsx	Sisa (Rp)
+resources/js/pages/finance/reports/receivables-aging.tsx	Siswa
+resources/js/pages/finance/reports/receivables-aging.tsx	Siswa tanpa kelas aktif yang masih memiliki tagihan dibayar sebagian (keadaan saat ini).
+resources/js/pages/finance/reports/receivables-aging.tsx	Tagihan
+resources/js/pages/finance/reports/receivables-aging.tsx	Tampilkan
+resources/js/pages/finance/reports/receivables-aging.tsx	Tidak ada piutang terbuka.
+resources/js/pages/finance/reports/receivables-aging.tsx	Tidak ada yang perlu ditinjau.
+resources/js/pages/finance/reports/receivables-aging.tsx	Total
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Akun
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Belum ada akun atau riwayat Titipan Wali.
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Buku Besar (Rp)
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Ekspor CSV
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Jenis
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Lihat kelebihan pembayaran
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Posisi Per Tanggal
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Rekonsiliasi Titipan Wali
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Seharusnya (Rp)
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Seimbang
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Selisih (Rp)
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Selisih: Rp
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Siswa
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Status
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Subledger (Rp)
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Tagihan
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Tagihan tidak sesuai (
+resources/js/pages/finance/reports/receivables-reconciliation.tsx	Tampilkan
+resources/js/pages/finance/reports/student-receivable-card.tsx	Belum ada tagihan.
+resources/js/pages/finance/reports/student-receivable-card.tsx	Belum ada transaksi piutang.
+resources/js/pages/finance/reports/student-receivable-card.tsx	Buku piutang
+resources/js/pages/finance/reports/student-receivable-card.tsx	Cari dan pilih siswa untuk melihat kartu piutang.
+resources/js/pages/finance/reports/student-receivable-card.tsx	Cari siswa (nama / NIS)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Debit (Rp)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Ekspor CSV
+resources/js/pages/finance/reports/student-receivable-card.tsx	Jatuh Tempo
+resources/js/pages/finance/reports/student-receivable-card.tsx	Keterangan
+resources/js/pages/finance/reports/student-receivable-card.tsx	Kredit (Rp)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Netto (Rp)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Pembayaran
+resources/js/pages/finance/reports/student-receivable-card.tsx	Periode
+resources/js/pages/finance/reports/student-receivable-card.tsx	Posisi Per Tanggal
+resources/js/pages/finance/reports/student-receivable-card.tsx	Rp
+resources/js/pages/finance/reports/student-receivable-card.tsx	Saldo (Rp)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Saldo buku besar:
+resources/js/pages/finance/reports/student-receivable-card.tsx	Saldo subledger:
+resources/js/pages/finance/reports/student-receivable-card.tsx	Seimbang
+resources/js/pages/finance/reports/student-receivable-card.tsx	Sisa (Rp)
+resources/js/pages/finance/reports/student-receivable-card.tsx	Siswa tidak ditemukan.
+resources/js/pages/finance/reports/student-receivable-card.tsx	Status
+resources/js/pages/finance/reports/student-receivable-card.tsx	Tagihan
+resources/js/pages/finance/reports/student-receivable-card.tsx	Tanggal
+resources/js/pages/finance/reports/student-receivable-card.tsx	Tidak sesuai dengan subledger
+resources/js/pages/finance/reports/student-receivable-card.tsx	· Rp
+resources/js/pages/finance/reports/trial-balance.tsx	Ekspor CSV
+resources/js/pages/finance/reports/trial-balance.tsx	Klasifikasi
+resources/js/pages/finance/reports/trial-balance.tsx	Kode Akun
+resources/js/pages/finance/reports/trial-balance.tsx	Nama Akun
+resources/js/pages/finance/reports/trial-balance.tsx	Neraca Saldo Seimbang (Balanced)
+resources/js/pages/finance/reports/trial-balance.tsx	Posisi Per Tanggal
+resources/js/pages/finance/reports/trial-balance.tsx	Rp
+resources/js/pages/finance/reports/trial-balance.tsx	Saldo Debit (Rp)
+resources/js/pages/finance/reports/trial-balance.tsx	Saldo Kredit (Rp)
+resources/js/pages/finance/reports/trial-balance.tsx	Saldo Normal
+resources/js/pages/finance/reports/trial-balance.tsx	Selisih: Rp
+resources/js/pages/finance/reports/trial-balance.tsx	TOTAL KESEIMBANGAN:
+resources/js/pages/finance/reports/trial-balance.tsx	Tampilkan
+resources/js/pages/notifications/index.tsx	Belum dibaca
+resources/js/pages/notifications/index.tsx	Berikutnya
+resources/js/pages/notifications/index.tsx	Halaman
+resources/js/pages/notifications/index.tsx	Sebelumnya
+resources/js/pages/notifications/index.tsx	Semua
+resources/js/pages/notifications/index.tsx	Tandai semua dibaca
+resources/js/pages/notifications/index.tsx	Tidak ada notifikasi
+resources/js/pages/notifications/index.tsx	dari
+resources/js/pages/notifications/index.tsx	total)
+resources/js/pages/parent/child-grades.tsx	Belum ada mata pelajaran terdaftar untuk semester ini.
+resources/js/pages/parent/child-grades.tsx	Belum ada nilai asesmen yang dirilis oleh guru pada mata pelajaran ini.
+resources/js/pages/parent/child-grades.tsx	Catatan Guru
+resources/js/pages/parent/child-grades.tsx	Dashboard
+resources/js/pages/parent/child-grades.tsx	Formatif
+resources/js/pages/parent/child-grades.tsx	Guru:
+resources/js/pages/parent/child-grades.tsx	Halaman ini menampilkan nilai dari tugas dan asesmen yang telah diperiksa dan dirilis oleh guru mata pelajaran. Nilai akhir rapor semester akan tersedia secara resmi pada saat pembagian rapor digital.
+resources/js/pages/parent/child-grades.tsx	Jenis
+resources/js/pages/parent/child-grades.tsx	KKTP:
+resources/js/pages/parent/child-grades.tsx	Nama Asesmen
+resources/js/pages/parent/child-grades.tsx	Nilai
+resources/js/pages/parent/child-grades.tsx	Remedial
+resources/js/pages/parent/child-grades.tsx	Sumatif Akhir
+resources/js/pages/parent/child-grades.tsx	Sumatif Lingkup Materi
+resources/js/pages/parent/child-grades.tsx	Tanggal
+resources/js/pages/parent/child-report-cards.tsx	Belum ada rapor yang diterbitkan untuk anak ini.
+resources/js/pages/parent/child-report-cards.tsx	Pilih Anak
+resources/js/pages/parent/child-report-cards.tsx	Semester
+resources/js/pages/parent/child-report-cards.tsx	Unduh PDF
+resources/js/pages/parent/child-report-cards.tsx	· Versi
+resources/js/pages/parent/fees.tsx	Bank Asal
+resources/js/pages/parent/fees.tsx	Batal
+resources/js/pages/parent/fees.tsx	Batalkan
+resources/js/pages/parent/fees.tsx	Batalkan transfer
+resources/js/pages/parent/fees.tsx	Batalkan transfer?
+resources/js/pages/parent/fees.tsx	Belum ada anak yang terhubung dengan akun ini.
+resources/js/pages/parent/fees.tsx	Belum ada pembayaran.
+resources/js/pages/parent/fees.tsx	Belum ada tagihan.
+resources/js/pages/parent/fees.tsx	Berikutnya
+resources/js/pages/parent/fees.tsx	Bukti Transfer (JPG, PNG, PDF, maks. 5 MB)
+resources/js/pages/parent/fees.tsx	Catatan
+resources/js/pages/parent/fees.tsx	Cetak Kuitansi
+resources/js/pages/parent/fees.tsx	Dibayar
+resources/js/pages/parent/fees.tsx	Halaman
+resources/js/pages/parent/fees.tsx	Jatuh Tempo
+resources/js/pages/parent/fees.tsx	Jumlah
+resources/js/pages/parent/fees.tsx	Kembali
+resources/js/pages/parent/fees.tsx	Kirim
+resources/js/pages/parent/fees.tsx	Menunggu verifikasi
+resources/js/pages/parent/fees.tsx	Pembayaran akan diverifikasi oleh sekolah sebelum tagihan dinyatakan lunas.
+resources/js/pages/parent/fees.tsx	Periksa atau batalkan pengajuan transfer yang belum diverifikasi sekolah.
+resources/js/pages/parent/fees.tsx	Rekening Sekolah
+resources/js/pages/parent/fees.tsx	Rekening sekolah belum diatur.
+resources/js/pages/parent/fees.tsx	Riwayat Pembayaran
+resources/js/pages/parent/fees.tsx	Sebelumnya
+resources/js/pages/parent/fees.tsx	Semua anak
+resources/js/pages/parent/fees.tsx	Sisa
+resources/js/pages/parent/fees.tsx	Siswa
+resources/js/pages/parent/fees.tsx	Status
+resources/js/pages/parent/fees.tsx	Tagihan
+resources/js/pages/parent/fees.tsx	Tanggal
+resources/js/pages/parent/fees.tsx	Tanggal Transfer
+resources/js/pages/parent/fees.tsx	Tidak ada transfer menunggu verifikasi.
+resources/js/pages/parent/fees.tsx	Tindakan
+resources/js/pages/parent/fees.tsx	Total transfer
+resources/js/pages/parent/fees.tsx	Transfer Menunggu Verifikasi
+resources/js/pages/parent/fees.tsx	Unggah Bukti Transfer
+resources/js/pages/parent/fees.tsx	Unggah bukti transfer belum tersedia: rekening tujuan transfer belum diatur oleh sekolah.
+resources/js/pages/parent/fees.tsx	a.n.
+resources/js/pages/parent/fees.tsx	dari
+resources/js/pages/parent/fees.tsx	· dapat diklaim
+resources/js/pages/settings/notifications.tsx	Batas maksimal pesan WhatsApp non-kritis per hari.
+resources/js/pages/settings/notifications.tsx	Bisa Opt-out
+resources/js/pages/settings/notifications.tsx	Email
+resources/js/pages/settings/notifications.tsx	In-App
+resources/js/pages/settings/notifications.tsx	Jam Tenang
+resources/js/pages/settings/notifications.tsx	Jenis Notifikasi
+resources/js/pages/settings/notifications.tsx	Kebijakan
+resources/js/pages/settings/notifications.tsx	Kirim notifikasi pengingat SPP N hari sebelum tanggal jatuh tempo.
+resources/js/pages/settings/notifications.tsx	Kuota
+resources/js/pages/settings/notifications.tsx	Kuota Harian WhatsApp
+resources/js/pages/settings/notifications.tsx	Mulai Jam Tenang (WIB)
+resources/js/pages/settings/notifications.tsx	Penggunaan WA Hari Ini:
+resources/js/pages/settings/notifications.tsx	Pengingat Tagihan (Hari Sebelum Jatuh Tempo)
+resources/js/pages/settings/notifications.tsx	Pesan tidak mendesak ditunda pengirimannya mulai jam ini.
+resources/js/pages/settings/notifications.tsx	Pesan yang tertunda dikirimkan saat jam tenang berakhir.
+resources/js/pages/settings/notifications.tsx	Saluran per Jenis Notifikasi
+resources/js/pages/settings/notifications.tsx	Selesai Jam Tenang (WIB)
+resources/js/pages/settings/notifications.tsx	Simpan Pengaturan
+resources/js/pages/settings/notifications.tsx	Tersimpan.
+resources/js/pages/settings/notifications.tsx	WhatsApp
+resources/js/pages/settings/notifications.tsx	pesan
+resources/js/pages/settings/notifications.tsx	✓ Aktif
+resources/js/pages/settings/school.tsx	Account Holder Name
+resources/js/pages/settings/school.tsx	Account Number
+resources/js/pages/settings/school.tsx	Akun Titipan Wali (Kelebihan Pembayaran)
+resources/js/pages/settings/school.tsx	Akun kewajiban khusus titipan wali. Perubahan hanya berlaku untuk penerimaan baru.
+resources/js/pages/settings/school.tsx	Bank Name
+resources/js/pages/settings/school.tsx	Belum diatur
+resources/js/pages/settings/school.tsx	Belum dipilih
+resources/js/pages/settings/school.tsx	Current logo
+resources/js/pages/settings/school.tsx	Default Curriculum
+resources/js/pages/settings/school.tsx	Default Passing Threshold (KKTP)
+resources/js/pages/settings/school.tsx	Kurikulum Merdeka
+resources/js/pages/settings/school.tsx	NIP
+resources/js/pages/settings/school.tsx	NPSN
+resources/js/pages/settings/school.tsx	Official Email
+resources/js/pages/settings/school.tsx	Official School Name
+resources/js/pages/settings/school.tsx	PNG, JPG, or JPEG format (max 1 MB). Private storage streamed via authorized endpoint.
+resources/js/pages/settings/school.tsx	Phone
+resources/js/pages/settings/school.tsx	Principal (Kepala Sekolah)
+resources/js/pages/settings/school.tsx	Principal Name & Titles
+resources/js/pages/settings/school.tsx	Rekening tujuan transfer
+resources/js/pages/settings/school.tsx	Save School Profile
+resources/js/pages/settings/school.tsx	School Address
+resources/js/pages/settings/school.tsx	School Bank Account (Transfer Instructions)
+resources/js/pages/settings/school.tsx	School Logo
+resources/js/pages/staff/attendance.tsx	(Luar Jadwal)
+resources/js/pages/staff/attendance.tsx	Aksi
+resources/js/pages/staff/attendance.tsx	Alpa
+resources/js/pages/staff/attendance.tsx	Alpa (
+resources/js/pages/staff/attendance.tsx	Batal
+resources/js/pages/staff/attendance.tsx	Belum Hadir
+resources/js/pages/staff/attendance.tsx	Belum Hadir (
+resources/js/pages/staff/attendance.tsx	Catatan Override (Opsional)
+resources/js/pages/staff/attendance.tsx	Cepat
+resources/js/pages/staff/attendance.tsx	Diharapkan
+resources/js/pages/staff/attendance.tsx	Edit
+resources/js/pages/staff/attendance.tsx	Guru
+resources/js/pages/staff/attendance.tsx	Hadir
+resources/js/pages/staff/attendance.tsx	Izin / Cuti (
+resources/js/pages/staff/attendance.tsx	Izin / Sakit / Cuti
+resources/js/pages/staff/attendance.tsx	Jam Masuk
+resources/js/pages/staff/attendance.tsx	Jam Masuk (HH:mm)
+resources/js/pages/staff/attendance.tsx	Jam Pulang
+resources/js/pages/staff/attendance.tsx	Jam Pulang (HH:mm)
+resources/js/pages/staff/attendance.tsx	Jam pertama:
+resources/js/pages/staff/attendance.tsx	Keterangan
+resources/js/pages/staff/attendance.tsx	Metode:
+resources/js/pages/staff/attendance.tsx	Override manual presensi untuk
+resources/js/pages/staff/attendance.tsx	Override oleh @
+resources/js/pages/staff/attendance.tsx	Pegawai
+resources/js/pages/staff/attendance.tsx	Rekap Bulanan
+resources/js/pages/staff/attendance.tsx	Roster Shift
+resources/js/pages/staff/attendance.tsx	Semua (
+resources/js/pages/staff/attendance.tsx	Simpan Presensi
+resources/js/pages/staff/attendance.tsx	Status
+resources/js/pages/staff/attendance.tsx	Status Presensi
+resources/js/pages/staff/attendance.tsx	Terlambat
+resources/js/pages/staff/attendance.tsx	Terlambat (
+resources/js/pages/staff/attendance.tsx	Tidak Absen Pulang
+resources/js/pages/staff/attendance.tsx	Tidak Absen Pulang (
+resources/js/pages/staff/attendance.tsx	Tidak ada data presensi untuk filter ini.
+resources/js/pages/staff/attendance.tsx	Ubah Presensi Pegawai
+resources/js/pages/staff/attendance.tsx	m
+resources/js/pages/staff/attendance.tsx	tanggal
+resources/js/pages/staff/leave-review.tsx	&apos;s request for
+resources/js/pages/staff/leave-review.tsx	? A note explaining the decision is required.
+resources/js/pages/staff/leave-review.tsx	Actions
+resources/js/pages/staff/leave-review.tsx	Category
+resources/js/pages/staff/leave-review.tsx	Dates
+resources/js/pages/staff/leave-review.tsx	Download
+resources/js/pages/staff/leave-review.tsx	Employee
+resources/js/pages/staff/leave-review.tsx	Keep request
+resources/js/pages/staff/leave-review.tsx	Next
+resources/js/pages/staff/leave-review.tsx	No leave requests in this bucket.
+resources/js/pages/staff/leave-review.tsx	Previous
+resources/js/pages/staff/leave-review.tsx	Proof
+resources/js/pages/staff/leave-review.tsx	Reason
+resources/js/pages/staff/leave-review.tsx	Reject
+resources/js/pages/staff/leave-review.tsx	Reject leave request
+resources/js/pages/staff/leave-review.tsx	Reject request
+resources/js/pages/staff/leave-review.tsx	Rejection note
+resources/js/pages/staff/leave-review.tsx	Review
+resources/js/pages/staff/leave-review.tsx	Setujui
+resources/js/pages/staff/leave-review.tsx	Status
+resources/js/pages/staff/leave-review.tsx	Submitted
+resources/js/pages/staff/leave-review.tsx	Tolak
+resources/js/pages/staff/leave-review.tsx	by
+resources/js/pages/staff/leave-review.tsx	of
+resources/js/pages/staff/leave-review.tsx	request
+resources/js/pages/staff/leave-review.tsx	— page
+resources/js/pages/staff/my-leave.tsx	? Only pending requests can be cancelled.
+resources/js/pages/staff/my-leave.tsx	Annual Leave (Cuti)
+resources/js/pages/staff/my-leave.tsx	Cancel
+resources/js/pages/staff/my-leave.tsx	Cancel leave request
+resources/js/pages/staff/my-leave.tsx	Cancel request
+resources/js/pages/staff/my-leave.tsx	Category
+resources/js/pages/staff/my-leave.tsx	Dates
+resources/js/pages/staff/my-leave.tsx	Download
+resources/js/pages/staff/my-leave.tsx	First day
+resources/js/pages/staff/my-leave.tsx	Keep request
+resources/js/pages/staff/my-leave.tsx	Last day
+resources/js/pages/staff/my-leave.tsx	Leave (Izin)
+resources/js/pages/staff/my-leave.tsx	New leave request
+resources/js/pages/staff/my-leave.tsx	New request
+resources/js/pages/staff/my-leave.tsx	Next
+resources/js/pages/staff/my-leave.tsx	No leave requests submitted yet.
+resources/js/pages/staff/my-leave.tsx	Official Duty (Dinas Luar)
+resources/js/pages/staff/my-leave.tsx	One date range per submission. Attach proof such as a doctor's note or assignment letter (JPG, PNG, or PDF, max 5 MB). Ranges may not overlap a pending or approved request.
+resources/js/pages/staff/my-leave.tsx	Page
+resources/js/pages/staff/my-leave.tsx	Previous
+resources/js/pages/staff/my-leave.tsx	Proof
+resources/js/pages/staff/my-leave.tsx	Proof (optional)
+resources/js/pages/staff/my-leave.tsx	Reason
+resources/js/pages/staff/my-leave.tsx	Review note
+resources/js/pages/staff/my-leave.tsx	Sick (Sakit)
+resources/js/pages/staff/my-leave.tsx	Status
+resources/js/pages/staff/my-leave.tsx	Submit request
+resources/js/pages/staff/my-leave.tsx	Submitted
+resources/js/pages/staff/my-leave.tsx	Withdraw the request for
+resources/js/pages/staff/my-leave.tsx	of
+resources/js/pages/staff/recap.tsx	(Guru)
+resources/js/pages/staff/recap.tsx	Alpa
+resources/js/pages/staff/recap.tsx	Cuti
+resources/js/pages/staff/recap.tsx	Dinas Luar
+resources/js/pages/staff/recap.tsx	Ekspor CSV
+resources/js/pages/staff/recap.tsx	Extra
+resources/js/pages/staff/recap.tsx	Hadir
+resources/js/pages/staff/recap.tsx	Hari Kerja
+resources/js/pages/staff/recap.tsx	Izin
+resources/js/pages/staff/recap.tsx	Kehadiran
+resources/js/pages/staff/recap.tsx	Nama
+resources/js/pages/staff/recap.tsx	Presensi Harian
+resources/js/pages/staff/recap.tsx	Pulang Cepat
+resources/js/pages/staff/recap.tsx	Rekap Bulanan
+resources/js/pages/staff/recap.tsx	Sakit
+resources/js/pages/staff/recap.tsx	Terlambat
+resources/js/pages/staff/recap.tsx	Tidak Absen Pulang
+resources/js/pages/staff/recap.tsx	Tidak ada pegawai aktif.
+resources/js/pages/staff/recap.tsx	m
+resources/js/pages/student/grades.tsx	Belum ada mata pelajaran terdaftar untuk semester ini.
+resources/js/pages/student/grades.tsx	Belum ada nilai asesmen yang dirilis oleh guru untuk mata pelajaran ini.
+resources/js/pages/student/grades.tsx	Catatan Guru
+resources/js/pages/student/grades.tsx	Dashboard
+resources/js/pages/student/grades.tsx	Formatif
+resources/js/pages/student/grades.tsx	Guru:
+resources/js/pages/student/grades.tsx	Jenis
+resources/js/pages/student/grades.tsx	KKTP:
+resources/js/pages/student/grades.tsx	Nama Asesmen
+resources/js/pages/student/grades.tsx	Nilai
+resources/js/pages/student/grades.tsx	Nilai yang muncul di bawah ini adalah penilaian yang telah dirilis oleh guru. Nilai rapor akhir semester akan diumumkan resmi pada jadwal pembagian rapor.
+resources/js/pages/student/grades.tsx	Remedial
+resources/js/pages/student/grades.tsx	Sumatif Akhir
+resources/js/pages/student/grades.tsx	Sumatif Lingkup Materi
+resources/js/pages/student/grades.tsx	Tanggal
+resources/js/pages/student/report-cards.tsx	Belum ada rapor yang diterbitkan.
+resources/js/pages/student/report-cards.tsx	Semester
+resources/js/pages/student/report-cards.tsx	Unduh PDF
+resources/js/pages/student/report-cards.tsx	· Versi
+resources/js/pages/subjects/index.tsx	)? This action cannot be undone.
+resources/js/pages/subjects/index.tsx	Actions
+resources/js/pages/subjects/index.tsx	Active
+resources/js/pages/subjects/index.tsx	Active (Mata pelajaran aktif)
+resources/js/pages/subjects/index.tsx	Are you sure you want to delete
+resources/js/pages/subjects/index.tsx	Cancel
+resources/js/pages/subjects/index.tsx	Code
+resources/js/pages/subjects/index.tsx	Create Subject
+resources/js/pages/subjects/index.tsx	Delete
+resources/js/pages/subjects/index.tsx	Delete Subject
+resources/js/pages/subjects/index.tsx	Description (optional)
+resources/js/pages/subjects/index.tsx	Edit
+resources/js/pages/subjects/index.tsx	Edit Subject —
+resources/js/pages/subjects/index.tsx	Group
+resources/js/pages/subjects/index.tsx	Inactive
+resources/js/pages/subjects/index.tsx	Name
+resources/js/pages/subjects/index.tsx	Next
+resources/js/pages/subjects/index.tsx	No subjects found.
+resources/js/pages/subjects/index.tsx	Order
+resources/js/pages/subjects/index.tsx	Page
+resources/js/pages/subjects/index.tsx	Perbarui data mata pelajaran.
+resources/js/pages/subjects/index.tsx	Previous
+resources/js/pages/subjects/index.tsx	Save changes
+resources/js/pages/subjects/index.tsx	Search
+resources/js/pages/subjects/index.tsx	Sort Order
+resources/js/pages/subjects/index.tsx	Status
+resources/js/pages/subjects/index.tsx	Tambah mata pelajaran baru ke katalog kurikulum sekolah.
+resources/js/pages/subjects/index.tsx	of
+resources/js/pages/teacher/assessments/index.tsx	*Wajib untuk sumatif lingkup materi
+resources/js/pages/teacher/assessments/index.tsx	Aksi
+resources/js/pages/teacher/assessments/index.tsx	Batal
+resources/js/pages/teacher/assessments/index.tsx	Belum Ada Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Belum ada TP yang dibuat untuk mata pelajaran dan tingkat kelas ini.
+resources/js/pages/teacher/assessments/index.tsx	Buku Nilai
+resources/js/pages/teacher/assessments/index.tsx	Dirilis
+resources/js/pages/teacher/assessments/index.tsx	Draf
+resources/js/pages/teacher/assessments/index.tsx	Formatif
+resources/js/pages/teacher/assessments/index.tsx	Formatif (Umpan Balik)
+resources/js/pages/teacher/assessments/index.tsx	Jenis
+resources/js/pages/teacher/assessments/index.tsx	Jenis Asesmen
+resources/js/pages/teacher/assessments/index.tsx	KKTP:
+resources/js/pages/teacher/assessments/index.tsx	Kembali ke Kursus
+resources/js/pages/teacher/assessments/index.tsx	Nama Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Perbarui
+resources/js/pages/teacher/assessments/index.tsx	Perbarui detail atau tautan tujuan pembelajaran asesmen ini.
+resources/js/pages/teacher/assessments/index.tsx	Semester Aktif
+resources/js/pages/teacher/assessments/index.tsx	Simpan Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Skor Maks
+resources/js/pages/teacher/assessments/index.tsx	Skor Maksimal
+resources/js/pages/teacher/assessments/index.tsx	Status Rilis
+resources/js/pages/teacher/assessments/index.tsx	Sumatif Akhir
+resources/js/pages/teacher/assessments/index.tsx	Sumatif Akhir Semester
+resources/js/pages/teacher/assessments/index.tsx	Sumatif Lingkup Materi
+resources/js/pages/teacher/assessments/index.tsx	Tambah Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Tambah Asesmen Baru
+resources/js/pages/teacher/assessments/index.tsx	Tanggal
+resources/js/pages/teacher/assessments/index.tsx	Tanggal Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Tautkan Tujuan Pembelajaran (TP)
+resources/js/pages/teacher/assessments/index.tsx	Tentukan jenis asesmen dan tautkan tujuan pembelajaran yang dinilai.
+resources/js/pages/teacher/assessments/index.tsx	Tujuan Pembelajaran
+resources/js/pages/teacher/assessments/index.tsx	Tutup
+resources/js/pages/teacher/assessments/index.tsx	Ubah Asesmen
+resources/js/pages/teacher/assessments/index.tsx	Urutan
+resources/js/pages/teacher/assessments/index.tsx	Urutan Tampilan
+resources/js/pages/teacher/assessments/index.tsx	s.d.
+resources/js/pages/teacher/class-grades.tsx	(Tingkat
+resources/js/pages/teacher/class-grades.tsx	Draf
+resources/js/pages/teacher/class-grades.tsx	Final
+resources/js/pages/teacher/class-grades.tsx	KKTP:
+resources/js/pages/teacher/class-grades.tsx	Kelas
+resources/js/pages/teacher/class-grades.tsx	Kembali ke Kelas
+resources/js/pages/teacher/class-grades.tsx	Nama Siswa
+resources/js/pages/teacher/class-grades.tsx	No
+resources/js/pages/teacher/class-grades.tsx	Tidak ada siswa aktif terdaftar di kelas ini pada semester terpilih.
+resources/js/pages/teacher/courses/index.tsx	Belum Ada Mata Pelajaran
+resources/js/pages/teacher/courses/index.tsx	Buka Kelas
+resources/js/pages/teacher/courses/index.tsx	Buku Nilai
+resources/js/pages/teacher/courses/index.tsx	Guru:
+resources/js/pages/teacher/courses/index.tsx	KKTP:
+resources/js/pages/teacher/courses/index.tsx	Siswa Terdaftar
+resources/js/pages/teacher/courses/show.tsx	Buku Nilai (Gradebook)
+resources/js/pages/teacher/courses/show.tsx	Capaian Rapor
+resources/js/pages/teacher/courses/show.tsx	Daftar Siswa (
+resources/js/pages/teacher/courses/show.tsx	Jenis Kelamin
+resources/js/pages/teacher/courses/show.tsx	Kelola Asesmen
+resources/js/pages/teacher/courses/show.tsx	My Courses
+resources/js/pages/teacher/courses/show.tsx	NISN / No. Induk
+resources/js/pages/teacher/courses/show.tsx	Nama Siswa
+resources/js/pages/teacher/courses/show.tsx	No
+resources/js/pages/teacher/courses/show.tsx	Tidak ada siswa yang terdaftar aktif di kelas ini hari ini.
+resources/js/pages/teacher/gradebook.tsx	% / Akhir
+resources/js/pages/teacher/gradebook.tsx	Asesmen
+resources/js/pages/teacher/gradebook.tsx	Atur Bobot
+resources/js/pages/teacher/gradebook.tsx	Atur Bobot Penilaian Semester
+resources/js/pages/teacher/gradebook.tsx	Batal
+resources/js/pages/teacher/gradebook.tsx	Belum
+resources/js/pages/teacher/gradebook.tsx	Belum ada asesmen untuk semester ini. Tambahkan asesmen terlebih dahulu di menu
+resources/js/pages/teacher/gradebook.tsx	Bobot Sumatif Akhir Semester (%)
+resources/js/pages/teacher/gradebook.tsx	Bobot Sumatif Lingkup Materi (%)
+resources/js/pages/teacher/gradebook.tsx	Bobot: Lingkup
+resources/js/pages/teacher/gradebook.tsx	Capaian Rapor
+resources/js/pages/teacher/gradebook.tsx	Data Siswa
+resources/js/pages/teacher/gradebook.tsx	Dirilis
+resources/js/pages/teacher/gradebook.tsx	Formatif (Umpan Balik)
+resources/js/pages/teacher/gradebook.tsx	KKTP:
+resources/js/pages/teacher/gradebook.tsx	Kelengkapan
+resources/js/pages/teacher/gradebook.tsx	Kelola Asesmen
+resources/js/pages/teacher/gradebook.tsx	Kembali
+resources/js/pages/teacher/gradebook.tsx	Lengkap
+resources/js/pages/teacher/gradebook.tsx	Maks:
+resources/js/pages/teacher/gradebook.tsx	NIS
+resources/js/pages/teacher/gradebook.tsx	Nama Lengkap
+resources/js/pages/teacher/gradebook.tsx	Nilai Rapor
+resources/js/pages/teacher/gradebook.tsx	Rilis
+resources/js/pages/teacher/gradebook.tsx	Ringkasan Nilai
+resources/js/pages/teacher/gradebook.tsx	Semester
+resources/js/pages/teacher/gradebook.tsx	Simpan Bobot
+resources/js/pages/teacher/gradebook.tsx	Siswa •
+resources/js/pages/teacher/gradebook.tsx	Status
+resources/js/pages/teacher/gradebook.tsx	Sudah Difinalisasi (Terkunci)
+resources/js/pages/teacher/gradebook.tsx	Sumatif Akhir Semester (
+resources/js/pages/teacher/gradebook.tsx	Sumatif Lingkup Materi (
+resources/js/pages/teacher/gradebook.tsx	Tentukan proporsi nilai sumatif lingkup materi dan sumatif akhir semester.
+resources/js/pages/teacher/gradebook.tsx	Tutup
+resources/js/pages/teacher/objectives/index.tsx	Aksi
+resources/js/pages/teacher/objectives/index.tsx	Batal
+resources/js/pages/teacher/objectives/index.tsx	Belum Ada Tujuan Pembelajaran
+resources/js/pages/teacher/objectives/index.tsx	Deskripsi
+resources/js/pages/teacher/objectives/index.tsx	Deskripsi Tujuan Pembelajaran
+resources/js/pages/teacher/objectives/index.tsx	Kelas
+resources/js/pages/teacher/objectives/index.tsx	Kode
+resources/js/pages/teacher/objectives/index.tsx	Kode TP
+resources/js/pages/teacher/objectives/index.tsx	Mata Pelajaran
+resources/js/pages/teacher/objectives/index.tsx	Perbarui
+resources/js/pages/teacher/objectives/index.tsx	Perbarui kode atau deskripsi tujuan pembelajaran.
+resources/js/pages/teacher/objectives/index.tsx	Pilih tahun ajaran, mata pelajaran, dan tingkat kelas untuk melihat tujuan pembelajaran.
+resources/js/pages/teacher/objectives/index.tsx	Salin dari Tahun Lalu
+resources/js/pages/teacher/objectives/index.tsx	Simpan
+resources/js/pages/teacher/objectives/index.tsx	Tahun Ajaran
+resources/js/pages/teacher/objectives/index.tsx	Tambah TP
+resources/js/pages/teacher/objectives/index.tsx	Tambah Tujuan Pembelajaran
+resources/js/pages/teacher/objectives/index.tsx	Tingkat Kelas
+resources/js/pages/teacher/objectives/index.tsx	Tujuan pembelajaran digunakan dalam asesmen lingkup materi dan deskripsi capaian rapor.
+resources/js/pages/teacher/objectives/index.tsx	Tutup
+resources/js/pages/teacher/objectives/index.tsx	Ubah Tujuan Pembelajaran
+resources/js/pages/teacher/objectives/index.tsx	Urutan
+resources/js/pages/teacher/report-cards.tsx	Aksi
+resources/js/pages/teacher/report-cards.tsx	Alasan
+resources/js/pages/teacher/report-cards.tsx	Batal
+resources/js/pages/teacher/report-cards.tsx	Belum ada siswa terdaftar.
+resources/js/pages/teacher/report-cards.tsx	Catatan
+resources/js/pages/teacher/report-cards.tsx	Catatan Wali Kelas (maks. 1000)
+resources/js/pages/teacher/report-cards.tsx	Catatan Wali Kelas —
+resources/js/pages/teacher/report-cards.tsx	Cetak Semua
+resources/js/pages/teacher/report-cards.tsx	Cuplikan rapor yang akan diterbitkan.
+resources/js/pages/teacher/report-cards.tsx	Diterbitkan dengan catatan (nilai catatan wali kelas belum lengkap):
+resources/js/pages/teacher/report-cards.tsx	Ekstrakurikuler (maks. 500)
+resources/js/pages/teacher/report-cards.tsx	Finalisasi
+resources/js/pages/teacher/report-cards.tsx	Guru
+resources/js/pages/teacher/report-cards.tsx	Kelengkapan Nilai
+resources/js/pages/teacher/report-cards.tsx	Kembali ke Kelas
+resources/js/pages/teacher/report-cards.tsx	Keputusan
+resources/js/pages/teacher/report-cards.tsx	Lulus
+resources/js/pages/teacher/report-cards.tsx	Mata Pelajaran
+resources/js/pages/teacher/report-cards.tsx	Memuat pratinjau…
+resources/js/pages/teacher/report-cards.tsx	Naik Kelas
+resources/js/pages/teacher/report-cards.tsx	Nama Siswa
+resources/js/pages/teacher/report-cards.tsx	PDF
+resources/js/pages/teacher/report-cards.tsx	Pratinjau
+resources/js/pages/teacher/report-cards.tsx	Pratinjau Rapor —
+resources/js/pages/teacher/report-cards.tsx	Rapor belum dapat diterbitkan:
+resources/js/pages/teacher/report-cards.tsx	Simpan
+resources/js/pages/teacher/report-cards.tsx	Tarik
+resources/js/pages/teacher/report-cards.tsx	Tarik Rapor
+resources/js/pages/teacher/report-cards.tsx	Terbitkan
+resources/js/pages/teacher/report-cards.tsx	Tinggal Kelas
+resources/js/pages/teacher/report-cards.tsx	Unduh Cetak Semua
+resources/js/pages/teacher/report-cards.tsx	Unduh PDF
+resources/js/pages/teacher/report-cards.tsx	Versi
+resources/js/pages/teacher/report-cards.tsx	Versi terbit akan disembunyikan dari orang tua dan siswa. Alasan wajib diisi dan dicatat audit.
+resources/js/pages/teacher/report-cards.tsx	· diterbitkan
+resources/js/pages/teacher/results.tsx	/2000 karakter
+resources/js/pages/teacher/results.tsx	Aksi
+resources/js/pages/teacher/results.tsx	Batal
+resources/js/pages/teacher/results.tsx	Belum ada
+resources/js/pages/teacher/results.tsx	Belum ada deskripsi (memerlukan data asesmen sumatif lingkup materi).
+resources/js/pages/teacher/results.tsx	Buku Nilai
+resources/js/pages/teacher/results.tsx	Deskripsi Capaian Kompetensi
+resources/js/pages/teacher/results.tsx	Difinalisasi
+resources/js/pages/teacher/results.tsx	Disesuaikan Guru
+resources/js/pages/teacher/results.tsx	Draf Otomatis Sistem:
+resources/js/pages/teacher/results.tsx	Edit
+resources/js/pages/teacher/results.tsx	Edit Deskripsi Capaian
+resources/js/pages/teacher/results.tsx	Gunakan teks draf ini
+resources/js/pages/teacher/results.tsx	KKTP:
+resources/js/pages/teacher/results.tsx	Kelola Asesmen
+resources/js/pages/teacher/results.tsx	Kembali
+resources/js/pages/teacher/results.tsx	Mata pelajaran ini telah difinalisasi
+resources/js/pages/teacher/results.tsx	Nilai Akhir
+resources/js/pages/teacher/results.tsx	Nilai akhir dan deskripsi capaian telah dibekukan dan menjadi data acuan rapor.
+resources/js/pages/teacher/results.tsx	No
+resources/js/pages/teacher/results.tsx	Otomatis (Sistem)
+resources/js/pages/teacher/results.tsx	Sesuaikan catatan deskripsi capaian kompetensi untuk
+resources/js/pages/teacher/results.tsx	Simpan Deskripsi
+resources/js/pages/teacher/results.tsx	Siswa
+resources/js/pages/teacher/results.tsx	Status
+resources/js/pages/teacher/results.tsx	Teks Deskripsi
+resources/js/pages/teacher/results.tsx	Terbuka (Draf)
+resources/js/pages/teacher/results.tsx	Tidak ada siswa terdaftar dalam kelas ini pada semester yang dipilih.
+resources/js/pages/users/user-form.tsx	Cancel
+resources/js/pages/welcome.tsx	Dashboard
+resources/js/pages/welcome.tsx	Deploy now
+resources/js/pages/welcome.tsx	Documentation
+resources/js/pages/welcome.tsx	Laracasts
+resources/js/pages/welcome.tsx	Laravel has an incredibly rich ecosystem.
+resources/js/pages/welcome.tsx	Let's get started
+resources/js/pages/welcome.tsx	Log in
+resources/js/pages/welcome.tsx	Read the
+resources/js/pages/welcome.tsx	Watch video tutorials at
+resources/js/pages/welcome.tsx	We suggest starting with the following.
