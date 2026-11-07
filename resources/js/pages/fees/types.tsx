@@ -1,4 +1,4 @@
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head, router, setLayoutProps } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import FeeTypeController from '@/actions/App/Http/Controllers/Fees/FeeTypeController';
@@ -73,6 +73,13 @@ export default function FeeTypesIndex({
     discountAccounts,
     canManage,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Jenis Biaya' },
+        ],
+    });
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<FeeTypeRow | null>(null);
     const [deleting, setDeleting] = useState<FeeTypeRow | null>(null);

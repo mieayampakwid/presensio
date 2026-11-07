@@ -1,4 +1,10 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import {
+    Head,
+    router,
+    setLayoutProps,
+    useForm,
+    usePage,
+} from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import CashierController from '@/actions/App/Http/Controllers/Fees/CashierController';
@@ -53,6 +59,13 @@ export default function Cashier({
     cashAccounts,
     defaultAccountId,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Kasir' },
+        ],
+    });
+
     const flash = usePage().flash as {
         payment?: { id: number; receipt_number: string };
     };

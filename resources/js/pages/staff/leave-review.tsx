@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     Check,
     ChevronLeft,
@@ -10,6 +10,7 @@ import {
 import { ChangeEvent, useState } from 'react';
 import LeaveReviewController from '@/actions/App/Http/Controllers/Staff/LeaveReviewController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,16 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function LeaveReview({ requests, filters }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.staff_leave'),
+                href: LeaveReviewController.index().url,
+            },
+        ],
+    });
     const [rejecting, setRejecting] = useState<LeaveReviewRow | null>(null);
 
     const submitSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -391,11 +402,3 @@ export default function LeaveReview({ requests, filters }: Props) {
         </>
     );
 }
-
-LeaveReview.layout = {
-    breadcrumbs: [
-        {
-            title: 'Staff Leave',
-        },
-    ],
-};

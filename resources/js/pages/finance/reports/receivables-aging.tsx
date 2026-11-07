@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -63,6 +63,13 @@ const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm';
 
 export default function ReceivablesAgingReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Umur Piutang' },
+        ],
+    });
+
     const [asOf, setAsOf] = useState(report.as_of);
     const [classId, setClassId] = useState(
         report.class_id === null ? '' : String(report.class_id),
@@ -290,10 +297,3 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
         </>
     );
 }
-
-ReceivablesAgingReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Umur Piutang', href: '#' },
-    ],
-};

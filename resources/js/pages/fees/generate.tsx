@@ -1,4 +1,4 @@
-import { Head, router, useHttp } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
 import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGenerationController';
 import Heading from '@/components/heading';
@@ -42,6 +42,13 @@ export default function GenerateBills({
     feeTypes,
     classes,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Generate Tagihan' },
+        ],
+    });
+
     const http = useHttp<FormData, Summary>({
         fee_type_id: '',
         target: 'all',

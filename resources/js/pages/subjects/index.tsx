@@ -1,8 +1,9 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import SubjectController from '@/actions/App/Http/Controllers/Subjects/SubjectController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/input-error';
 import {
@@ -54,6 +55,16 @@ type Props = {
 };
 
 export default function SubjectsIndex({ subjects, filters, groups }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.subjects'),
+                href: SubjectController.index().url,
+            },
+        ],
+    });
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingSubject, setEditingSubject] = useState<SubjectRow | null>(
         null,
@@ -624,12 +635,3 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
         </>
     );
 }
-
-SubjectsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Subjects',
-            href: SubjectController.index().url,
-        },
-    ],
-};

@@ -1,10 +1,11 @@
-import { Head, Link, router, Form } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { CalendarCheck, CalendarRange, Pencil } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import StaffAttendanceController from '@/actions/App/Http/Controllers/Staff/StaffAttendanceController';
 import StaffRecapController from '@/actions/App/Http/Controllers/Staff/StaffRecapController';
 import ShiftRosterController from '@/actions/App/Http/Controllers/Staff/ShiftRosterController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -101,6 +102,16 @@ export default function StaffAttendanceIndex({
     can_override,
     statuses,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.staff_attendance'),
+                href: StaffAttendanceController.index().url,
+            },
+        ],
+    });
     const [editingRow, setEditingRow] = useState<EmployeeRow | null>(null);
 
     const navigateDate = (newDate: string) => {
@@ -603,12 +614,3 @@ export default function StaffAttendanceIndex({
         </>
     );
 }
-
-StaffAttendanceIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Presensi Pegawai',
-            href: StaffAttendanceController.index().url,
-        },
-    ],
-};

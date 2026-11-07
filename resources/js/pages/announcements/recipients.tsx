@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,14 @@ export default function Recipients({
     announcement: Announcement;
     recipientReport: Report;
 }) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Pengumuman', href: '/announcements' },
+            { title: announcement.title, href: Reader.show(announcement.id) },
+            { title: 'Status Penerima' },
+        ],
+    });
+
     return (
         <>
             <Head title="Status penerima" />

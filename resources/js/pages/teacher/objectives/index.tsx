@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { Copy, Plus, Target, Trash2, Edit2, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -67,6 +67,15 @@ export default function ObjectivesIndex({
     canManage,
     hasPreviousYear,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Tujuan Pembelajaran',
+                href: '/objectives',
+            },
+        ],
+    });
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingObjective, setEditingObjective] = useState<Objective | null>(
         null,
@@ -581,12 +590,3 @@ export default function ObjectivesIndex({
         </>
     );
 }
-
-ObjectivesIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Tujuan Pembelajaran',
-            href: '/objectives',
-        },
-    ],
-};

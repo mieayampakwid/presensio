@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import BillController from '@/actions/App/Http/Controllers/Fees/BillController';
@@ -115,6 +115,13 @@ export default function BillsIndex({
     statuses,
     canManage,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Tagihan' },
+        ],
+    });
+
     const [action, setAction] = useState<Action | null>(null);
 
     const submitFilters = (

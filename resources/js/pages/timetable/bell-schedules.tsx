@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import BellScheduleController from '@/actions/App/Http/Controllers/Timetable/BellScheduleController';
@@ -62,6 +62,15 @@ export default function BellSchedules({
     operational_weekdays,
 }: Props) {
     const { t } = useTranslation();
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('timetable.index.title'),
+                href: BellScheduleController.index().url,
+            },
+        ],
+    });
+
     const [editing, setEditing] = useState<ScheduleRow | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleting, setDeleting] = useState<ScheduleRow | null>(null);
@@ -583,12 +592,3 @@ function ScheduleFormSheet({
         </Sheet>
     );
 }
-
-BellSchedules.layout = {
-    breadcrumbs: [
-        {
-            title: 'Bell Schedules',
-            href: BellScheduleController.index().url,
-        },
-    ],
-};

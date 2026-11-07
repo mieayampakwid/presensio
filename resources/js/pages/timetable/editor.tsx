@@ -1,4 +1,4 @@
-import { Head, router, useHttp } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useHttp } from '@inertiajs/react';
 import { Copy, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
@@ -109,6 +109,18 @@ export default function TimetableEditor({
     days,
 }: Props) {
     const { t } = useTranslation();
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('classes.index.title'),
+                href: SchoolClassController.index().url,
+            },
+            {
+                title: t('timetable.editor.title'),
+            },
+        ],
+    });
+
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<SlotRow | null>(null);
     const [conflicts, setConflicts] = useState<ConflictItem[] | null>(null);
@@ -744,15 +756,3 @@ function DayBlock({
         </div>
     );
 }
-
-TimetableEditor.layout = {
-    breadcrumbs: [
-        {
-            title: 'Classes',
-            href: SchoolClassController.index().url,
-        },
-        {
-            title: 'Timetable',
-        },
-    ],
-};

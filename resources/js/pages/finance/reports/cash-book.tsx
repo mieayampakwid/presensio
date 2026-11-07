@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
@@ -51,6 +51,13 @@ type Props = {
 };
 
 export default function CashBookReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Buku Kas & Bank' },
+        ],
+    });
+
     const [accountId, setAccountId] = useState<string>(
         report.account ? String(report.account.id) : '',
     );
@@ -336,10 +343,3 @@ export default function CashBookReportPage({ report }: Props) {
         </>
     );
 }
-
-CashBookReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Buku Kas & Bank', href: '#' },
-    ],
-};

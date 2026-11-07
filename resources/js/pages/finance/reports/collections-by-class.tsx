@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -24,6 +24,13 @@ type Props = {
 const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
 
 export default function CollectionsByClassReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Penerimaan per Kelas' },
+        ],
+    });
+
     const [from, setFrom] = useState(report.from);
     const [to, setTo] = useState(report.to);
 
@@ -149,10 +156,3 @@ export default function CollectionsByClassReportPage({ report }: Props) {
         </>
     );
 }
-
-CollectionsByClassReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Penerimaan per Kelas', href: '#' },
-    ],
-};

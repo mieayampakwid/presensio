@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,10 @@ export default function NotificationDeliveries({
     channels,
     statuses,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [{ title: 'Admin' }, { title: 'Log Pengiriman' }],
+    });
+
     const handleFilterChange = (key: string, value: string) => {
         router.get(
             '/notification-deliveries',

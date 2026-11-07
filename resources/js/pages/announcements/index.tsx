@@ -1,5 +1,5 @@
 import { create as createAnnouncement } from '@/routes/announcements';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { Pin, Plus } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import AnnouncementController from '@/actions/App/Http/Controllers/Announcements/AnnouncementController';
@@ -39,6 +39,13 @@ export default function Announcements({
         : mode === 'manage'
           ? 'Kelola pengumuman'
           : 'Pengumuman';
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Pengumuman', href: '/announcements' },
+            ...(classContext || mode === 'manage' ? [{ title }] : []),
+        ],
+    });
+
     return (
         <>
             <Head title={title} />

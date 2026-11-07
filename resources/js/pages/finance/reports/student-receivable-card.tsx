@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Download } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -54,6 +54,13 @@ type Props = {
 const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
 
 export default function StudentReceivableCardPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Kartu Piutang Siswa' },
+        ],
+    });
+
     const [term, setTerm] = useState(report.term);
     const [asOf, setAsOf] = useState(report.as_of);
     const { student } = report;
@@ -380,10 +387,3 @@ export default function StudentReceivableCardPage({ report }: Props) {
         </>
     );
 }
-
-StudentReceivableCardPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Kartu Piutang Siswa', href: '#' },
-    ],
-};

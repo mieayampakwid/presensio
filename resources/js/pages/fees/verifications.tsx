@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import VerificationController from '@/actions/App/Http/Controllers/Fees/VerificationController';
 import Heading from '@/components/heading';
@@ -71,6 +71,13 @@ export default function Verifications({
     defaultAccountId,
     canManage,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Verifikasi Transfer' },
+        ],
+    });
+
     const [verifying, setVerifying] = useState<PendingPayment | null>(null);
     const [rejecting, setRejecting] = useState<PendingPayment | null>(null);
     const [reallocate, setReallocate] = useState(false);

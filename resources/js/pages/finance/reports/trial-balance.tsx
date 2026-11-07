@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Download } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -31,6 +31,13 @@ type Props = {
 };
 
 export default function TrialBalanceReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Neraca Saldo' },
+        ],
+    });
+
     const [asOf, setAsOf] = useState(report.as_of ?? '');
 
     const applyFilter = () => {
@@ -190,10 +197,3 @@ export default function TrialBalanceReportPage({ report }: Props) {
         </>
     );
 }
-
-TrialBalanceReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Neraca Saldo', href: '#' },
-    ],
-};

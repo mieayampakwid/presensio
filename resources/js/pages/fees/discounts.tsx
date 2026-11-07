@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
@@ -77,6 +77,13 @@ export default function DiscountsIndex({
     students,
     canManage,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Diskon & Beasiswa' },
+        ],
+    });
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<DiscountRow | null>(null);
     const [deleting, setDeleting] = useState<DiscountRow | null>(null);

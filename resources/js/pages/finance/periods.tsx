@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { Info, Lock, Unlock } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import PeriodController from '@/actions/App/Http/Controllers/Finance/PeriodController';
@@ -42,6 +42,13 @@ export default function PeriodsIndex({
     periods,
     closableYears,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Periode Akuntansi' },
+        ],
+    });
+
     const [closingYear, setClosingYear] = useState<ClosableYear | null>(null);
     const [reopeningPeriod, setReopeningPeriod] = useState<PeriodRow | null>(
         null,
@@ -387,10 +394,3 @@ export default function PeriodsIndex({
         </>
     );
 }
-
-PeriodsIndex.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Periode Akuntansi', href: '#' },
-    ],
-};

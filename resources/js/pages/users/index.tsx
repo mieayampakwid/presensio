@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
@@ -57,6 +57,15 @@ export default function UsersIndex({ users, filters, profiles }: Props) {
         setIsCreateOpen(true);
     };
     const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('users.index.title'),
+                href: UserController.index().url,
+            },
+        ],
+    });
 
     return (
         <>
@@ -248,11 +257,3 @@ export default function UsersIndex({ users, filters, profiles }: Props) {
         </>
     );
 }
-
-UsersIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Users',
-        },
-    ],
-};

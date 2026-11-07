@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Paperclip, Plus } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -53,6 +53,18 @@ type Props = {
 };
 
 export default function JournalsIndex({ journals, filters, canManage }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Keuangan',
+                href: '/finance/accounts',
+            },
+            {
+                title: 'Jurnal Manual',
+            },
+        ],
+    });
+
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(filters.status || 'all');
     const [from, setFrom] = useState(filters.from);
@@ -328,16 +340,3 @@ export default function JournalsIndex({ journals, filters, canManage }: Props) {
         </>
     );
 }
-
-JournalsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Keuangan',
-            href: '/finance/accounts',
-        },
-        {
-            title: 'Jurnal Manual',
-            href: '/finance/journals',
-        },
-    ],
-};

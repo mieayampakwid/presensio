@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import {
     BookOpen,
     ChevronRight,
@@ -38,6 +38,15 @@ type Props = {
 
 export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
     const title = isAdmin ? 'Courses' : 'My Courses';
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Courses',
+                href: '/courses',
+            },
+        ],
+    });
+
     const description = isAdmin
         ? `Daftar seluruh mata pelajaran dan penugasan kelas pada Tahun Ajaran ${activeYear?.name ?? '-'}.`
         : `Mata pelajaran yang Anda ampu pada Tahun Ajaran ${activeYear?.name ?? '-'}.`;
@@ -147,12 +156,3 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
         </>
     );
 }
-
-CoursesIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Courses',
-            href: '/courses',
-        },
-    ],
-};

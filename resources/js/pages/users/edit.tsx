@@ -1,5 +1,5 @@
 import { AuditHistory, type AuditLogEntry } from '@/components/audit-history';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
 import Heading from '@/components/heading';
 import { useTranslation } from '@/hooks/use-translation';
@@ -42,6 +42,18 @@ export default function EditUser({
     audit_logs,
 }: Props) {
     const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('users.index.title'),
+                href: UserController.index().url,
+            },
+            {
+                title: t('common.edit'),
+            },
+        ],
+    });
 
     return (
         <>
@@ -115,15 +127,3 @@ export default function EditUser({
         </>
     );
 }
-
-EditUser.layout = {
-    breadcrumbs: [
-        {
-            title: 'Users',
-            href: UserController.index().url,
-        },
-        {
-            title: 'Edit',
-        },
-    ],
-};

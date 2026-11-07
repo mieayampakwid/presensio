@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import Heading from '@/components/heading';
@@ -40,6 +40,13 @@ type Props = {
 };
 
 export default function GeneralJournalReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Laporan Jurnal Umum' },
+        ],
+    });
+
     const [from, setFrom] = useState(report.from ?? '');
     const [to, setTo] = useState(report.to ?? '');
 
@@ -222,10 +229,3 @@ export default function GeneralJournalReportPage({ report }: Props) {
         </>
     );
 }
-
-GeneralJournalReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Laporan Jurnal Umum', href: '#' },
-    ],
-};

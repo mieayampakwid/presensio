@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
@@ -8,6 +8,7 @@ import {
     UserRound,
 } from 'lucide-react';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -79,6 +80,16 @@ export default function ChildGrades({
     semesters,
     subjects,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('dashboard.parent.grades'),
+                href: '/dashboard',
+            },
+        ],
+    });
     const handleSemesterChange = (newSemesterId: string) => {
         router.get(
             `/children/${student.id}/grades`,
@@ -357,12 +368,3 @@ export default function ChildGrades({
         </>
     );
 }
-
-ChildGrades.layout = {
-    breadcrumbs: [
-        {
-            title: 'Nilai Siswa',
-            href: '/dashboard',
-        },
-    ],
-};

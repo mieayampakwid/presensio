@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Info, Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 import Heading from '@/components/heading';
@@ -51,6 +51,22 @@ type Props = {
 };
 
 export default function JournalForm({ journal, accounts, students }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Keuangan',
+                href: '/finance/accounts',
+            },
+            {
+                title: 'Jurnal Manual',
+                href: '/finance/journals',
+            },
+            {
+                title: 'Formulir Jurnal',
+            },
+        ],
+    });
+
     const isEditing = journal !== null;
 
     const defaultLines: LineInput[] = isEditing
@@ -578,20 +594,3 @@ export default function JournalForm({ journal, accounts, students }: Props) {
         </>
     );
 }
-
-JournalForm.layout = {
-    breadcrumbs: [
-        {
-            title: 'Keuangan',
-            href: '/finance/accounts',
-        },
-        {
-            title: 'Jurnal Manual',
-            href: '/finance/journals',
-        },
-        {
-            title: 'Formulir Jurnal',
-            href: '#',
-        },
-    ],
-};

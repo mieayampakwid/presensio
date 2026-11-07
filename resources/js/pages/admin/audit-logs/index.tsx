@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -43,6 +43,10 @@ type Props = {
 };
 
 export default function AuditLogsIndex({ logs, filters }: Props) {
+    setLayoutProps({
+        breadcrumbs: [{ title: 'Admin' }, { title: 'Audit Logs' }],
+    });
+
     const [filterForm, setFilterForm] = useState<Filters>({
         auditable_type: filters.auditable_type ?? '',
         auditable_id: filters.auditable_id ?? '',

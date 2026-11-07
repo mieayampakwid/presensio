@@ -64,12 +64,10 @@ export default function NotificationSettings({
     return (
         <>
             <Head title="Pengaturan Notifikasi" />
-
-            <h1 className="sr-only">Pengaturan Notifikasi</h1>
-
-            <form onSubmit={submit} className="space-y-8 p-4">
+            <form onSubmit={submit} className="space-y-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Heading
+                        variant="small"
                         title="Pengaturan Notifikasi"
                         description="Atur saluran pengiriman WhatsApp & Email, kuota gateway, dan jam tenang sekolah."
                     />

@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
@@ -66,6 +66,13 @@ export default function GeneralLedgerReportPage({
     report,
     account_options,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Buku Besar' },
+        ],
+    });
+
     const [accountId, setAccountId] = useState<string>(
         report.account_id ? String(report.account_id) : 'all',
     );
@@ -352,10 +359,3 @@ export default function GeneralLedgerReportPage({
         </>
     );
 }
-
-GeneralLedgerReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Buku Besar', href: '#' },
-    ],
-};

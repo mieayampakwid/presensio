@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
@@ -86,6 +86,15 @@ export default function CourseResults({
     students,
     canWrite,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Hasil & Capaian',
+                href: '/courses',
+            },
+        ],
+    });
+
     const [selectedStudent, setSelectedStudent] = useState<StudentRow | null>(
         null,
     );
@@ -492,12 +501,3 @@ export default function CourseResults({
         </>
     );
 }
-
-CourseResults.layout = {
-    breadcrumbs: [
-        {
-            title: 'Hasil & Capaian',
-            href: '/courses',
-        },
-    ],
-};

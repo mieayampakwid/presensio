@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     ClipboardCheck,
@@ -132,6 +132,15 @@ export default function ReportCards({
     can,
     accessible_classes,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Rapor Kelas',
+                href: '/classes/report-cards',
+            },
+        ],
+    });
+
     const [entryStudent, setEntryStudent] = useState<StudentEntry | null>(null);
     const [previewPayload, setPreviewPayload] =
         useState<ReportCardPayload | null>(null);
@@ -955,12 +964,3 @@ export default function ReportCards({
         </>
     );
 }
-
-ReportCards.layout = {
-    breadcrumbs: [
-        {
-            title: 'Rapor Kelas',
-            href: '/classes/report-cards',
-        },
-    ],
-};

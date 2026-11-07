@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     ArrowLeft,
     Award,
@@ -103,6 +103,15 @@ export default function GradebookShow({
     students,
     canWrite,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Buku Nilai',
+                href: '/courses',
+            },
+        ],
+    });
+
     const threshold = parseFloat(course.passing_threshold) || 75;
 
     // Local score edit state: studentId -> assessmentId -> { score, remedial, notes }
@@ -855,12 +864,3 @@ export default function GradebookShow({
         </>
     );
 }
-
-GradebookShow.layout = {
-    breadcrumbs: [
-        {
-            title: 'Buku Nilai',
-            href: '/courses',
-        },
-    ],
-};

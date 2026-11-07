@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowLeft,
@@ -76,6 +76,22 @@ export default function JournalShow({
     canReverse,
     overpayment_id,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Keuangan',
+                href: '/finance/accounts',
+            },
+            {
+                title: 'Jurnal Manual',
+                href: '/finance/journals',
+            },
+            {
+                title: 'Detail Jurnal',
+            },
+        ],
+    });
+
     const [isReverseOpen, setIsReverseOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -514,20 +530,3 @@ export default function JournalShow({
         </>
     );
 }
-
-JournalShow.layout = {
-    breadcrumbs: [
-        {
-            title: 'Keuangan',
-            href: '/finance/accounts',
-        },
-        {
-            title: 'Jurnal Manual',
-            href: '/finance/journals',
-        },
-        {
-            title: 'Detail Jurnal',
-            href: '#',
-        },
-    ],
-};

@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     AlertCircle,
     Check,
@@ -204,6 +204,18 @@ export default function AccountsIndex({
     restrictions,
     canManage,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Keuangan',
+                href: '/finance/accounts',
+            },
+            {
+                title: 'Bagan Akun',
+            },
+        ],
+    });
+
     const [selectedType, setSelectedType] = useState<string>('all');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<AccountRow | null>(
@@ -1699,16 +1711,3 @@ export default function AccountsIndex({
         </>
     );
 }
-
-AccountsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Keuangan',
-            href: '/finance/accounts',
-        },
-        {
-            title: 'Bagan Akun',
-            href: '/finance/accounts',
-        },
-    ],
-};

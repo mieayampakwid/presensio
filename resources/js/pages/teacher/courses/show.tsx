@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import {
     Award,
     ChevronLeft,
@@ -35,6 +35,18 @@ type Props = {
 };
 
 export default function CourseShow({ course, students, canWrite }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'My Courses',
+                href: '/courses',
+            },
+            {
+                title: 'Course Workspace',
+            },
+        ],
+    });
+
     return (
         <>
             <Head title={`${course.subject_name} — ${course.class_name}`} />
@@ -158,15 +170,3 @@ export default function CourseShow({ course, students, canWrite }: Props) {
         </>
     );
 }
-
-CourseShow.layout = {
-    breadcrumbs: [
-        {
-            title: 'My Courses',
-            href: '/courses',
-        },
-        {
-            title: 'Course Workspace',
-        },
-    ],
-};

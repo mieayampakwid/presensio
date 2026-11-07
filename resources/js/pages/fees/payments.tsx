@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import PaymentVoidController from '@/actions/App/Http/Controllers/Fees/PaymentVoidController';
@@ -80,6 +80,13 @@ export default function PaymentsIndex({
     methods,
     statuses,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Pembayaran' },
+        ],
+    });
+
     const [voiding, setVoiding] = useState<PaymentRow | null>(null);
 
     const submitFilters = (

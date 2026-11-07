@@ -1,6 +1,7 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import ReportCardView, {
     type ReportCardPayload,
 } from '@/components/report-card-view';
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import {
     index,
+    landing,
     pdf,
 } from '@/actions/App/Http/Controllers/Parent/ChildReportCardController';
 
@@ -44,6 +46,16 @@ export default function ChildReportCards({
     selected_semester_id,
     payload,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.child_report_cards'),
+                href: landing.url(),
+            },
+        ],
+    });
     const [semesterId, setSemesterId] = useState<number | null>(
         selected_semester_id,
     );
@@ -157,12 +169,3 @@ export default function ChildReportCards({
         </>
     );
 }
-
-ChildReportCards.layout = {
-    breadcrumbs: [
-        {
-            title: 'Rapor Anak',
-            href: '/children',
-        },
-    ],
-};

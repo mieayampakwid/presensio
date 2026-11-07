@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft, Calendar, GraduationCap, Lock, Unlock } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +63,15 @@ export default function ClassGrades({
     subjects,
     students,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Leger Nilai',
+                href: '/classes',
+            },
+        ],
+    });
+
     const handleSemesterChange = (newSemesterId: string) => {
         router.get(
             `/classes/${school_class.id}/grades`,
@@ -235,12 +244,3 @@ export default function ClassGrades({
         </>
     );
 }
-
-ClassGrades.layout = {
-    breadcrumbs: [
-        {
-            title: 'Leger Nilai',
-            href: '/classes',
-        },
-    ],
-};

@@ -1,8 +1,9 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Plus, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import MyLeaveController from '@/actions/App/Http/Controllers/Staff/MyLeaveController';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +60,16 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function MyLeave({ requests }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.my_leave'),
+                href: MyLeaveController.index().url,
+            },
+        ],
+    });
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [cancelling, setCancelling] = useState<LeaveRequestRow | null>(null);
     const destroy = (leaveRequest: LeaveRequestRow) => {
@@ -388,11 +399,3 @@ export default function MyLeave({ requests }: Props) {
         </>
     );
 }
-
-MyLeave.layout = {
-    breadcrumbs: [
-        {
-            title: 'My Leave',
-        },
-    ],
-};

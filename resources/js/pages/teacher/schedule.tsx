@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, setLayoutProps } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -23,6 +23,13 @@ type Props = {
 
 export default function TeacherSchedule({ days }: Props) {
     const { t } = useTranslation();
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('timetable.schedule.title'),
+            },
+        ],
+    });
 
     return (
         <>
@@ -106,11 +113,3 @@ function DayBlock({ day, label }: DayBlockProps) {
         </div>
     );
 }
-
-TeacherSchedule.layout = {
-    breadcrumbs: [
-        {
-            title: 'My Schedule',
-        },
-    ],
-};

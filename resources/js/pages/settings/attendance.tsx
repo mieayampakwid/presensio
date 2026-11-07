@@ -91,9 +91,6 @@ export default function AttendanceSettings({ settings, shifts }: Props) {
     return (
         <>
             <Head title={t('settings.attendance.title')} />
-
-            <h1 className="sr-only">{t('settings.attendance.title')}</h1>
-
             <Form
                 {...AttendanceSettingsController.update.form()}
                 options={{ preserveScroll: true }}

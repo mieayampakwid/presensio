@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
 import VerificationController from '@/actions/App/Http/Controllers/Fees/VerificationController';
@@ -62,6 +62,14 @@ export default function Overpayment({
     canManage: boolean;
     today: string;
 }) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Kelebihan Pembayaran', href: '/fees/overpayments' },
+            { title: `#${record.id}` },
+        ],
+    });
+
     const [operation, setOperation] = useState<'refund' | 'cancel' | null>(
         null,
     );

@@ -1,6 +1,7 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
+import { useTranslation } from '@/hooks/use-translation';
 import ReportCardView, {
     type ReportCardPayload,
 } from '@/components/report-card-view';
@@ -38,6 +39,16 @@ export default function ReportCards({
     selected_semester_id,
     payload,
 }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.my_report_cards'),
+                href: index.url(),
+            },
+        ],
+    });
     const [semesterId, setSemesterId] = useState<number | null>(
         selected_semester_id,
     );
@@ -114,12 +125,3 @@ export default function ReportCards({
         </>
     );
 }
-
-ReportCards.layout = {
-    breadcrumbs: [
-        {
-            title: 'Rapor Saya',
-            href: '/my-report-cards',
-        },
-    ],
-};

@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import Controller from '@/actions/App/Http/Controllers/Announcements/AnnouncementController';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
@@ -20,6 +20,13 @@ export default function Show({
     announcement: Announcement;
     bodyHtml: string;
 }) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Pengumuman', href: '/announcements' },
+            { title: item.title },
+        ],
+    });
+
     const [deleting, setDeleting] = useState(false);
     const [busy, setBusy] = useState(false);
     const acknowledge = () => {

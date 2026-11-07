@@ -31,9 +31,6 @@ export default function Security(props: Props) {
     return (
         <>
             <Head title={t('settings.security.title')} />
-
-            <h1 className="sr-only">{t('settings.security.title')}</h1>
-
             <div className="space-y-6">
                 <Heading
                     variant="small"

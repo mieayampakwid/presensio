@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
 import SchoolProfileController from '@/actions/App/Http/Controllers/Settings/SchoolProfileController';
@@ -78,6 +78,13 @@ export default function Overpayments({
     canManage,
     canConfigure,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Biaya Sekolah', href: '/fees/bills' },
+            { title: 'Kelebihan Pembayaran' },
+        ],
+    });
+
     const [open, setOpen] = useState(false);
     const form = useForm({
         operation: '',

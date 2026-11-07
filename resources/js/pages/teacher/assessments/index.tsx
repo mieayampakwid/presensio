@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowLeft,
@@ -89,6 +89,15 @@ export default function AssessmentsIndex({
     objectives,
     canWrite,
 }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: 'Asesmen',
+                href: '/courses',
+            },
+        ],
+    });
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingAssessment, setEditingAssessment] =
         useState<AssessmentItem | null>(null);
@@ -881,12 +890,3 @@ export default function AssessmentsIndex({
         </>
     );
 }
-
-AssessmentsIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Asesmen',
-            href: '/courses',
-        },
-    ],
-};

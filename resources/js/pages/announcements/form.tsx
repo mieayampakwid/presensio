@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
 import { type FormEvent } from 'react';
 import Controller from '@/actions/App/Http/Controllers/Announcements/AnnouncementController';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
@@ -59,6 +59,13 @@ export default function AnnouncementForm({
         );
     };
     const title = announcement ? 'Edit pengumuman' : 'Buat pengumuman';
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Pengumuman', href: '/announcements' },
+            { title },
+        ],
+    });
+
     const target = (value: string) =>
         form.setData((data) => ({
             ...data,

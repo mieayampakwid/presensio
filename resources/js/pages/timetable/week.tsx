@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
 import SchoolClassController from '@/actions/App/Http/Controllers/Classes/SchoolClassController';
 import ClassTimetableViewController from '@/actions/App/Http/Controllers/Timetable/ClassTimetableViewController';
@@ -59,6 +59,17 @@ export default function ClassTimetableWeek({
     days,
 }: Props) {
     const { t } = useTranslation();
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('classes.index.title'),
+                href: SchoolClassController.index().url,
+            },
+            {
+                title: t('timetable.week.title'),
+            },
+        ],
+    });
 
     const changeSemester = (nextId: number): void => {
         router.get(
@@ -222,15 +233,3 @@ function DayBlock({ day, label }: DayBlockProps) {
         </div>
     );
 }
-
-ClassTimetableWeek.layout = {
-    breadcrumbs: [
-        {
-            title: 'Classes',
-            href: SchoolClassController.index().url,
-        },
-        {
-            title: 'Timetable',
-        },
-    ],
-};

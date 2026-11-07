@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Download } from 'lucide-react';
 import { useState } from 'react';
 import OverpaymentController from '@/actions/App/Http/Controllers/Fees/OverpaymentController';
@@ -48,6 +48,13 @@ type Props = {
 const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
 
 export default function ReceivablesReconciliationReportPage({ report }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Keuangan', href: '/finance/accounts' },
+            { title: 'Rekonsiliasi Piutang' },
+        ],
+    });
+
     const [asOf, setAsOf] = useState(report.as_of);
 
     const applyFilter = () => {
@@ -309,10 +316,3 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
         </>
     );
 }
-
-ReceivablesReconciliationReportPage.layout = {
-    breadcrumbs: [
-        { title: 'Keuangan', href: '/finance/accounts' },
-        { title: 'Rekonsiliasi Piutang', href: '#' },
-    ],
-};
