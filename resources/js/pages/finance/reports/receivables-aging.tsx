@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Buckets = {
     current: string;
@@ -48,8 +49,6 @@ type Props = {
     };
 };
 
-const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
-
 const columns: { key: keyof Buckets; label: string }[] = [
     { key: 'current', label: 'Belum jatuh tempo' },
     { key: 'd1_30', label: '1-30 hari' },
@@ -69,6 +68,10 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
             { title: 'Umur Piutang' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
     const [asOf, setAsOf] = useState(report.as_of);
     const [classId, setClassId] = useState(

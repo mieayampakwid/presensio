@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from '@/hooks/use-translation';
 
 type CashLine = {
     id: number;
@@ -57,6 +58,8 @@ export default function CashBookReportPage({ report }: Props) {
             { title: 'Buku Kas & Bank' },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [accountId, setAccountId] = useState<string>(
         report.account ? String(report.account.id) : '',
@@ -169,7 +172,7 @@ export default function CashBookReportPage({ report }: Props) {
                                         Rp{' '}
                                         {Number(
                                             report.opening_balance,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </strong>
                                 </span>
                                 <span>
@@ -178,7 +181,7 @@ export default function CashBookReportPage({ report }: Props) {
                                         Rp{' '}
                                         {Number(
                                             report.closing_balance,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </strong>
                                 </span>
                             </div>
@@ -229,7 +232,7 @@ export default function CashBookReportPage({ report }: Props) {
                                         <td className="px-3 py-1.5 text-right font-mono font-medium">
                                             {Number(
                                                 report.opening_balance,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </td>
                                         <td className="px-3 py-1.5">-</td>
                                     </tr>
@@ -284,7 +287,7 @@ export default function CashBookReportPage({ report }: Props) {
                                                         ? Number(
                                                               line.debit,
                                                           ).toLocaleString(
-                                                              'id-ID',
+                                                              locale,
                                                           )
                                                         : '-'}
                                                 </td>
@@ -293,14 +296,14 @@ export default function CashBookReportPage({ report }: Props) {
                                                         ? Number(
                                                               line.credit,
                                                           ).toLocaleString(
-                                                              'id-ID',
+                                                              locale,
                                                           )
                                                         : '-'}
                                                 </td>
                                                 <td className="px-3 py-1.5 text-right font-mono font-semibold">
                                                     {Number(
                                                         line.running_balance,
-                                                    ).toLocaleString('id-ID')}
+                                                    ).toLocaleString(locale)}
                                                 </td>
                                                 <td className="text-muted-foreground px-3 py-1.5">
                                                     {line.memo ?? '-'}
@@ -320,17 +323,17 @@ export default function CashBookReportPage({ report }: Props) {
                                         <td className="px-3 py-2 text-right text-emerald-700">
                                             {Number(
                                                 report.period_debits,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </td>
                                         <td className="px-3 py-2 text-right text-rose-700">
                                             {Number(
                                                 report.period_credits,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </td>
                                         <td className="px-3 py-2 text-right font-bold text-emerald-700">
                                             {Number(
                                                 report.closing_balance,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </td>
                                         <td></td>
                                     </tr>

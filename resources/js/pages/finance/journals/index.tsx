@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from '@/hooks/use-translation';
 
 type JournalRow = {
     id: number;
@@ -64,6 +65,8 @@ export default function JournalsIndex({ journals, filters, canManage }: Props) {
             },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(filters.status || 'all');
@@ -270,7 +273,7 @@ export default function JournalsIndex({ journals, filters, canManage }: Props) {
                                             Rp{' '}
                                             {Number(
                                                 journal.total_debit,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </td>
                                         <td className="px-4 py-3">
                                             {journal.status === 'posted' ? (

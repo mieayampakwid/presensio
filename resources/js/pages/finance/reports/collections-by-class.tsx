@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Props = {
     report: {
@@ -21,8 +22,6 @@ type Props = {
     };
 };
 
-const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
-
 export default function CollectionsByClassReportPage({ report }: Props) {
     setLayoutProps({
         breadcrumbs: [
@@ -30,6 +29,10 @@ export default function CollectionsByClassReportPage({ report }: Props) {
             { title: 'Penerimaan per Kelas' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
     const [from, setFrom] = useState(report.from);
     const [to, setTo] = useState(report.to);

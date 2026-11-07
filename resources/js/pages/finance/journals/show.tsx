@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type JournalLineRow = {
     id: number;
@@ -91,6 +92,8 @@ export default function JournalShow({
             },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [isReverseOpen, setIsReverseOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -350,7 +353,7 @@ export default function JournalShow({
                                                 <span className="font-semibold text-blue-700 dark:text-blue-400">
                                                     {Number(
                                                         line.debit,
-                                                    ).toLocaleString('id-ID')}
+                                                    ).toLocaleString(locale)}
                                                 </span>
                                             ) : (
                                                 <span className="text-muted-foreground">
@@ -363,7 +366,7 @@ export default function JournalShow({
                                                 <span className="font-semibold text-amber-700 dark:text-amber-400">
                                                     {Number(
                                                         line.credit,
-                                                    ).toLocaleString('id-ID')}
+                                                    ).toLocaleString(locale)}
                                                 </span>
                                             ) : (
                                                 <span className="text-muted-foreground">
@@ -407,7 +410,7 @@ export default function JournalShow({
                                 <span className="font-bold">
                                     Rp{' '}
                                     {Number(journal.total_debit).toLocaleString(
-                                        'id-ID',
+                                        locale,
                                     )}
                                 </span>
                             </div>
@@ -419,7 +422,7 @@ export default function JournalShow({
                                     Rp{' '}
                                     {Number(
                                         journal.total_credit,
-                                    ).toLocaleString('id-ID')}
+                                    ).toLocaleString(locale)}
                                 </span>
                             </div>
                         </div>

@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type BillRow = {
     bill_id: number;
@@ -58,13 +59,6 @@ type Props = {
 const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm';
 
-const formatRupiah = (value: string | number) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    }).format(Number(value));
-
 export default function Verifications({
     payments,
     cashAccounts,
@@ -77,6 +71,15 @@ export default function Verifications({
             { title: 'Verifikasi Transfer' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const formatRupiah = (value: string | number) =>
+        new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0,
+        }).format(Number(value));
 
     const [verifying, setVerifying] = useState<PendingPayment | null>(null);
     const [rejecting, setRejecting] = useState<PendingPayment | null>(null);

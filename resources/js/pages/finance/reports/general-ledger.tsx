@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from '@/hooks/use-translation';
 
 type LedgerLine = {
     id: number;
@@ -72,6 +73,8 @@ export default function GeneralLedgerReportPage({
             { title: 'Buku Besar' },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [accountId, setAccountId] = useState<string>(
         report.account_id ? String(report.account_id) : 'all',
@@ -195,7 +198,7 @@ export default function GeneralLedgerReportPage({
                                             Rp{' '}
                                             {Number(
                                                 acc.opening_balance,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </strong>
                                     </span>
                                     <span>
@@ -204,7 +207,7 @@ export default function GeneralLedgerReportPage({
                                             Rp{' '}
                                             {Number(
                                                 acc.closing_balance,
-                                            ).toLocaleString('id-ID')}
+                                            ).toLocaleString(locale)}
                                         </strong>
                                     </span>
                                 </div>
@@ -256,7 +259,7 @@ export default function GeneralLedgerReportPage({
                                             <td className="px-3 py-1.5 text-right font-mono font-medium">
                                                 {Number(
                                                     acc.opening_balance,
-                                                ).toLocaleString('id-ID')}
+                                                ).toLocaleString(locale)}
                                             </td>
                                             <td className="px-3 py-1.5">-</td>
                                         </tr>
@@ -300,7 +303,7 @@ export default function GeneralLedgerReportPage({
                                                         ? Number(
                                                               line.debit,
                                                           ).toLocaleString(
-                                                              'id-ID',
+                                                              locale,
                                                           )
                                                         : '-'}
                                                 </td>
@@ -309,14 +312,14 @@ export default function GeneralLedgerReportPage({
                                                         ? Number(
                                                               line.credit,
                                                           ).toLocaleString(
-                                                              'id-ID',
+                                                              locale,
                                                           )
                                                         : '-'}
                                                 </td>
                                                 <td className="px-3 py-1.5 text-right font-mono font-semibold">
                                                     {Number(
                                                         line.running_balance,
-                                                    ).toLocaleString('id-ID')}
+                                                    ).toLocaleString(locale)}
                                                 </td>
                                                 <td className="text-muted-foreground px-3 py-1.5">
                                                     {line.student_name ?? '-'}
@@ -335,17 +338,17 @@ export default function GeneralLedgerReportPage({
                                             <td className="px-3 py-2 text-right text-blue-700">
                                                 {Number(
                                                     acc.period_debits,
-                                                ).toLocaleString('id-ID')}
+                                                ).toLocaleString(locale)}
                                             </td>
                                             <td className="px-3 py-2 text-right text-amber-700">
                                                 {Number(
                                                     acc.period_credits,
-                                                ).toLocaleString('id-ID')}
+                                                ).toLocaleString(locale)}
                                             </td>
                                             <td className="px-3 py-2 text-right text-emerald-700">
                                                 {Number(
                                                     acc.closing_balance,
-                                                ).toLocaleString('id-ID')}
+                                                ).toLocaleString(locale)}
                                             </td>
                                             <td></td>
                                         </tr>

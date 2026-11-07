@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 import type { CashAccount, OverpaymentRow } from './overpayments';
 
 type Entry = { id: number; number: string; entry_date: string };
@@ -44,13 +45,6 @@ type Detail = OverpaymentRow & {
 };
 const selectClass =
     'border-input bg-background h-9 w-full rounded-md border px-3 text-sm';
-const rupiah = (amount: string | number | null) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 2,
-    }).format(Number(amount ?? 0));
-
 export default function Overpayment({
     overpayment: record,
     cashAccounts,
@@ -69,6 +63,15 @@ export default function Overpayment({
             { title: `#${record.id}` },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (amount: string | number | null) =>
+        new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 2,
+        }).format(Number(amount ?? 0));
 
     const [operation, setOperation] = useState<'refund' | 'cancel' | null>(
         null,

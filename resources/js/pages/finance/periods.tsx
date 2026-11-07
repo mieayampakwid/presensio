@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type PeriodRow = {
     period: string;
@@ -48,6 +49,8 @@ export default function PeriodsIndex({
             { title: 'Periode Akuntansi' },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [closingYear, setClosingYear] = useState<ClosableYear | null>(null);
     const [reopeningPeriod, setReopeningPeriod] = useState<PeriodRow | null>(
@@ -226,16 +229,13 @@ export default function PeriodsIndex({
                                             {p.closed_at
                                                 ? new Date(
                                                       p.closed_at,
-                                                  ).toLocaleDateString(
-                                                      'id-ID',
-                                                      {
-                                                          year: 'numeric',
-                                                          month: 'short',
-                                                          day: 'numeric',
-                                                          hour: '2-digit',
-                                                          minute: '2-digit',
-                                                      },
-                                                  )
+                                                  ).toLocaleDateString(locale, {
+                                                      year: 'numeric',
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit',
+                                                  })
                                                 : '-'}
                                         </td>
                                         <td className="text-muted-foreground px-4 py-3 text-xs">

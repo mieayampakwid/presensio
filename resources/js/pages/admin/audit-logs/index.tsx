@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 
 type AuditLogRow = {
     id: number;
@@ -46,6 +47,8 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
     setLayoutProps({
         breadcrumbs: [{ title: 'Admin' }, { title: 'Audit Logs' }],
     });
+
+    const { locale } = useTranslation();
 
     const [filterForm, setFilterForm] = useState<Filters>({
         auditable_type: filters.auditable_type ?? '',
@@ -230,7 +233,7 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                                     <td className="px-4 py-3 text-xs whitespace-nowrap">
                                         {new Date(
                                             log.created_at,
-                                        ).toLocaleString()}
+                                        ).toLocaleString(locale)}
                                     </td>
                                     <td className="px-4 py-3 font-medium">
                                         {log.user ? (

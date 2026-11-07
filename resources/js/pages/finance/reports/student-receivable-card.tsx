@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type StudentSummary = {
     id: number;
@@ -51,8 +52,6 @@ type Props = {
     };
 };
 
-const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
-
 export default function StudentReceivableCardPage({ report }: Props) {
     setLayoutProps({
         breadcrumbs: [
@@ -60,6 +59,10 @@ export default function StudentReceivableCardPage({ report }: Props) {
             { title: 'Kartu Piutang Siswa' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
     const [term, setTerm] = useState(report.term);
     const [asOf, setAsOf] = useState(report.as_of);

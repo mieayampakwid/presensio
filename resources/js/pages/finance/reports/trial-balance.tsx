@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type AccountRow = {
     id: number;
@@ -37,6 +38,8 @@ export default function TrialBalanceReportPage({ report }: Props) {
             { title: 'Neraca Saldo' },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [asOf, setAsOf] = useState(report.as_of ?? '');
 
@@ -95,7 +98,7 @@ export default function TrialBalanceReportPage({ report }: Props) {
                                 <AlertCircle className="mr-1.5 h-4 w-4" />
                                 Selisih: Rp{' '}
                                 {Number(report.difference).toLocaleString(
-                                    'id-ID',
+                                    locale,
                                 )}
                             </div>
                         )}
@@ -155,14 +158,14 @@ export default function TrialBalanceReportPage({ report }: Props) {
                                             {Number(acc.debit_balance) > 0
                                                 ? Number(
                                                       acc.debit_balance,
-                                                  ).toLocaleString('id-ID')
+                                                  ).toLocaleString(locale)
                                                 : '-'}
                                         </td>
                                         <td className="px-4 py-2 text-right font-mono text-xs">
                                             {Number(acc.credit_balance) > 0
                                                 ? Number(
                                                       acc.credit_balance,
-                                                  ).toLocaleString('id-ID')
+                                                  ).toLocaleString(locale)
                                                 : '-'}
                                         </td>
                                     </tr>
@@ -180,13 +183,13 @@ export default function TrialBalanceReportPage({ report }: Props) {
                                         Rp{' '}
                                         {Number(
                                             report.total_debit,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
                                         Rp{' '}
                                         {Number(
                                             report.total_credit,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </td>
                                 </tr>
                             </tfoot>

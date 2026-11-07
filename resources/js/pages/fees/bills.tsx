@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type BillRow = {
     id: number;
@@ -68,13 +69,6 @@ type Action = { kind: 'discount' | 'cancel' | 'write-off'; bill: BillRow };
 const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm';
 
-const formatRupiah = (value: string) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    }).format(Number(value));
-
 const statusVariant = (status: string) => {
     if (status === 'paid' || status === 'waived') {
         return 'default' as const;
@@ -121,6 +115,15 @@ export default function BillsIndex({
             { title: 'Tagihan' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const formatRupiah = (value: string) =>
+        new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0,
+        }).format(Number(value));
 
     const [action, setAction] = useState<Action | null>(null);
 

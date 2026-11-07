@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type ReconciliationRow = {
     account_id: number | null;
@@ -45,8 +46,6 @@ type Props = {
     };
 };
 
-const rupiah = (value: string) => Number(value).toLocaleString('id-ID');
-
 export default function ReceivablesReconciliationReportPage({ report }: Props) {
     setLayoutProps({
         breadcrumbs: [
@@ -54,6 +53,10 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
             { title: 'Rekonsiliasi Piutang' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
     const [asOf, setAsOf] = useState(report.as_of);
 

@@ -16,16 +16,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 export type CashAccount = { id: number; code: string; name: string };
 const selectClass =
     'border-input bg-background h-9 w-full rounded-md border px-3 text-sm';
-const rupiah = (amount: string | number | null) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 2,
-    }).format(Number(amount ?? 0));
 export type OverpaymentRow = {
     id: number;
     guardian_name: string;
@@ -84,6 +79,15 @@ export default function Overpayments({
             { title: 'Kelebihan Pembayaran' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (amount: string | number | null) =>
+        new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 2,
+        }).format(Number(amount ?? 0));
 
     const [open, setOpen] = useState(false);
     const form = useForm({

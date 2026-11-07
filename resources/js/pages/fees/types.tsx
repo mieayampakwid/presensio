@@ -23,6 +23,7 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type FeeTypeRow = {
     id: number;
@@ -57,13 +58,6 @@ type Props = {
 const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm';
 
-const formatRupiah = (value: string) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    }).format(Number(value));
-
 export default function FeeTypesIndex({
     feeTypes,
     kinds,
@@ -79,6 +73,15 @@ export default function FeeTypesIndex({
             { title: 'Jenis Biaya' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const formatRupiah = (value: string) =>
+        new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0,
+        }).format(Number(value));
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<FeeTypeRow | null>(null);

@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from '@/hooks/use-translation';
 
 type AccountOption = {
     id: number;
@@ -66,6 +67,8 @@ export default function JournalForm({ journal, accounts, students }: Props) {
             },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const isEditing = journal !== null;
 
@@ -544,7 +547,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                     <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-medium">
                                         <AlertCircle className="mr-1.5 h-4 w-4" />
                                         Selisih: Rp{' '}
-                                        {diff.toLocaleString('id-ID')}
+                                        {diff.toLocaleString(locale)}
                                     </div>
                                 )}
                             </div>
@@ -555,7 +558,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                         Total Debit:
                                     </span>
                                     <span className="font-semibold">
-                                        Rp {totalDebit.toLocaleString('id-ID')}
+                                        Rp {totalDebit.toLocaleString(locale)}
                                     </span>
                                 </div>
                                 <div>
@@ -563,7 +566,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                         Total Kredit:
                                     </span>
                                     <span className="font-semibold">
-                                        Rp {totalCredit.toLocaleString('id-ID')}
+                                        Rp {totalCredit.toLocaleString(locale)}
                                     </span>
                                 </div>
                             </div>

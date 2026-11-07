@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type StudentSummary = {
     id: number;
@@ -44,8 +45,6 @@ type Props = {
 const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm';
 
-const rupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
-
 // Work in cents so decimal strings never drift.
 const toCents = (value: string) => Math.round((parseFloat(value) || 0) * 100);
 
@@ -65,6 +64,10 @@ export default function Cashier({
             { title: 'Kasir' },
         ],
     });
+
+    const { locale } = useTranslation();
+
+    const rupiah = (value: number) => `Rp ${value.toLocaleString(locale)}`;
 
     const flash = usePage().flash as {
         payment?: { id: number; receipt_number: string };

@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Line = {
     id: number;
@@ -46,6 +47,8 @@ export default function GeneralJournalReportPage({ report }: Props) {
             { title: 'Laporan Jurnal Umum' },
         ],
     });
+
+    const { locale } = useTranslation();
 
     const [from, setFrom] = useState(report.from ?? '');
     const [to, setTo] = useState(report.to ?? '');
@@ -181,7 +184,7 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                                             ? Number(
                                                                   line.debit,
                                                               ).toLocaleString(
-                                                                  'id-ID',
+                                                                  locale,
                                                               )
                                                             : '-'}
                                                     </td>
@@ -190,7 +193,7 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                                             ? Number(
                                                                   line.credit,
                                                               ).toLocaleString(
-                                                                  'id-ID',
+                                                                  locale,
                                                               )
                                                             : '-'}
                                                     </td>
@@ -212,13 +215,13 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                         Rp{' '}
                                         {Number(
                                             report.total_debit,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
                                         Rp{' '}
                                         {Number(
                                             report.total_credit,
-                                        ).toLocaleString('id-ID')}
+                                        ).toLocaleString(locale)}
                                     </td>
                                 </tr>
                             </tfoot>
