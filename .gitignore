@@ -50,3 +50,11 @@ frankenphp-worker.php
 # Local verification artifacts and usage telemetry
 /docs/testing/
 .playwright-mcp/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
