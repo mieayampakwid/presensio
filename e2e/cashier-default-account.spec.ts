@@ -15,6 +15,9 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         await expect(page.getByText('Akun kas default kasir')).toBeVisible();
         await expect(page.locator('#cashier_default_cash_account_id')).toHaveValue('');
 
+        // Verify notification banner for unconfigured cashier account is visible to admin
+        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).toBeVisible();
+
         // 3. Visit Cashier with a student selected (setting=null -> pre-selects first active cash account: 1-1100 Kas Tunai, ID=1)
         await page.goto('http://localhost/fees/cashier?students[]=1');
         await expect(page.locator('#deposit_account_id')).toHaveValue('1');
@@ -28,6 +31,9 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         const dbCheck1 = execSync('./vendor/bin/sail artisan tinker --execute \'echo App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id;\'').toString().trim();
         expect(dbCheck1).toBe('2');
 
+
+        // Verify notification banner disappears once configured
+        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).not.toBeVisible();
         // 5. Visit Cashier (setting=2 -> pre-selects account ID 2)
         await page.goto('http://localhost/fees/cashier?students[]=1');
         await expect(page.locator('#deposit_account_id')).toHaveValue('2');
@@ -41,6 +47,9 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         const dbCheck2 = execSync('./vendor/bin/sail artisan tinker --execute \'echo var_export(App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id, true);\'').toString().trim();
         expect(dbCheck2).toBe('NULL');
 
+
+        // Verify notification banner reappears after reset to null
+        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).toBeVisible();
         // 7. Visit Cashier (setting=null -> falls back to first active cash account, ID=1)
         await page.goto('http://localhost/fees/cashier?students[]=1');
         await expect(page.locator('#deposit_account_id')).toHaveValue('1');

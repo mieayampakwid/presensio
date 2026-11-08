@@ -14,6 +14,12 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             locale: string;
             incomplete_class_count?: number;
+            pending_config_warnings?: {
+                id: string;
+                message: string;
+                action_label: string;
+                action_url: string;
+            }[];
             locales: { value: string; label: string }[];
             translations: Record<string, unknown>;
             [key: string]: unknown;

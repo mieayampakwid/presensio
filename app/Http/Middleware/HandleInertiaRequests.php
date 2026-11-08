@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Enums\Locale;
 use App\Enums\UserRole;
+use App\Models\AcademicYear;
 use App\Models\SchoolClass;
+use App\Services\SchoolSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Lang;
@@ -70,6 +72,9 @@ class HandleInertiaRequests extends Middleware
             'incomplete_class_count' => fn (): int => $user?->hasRole(UserRole::Admin)
                 ? SchoolClass::query()->where('grade_level', 0)->count()
                 : 0,
+            'pending_config_warnings' => fn (): array => $user?->hasRole(UserRole::Admin)
+                ? $this->pendingConfigWarnings()
+                : [],
             'notifications' => fn (): ?array => $user !== null ? [
                 'unread_count' => $user->unreadNotifications()->count(),
                 'latest10' => $user->notifications()->take(10)->get()->map(fn ($n) => [
@@ -116,5 +121,79 @@ class HandleInertiaRequests extends Middleware
         }
 
         return $bag;
+    }
+
+    /**
+     * @return list<array{id: string, message: string, action_label: string, action_url: string}>
+     */
+    private function pendingConfigWarnings(): array
+    {
+        $warnings = [];
+        $settings = app(SchoolSettings::class)->row();
+
+        if (empty(trim($settings->school_name ?? ''))) {
+            $warnings[] = [
+                'id' => 'school_name',
+                'message' => __('settings.warnings.school_name'),
+                'action_label' => __('settings.warnings.school_name_action'),
+                'action_url' => route('school-profile.edit'),
+            ];
+        }
+
+        if ($settings->cashier_default_cash_account_id === null) {
+            $warnings[] = [
+                'id' => 'cashier_default_cash_account',
+                'message' => __('settings.warnings.cashier_default_account'),
+                'action_label' => __('settings.warnings.cashier_default_account_action'),
+                'action_url' => route('school-profile.edit'),
+            ];
+        }
+
+        if ($settings->default_transfer_account_id === null) {
+            $warnings[] = [
+                'id' => 'default_transfer_account',
+                'message' => __('settings.warnings.default_transfer_account'),
+                'action_label' => __('settings.warnings.default_transfer_account_action'),
+                'action_url' => route('school-profile.edit'),
+            ];
+        }
+
+        if ($settings->guardian_deposit_account_id === null) {
+            $warnings[] = [
+                'id' => 'guardian_deposit_account',
+                'message' => __('settings.warnings.guardian_deposit_account'),
+                'action_label' => __('settings.warnings.guardian_deposit_account_action'),
+                'action_url' => route('school-profile.edit'),
+            ];
+        }
+
+        $activeYear = AcademicYear::active();
+        if ($activeYear === null) {
+            $warnings[] = [
+                'id' => 'active_academic_year',
+                'message' => __('settings.warnings.active_academic_year'),
+                'action_label' => __('settings.warnings.active_academic_year_action'),
+                'action_url' => route('academic-years.index'),
+            ];
+        } elseif ($activeYear->semesters()->doesntExist()) {
+            $warnings[] = [
+                'id' => 'active_semester',
+                'message' => __('settings.warnings.active_semester'),
+                'action_label' => __('settings.warnings.active_semester_action'),
+                'action_url' => route('academic-years.semesters', $activeYear),
+            ];
+        }
+
+        $incompleteClasses = SchoolClass::query()->where('grade_level', 0)->count();
+        if ($incompleteClasses > 0) {
+            $warnings[] = [
+                'id' => 'incomplete_classes',
+                'message' => __('settings.warnings.incomplete_classes', ['count' => $incompleteClasses]),
+                'action_label' => __('settings.warnings.incomplete_classes_action'),
+                'action_url' => route('classes.index'),
+            ];
+        }
+
+        return $warnings;
     }
 }
