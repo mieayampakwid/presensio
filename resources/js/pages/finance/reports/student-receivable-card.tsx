@@ -53,14 +53,14 @@ type Props = {
 };
 
 export default function StudentReceivableCardPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Kartu Piutang Siswa' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.student_receivable_card.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
@@ -76,13 +76,17 @@ export default function StudentReceivableCardPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Kartu Piutang Siswa" />
+            <Head title={t('finance.reports.student_receivable_card.title')} />
 
             <div className="mx-auto max-w-5xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Kartu Piutang Siswa"
-                        description="Riwayat piutang satu siswa dengan saldo berjalan dari buku besar."
+                        title={t(
+                            'finance.reports.student_receivable_card.title',
+                        )}
+                        description={t(
+                            'finance.reports.student_receivable_card.description',
+                        )}
                     />
 
                     {student && (
@@ -91,7 +95,8 @@ export default function StudentReceivableCardPage({ report }: Props) {
                                 href={`/finance/reports/student-receivable-card?format=csv&student_id=${student.id}&as_of=${report.as_of}`}
                                 download
                             >
-                                <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                                <Download className="mr-2 h-4 w-4" />{' '}
+                                {t('finance.common.export_csv')}
                             </a>
                         </Button>
                     )}
@@ -100,7 +105,11 @@ export default function StudentReceivableCardPage({ report }: Props) {
                 <div className="bg-card space-y-3 rounded-lg border p-4">
                     <div className="flex flex-wrap items-end gap-3">
                         <div className="space-y-1">
-                            <Label htmlFor="q">Cari siswa (nama / NIS)</Label>
+                            <Label htmlFor="q">
+                                {t(
+                                    'finance.reports.student_receivable_card.search_student',
+                                )}
+                            </Label>
                             <Input
                                 id="q"
                                 value={term}
@@ -112,7 +121,11 @@ export default function StudentReceivableCardPage({ report }: Props) {
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="as_of">Posisi Per Tanggal</Label>
+                            <Label htmlFor="as_of">
+                                {t('finance.reports.trial_balance.as_of', {
+                                    defaultValue: 'Posisi Per Tanggal',
+                                })}
+                            </Label>
                             <Input
                                 id="as_of"
                                 type="date"
@@ -132,7 +145,9 @@ export default function StudentReceivableCardPage({ report }: Props) {
                                 )
                             }
                         >
-                            {student && term === '' ? 'Tampilkan' : 'Cari'}
+                            {student && term === ''
+                                ? t('finance.common.filter')
+                                : t('finance.common.search')}
                         </Button>
                     </div>
 
@@ -163,14 +178,16 @@ export default function StudentReceivableCardPage({ report }: Props) {
 
                     {report.term.length >= 2 && report.results.length === 0 && (
                         <p className="text-muted-foreground text-sm">
-                            Siswa tidak ditemukan.
+                            {'Siswa tidak ditemukan.'}
                         </p>
                     )}
                 </div>
 
                 {student === null ? (
                     <p className="text-muted-foreground text-center text-sm">
-                        Cari dan pilih siswa untuk melihat kartu piutang.
+                        {t(
+                            'finance.reports.student_receivable_card.prompt_select',
+                        )}
                     </p>
                 ) : (
                     <>
@@ -186,59 +203,65 @@ export default function StudentReceivableCardPage({ report }: Props) {
                             </div>
                             <div className="text-sm">
                                 <div>
-                                    Saldo buku besar:{' '}
+                                    {'Saldo buku besar: '}{' '}
                                     <span className="font-mono">
-                                        Rp {rupiah(report.balance)}
+                                        {`Rp ${rupiah(report.balance)}`}
                                     </span>
                                 </div>
                                 <div>
-                                    Saldo subledger:{' '}
+                                    {'Saldo subledger: '}{' '}
                                     <span className="font-mono">
-                                        Rp {rupiah(report.subledger)}
+                                        {`Rp ${rupiah(report.subledger)}`}
                                     </span>
                                 </div>
                             </div>
                             {report.is_balanced ? (
                                 <div className="flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/40">
                                     <CheckCircle2 className="mr-1.5 h-4 w-4" />{' '}
-                                    Seimbang
+                                    {t('finance.common.balanced')}
                                 </div>
                             ) : (
                                 <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold">
                                     <AlertCircle className="mr-1.5 h-4 w-4" />
-                                    Tidak sesuai dengan subledger
+                                    {t(
+                                        'finance.reports.receivables_reconciliation.mismatch',
+                                    )}
                                 </div>
                             )}
                         </div>
 
                         <div className="bg-card overflow-hidden rounded-lg border">
                             <div className="border-b px-4 py-3 text-sm font-medium">
-                                Tagihan
+                                {t('fees.bills.title')}
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead className="bg-muted/50 text-left">
                                         <tr>
                                             <th className="px-4 py-3 font-medium">
-                                                Tagihan
+                                                {t('fees.bills.table.bill')}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Periode
+                                                {t(
+                                                    'finance.periods.table.period',
+                                                )}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Jatuh Tempo
+                                                {t('fees.common.due_date')}
                                             </th>
                                             <th className="px-4 py-3 text-right font-medium">
-                                                Netto (Rp)
+                                                {t('fees.bills.table.net')}
                                             </th>
                                             <th className="px-4 py-3 text-right font-medium">
-                                                Sisa (Rp)
+                                                {t(
+                                                    'fees.bills.table.remaining',
+                                                )}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Status
+                                                {t('fees.common.status')}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Pembayaran
+                                                {t('fees.common.payments')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -285,10 +308,8 @@ export default function StudentReceivableCardPage({ report }: Props) {
                                                                 {
                                                                     allocation.payment_date
                                                                 }{' '}
-                                                                · Rp{' '}
-                                                                {rupiah(
-                                                                    allocation.amount,
-                                                                )}
+                                                                ·{' '}
+                                                                {`Rp ${rupiah(allocation.amount)}`}
                                                             </div>
                                                         ),
                                                     )}
@@ -302,7 +323,9 @@ export default function StudentReceivableCardPage({ report }: Props) {
                                                     colSpan={7}
                                                     className="text-muted-foreground px-4 py-6 text-center"
                                                 >
-                                                    Belum ada tagihan.
+                                                    {t(
+                                                        'fees.bills.table.empty',
+                                                    )}
                                                 </td>
                                             </tr>
                                         )}
@@ -313,29 +336,31 @@ export default function StudentReceivableCardPage({ report }: Props) {
 
                         <div className="bg-card overflow-hidden rounded-lg border">
                             <div className="border-b px-4 py-3 text-sm font-medium">
-                                Buku piutang
+                                {'Buku piutang'}
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead className="bg-muted/50 text-left">
                                         <tr>
                                             <th className="px-4 py-3 font-medium">
-                                                Tanggal
+                                                {t('finance.common.date')}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Keterangan
+                                                {t(
+                                                    'finance.common.description',
+                                                )}
                                             </th>
                                             <th className="px-4 py-3 font-medium">
-                                                Tagihan
+                                                {t('fees.bills.table.bill')}
                                             </th>
                                             <th className="px-4 py-3 text-right font-medium">
-                                                Debit (Rp)
+                                                {t('finance.common.debit')}
                                             </th>
                                             <th className="px-4 py-3 text-right font-medium">
-                                                Kredit (Rp)
+                                                {t('finance.common.credit')}
                                             </th>
                                             <th className="px-4 py-3 text-right font-medium">
-                                                Saldo (Rp)
+                                                {t('finance.common.balance')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -376,7 +401,9 @@ export default function StudentReceivableCardPage({ report }: Props) {
                                                     colSpan={6}
                                                     className="text-muted-foreground px-4 py-6 text-center"
                                                 >
-                                                    Belum ada transaksi piutang.
+                                                    {t(
+                                                        'finance.reports.student_receivable_card.empty',
+                                                    )}
                                                 </td>
                                             </tr>
                                         )}

@@ -21,13 +21,22 @@ export default function LanguageSwitcher({
                 <button
                     key={value}
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
+                        if (value === locale) {
+                            return;
+                        }
                         router.put(
                             LocaleController.update().url,
                             { locale: value },
-                            { preserveScroll: true },
-                        )
-                    }
+                            {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    router.flushAll();
+                                    window.location.reload();
+                                },
+                            },
+                        );
+                    }}
                     className={cn(
                         'flex items-center rounded-md px-3.5 py-1.5 text-sm transition-colors',
                         locale === value

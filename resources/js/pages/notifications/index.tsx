@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Bell, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 
 type NotificationItem = {
     id: string;
@@ -30,15 +31,17 @@ type Props = {
 };
 
 export default function NotificationsIndex({ inbox, unread_only }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Notifikasi" />
+            <Head title={t('notifications.inbox.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Heading
-                        title="Notifikasi"
-                        description="Pusat pemberitahuan aktivitas, pengumuman, dan informasi akun Anda."
+                        title={t('notifications.inbox.title')}
+                        description={t('notifications.inbox.description')}
                     />
 
                     <div className="flex items-center gap-2">
@@ -51,7 +54,7 @@ export default function NotificationsIndex({ inbox, unread_only }: Props) {
                             className="cursor-pointer"
                         >
                             <CheckCheck className="mr-1.5 size-4" />
-                            Tandai semua dibaca
+                            {t('notifications.inbox.mark_all_read')}
                         </Button>
                     </div>
                 </div>
@@ -62,14 +65,18 @@ export default function NotificationsIndex({ inbox, unread_only }: Props) {
                         size="sm"
                         asChild
                     >
-                        <Link href="/notifications">Semua</Link>
+                        <Link href="/notifications">
+                            {t('notifications.inbox.all')}
+                        </Link>
                     </Button>
                     <Button
                         variant={unread_only ? 'default' : 'ghost'}
                         size="sm"
                         asChild
                     >
-                        <Link href="/notifications?unread=1">Belum dibaca</Link>
+                        <Link href="/notifications?unread=1">
+                            {t('notifications.inbox.unread')}
+                        </Link>
                     </Button>
                 </div>
 
@@ -77,8 +84,9 @@ export default function NotificationsIndex({ inbox, unread_only }: Props) {
                     {inbox.data.length === 0 ? (
                         <div className="border-border text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
                             <Bell className="mx-auto mb-2 size-8 opacity-40" />
-                            Tidak ada notifikasi{' '}
-                            {unread_only ? 'yang belum dibaca' : ''}.
+                            {unread_only
+                                ? t('notifications.inbox.empty_unread')
+                                : t('notifications.inbox.empty')}
                         </div>
                     ) : (
                         inbox.data.map((item) => (
@@ -121,34 +129,37 @@ export default function NotificationsIndex({ inbox, unread_only }: Props) {
                 {inbox.last_page > 1 && (
                     <div className="flex items-center justify-between border-t pt-4">
                         <span className="text-muted-foreground text-xs">
-                            Halaman {inbox.current_page} dari {inbox.last_page}{' '}
-                            ({inbox.total} total)
+                            {t('common.page_of_total', {
+                                current: inbox.current_page,
+                                last: inbox.last_page,
+                                total: inbox.total,
+                            })}
                         </span>
                         <div className="flex items-center gap-2">
                             {inbox.prev_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={inbox.prev_page_url}>
                                         <ChevronLeft className="mr-1 size-4" />
-                                        Sebelumnya
+                                        {t('common.previous')}
                                     </Link>
                                 </Button>
                             ) : (
                                 <Button variant="outline" size="sm" disabled>
                                     <ChevronLeft className="mr-1 size-4" />
-                                    Sebelumnya
+                                    {t('common.previous')}
                                 </Button>
                             )}
 
                             {inbox.next_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={inbox.next_page_url}>
-                                        Berikutnya
+                                        {t('common.next')}
                                         <ChevronRight className="ml-1 size-4" />
                                     </Link>
                                 </Button>
                             ) : (
                                 <Button variant="outline" size="sm" disabled>
-                                    Berikutnya
+                                    {t('common.next')}
                                     <ChevronRight className="ml-1 size-4" />
                                 </Button>
                             )}

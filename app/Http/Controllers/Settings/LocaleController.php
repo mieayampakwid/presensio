@@ -18,6 +18,7 @@ class LocaleController extends Controller
         $locale = $request->string('locale')->toString();
 
         $request->user()?->update(['locale' => $locale]);
+        app()->setLocale($locale);
 
         return back()->withCookie(Cookie::make('locale', $locale, 60 * 24 * 365));
     }

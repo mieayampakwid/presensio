@@ -11,24 +11,25 @@ export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
 }: AppLayoutProps) {
-    const { incomplete_class_count, pending_config_warnings } =
-        usePage().props as {
-            incomplete_class_count?: number;
-            pending_config_warnings?: {
-                id: string;
-                message: string;
-                action_label: string;
-                action_url: string;
-            }[];
-        };
+    const { incomplete_class_count, pending_config_warnings } = usePage()
+        .props as {
+        incomplete_class_count?: number;
+        pending_config_warnings?: {
+            id: string;
+            message: string;
+            action_label: string;
+            action_url: string;
+        }[];
+    };
 
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
             <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                {pending_config_warnings && pending_config_warnings.length > 0 ? (
-                    <div className="flex flex-col border-b border-amber-500/20 bg-amber-500/10 text-sm text-amber-900 dark:text-amber-200 divide-y divide-amber-500/15">
+                {pending_config_warnings &&
+                pending_config_warnings.length > 0 ? (
+                    <div className="flex flex-col divide-y divide-amber-500/15 border-b border-amber-500/20 bg-amber-500/10 text-sm text-amber-900 dark:text-amber-200">
                         {pending_config_warnings.map((warning) => (
                             <div
                                 key={warning.id}

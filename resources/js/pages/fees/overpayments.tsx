@@ -73,14 +73,14 @@ export default function Overpayments({
     canManage,
     canConfigure,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Kelebihan Pembayaran' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.overpayments.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (amount: string | number | null) =>
         new Intl.NumberFormat(locale, {
@@ -117,19 +117,19 @@ export default function Overpayments({
     };
     return (
         <>
-            <Head title="Kelebihan Pembayaran" />
+            <Head title={t('fees.overpayments.title')} />
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
-                        title="Kelebihan Pembayaran"
-                        description="Titipan wali dari kelebihan transfer, beserta riwayat pengembaliannya."
+                        title={t('fees.overpayments.title')}
+                        description={t('fees.overpayments.description')}
                     />
                     {canManage && (
                         <Button
                             disabled={!configuration.account_id}
                             onClick={() => setOpen(true)}
                         >
-                            Catat penerimaan
+                            {t('fees.overpayments.record_deposit')}
                         </Button>
                     )}
                 </div>
@@ -138,39 +138,37 @@ export default function Overpayments({
                         role="status"
                         className="rounded-lg border p-4 text-sm"
                     >
-                        Akun Titipan Wali belum diatur. Minta admin mengaturnya
-                        di Profil Sekolah.{' '}
+                        {t('settings.warnings.guardian_deposit_account')}{' '}
                         {canConfigure && (
                             <Link
                                 className="underline"
                                 href={SchoolProfileController.edit()}
                             >
-                                Buka Profil Sekolah
+                                {t(
+                                    'settings.warnings.guardian_deposit_account_action',
+                                )}
                             </Link>
                         )}
                     </div>
                 )}
                 <details className="rounded-lg border p-4 text-sm">
                     <summary className="cursor-pointer font-medium">
-                        Cara mencatat transfer gabungan tagihan dan kelebihan
+                        {t('fees.overpayments.guide_title', {
+                            defaultValue:
+                                'Cara mencatat transfer gabungan tagihan dan kelebihan',
+                        })}
                     </summary>
                     <p className="mt-3">
-                        Untuk transfer Rp 3.000.000 dengan tagihan Rp 300.000:
-                        wali mengunggah pembayaran Rp 300.000 dengan alokasi Rp
-                        300.000, bukti transfer penuh, dan catatan nominal
-                        bruto. Verifikasi pembayaran itu terlebih dahulu. Lalu
-                        catat kelebihan Rp 2.700.000 dengan ID pembayaran
-                        terkait, akun bank dan tanggal posting jurnal yang sama.
-                        Cantumkan nominal bruto, bagian tagihan, dan referensi
-                        bank di catatan. Bukti yang sama akan memunculkan
-                        peringatan duplikat untuk diperiksa.
+                        {t('fees.overpayments.guide_body_1', {
+                            defaultValue:
+                                'Untuk transfer Rp 3.000.000 dengan tagihan Rp 300.000: wali mengunggah pembayaran Rp 300.000 dengan alokasi Rp 300.000, bukti transfer penuh, dan catatan nominal bruto. Verifikasi pembayaran itu terlebih dahulu. Lalu catat kelebihan Rp 2.700.000 dengan ID pembayaran terkait, akun bank dan tanggal posting jurnal yang sama. Cantumkan nominal bruto, bagian tagihan, dan referensi bank di catatan. Bukti yang sama akan memunculkan peringatan duplikat untuk diperiksa.',
+                        })}
                     </p>
                     <p className="mt-2">
-                        Refund menyelesaikan seluruh titipan; biaya bank
-                        dipotong dari dana yang diterima wali. Jika seluruh
-                        transfer dikembalikan sebelum pembayaran tagihan
-                        diverifikasi, catat seluruhnya sebagai kelebihan dan
-                        biarkan tagihan belum dibayar.
+                        {t('fees.overpayments.guide_body_2', {
+                            defaultValue:
+                                'Refund menyelesaikan seluruh titipan; biaya bank dipotong dari dana yang diterima wali. Jika seluruh transfer dikembalikan sebelum pembayaran tagihan diverifikasi, catat seluruhnya sebagai kelebihan dan biarkan tagihan belum dibayar.',
+                        })}
                     </p>
                 </details>
                 <form
@@ -178,7 +176,7 @@ export default function Overpayments({
                     className="flex flex-wrap items-end gap-3"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="search">Nama wali</Label>
+                        <Label htmlFor="search">{t('fees.common.name')}</Label>
                         <Input
                             id="search"
                             name="search"
@@ -186,21 +184,39 @@ export default function Overpayments({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
+                        <Label htmlFor="status">
+                            {t('fees.common.status')}
+                        </Label>
                         <select
                             id="status"
                             name="status"
                             className={selectClass}
                             defaultValue={filters.status ?? ''}
                         >
-                            <option value="">Semua</option>
-                            <option value="held">Dititipkan</option>
-                            <option value="refunded">Dikembalikan</option>
-                            <option value="cancelled">Dibatalkan</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
+                            <option value="held">
+                                {t('fees.overpayments.held', {
+                                    defaultValue: 'Dititipkan',
+                                })}
+                            </option>
+                            <option value="refunded">
+                                {t('fees.overpayments.refunded', {
+                                    defaultValue: 'Dikembalikan',
+                                })}
+                            </option>
+                            <option value="cancelled">
+                                {t('fees.overpayments.cancelled', {
+                                    defaultValue: 'Dibatalkan',
+                                })}
+                            </option>
                         </select>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="from">Dari tanggal</Label>
+                        <Label htmlFor="from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="from"
                             name="from"
@@ -209,7 +225,7 @@ export default function Overpayments({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="to">Sampai tanggal</Label>
+                        <Label htmlFor="to">{t('fees.common.to_date')}</Label>
                         <Input
                             id="to"
                             name="to"
@@ -218,14 +234,20 @@ export default function Overpayments({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="guardian_filter">Wali</Label>
+                        <Label htmlFor="guardian_filter">
+                            {t('fees.verifications.table.guardian')}
+                        </Label>
                         <select
                             id="guardian_filter"
                             name="guardian_id"
                             className={selectClass}
                             defaultValue={filters.guardian_id ?? ''}
                         >
-                            <option value="">Semua wali</option>
+                            <option value="">
+                                {t('fees.overpayments.all_guardians', {
+                                    defaultValue: 'Semua wali',
+                                })}
+                            </option>
                             {guardians.map((guardian) => (
                                 <option key={guardian.id} value={guardian.id}>
                                     {guardian.name}
@@ -233,24 +255,32 @@ export default function Overpayments({
                             ))}
                         </select>
                     </div>
-                    <Button variant="outline">Tampilkan</Button>
+                    <Button variant="outline">{t('fees.common.filter')}</Button>
                 </form>
                 <div className="overflow-x-auto rounded-lg border">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-muted/50">
                             <tr>
                                 {[
-                                    'Tanggal',
-                                    'Wali / siswa',
-                                    'Titipan',
-                                    'Status',
-                                    'Umur (hari)',
-                                    'Biaya bank',
-                                    'Diterima wali',
+                                    t('fees.common.date'),
+                                    t('fees.verifications.table.guardian'),
+                                    t('fees.overpayments.held', {
+                                        defaultValue: 'Titipan',
+                                    }),
+                                    t('fees.common.status'),
+                                    t('fees.overpayments.age_days', {
+                                        defaultValue: 'Umur (hari)',
+                                    }),
+                                    t('fees.overpayments.bank_fee', {
+                                        defaultValue: 'Biaya bank',
+                                    }),
+                                    t('fees.overpayments.net_refund', {
+                                        defaultValue: 'Diterima wali',
+                                    }),
                                     '',
-                                ].map((t) => (
-                                    <th key={t} className="px-4 py-3">
-                                        {t}
+                                ].map((col, idx) => (
+                                    <th key={idx} className="px-4 py-3">
+                                        {col}
                                     </th>
                                 ))}
                             </tr>
@@ -297,7 +327,8 @@ export default function Overpayments({
                                                 row.id,
                                             )}
                                         >
-                                            Detail #{row.id}
+                                            {'Detail #'}
+                                            {row.id}
                                         </Link>
                                     </td>
                                 </tr>
@@ -308,8 +339,7 @@ export default function Overpayments({
                                         colSpan={8}
                                         className="text-muted-foreground px-4 py-10 text-center"
                                     >
-                                        Belum ada kelebihan pembayaran yang
-                                        sesuai.
+                                        {t('fees.overpayments.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -318,18 +348,20 @@ export default function Overpayments({
                 </div>
                 <div className="flex items-center justify-between">
                     <span className="text-sm">
-                        Halaman {overpayments.current_page} dari{' '}
-                        {overpayments.last_page}
+                        {t('common.page_of', {
+                            current: overpayments.current_page,
+                            last: overpayments.last_page,
+                        })}
                     </span>
                     <div className="flex gap-3">
                         {overpayments.prev_page_url && (
                             <Link href={overpayments.prev_page_url}>
-                                Sebelumnya
+                                {t('common.previous')}
                             </Link>
                         )}
                         {overpayments.next_page_url && (
                             <Link href={overpayments.next_page_url}>
-                                Berikutnya
+                                {t('common.next')}
                             </Link>
                         )}
                     </div>
@@ -338,15 +370,21 @@ export default function Overpayments({
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Catat penerimaan kelebihan</DialogTitle>
+                        <DialogTitle>
+                            {t('fees.overpayments.record_deposit')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Pastikan dana sudah diterima di bank. Penerimaan
-                            tersimpan sebagai kewajiban kepada wali.
+                            {t('fees.overpayments.record_dialog_desc', {
+                                defaultValue:
+                                    'Pastikan dana sudah diterima di bank. Penerimaan tersimpan sebagai kewajiban kepada wali.',
+                            })}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={submit} className="space-y-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="guardian_id">Wali</Label>
+                            <Label htmlFor="guardian_id">
+                                {t('fees.verifications.table.guardian')}
+                            </Label>
                             <select
                                 id="guardian_id"
                                 required
@@ -357,7 +395,9 @@ export default function Overpayments({
                                     form.setData('student_id', '');
                                 }}
                             >
-                                <option value="">Pilih wali</option>
+                                <option value="">
+                                    {t('fees.verifications.table.guardian')}
+                                </option>
                                 {guardians.map((g) => (
                                     <option key={g.id} value={g.id}>
                                         {g.name}
@@ -368,7 +408,10 @@ export default function Overpayments({
                             <InputError message={form.errors.operation} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="student_id">Siswa (opsional)</Label>
+                            <Label htmlFor="student_id">
+                                {t('fees.common.student')} (
+                                {t('common.cancel').toLowerCase()})
+                            </Label>
                             <select
                                 id="student_id"
                                 className={selectClass}
@@ -377,7 +420,11 @@ export default function Overpayments({
                                     form.setData('student_id', e.target.value)
                                 }
                             >
-                                <option value="">Tanpa siswa</option>
+                                <option value="">
+                                    {t('fees.overpayments.no_student', {
+                                        defaultValue: 'Tanpa siswa',
+                                    })}
+                                </option>
                                 {selectedGuardian?.students.map((s) => (
                                     <option key={s.id} value={s.id}>
                                         {s.full_name}
@@ -388,7 +435,7 @@ export default function Overpayments({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="amount">
-                                Jumlah kelebihan (Rp)
+                                {t('fees.overpayments.table.amount')}
                             </Label>
                             <Input
                                 id="amount"
@@ -428,7 +475,9 @@ export default function Overpayments({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="deposit_account_id">
-                                Akun penerimaan
+                                {t(
+                                    'fees.verifications.verify_dialog.receiving_account',
+                                )}
                             </Label>
                             <select
                                 id="deposit_account_id"
@@ -442,7 +491,9 @@ export default function Overpayments({
                                     )
                                 }
                             >
-                                <option value="">Pilih kas/bank</option>
+                                <option value="">
+                                    {t('fees.cashier.select_cash_account')}
+                                </option>
                                 {cashAccounts.map((a) => (
                                     <option key={a.id} value={a.id}>
                                         {a.code} — {a.name}
@@ -454,7 +505,9 @@ export default function Overpayments({
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="reason">Alasan</Label>
+                            <Label htmlFor="reason">
+                                {t('fees.payments.void_dialog.reason')}
+                            </Label>
                             <select
                                 id="reason"
                                 className={selectClass}
@@ -473,7 +526,10 @@ export default function Overpayments({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="related_payment_id">
-                                ID pembayaran terkait (opsional)
+                                {t('fees.overpayments.related_payment_id', {
+                                    defaultValue:
+                                        'ID pembayaran terkait (opsional)',
+                                })}
                             </Label>
                             <Input
                                 id="related_payment_id"
@@ -492,7 +548,9 @@ export default function Overpayments({
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="note">Catatan</Label>
+                            <Label htmlFor="note">
+                                {t('fees.common.notes')}
+                            </Label>
                             <textarea
                                 id="note"
                                 className="border-input min-h-20 rounded-md border p-2 text-sm"
@@ -505,7 +563,10 @@ export default function Overpayments({
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="proof">
-                                Bukti mutasi bank (JPG, PNG, PDF; maks. 5 MB)
+                                {t('fees.overpayments.proof_label', {
+                                    defaultValue:
+                                        'Bukti mutasi bank (JPG, PNG, PDF; maks. 5 MB)',
+                                })}
                             </Label>
                             <Input
                                 id="proof"
@@ -527,12 +588,12 @@ export default function Overpayments({
                                 variant="outline"
                                 onClick={() => setOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button disabled={form.processing}>
                                 {form.processing
                                     ? 'Menyimpan…'
-                                    : 'Simpan penerimaan'}
+                                    : t('fees.common.save')}
                             </Button>
                         </DialogFooter>
                     </form>

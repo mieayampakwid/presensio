@@ -109,14 +109,14 @@ export default function BillsIndex({
     statuses,
     canManage,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Tagihan' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.common.bills') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const formatRupiah = (value: string) =>
         new Intl.NumberFormat(locale, {
@@ -153,7 +153,7 @@ export default function BillsIndex({
                         {kind === 'discount' && (
                             <div className="grid gap-2">
                                 <Label htmlFor="discount_amount">
-                                    Diskon (Rp)
+                                    {t('fees.common.nominal')}
                                 </Label>
                                 <Input
                                     id="discount_amount"
@@ -169,7 +169,9 @@ export default function BillsIndex({
                             </div>
                         )}
                         <div className="grid gap-2">
-                            <Label htmlFor="reason">Alasan</Label>
+                            <Label htmlFor="reason">
+                                {t('fees.payments.void_dialog.reason')}
+                            </Label>
                             <Input
                                 id="reason"
                                 name="reason"
@@ -184,7 +186,7 @@ export default function BillsIndex({
                                 variant="outline"
                                 onClick={() => setAction(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
@@ -207,17 +209,19 @@ export default function BillsIndex({
 
     return (
         <>
-            <Head title="Tagihan" />
+            <Head title={t('fees.bills.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Tagihan"
-                    description="Daftar tagihan siswa beserta status pembayarannya."
+                    title={t('fees.bills.title')}
+                    description={t('fees.bills.description')}
                 />
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="search">Cari</Label>
+                        <Label htmlFor="search">
+                            {t('fees.common.search')}
+                        </Label>
                         <Input
                             id="search"
                             name="search"
@@ -228,7 +232,9 @@ export default function BillsIndex({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="class_id">Kelas</Label>
+                        <Label htmlFor="class_id">
+                            {t('fees.common.class')}
+                        </Label>
                         <select
                             id="class_id"
                             name="class_id"
@@ -236,7 +242,9 @@ export default function BillsIndex({
                             onChange={submitFilters}
                             className={selectClass}
                         >
-                            <option value="">Semua</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
                             {classes.map((schoolClass) => (
                                 <option
                                     key={schoolClass.id}
@@ -248,7 +256,9 @@ export default function BillsIndex({
                         </select>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="fee_type_id">Jenis Biaya</Label>
+                        <Label htmlFor="fee_type_id">
+                            {t('fees.generate.fee_type')}
+                        </Label>
                         <select
                             id="fee_type_id"
                             name="fee_type_id"
@@ -256,7 +266,9 @@ export default function BillsIndex({
                             onChange={submitFilters}
                             className={selectClass}
                         >
-                            <option value="">Semua</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
                             {feeTypes.map((feeType) => (
                                 <option key={feeType.id} value={feeType.id}>
                                     {feeType.code} - {feeType.name}
@@ -265,7 +277,9 @@ export default function BillsIndex({
                         </select>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="period_key">Periode</Label>
+                        <Label htmlFor="period_key">
+                            {t('finance.periods.table.period')}
+                        </Label>
                         <Input
                             id="period_key"
                             name="period_key"
@@ -276,7 +290,9 @@ export default function BillsIndex({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
+                        <Label htmlFor="status">
+                            {t('fees.common.status')}
+                        </Label>
                         <select
                             id="status"
                             name="status"
@@ -284,7 +300,9 @@ export default function BillsIndex({
                             onChange={submitFilters}
                             className={selectClass}
                         >
-                            <option value="">Semua</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
                             {statuses.map((status) => (
                                 <option key={status.value} value={status.value}>
                                     {status.label}
@@ -298,29 +316,33 @@ export default function BillsIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Siswa</th>
-                                <th className="px-4 py-3 font-medium">Kelas</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Tagihan
+                                    {t('fees.common.student')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Periode
+                                    {t('fees.common.class')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Jatuh Tempo
+                                    {t('fees.bills.table.bill')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('finance.periods.table.period')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.common.due_date')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Netto
+                                    {t('fees.bills.table.net')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Dibayar
+                                    {t('fees.bills.table.paid')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Status
+                                    {t('fees.common.status')}
                                 </th>
                                 {canManage && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('fees.common.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -345,7 +367,9 @@ export default function BillsIndex({
                                             }
                                             className="text-primary text-xs hover:underline"
                                         >
-                                            Kartu piutang
+                                            {t(
+                                                'finance.reports.student_receivable_card.title',
+                                            )}
                                         </Link>
                                         {bill.student_number && (
                                             <div className="text-muted-foreground text-xs">
@@ -395,7 +419,9 @@ export default function BillsIndex({
                                                             })
                                                         }
                                                     >
-                                                        Diskon
+                                                        {t(
+                                                            'fees.common.discounts',
+                                                        )}
                                                     </Button>
                                                 )}
                                                 {bill.can_cancel && (
@@ -410,7 +436,9 @@ export default function BillsIndex({
                                                             })
                                                         }
                                                     >
-                                                        Batalkan
+                                                        {t(
+                                                            'fees.common.cancel',
+                                                        )}
                                                     </Button>
                                                 )}
                                                 {bill.can_write_off && (
@@ -425,7 +453,9 @@ export default function BillsIndex({
                                                             })
                                                         }
                                                     >
-                                                        Hapusbukukan
+                                                        {t(
+                                                            'fees.bills.table.write_off',
+                                                        )}
                                                     </Button>
                                                 )}
                                             </div>
@@ -440,7 +470,7 @@ export default function BillsIndex({
                                         colSpan={canManage ? 9 : 8}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada tagihan.
+                                        {t('fees.bills.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -450,7 +480,10 @@ export default function BillsIndex({
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Halaman {bills.current_page} dari {bills.last_page}
+                        {t('common.page_of', {
+                            current: bills.current_page,
+                            last: bills.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -462,7 +495,7 @@ export default function BillsIndex({
                         >
                             <Link href={bills.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Sebelumnya
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -472,7 +505,7 @@ export default function BillsIndex({
                             disabled={!bills.next_page_url}
                         >
                             <Link href={bills.next_page_url ?? '#'}>
-                                Berikutnya
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>

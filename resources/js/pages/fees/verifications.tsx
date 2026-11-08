@@ -65,14 +65,14 @@ export default function Verifications({
     defaultAccountId,
     canManage,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Verifikasi Transfer' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.verifications.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const formatRupiah = (value: string | number) =>
         new Intl.NumberFormat(locale, {
@@ -123,17 +123,17 @@ export default function Verifications({
 
     return (
         <>
-            <Head title="Verifikasi Transfer" />
+            <Head title={t('fees.verifications.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Verifikasi Transfer"
-                    description="Transfer bank dari wali murid yang menunggu verifikasi."
+                    title={t('fees.verifications.title')}
+                    description={t('fees.verifications.description')}
                 />
 
                 {payments.length === 0 && (
                     <p className="text-muted-foreground rounded-lg border px-4 py-8 text-center text-sm">
-                        Tidak ada transfer menunggu verifikasi.
+                        {t('fees.verifications.table.empty')}
                     </p>
                 )}
 
@@ -159,14 +159,16 @@ export default function Verifications({
                                         .join(', ')}
                                 </p>
                                 <p className="text-muted-foreground text-sm">
-                                    Tanggal transfer {payment.payment_date}
+                                    {t('fees.parent.transfer_date')}{' '}
+                                    {payment.payment_date}
                                     {payment.origin_bank &&
                                         ` - ${payment.origin_bank}`}{' '}
-                                    - diunggah oleh {payment.submitted_by}
+                                    - {payment.submitted_by}
                                 </p>
                                 {payment.notes && (
                                     <p className="text-muted-foreground text-sm">
-                                        Catatan: {payment.notes}
+                                        {t('fees.common.notes')}:{' '}
+                                        {payment.notes}
                                     </p>
                                 )}
                             </div>
@@ -193,7 +195,9 @@ export default function Verifications({
                                             }}
                                         />
                                         <span className="text-sm underline">
-                                            Lihat bukti
+                                            {t(
+                                                'fees.overpayments.table.view_proof',
+                                            )}
                                         </span>
                                     </a>
                                 )}
@@ -203,14 +207,18 @@ export default function Verifications({
                                             size="sm"
                                             onClick={() => openVerify(payment)}
                                         >
-                                            Verifikasi
+                                            {t(
+                                                'fees.verifications.table.verify',
+                                            )}
                                         </Button>
                                         <Button
                                             size="sm"
                                             variant="destructive"
                                             onClick={() => openReject(payment)}
                                         >
-                                            Tolak
+                                            {t(
+                                                'fees.verifications.table.reject',
+                                            )}
                                         </Button>
                                     </>
                                 )}
@@ -222,7 +230,13 @@ export default function Verifications({
                                 <AlertDescription>
                                     {payment.duplicates.map((duplicate) => (
                                         <p key={duplicate.id}>
-                                            Bukti serupa dengan pembayaran #
+                                            {t(
+                                                'fees.verifications.duplicate_proof',
+                                                {
+                                                    defaultValue:
+                                                        'Bukti serupa dengan pembayaran #',
+                                                },
+                                            )}
                                             {duplicate.id} (
                                             {duplicate.receipt_number ?? '—'},{' '}
                                             {duplicate.status_label},{' '}
@@ -239,19 +253,19 @@ export default function Verifications({
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
                                         <th className="px-3 py-2 font-medium">
-                                            Siswa
+                                            {t('fees.common.student')}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            Tagihan
+                                            {t('fees.bills.table.bill')}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            Jatuh Tempo
+                                            {t('fees.common.due_date')}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium">
-                                            Sisa
+                                            {t('fees.bills.table.remaining')}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium">
-                                            Dialokasikan
+                                            {t('fees.cashier.allocated')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -294,11 +308,13 @@ export default function Verifications({
                 <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                     {verifying && (
                         <>
-                            <DialogTitle>Verifikasi Transfer</DialogTitle>
+                            <DialogTitle>
+                                {t('fees.verifications.verify_dialog.title')}
+                            </DialogTitle>
                             <DialogDescription>
-                                {formatRupiah(verifying.amount)} dari{' '}
-                                {verifying.submitted_by}. Jurnal pembayaran
-                                dibuat dan kuitansi diterbitkan.
+                                {formatRupiah(verifying.amount)} (
+                                {verifying.submitted_by}).{' '}
+                                {t('fees.cashier.journal_created')}
                             </DialogDescription>
                             <Form
                                 key={verifying.id}
@@ -312,7 +328,9 @@ export default function Verifications({
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="deposit_account_id">
-                                                Akun Penerima
+                                                {t(
+                                                    'fees.verifications.verify_dialog.receiving_account',
+                                                )}
                                             </Label>
                                             <select
                                                 id="deposit_account_id"
@@ -350,7 +368,7 @@ export default function Verifications({
                                                     startReallocation(verifying)
                                                 }
                                             >
-                                                Ubah alokasi
+                                                {t('fees.common.edit')}
                                             </Button>
                                         ) : (
                                             <div className="space-y-3">
@@ -369,7 +387,9 @@ export default function Verifications({
                                                                     {bill.title}
                                                                 </p>
                                                                 <p className="text-muted-foreground">
-                                                                    Sisa{' '}
+                                                                    {t(
+                                                                        'fees.bills.table.remaining',
+                                                                    )}{' '}
                                                                     {formatRupiah(
                                                                         bill.remaining,
                                                                     )}
@@ -430,10 +450,18 @@ export default function Verifications({
                                                             : 'text-destructive text-sm'
                                                     }
                                                 >
-                                                    Total alokasi{' '}
-                                                    {formatRupiah(total)} dari{' '}
-                                                    {formatRupiah(
-                                                        verifying.amount,
+                                                    {t(
+                                                        'fees.common.allocated_of_received',
+                                                        {
+                                                            allocated:
+                                                                formatRupiah(
+                                                                    total,
+                                                                ),
+                                                            received:
+                                                                formatRupiah(
+                                                                    verifying.amount,
+                                                                ),
+                                                        },
                                                     )}
                                                 </p>
                                                 <InputError
@@ -450,7 +478,7 @@ export default function Verifications({
                                                     setVerifying(null)
                                                 }
                                             >
-                                                Batal
+                                                {t('fees.common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -459,7 +487,9 @@ export default function Verifications({
                                                 }
                                             >
                                                 {processing && <Spinner />}
-                                                Verifikasi
+                                                {t(
+                                                    'fees.verifications.table.verify',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>
@@ -477,11 +507,12 @@ export default function Verifications({
                 <DialogContent>
                     {rejecting && (
                         <>
-                            <DialogTitle>Tolak Transfer</DialogTitle>
+                            <DialogTitle>
+                                {t('fees.verifications.reject_dialog.title')}
+                            </DialogTitle>
                             <DialogDescription>
-                                {formatRupiah(rejecting.amount)} dari{' '}
-                                {rejecting.submitted_by}. Tagihan tetap seperti
-                                semula dan tidak ada jurnal yang dibuat.
+                                {formatRupiah(rejecting.amount)} (
+                                {rejecting.submitted_by})
                             </DialogDescription>
                             <Form
                                 key={rejecting.id}
@@ -495,13 +526,17 @@ export default function Verifications({
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="reason">
-                                                Alasan
+                                                {t(
+                                                    'fees.verifications.reject_dialog.reason',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="reason"
                                                 name="reason"
                                                 required
-                                                maxLength={255}
+                                                placeholder={t(
+                                                    'fees.verifications.reject_dialog.reason_placeholder',
+                                                )}
                                                 value={reason}
                                                 onChange={(event) =>
                                                     setReason(
@@ -522,7 +557,7 @@ export default function Verifications({
                                                     setRejecting(null)
                                                 }
                                             >
-                                                Batal
+                                                {t('fees.common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -533,7 +568,9 @@ export default function Verifications({
                                                 }
                                             >
                                                 {processing && <Spinner />}
-                                                Tolak Transfer
+                                                {t(
+                                                    'fees.verifications.reject_dialog.confirm',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>

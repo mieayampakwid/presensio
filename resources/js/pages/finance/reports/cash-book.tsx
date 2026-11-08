@@ -52,14 +52,14 @@ type Props = {
 };
 
 export default function CashBookReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Buku Kas & Bank' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.cash_book.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const [accountId, setAccountId] = useState<string>(
         report.account ? String(report.account.id) : '',
@@ -81,13 +81,13 @@ export default function CashBookReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Buku Kas & Bank" />
+            <Head title={t('finance.reports.cash_book.title')} />
 
             <div className="mx-auto max-w-5xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Buku Kas & Bank (Cash Book)"
-                        description="Pencatatan arus kas masuk (penerimaan) dan kas keluar (pengeluaran) per akun kas/bank."
+                        title={t('finance.reports.cash_book.title')}
+                        description={t('finance.reports.cash_book.description')}
                     />
 
                     {report.account && (
@@ -96,7 +96,8 @@ export default function CashBookReportPage({ report }: Props) {
                                 href={`/finance/reports/cash-book?format=csv&account_id=${accountId}&from=${from}&to=${to}`}
                                 download
                             >
-                                <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                                <Download className="mr-2 h-4 w-4" />{' '}
+                                {t('finance.common.export_csv')}
                             </a>
                         </Button>
                     )}
@@ -106,7 +107,7 @@ export default function CashBookReportPage({ report }: Props) {
                 <div className="bg-card grid grid-cols-1 items-end gap-4 rounded-lg border p-4 sm:grid-cols-4">
                     <div className="space-y-1">
                         <Label htmlFor="cash_account">
-                            Pilih Rekening Kas/Bank
+                            {t('finance.reports.cash_book.select_account')}
                         </Label>
                         <Select value={accountId} onValueChange={setAccountId}>
                             <SelectTrigger id="cash_account">
@@ -126,7 +127,9 @@ export default function CashBookReportPage({ report }: Props) {
                     </div>
 
                     <div className="space-y-1">
-                        <Label htmlFor="from">Dari Tanggal</Label>
+                        <Label htmlFor="from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="from"
                             type="date"
@@ -136,7 +139,7 @@ export default function CashBookReportPage({ report }: Props) {
                     </div>
 
                     <div className="space-y-1">
-                        <Label htmlFor="to">Sampai Tanggal</Label>
+                        <Label htmlFor="to">{t('fees.common.to_date')}</Label>
                         <Input
                             id="to"
                             type="date"
@@ -145,13 +148,15 @@ export default function CashBookReportPage({ report }: Props) {
                         />
                     </div>
 
-                    <Button onClick={applyFilter}>Tampilkan</Button>
+                    <Button onClick={applyFilter}>
+                        {t('finance.common.filter')}
+                    </Button>
                 </div>
 
                 {/* Ledger Card */}
                 {!report.account ? (
                     <div className="text-muted-foreground bg-card rounded-lg border p-8 text-center">
-                        Belum ada akun kas atau bank yang dipilih.
+                        {t('finance.reports.cash_book.empty')}
                     </div>
                 ) : (
                     <div className="bg-card overflow-hidden rounded-lg border">
@@ -167,21 +172,19 @@ export default function CashBookReportPage({ report }: Props) {
 
                             <div className="space-x-4 font-mono text-xs">
                                 <span>
-                                    Saldo Awal:{' '}
+                                    {t(
+                                        'finance.reports.cash_book.initial_balance',
+                                    )}{' '}
                                     <strong>
-                                        Rp{' '}
-                                        {Number(
-                                            report.opening_balance,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.opening_balance).toLocaleString(locale)}`}
                                     </strong>
                                 </span>
                                 <span>
-                                    Saldo Akhir:{' '}
+                                    {t(
+                                        'finance.reports.cash_book.final_balance',
+                                    )}{' '}
                                     <strong>
-                                        Rp{' '}
-                                        {Number(
-                                            report.closing_balance,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.closing_balance).toLocaleString(locale)}`}
                                     </strong>
                                 </span>
                             </div>
@@ -192,25 +195,25 @@ export default function CashBookReportPage({ report }: Props) {
                                 <thead className="bg-muted/30 text-left">
                                     <tr>
                                         <th className="px-3 py-2 font-medium">
-                                            Tanggal
+                                            {t('finance.common.date')}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            No. Jurnal
+                                            {t('finance.journals.table.number')}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            Keterangan
+                                            {t('finance.common.description')}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium text-emerald-700">
-                                            Masuk / Debit (Rp)
+                                            {'Masuk / Debit (Rp)'}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium text-rose-700">
-                                            Keluar / Kredit (Rp)
+                                            {'Keluar / Kredit (Rp)'}
                                         </th>
                                         <th className="px-3 py-2 text-right font-bold font-medium">
-                                            Saldo Kas (Rp)
+                                            {'Saldo Kas (Rp)'}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            Memo
+                                            {'Memo'}
                                         </th>
                                     </tr>
                                 </thead>
@@ -221,7 +224,7 @@ export default function CashBookReportPage({ report }: Props) {
                                         </td>
                                         <td className="px-3 py-1.5">-</td>
                                         <td className="px-3 py-1.5 font-medium">
-                                            SALDO AWAL KAS
+                                            {'SALDO AWAL KAS'}
                                         </td>
                                         <td className="px-3 py-1.5 text-right">
                                             -
@@ -243,8 +246,9 @@ export default function CashBookReportPage({ report }: Props) {
                                                 colSpan={7}
                                                 className="text-muted-foreground px-3 py-6 text-center italic"
                                             >
-                                                Tidak ada mutasi kas pada
-                                                periode ini.
+                                                {t(
+                                                    'finance.reports.cash_book.empty',
+                                                )}
                                             </td>
                                         </tr>
                                     ) : (
@@ -272,7 +276,7 @@ export default function CashBookReportPage({ report }: Props) {
                                                                 line.overpayment_id,
                                                             )}
                                                         >
-                                                            Kelebihan #
+                                                            {'Kelebihan #'}
                                                             {
                                                                 line.overpayment_id
                                                             }
@@ -317,8 +321,9 @@ export default function CashBookReportPage({ report }: Props) {
                                             colSpan={3}
                                             className="px-3 py-2 text-right"
                                         >
-                                            TOTAL PENERIMAAN / PENGELUARAN &
-                                            SALDO AKHIR:
+                                            {
+                                                'TOTAL PENERIMAAN / PENGELUARAN & SALDO AKHIR:'
+                                            }
                                         </td>
                                         <td className="px-3 py-2 text-right text-emerald-700">
                                             {Number(

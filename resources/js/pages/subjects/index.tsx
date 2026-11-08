@@ -85,28 +85,28 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
     );
     return (
         <>
-            <Head title="Subjects" />
+            <Head title={t('subjects.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Subjects"
-                        description="Katalog mata pelajaran sekolah untuk kurikulum, penugasan guru, dan rapor."
+                        title={t('subjects.title')}
+                        description={t('subjects.description')}
                     />
 
                     <Button onClick={() => setIsCreateOpen(true)}>
-                        Create Subject
+                        {t('subjects.create')}
                     </Button>
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="search">Search</Label>
+                        <Label htmlFor="search">{t('subjects.search')}</Label>
                         <Input
                             id="search"
                             name="search"
                             defaultValue={filters.search}
-                            placeholder="Cari kode atau nama..."
+                            placeholder={t('subjects.search_placeholder')}
                             onChange={submitFilters}
                             className="w-64"
                         />
@@ -117,15 +117,23 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Code</th>
-                                <th className="px-4 py-3 font-medium">Name</th>
-                                <th className="px-4 py-3 font-medium">Group</th>
-                                <th className="px-4 py-3 font-medium">Order</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Status
+                                    {t('subjects.table.code')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('subjects.table.name')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('subjects.table.group')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('subjects.table.order')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('subjects.table.status')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Actions
+                                    {t('subjects.table.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -155,11 +163,11 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                     <td className="px-4 py-3">
                                         {subject.is_active ? (
                                             <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset dark:bg-green-950/50 dark:text-green-400">
-                                                Active
+                                                {t('subjects.table.active')}
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 ring-1 ring-neutral-500/20 ring-inset dark:bg-neutral-800 dark:text-neutral-400">
-                                                Inactive
+                                                {t('subjects.table.inactive')}
                                             </span>
                                         )}
                                     </td>
@@ -174,7 +182,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                             >
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Edit
+                                                    {t('common.edit')}
                                                 </span>
                                             </Button>
                                             <Button
@@ -187,7 +195,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Delete
+                                                    {t('common.delete')}
                                                 </span>
                                             </Button>
                                         </div>
@@ -201,7 +209,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                         colSpan={6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No subjects found.
+                                        {t('subjects.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -211,7 +219,10 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {subjects.current_page} of {subjects.last_page}
+                        {t('common.page_of', {
+                            current: subjects.current_page,
+                            last: subjects.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -223,7 +234,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                         >
                             <Link href={subjects.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -233,7 +244,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                             disabled={!subjects.next_page_url}
                         >
                             <Link href={subjects.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -245,17 +256,21 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Delete Subject</DialogTitle>
+                    <DialogTitle>
+                        {t('subjects.delete_dialog.title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete {deleting?.name} (
-                        {deleting?.code})? This action cannot be undone.
+                        {t('subjects.delete_dialog.message', {
+                            name: deleting?.name ?? '',
+                            code: deleting?.code ?? '',
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
                             onClick={() => setDeleting(null)}
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -266,7 +281,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                 }
                             }}
                         >
-                            Delete
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -275,10 +290,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
             <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <SheetContent side="right" className="sm:max-w-lg">
                     <SheetHeader>
-                        <SheetTitle>Create Subject</SheetTitle>
+                        <SheetTitle>{t('subjects.create_title')}</SheetTitle>
                         <SheetDescription>
-                            Tambah mata pelajaran baru ke katalog kurikulum
-                            sekolah.
+                            {t('subjects.create_description')}
                         </SheetDescription>
                     </SheetHeader>
 
@@ -293,7 +307,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
                                             <Label htmlFor="create-code">
-                                                Code
+                                                {t('subjects.fields.code')}
                                             </Label>
                                             <Input
                                                 id="create-code"
@@ -301,8 +315,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                 required
                                                 autoFocus
                                                 autoComplete="off"
-                                                placeholder="e.g. MAT"
-                                                maxLength={20}
+                                                placeholder={t(
+                                                    'subjects.fields.code_placeholder',
+                                                )}
                                                 className="uppercase"
                                             />
                                             <InputError message={errors.code} />
@@ -310,14 +325,16 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="create-name">
-                                                Name
+                                                {t('subjects.fields.name')}
                                             </Label>
                                             <Input
                                                 id="create-name"
                                                 name="name"
                                                 required
                                                 autoComplete="off"
-                                                placeholder="e.g. Matematika"
+                                                placeholder={t(
+                                                    'subjects.fields.name_placeholder',
+                                                )}
                                                 maxLength={255}
                                             />
                                             <InputError message={errors.name} />
@@ -327,7 +344,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
                                             <Label htmlFor="create-group">
-                                                Group
+                                                {t('subjects.fields.group')}
                                             </Label>
                                             <select
                                                 id="create-group"
@@ -355,7 +372,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="create-sort_order">
-                                                Sort Order
+                                                {t(
+                                                    'subjects.fields.sort_order',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="create-sort_order"
@@ -373,14 +392,16 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="create-description">
-                                            Description (optional)
+                                            {t('subjects.fields.description')}
                                         </Label>
                                         <textarea
                                             id="create-description"
                                             name="description"
                                             rows={3}
                                             className="border-input placeholder:text-muted-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                            placeholder="Deskripsi singkat mata pelajaran..."
+                                            placeholder={t(
+                                                'subjects.fields.description_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={errors.description}
@@ -405,7 +426,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                             htmlFor="create-is_active"
                                             className="cursor-pointer"
                                         >
-                                            Active (Mata pelajaran aktif)
+                                            {t('subjects.fields.is_active')}
                                         </Label>
                                         <InputError
                                             message={errors.is_active}
@@ -419,13 +440,13 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                         type="button"
                                         onClick={() => setIsCreateOpen(false)}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         {processing && (
                                             <Spinner className="mr-2" />
                                         )}
-                                        Create Subject
+                                        {t('subjects.create')}
                                     </Button>
                                 </SheetFooter>
                             </>
@@ -443,10 +464,12 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                         <>
                             <SheetHeader>
                                 <SheetTitle>
-                                    Edit Subject — {editingSubject.name}
+                                    {t('subjects.edit_title', {
+                                        name: editingSubject.name,
+                                    })}
                                 </SheetTitle>
                                 <SheetDescription>
-                                    Perbarui data mata pelajaran.
+                                    {t('subjects.edit_description')}
                                 </SheetDescription>
                             </SheetHeader>
 
@@ -464,7 +487,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="edit-code">
-                                                        Code
+                                                        {t(
+                                                            'subjects.fields.code',
+                                                        )}
                                                     </Label>
                                                     <Input
                                                         id="edit-code"
@@ -484,7 +509,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="edit-name">
-                                                        Name
+                                                        {t(
+                                                            'subjects.fields.name',
+                                                        )}
                                                     </Label>
                                                     <Input
                                                         id="edit-name"
@@ -505,7 +532,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="edit-group">
-                                                        Group
+                                                        {t(
+                                                            'subjects.fields.group',
+                                                        )}
                                                     </Label>
                                                     <select
                                                         id="edit-group"
@@ -536,7 +565,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="edit-sort_order">
-                                                        Sort Order
+                                                        {t(
+                                                            'subjects.fields.sort_order',
+                                                        )}
                                                     </Label>
                                                     <Input
                                                         id="edit-sort_order"
@@ -558,7 +589,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
 
                                             <div className="grid gap-2">
                                                 <Label htmlFor="edit-description">
-                                                    Description (optional)
+                                                    {t(
+                                                        'subjects.fields.description',
+                                                    )}
                                                 </Label>
                                                 <textarea
                                                     id="edit-description"
@@ -569,7 +602,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                     }
                                                     rows={3}
                                                     className="border-input placeholder:text-muted-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                                    placeholder="Deskripsi singkat mata pelajaran..."
+                                                    placeholder={t(
+                                                        'subjects.fields.description_placeholder',
+                                                    )}
                                                 />
                                                 <InputError
                                                     message={errors.description}
@@ -596,8 +631,9 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                     htmlFor="edit-is_active"
                                                     className="cursor-pointer"
                                                 >
-                                                    Active (Mata pelajaran
-                                                    aktif)
+                                                    {t(
+                                                        'subjects.fields.is_active',
+                                                    )}
                                                 </Label>
                                                 <InputError
                                                     message={errors.is_active}
@@ -613,7 +649,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                     setEditingSubject(null)
                                                 }
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -622,7 +658,7 @@ export default function SubjectsIndex({ subjects, filters, groups }: Props) {
                                                 {processing && (
                                                     <Spinner className="mr-2" />
                                                 )}
-                                                Save changes
+                                                {t('common.save_changes')}
                                             </Button>
                                         </SheetFooter>
                                     </>

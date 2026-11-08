@@ -47,14 +47,14 @@ type Props = {
 };
 
 export default function ReceivablesReconciliationReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Rekonsiliasi Piutang' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.receivables_reconciliation.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
@@ -78,13 +78,19 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Rekonsiliasi Piutang" />
+            <Head
+                title={t('finance.reports.receivables_reconciliation.title')}
+            />
 
             <div className="mx-auto max-w-5xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Rekonsiliasi Piutang"
-                        description="Perbandingan saldo buku besar dengan subledger tagihan untuk akun piutang dan pendapatan diterima di muka."
+                        title={t(
+                            'finance.reports.receivables_reconciliation.title',
+                        )}
+                        description={t(
+                            'finance.reports.receivables_reconciliation.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -92,7 +98,8 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                             href={`/finance/reports/receivables-reconciliation?format=csv&as_of=${asOf}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
@@ -100,7 +107,11 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                 <div className="bg-card flex flex-col justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
                     <div className="flex items-end gap-3">
                         <div className="space-y-1">
-                            <Label htmlFor="as_of">Posisi Per Tanggal</Label>
+                            <Label htmlFor="as_of">
+                                {t('finance.reports.trial_balance.as_of', {
+                                    defaultValue: 'Posisi Per Tanggal',
+                                })}
+                            </Label>
                             <Input
                                 id="as_of"
                                 type="date"
@@ -108,17 +119,21 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                                 onChange={(e) => setAsOf(e.target.value)}
                             />
                         </div>
-                        <Button onClick={applyFilter}>Tampilkan</Button>
+                        <Button onClick={applyFilter}>
+                            {t('finance.common.filter')}
+                        </Button>
                     </div>
 
                     {report.is_balanced ? (
                         <div className="flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/40">
-                            <CheckCircle2 className="mr-1.5 h-4 w-4" /> Seimbang
+                            <CheckCircle2 className="mr-1.5 h-4 w-4" />{' '}
+                            {t('finance.common.balanced')}
                         </div>
                     ) : (
                         <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold">
                             <AlertCircle className="mr-1.5 h-4 w-4" />
-                            Selisih: Rp {rupiah(report.total_difference)}
+                            {t('finance.common.difference')}:{' '}
+                            {`Rp ${rupiah(report.total_difference)}`}
                         </div>
                     )}
                 </div>
@@ -126,32 +141,35 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                 <section className="space-y-3 rounded-lg border p-4">
                     <div className="flex flex-wrap justify-between gap-3">
                         <h2 className="font-semibold">
-                            Rekonsiliasi Titipan Wali
+                            {t(
+                                'finance.reports.receivables_reconciliation.deposits',
+                                { defaultValue: 'Rekonsiliasi Titipan Wali' },
+                            )}
                         </h2>
                         <Link
                             className="text-sm underline"
                             href={OverpaymentController.index()}
                         >
-                            Lihat kelebihan pembayaran
+                            {t('fees.overpayments.table.view_proof')}
                         </Link>
                     </div>
                     <p className="text-sm">
                         {report.guardian_deposits.is_balanced
-                            ? 'Seimbang'
-                            : `Selisih: Rp ${rupiah(report.guardian_deposits.total_difference)}`}
+                            ? t('finance.common.balanced')
+                            : `${t('finance.common.difference')}: Rp ${rupiah(report.guardian_deposits.total_difference)}`}
                     </p>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr>
                                     {[
-                                        'Akun',
+                                        t('finance.common.account'),
                                         'Buku Besar (Rp)',
-                                        'Titipan belum selesai (Rp)',
-                                        'Selisih (Rp)',
-                                    ].map((title) => (
-                                        <th key={title} className="p-2">
-                                            {title}
+                                        'Titipan (Rp)',
+                                        t('finance.common.difference'),
+                                    ].map((colTitle) => (
+                                        <th key={colTitle} className="p-2">
+                                            {colTitle}
                                         </th>
                                     ))}
                                 </tr>
@@ -183,7 +201,9 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                     </div>
                     {report.guardian_deposits.accounts.length === 0 && (
                         <p className="text-muted-foreground text-sm">
-                            Belum ada akun atau riwayat Titipan Wali.
+                            {t(
+                                'finance.reports.receivables_reconciliation.empty',
+                            )}
                         </p>
                     )}
                 </section>
@@ -193,22 +213,22 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Akun
+                                        {t('finance.common.account')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Jenis
+                                        {t('fees.types.table.type')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Buku Besar (Rp)
+                                        {'Buku Besar (Rp)'}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Subledger (Rp)
+                                        {'Subledger (Rp)'}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Selisih (Rp)
+                                        {'Selisih (Rp)'}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Status
+                                        {t('finance.common.status')}
                                     </th>
                                 </tr>
                             </thead>
@@ -243,8 +263,12 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                                                 }
                                             >
                                                 {row.is_balanced
-                                                    ? 'Seimbang'
-                                                    : 'Selisih'}
+                                                    ? t(
+                                                          'finance.common.balanced',
+                                                      )
+                                                    : t(
+                                                          'finance.common.difference',
+                                                      )}
                                             </Badge>
                                         </td>
                                     </tr>
@@ -257,7 +281,10 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                 {report.mismatch_count > 0 && (
                     <div className="bg-card overflow-hidden rounded-lg border">
                         <div className="border-b px-4 py-3 text-sm font-medium">
-                            Tagihan tidak sesuai ({report.mismatch_count}
+                            {t(
+                                'finance.reports.receivables_reconciliation.mismatch',
+                            )}{' '}
+                            ({report.mismatch_count}
                             {report.mismatch_count > report.mismatches.length &&
                                 `, menampilkan ${report.mismatches.length} pertama`}
                             )
@@ -267,19 +294,19 @@ export default function ReceivablesReconciliationReportPage({ report }: Props) {
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
                                         <th className="px-4 py-3 font-medium">
-                                            Tagihan
+                                            {t('fees.bills.table.bill')}
                                         </th>
                                         <th className="px-4 py-3 font-medium">
-                                            Siswa
+                                            {t('fees.common.student')}
                                         </th>
                                         <th className="px-4 py-3 font-medium">
-                                            Akun
+                                            {t('finance.common.account')}
                                         </th>
                                         <th className="px-4 py-3 text-right font-medium">
-                                            Seharusnya (Rp)
+                                            {'Seharusnya (Rp)'}
                                         </th>
                                         <th className="px-4 py-3 text-right font-medium">
-                                            Buku Besar (Rp)
+                                            {'Buku Besar (Rp)'}
                                         </th>
                                     </tr>
                                 </thead>

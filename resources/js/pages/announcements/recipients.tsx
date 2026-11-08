@@ -1,5 +1,6 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
+import { useTranslation } from '@/hooks/use-translation';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -35,46 +36,52 @@ export default function Recipients({
     announcement: Announcement;
     recipientReport: Report;
 }) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Pengumuman', href: '/announcements' },
+            { title: t('announcements.title'), href: '/announcements' },
             { title: announcement.title, href: Reader.show(announcement.id) },
-            { title: 'Status Penerima' },
+            { title: t('announcements.show.recipient_status') },
         ],
     });
 
     return (
         <>
-            <Head title="Status penerima" />
+            <Head title={t('announcements.show.recipient_status')} />
             <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
                 <Link
                     className="text-sm underline underline-offset-4"
                     href={Reader.show(announcement.id)}
                 >
-                    Kembali ke pengumuman
+                    {t('announcements.recipients.back')}
                 </Link>
                 <Heading
-                    title="Status penerima"
+                    title={t('announcements.show.recipient_status')}
                     description={`${announcement.title} · Keanggotaan saat ini per ${r.as_of}`}
                 />
                 <div className="flex flex-wrap gap-x-8 gap-y-3 rounded-lg border p-4 text-sm">
                     <p>
-                        Total: <strong>{r.totals.total}</strong>
+                        {t('announcements.recipients.total')}{' '}
+                        <strong>{r.totals.total}</strong>
                     </p>
                     <p>
-                        Sudah membaca: <strong>{r.totals.read}</strong>
+                        {t('announcements.recipients.already_read')}{' '}
+                        <strong>{r.totals.read}</strong>
                     </p>
                     <p>
-                        Sudah konfirmasi:{' '}
+                        {t('announcements.recipients.already_confirmed')}{' '}
                         <strong>{r.totals.acknowledged}</strong>
                     </p>
                     <p>
-                        Wali tanpa akun aktif:{' '}
+                        {t('announcements.recipients.guardians_no_account')}{' '}
                         <strong>{r.totals.accountless_guardians}</strong>
                     </p>
                 </div>
                 <div className="max-w-xs space-y-2">
-                    <Label htmlFor="recipient-status">Filter status</Label>
+                    <Label htmlFor="recipient-status">
+                        {t('announcements.recipients.filter_status')}
+                    </Label>
                     <select
                         id="recipient-status"
                         className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
@@ -88,9 +95,15 @@ export default function Recipients({
                             )
                         }
                     >
-                        <option value="">Semua penerima</option>
-                        <option value="unread">Belum membaca</option>
-                        <option value="unacknowledged">Belum konfirmasi</option>
+                        <option value="">
+                            {t('announcements.recipients.all')}
+                        </option>
+                        <option value="unread">
+                            {t('announcements.recipients.not_read')}
+                        </option>
+                        <option value="unacknowledged">
+                            {t('announcements.recipients.not_confirmed')}
+                        </option>
                     </select>
                 </div>
                 <div className="overflow-x-auto rounded-lg border">
@@ -103,10 +116,18 @@ export default function Recipients({
                                         : 'Pengguna'}
                                 </th>
                                 {r.kind === 'students' && (
-                                    <th className="p-4">Wali</th>
+                                    <th className="p-4">
+                                        {t(
+                                            'announcements.recipients.guardians',
+                                        )}
+                                    </th>
                                 )}
-                                <th className="p-4">Membaca</th>
-                                <th className="p-4">Konfirmasi</th>
+                                <th className="p-4">
+                                    {t('announcements.recipients.read')}
+                                </th>
+                                <th className="p-4">
+                                    {t('announcements.recipients.confirmation')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -124,21 +145,27 @@ export default function Recipients({
                                                           {!g.has_account && (
                                                               <span className="text-muted-foreground">
                                                                   {' '}
-                                                                  · Belum
-                                                                  memiliki akun
-                                                                  aktif
+                                                                  {t(
+                                                                      'announcements.recipients.no_active_account',
+                                                                  )}
                                                               </span>
                                                           )}
                                                       </p>
                                                   ))
-                                                : 'Belum ada wali terhubung'}
+                                                : t(
+                                                      'announcements.no_linked_guardian',
+                                                  )}
                                         </td>
                                     )}
                                     <td className="p-4">
-                                        {row.read ? 'Sudah' : 'Belum'}
+                                        {row.read
+                                            ? t('common.yes')
+                                            : t('common.no')}
                                     </td>
                                     <td className="p-4">
-                                        {row.acknowledged ? 'Sudah' : 'Belum'}
+                                        {row.acknowledged
+                                            ? t('common.yes')
+                                            : t('common.no')}
                                     </td>
                                 </tr>
                             ))}
@@ -148,7 +175,7 @@ export default function Recipients({
                                         colSpan={4}
                                         className="text-muted-foreground p-8 text-center"
                                     >
-                                        Tidak ada penerima dengan status ini.
+                                        {t('announcements.recipients.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -157,20 +184,23 @@ export default function Recipients({
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
                     <span>
-                        Halaman {r.rows.current_page} dari {r.rows.last_page}
+                        {t('common.page_of', {
+                            current: r.rows.current_page,
+                            last: r.rows.last_page,
+                        })}
                     </span>
                     <div className="flex gap-2">
                         {r.rows.prev_page_url && (
                             <Button asChild variant="outline">
                                 <Link href={r.rows.prev_page_url}>
-                                    Sebelumnya
+                                    {t('common.previous')}
                                 </Link>
                             </Button>
                         )}
                         {r.rows.next_page_url && (
                             <Button asChild variant="outline">
                                 <Link href={r.rows.next_page_url}>
-                                    Berikutnya
+                                    {t('common.next')}
                                 </Link>
                             </Button>
                         )}

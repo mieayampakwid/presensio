@@ -106,7 +106,7 @@ export default function StudentGrades({
                         variant="outline"
                         className="border-blue-400 text-blue-600 dark:text-blue-400"
                     >
-                        Formatif
+                        {t('grading.student.grades.table.formative')}
                     </Badge>
                 );
             case 'summative_scope':
@@ -115,7 +115,7 @@ export default function StudentGrades({
                         variant="secondary"
                         className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
                     >
-                        Sumatif Lingkup Materi
+                        {t('grading.student.grades.table.summative_topic')}
                     </Badge>
                 );
             case 'summative_final':
@@ -124,7 +124,7 @@ export default function StudentGrades({
                         variant="default"
                         className="bg-emerald-600 text-white"
                     >
-                        Sumatif Akhir
+                        {t('grading.student.grades.table.summative_end')}
                     </Badge>
                 );
         }
@@ -144,7 +144,7 @@ export default function StudentGrades({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Dashboard
+                                {t('grading.student.grades.dashboard')}
                             </Link>
                             <span>•</span>
                             <span className="flex items-center gap-1">
@@ -183,17 +183,13 @@ export default function StudentGrades({
                 {/* Info Note */}
                 <div className="bg-muted/30 text-muted-foreground flex items-start gap-2.5 rounded-lg border p-3 text-xs">
                     <Info className="text-primary h-4 w-4 shrink-0" />
-                    <p>
-                        Nilai yang muncul di bawah ini adalah penilaian yang
-                        telah dirilis oleh guru. Nilai rapor akhir semester akan
-                        diumumkan resmi pada jadwal pembagian rapor.
-                    </p>
+                    <p>{t('grading.student.grades.notice')}</p>
                 </div>
 
                 {/* Subjects List */}
                 {subjects.length === 0 ? (
                     <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
-                        Belum ada mata pelajaran terdaftar untuk semester ini.
+                        {t('grading.student.grades.table.empty_subjects')}
                     </div>
                 ) : (
                     <div className="space-y-6">
@@ -212,7 +208,10 @@ export default function StudentGrades({
                                                 {sub.teacher_name && (
                                                     <span className="flex items-center gap-1">
                                                         <UserRound className="h-3 w-3" />
-                                                        Guru: {sub.teacher_name}
+                                                        {t(
+                                                            'grading.student.grades.teacher',
+                                                        )}{' '}
+                                                        {sub.teacher_name}
                                                     </span>
                                                 )}
                                             </CardDescription>
@@ -221,7 +220,7 @@ export default function StudentGrades({
                                             variant="outline"
                                             className="w-fit text-xs font-normal"
                                         >
-                                            KKTP:{' '}
+                                            {t('grading.student.grades.kktp')}{' '}
                                             <strong className="text-foreground ml-1">
                                                 {sub.passing_threshold}
                                             </strong>
@@ -231,8 +230,9 @@ export default function StudentGrades({
                                 <CardContent className="p-0">
                                     {sub.assessments.length === 0 ? (
                                         <div className="text-muted-foreground p-6 text-center text-xs italic">
-                                            Belum ada nilai asesmen yang dirilis
-                                            oleh guru untuk mata pelajaran ini.
+                                            {t(
+                                                'grading.student.grades.table.empty_assessments',
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="overflow-x-auto">
@@ -240,22 +240,34 @@ export default function StudentGrades({
                                                 <thead className="bg-muted/20 text-muted-foreground text-xs font-medium">
                                                     <tr className="border-b">
                                                         <th className="px-4 py-2.5">
-                                                            Nama Asesmen
+                                                            {t(
+                                                                'grading.student.grades.table.name',
+                                                            )}
                                                         </th>
                                                         <th className="px-3 py-2.5">
-                                                            Jenis
+                                                            {t(
+                                                                'grading.student.grades.table.type',
+                                                            )}
                                                         </th>
                                                         <th className="px-3 py-2.5">
-                                                            Tanggal
+                                                            {t(
+                                                                'grading.student.grades.table.date',
+                                                            )}
                                                         </th>
                                                         <th className="px-3 py-2.5 text-center">
-                                                            Nilai
+                                                            {t(
+                                                                'grading.student.grades.table.score',
+                                                            )}
                                                         </th>
                                                         <th className="px-3 py-2.5 text-center">
-                                                            Remedial
+                                                            {t(
+                                                                'grading.student.grades.table.remedial',
+                                                            )}
                                                         </th>
                                                         <th className="px-4 py-2.5">
-                                                            Catatan Guru
+                                                            {t(
+                                                                'grading.student.grades.table.notes',
+                                                            )}
                                                         </th>
                                                     </tr>
                                                 </thead>

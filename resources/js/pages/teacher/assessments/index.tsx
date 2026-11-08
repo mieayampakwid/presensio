@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     AlertCircle,
     ArrowLeft,
@@ -89,6 +90,7 @@ export default function AssessmentsIndex({
     objectives,
     canWrite,
 }: Props) {
+    const { t } = useTranslation();
     setLayoutProps({
         breadcrumbs: [
             {
@@ -221,7 +223,7 @@ export default function AssessmentsIndex({
                         variant="outline"
                         className="border-blue-400 text-blue-600 dark:text-blue-400"
                     >
-                        Formatif
+                        {t('grading.assessments.table.formative')}
                     </Badge>
                 );
             case 'summative_scope':
@@ -230,7 +232,7 @@ export default function AssessmentsIndex({
                         variant="secondary"
                         className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
                     >
-                        Sumatif Lingkup Materi
+                        {t('grading.assessments.table.summative_topic')}
                     </Badge>
                 );
             case 'summative_final':
@@ -239,7 +241,7 @@ export default function AssessmentsIndex({
                         variant="default"
                         className="bg-emerald-600 text-white"
                     >
-                        Sumatif Akhir
+                        {t('grading.assessments.table.summative_end')}
                     </Badge>
                 );
         }
@@ -248,7 +250,9 @@ export default function AssessmentsIndex({
     return (
         <>
             <Head
-                title={`Asesmen - ${course.subject_name} (${course.class_name})`}
+                title={t('grading.assessments.title', {
+                    course: `${course.subject_name} (${course.class_name})`,
+                })}
             />
 
             <div className="space-y-6 p-4">
@@ -261,12 +265,15 @@ export default function AssessmentsIndex({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Kembali ke Kursus
+                                {t('grading.assessments.back_to_course')}
                             </Link>
                             <span>•</span>
                             <span>{course.class_name}</span>
                             <span>•</span>
-                            <span>KKTP: {course.passing_threshold}</span>
+                            <span>
+                                {t('grading.courses.kktp')}{' '}
+                                {course.passing_threshold}
+                            </span>
                         </div>
                         <Heading
                             title={`Daftar Asesmen: ${course.subject_name}`}
@@ -280,13 +287,13 @@ export default function AssessmentsIndex({
                         >
                             <Button variant="outline">
                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                Buku Nilai
+                                {t('grading.assessments.gradebook')}
                             </Button>
                         </Link>
                         {canWrite && (
                             <Button onClick={() => setIsCreateOpen(true)}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Tambah Asesmen
+                                {t('grading.assessments.add_assessment')}
                             </Button>
                         )}
                     </div>
@@ -302,7 +309,7 @@ export default function AssessmentsIndex({
                             className="ml-auto"
                             onClick={() => setErrorMessage(null)}
                         >
-                            Tutup
+                            {t('grading.objectives.close')}
                         </Button>
                     </div>
                 )}
@@ -313,10 +320,10 @@ export default function AssessmentsIndex({
                         <Calendar className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-sm font-medium">
-                                Semester Aktif
+                                {t('grading.assessments.active_semester')}
                             </p>
                             <p className="text-muted-foreground text-xs">
-                                {currentSemester.starts_at} s.d.{' '}
+                                {currentSemester.starts_at} –{' '}
                                 {currentSemester.ends_at}
                             </p>
                         </div>
@@ -345,7 +352,7 @@ export default function AssessmentsIndex({
                     <div className="rounded-lg border border-dashed p-8 text-center">
                         <BookOpen className="text-muted-foreground/60 mx-auto h-12 w-12" />
                         <h3 className="mt-4 text-base font-semibold">
-                            Belum Ada Asesmen
+                            {t('grading.assessments.table.empty')}
                         </h3>
                         <p className="text-muted-foreground mt-1 text-sm">
                             {canWrite
@@ -359,29 +366,35 @@ export default function AssessmentsIndex({
                             <thead className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Urutan
+                                        {t('grading.assessments.table.order')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Nama Asesmen
+                                        {t('grading.assessments.table.name')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Jenis
+                                        {t('grading.assessments.table.type')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Tanggal
+                                        {t('grading.assessments.table.date')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Skor Maks
+                                        {t(
+                                            'grading.assessments.table.max_score',
+                                        )}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Tujuan Pembelajaran
+                                        {t('grading.objectives.title')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Status Rilis
+                                        {t(
+                                            'grading.assessments.table.release_status',
+                                        )}
                                     </th>
                                     {canWrite && (
                                         <th className="px-4 py-3 text-right font-medium">
-                                            Aksi
+                                            {t(
+                                                'grading.assessments.table.actions',
+                                            )}
                                         </th>
                                     )}
                                 </tr>
@@ -433,12 +446,20 @@ export default function AssessmentsIndex({
                                             {a.released_at ? (
                                                 <div className="flex items-center gap-1 text-xs text-emerald-600">
                                                     <CheckCircle2 className="h-3.5 w-3.5" />
-                                                    <span>Dirilis</span>
+                                                    <span>
+                                                        {t(
+                                                            'grading.assessments.table.released',
+                                                        )}
+                                                    </span>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-1 text-xs text-amber-600">
                                                     <Clock className="h-3.5 w-3.5" />
-                                                    <span>Draf</span>
+                                                    <span>
+                                                        {t(
+                                                            'grading.assessments.table.draft',
+                                                        )}
+                                                    </span>
                                                 </div>
                                             )}
                                         </td>
@@ -496,16 +517,19 @@ export default function AssessmentsIndex({
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Tambah Asesmen Baru</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.assessments.dialog.create_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Tentukan jenis asesmen dan tautkan tujuan
-                            pembelajaran yang dinilai.
+                            {t('grading.assessments.dialog.create_description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleCreateSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="create-name">Nama Asesmen</Label>
+                            <Label htmlFor="create-name">
+                                {t('grading.assessments.dialog.name')}
+                            </Label>
                             <Input
                                 id="create-name"
                                 value={createForm.data.name}
@@ -524,7 +548,9 @@ export default function AssessmentsIndex({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label>Jenis Asesmen</Label>
+                                <Label>
+                                    {t('grading.assessments.dialog.type')}
+                                </Label>
                                 <Select
                                     value={createForm.data.kind}
                                     onValueChange={(
@@ -539,13 +565,19 @@ export default function AssessmentsIndex({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="formative">
-                                            Formatif (Umpan Balik)
+                                            {t(
+                                                'grading.assessments.dialog.type_formative',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="summative_scope">
-                                            Sumatif Lingkup Materi
+                                            {t(
+                                                'grading.assessments.dialog.type_summative_topic',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="summative_final">
-                                            Sumatif Akhir Semester
+                                            {t(
+                                                'grading.assessments.dialog.type_summative_end',
+                                            )}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -553,7 +585,7 @@ export default function AssessmentsIndex({
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="create-date">
-                                    Tanggal Asesmen
+                                    {t('grading.assessments.dialog.date')}
                                 </Label>
                                 <Input
                                     id="create-date"
@@ -580,7 +612,7 @@ export default function AssessmentsIndex({
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label htmlFor="create-max">
-                                    Skor Maksimal
+                                    {t('grading.assessments.dialog.max_score')}
                                 </Label>
                                 <Input
                                     id="create-max"
@@ -604,7 +636,7 @@ export default function AssessmentsIndex({
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="create-sort">
-                                    Urutan Tampilan
+                                    {t('grading.assessments.dialog.order')}
                                 </Label>
                                 <Input
                                     id="create-sort"
@@ -623,17 +655,24 @@ export default function AssessmentsIndex({
                         {/* Objectives linking */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label>Tautkan Tujuan Pembelajaran (TP)</Label>
+                                <Label>
+                                    {t(
+                                        'grading.assessments.dialog.link_objectives',
+                                    )}
+                                </Label>
                                 {createForm.data.kind === 'summative_scope' && (
                                     <span className="text-xs font-medium text-amber-600">
-                                        *Wajib untuk sumatif lingkup materi
+                                        {t(
+                                            'grading.assessments.dialog.required_for_summative',
+                                        )}
                                     </span>
                                 )}
                             </div>
                             {objectives.length === 0 ? (
                                 <p className="text-muted-foreground text-xs">
-                                    Belum ada TP yang dibuat untuk mata
-                                    pelajaran dan tingkat kelas ini.
+                                    {t(
+                                        'grading.assessments.dialog.no_objectives',
+                                    )}
                                 </p>
                             ) : (
                                 <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
@@ -677,13 +716,13 @@ export default function AssessmentsIndex({
                                 variant="outline"
                                 onClick={() => setIsCreateOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={createForm.processing}
                             >
-                                Simpan Asesmen
+                                {t('grading.assessments.dialog.save')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -697,16 +736,19 @@ export default function AssessmentsIndex({
             >
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Ubah Asesmen</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.assessments.dialog.edit_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Perbarui detail atau tautan tujuan pembelajaran
-                            asesmen ini.
+                            {t('grading.assessments.dialog.edit_description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleEditSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="edit-name">Nama Asesmen</Label>
+                            <Label htmlFor="edit-name">
+                                {t('grading.assessments.dialog.name')}
+                            </Label>
                             <Input
                                 id="edit-name"
                                 value={editForm.data.name}
@@ -724,7 +766,9 @@ export default function AssessmentsIndex({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label>Jenis Asesmen</Label>
+                                <Label>
+                                    {t('grading.assessments.dialog.type')}
+                                </Label>
                                 <Select
                                     value={editForm.data.kind}
                                     onValueChange={(
@@ -739,13 +783,19 @@ export default function AssessmentsIndex({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="formative">
-                                            Formatif (Umpan Balik)
+                                            {t(
+                                                'grading.assessments.dialog.type_formative',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="summative_scope">
-                                            Sumatif Lingkup Materi
+                                            {t(
+                                                'grading.assessments.dialog.type_summative_topic',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="summative_final">
-                                            Sumatif Akhir Semester
+                                            {t(
+                                                'grading.assessments.dialog.type_summative_end',
+                                            )}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -753,7 +803,7 @@ export default function AssessmentsIndex({
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="edit-date">
-                                    Tanggal Asesmen
+                                    {t('grading.assessments.dialog.date')}
                                 </Label>
                                 <Input
                                     id="edit-date"
@@ -779,7 +829,9 @@ export default function AssessmentsIndex({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="edit-max">Skor Maksimal</Label>
+                                <Label htmlFor="edit-max">
+                                    {t('grading.assessments.dialog.max_score')}
+                                </Label>
                                 <Input
                                     id="edit-max"
                                     type="number"
@@ -799,10 +851,9 @@ export default function AssessmentsIndex({
                                     </p>
                                 )}
                             </div>
-
                             <div className="space-y-1.5">
                                 <Label htmlFor="edit-sort">
-                                    Urutan Tampilan
+                                    {t('grading.assessments.dialog.order')}
                                 </Label>
                                 <Input
                                     id="edit-sort"
@@ -821,17 +872,24 @@ export default function AssessmentsIndex({
                         {/* Objectives linking */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label>Tautkan Tujuan Pembelajaran (TP)</Label>
+                                <Label>
+                                    {t(
+                                        'grading.assessments.dialog.link_objectives',
+                                    )}
+                                </Label>
                                 {editForm.data.kind === 'summative_scope' && (
                                     <span className="text-xs font-medium text-amber-600">
-                                        *Wajib untuk sumatif lingkup materi
+                                        {t(
+                                            'grading.assessments.dialog.required_for_summative',
+                                        )}
                                     </span>
                                 )}
                             </div>
                             {objectives.length === 0 ? (
                                 <p className="text-muted-foreground text-xs">
-                                    Belum ada TP yang dibuat untuk mata
-                                    pelajaran dan tingkat kelas ini.
+                                    {t(
+                                        'grading.assessments.dialog.no_objectives',
+                                    )}
                                 </p>
                             ) : (
                                 <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
@@ -875,13 +933,13 @@ export default function AssessmentsIndex({
                                 variant="outline"
                                 onClick={() => setEditingAssessment(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={editForm.processing}
                             >
-                                Perbarui
+                                {t('grading.assessments.dialog.update')}
                             </Button>
                         </DialogFooter>
                     </form>

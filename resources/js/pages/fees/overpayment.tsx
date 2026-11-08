@@ -56,15 +56,15 @@ export default function Overpayment({
     canManage: boolean;
     today: string;
 }) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Kelebihan Pembayaran', href: '/fees/overpayments' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.overpayments.title'), href: '/fees/overpayments' },
             { title: `#${record.id}` },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (amount: string | number | null) =>
         new Intl.NumberFormat(locale, {
@@ -113,16 +113,16 @@ export default function Overpayment({
     };
     return (
         <>
-            <Head title={`Kelebihan Pembayaran #${record.id}`} />
+            <Head title={`${t('fees.overpayments.title')} #${record.id}`} />
             <div className="mx-auto max-w-4xl space-y-6 p-4">
                 <Link
                     className="text-sm underline"
                     href={OverpaymentController.index()}
                 >
-                    Kembali ke kelebihan pembayaran
+                    {t('fees.common.back')}
                 </Link>
                 <Heading
-                    title={`Kelebihan Pembayaran #${record.id}`}
+                    title={`${t('fees.overpayments.title')} #${record.id}`}
                     description={`${record.guardian_name}${record.student_name ? ` / ${record.student_name}` : ''}`}
                 />
                 <Badge variant="secondary">{record.status_label}</Badge>
@@ -131,9 +131,10 @@ export default function Overpayment({
                         role="alert"
                         className="text-destructive rounded-lg border p-4"
                     >
-                        Akun Titipan Wali asli tidak aktif. Minta admin
-                        mengaktifkan kembali akun{' '}
-                        {record.liability_account.code} sebelum memproses.
+                        {t('fees.overpayments.liability_inactive_warning', {
+                            code: record.liability_account.code,
+                            defaultValue: `Akun Titipan Wali asli tidak aktif. Minta admin mengaktifkan kembali akun ${record.liability_account.code} sebelum memproses.`,
+                        })}
                     </p>
                 )}
                 {(record.duplicate_overpayment_ids.length > 0 ||
@@ -143,9 +144,10 @@ export default function Overpayment({
                         className="space-y-2 rounded-lg border p-4 text-sm"
                     >
                         <p>
-                            Bukti ini juga digunakan pada catatan lain. Periksa
-                            apakah ini bagian transfer gabungan atau penerimaan
-                            ganda.
+                            {t('fees.overpayments.duplicate_warning', {
+                                defaultValue:
+                                    'Bukti ini juga digunakan pada catatan lain. Periksa apakah ini bagian transfer gabungan atau penerimaan ganda.',
+                            })}
                         </p>
                         <div className="flex flex-wrap gap-3">
                             {record.duplicate_overpayment_ids.map((id) => (
@@ -154,7 +156,8 @@ export default function Overpayment({
                                     className="underline"
                                     href={OverpaymentController.show(id)}
                                 >
-                                    Kelebihan #{id}
+                                    {'Kelebihan #'}
+                                    {id}
                                 </Link>
                             ))}
                             {record.duplicate_payment_ids.map((id) => (
@@ -165,14 +168,17 @@ export default function Overpayment({
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    Bukti pembayaran #{id}
+                                    {'Bukti pembayaran #'}
+                                    {id}
                                 </a>
                             ))}
                         </div>
                     </div>
                 )}
                 <section className="rounded-lg border p-5">
-                    <h2 className="mb-4 font-semibold">Penerimaan</h2>
+                    <h2 className="mb-4 font-semibold">
+                        {t('fees.common.receipt')}
+                    </h2>
                     <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                         {Object.entries({
                             'Nilai titipan': rupiah(record.amount),
@@ -209,7 +215,7 @@ export default function Overpayment({
                             target="_blank"
                             rel="noreferrer"
                         >
-                            Lihat bukti penerimaan
+                            {t('fees.overpayments.table.view_proof')}
                         </a>
                         <Link
                             className="underline"
@@ -217,13 +223,16 @@ export default function Overpayment({
                                 record.receipt_entry.id,
                             )}
                         >
-                            Jurnal {record.receipt_entry.number}
+                            {'Jurnal '}
+                            {record.receipt_entry.number}
                         </Link>
                     </div>
                 </section>
                 {record.refund_entry && (
                     <section className="space-y-4 rounded-lg border p-5">
-                        <h2 className="font-semibold">Pengembalian</h2>
+                        <h2 className="font-semibold">
+                            {t('fees.overpayments.record_refund')}
+                        </h2>
                         <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                             {Object.entries({
                                 'Tanggal refund': record.refund_date,
@@ -256,7 +265,8 @@ export default function Overpayment({
                                     record.refund_entry.id,
                                 )}
                             >
-                                Jurnal {record.refund_entry.number}
+                                {'Jurnal '}
+                                {record.refund_entry.number}
                             </Link>
                             {record.has_refund_proof && (
                                 <a
@@ -268,7 +278,7 @@ export default function Overpayment({
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    Lihat bukti refund
+                                    {t('fees.overpayments.table.view_proof')}
                                 </a>
                             )}
                         </div>
@@ -276,12 +286,17 @@ export default function Overpayment({
                 )}
                 {record.cancellation_entry && (
                     <section className="space-y-3 rounded-lg border p-5">
-                        <h2 className="font-semibold">Pembatalan</h2>
+                        <h2 className="font-semibold">
+                            {t('fees.payments.void_dialog.title')}
+                        </h2>
                         <p className="text-sm">
-                            Tanggal diminta: {record.requested_cancel_date}.
-                            Tanggal efektif:{' '}
-                            {record.cancellation_entry.entry_date.slice(0, 10)}.
-                            Oleh {record.cancelled_by}.
+                            {'Tanggal diminta: '}
+                            {record.requested_cancel_date}
+                            {'. Tanggal efektif: '}
+                            {record.cancellation_entry.entry_date.slice(0, 10)}
+                            {'. Oleh '}
+                            {record.cancelled_by}
+                            {'.'}
                         </p>
                         <p className="text-sm whitespace-pre-wrap">
                             {record.cancel_reason}
@@ -292,20 +307,21 @@ export default function Overpayment({
                                 record.cancellation_entry.id,
                             )}
                         >
-                            Jurnal {record.cancellation_entry.number}
+                            {'Jurnal '}
+                            {record.cancellation_entry.number}
                         </Link>
                     </section>
                 )}
                 {canManage && record.status === 'held' && (
                     <div className="flex flex-wrap gap-3">
                         <Button onClick={() => setOperation('refund')}>
-                            Catat refund
+                            {t('fees.overpayments.record_refund')}
                         </Button>
                         <Button
                             variant="outline"
                             onClick={() => setOperation('cancel')}
                         >
-                            Batalkan penerimaan
+                            {t('fees.payments.table.void')}
                         </Button>
                     </div>
                 )}
@@ -335,7 +351,7 @@ export default function Overpayment({
                         <form onSubmit={submitRefund} className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="refund_date">
-                                    Tanggal refund
+                                    {t('fees.common.date')}
                                 </Label>
                                 <Input
                                     id="refund_date"
@@ -356,7 +372,9 @@ export default function Overpayment({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="refund_account_id">
-                                    Akun pembayaran
+                                    {t(
+                                        'fees.verifications.verify_dialog.receiving_account',
+                                    )}
                                 </Label>
                                 <select
                                     id="refund_account_id"
@@ -370,7 +388,9 @@ export default function Overpayment({
                                         )
                                     }
                                 >
-                                    <option value="">Pilih kas/bank</option>
+                                    <option value="">
+                                        {t('fees.cashier.select_cash_account')}
+                                    </option>
                                     {cashAccounts.map((a) => (
                                         <option key={a.id} value={a.id}>
                                             {a.code} — {a.name}
@@ -383,7 +403,10 @@ export default function Overpayment({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="bank_fee">
-                                    Biaya bank ditanggung wali (Rp)
+                                    {t('fees.overpayments.bank_fee', {
+                                        defaultValue:
+                                            'Biaya bank ditanggung wali (Rp)',
+                                    })}
                                 </Label>
                                 <Input
                                     id="bank_fee"
@@ -423,7 +446,9 @@ export default function Overpayment({
                             </dl>
                             <div className="grid gap-2">
                                 <Label htmlFor="bank_reference">
-                                    Referensi bank
+                                    {t('fees.overpayments.bank_reference', {
+                                        defaultValue: 'Referensi bank',
+                                    })}
                                 </Label>
                                 <Input
                                     id="bank_reference"
@@ -443,7 +468,10 @@ export default function Overpayment({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="refund_proof">
-                                    Bukti refund (opsional, maks. 5 MB)
+                                    {t('fees.overpayments.refund_proof', {
+                                        defaultValue:
+                                            'Bukti refund (opsional, maks. 5 MB)',
+                                    })}
                                 </Label>
                                 <Input
                                     id="refund_proof"
@@ -465,14 +493,14 @@ export default function Overpayment({
                                     variant="outline"
                                     onClick={() => setOperation(null)}
                                 >
-                                    Batal
+                                    {t('common.cancel')}
                                 </Button>
                                 <Button
                                     disabled={refund.processing || !validFee}
                                 >
                                     {refund.processing
                                         ? 'Menyimpan…'
-                                        : 'Simpan refund'}
+                                        : t('fees.common.save')}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -480,7 +508,7 @@ export default function Overpayment({
                         <form onSubmit={submitCancel} className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="cancel_date">
-                                    Tanggal pembatalan
+                                    {t('fees.common.date')}
                                 </Label>
                                 <Input
                                     id="cancel_date"
@@ -496,7 +524,7 @@ export default function Overpayment({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="cancel_reason">
-                                    Alasan pembatalan
+                                    {t('fees.payments.void_dialog.reason')}
                                 </Label>
                                 <Input
                                     id="cancel_reason"
@@ -515,7 +543,7 @@ export default function Overpayment({
                                     variant="outline"
                                     onClick={() => setOperation(null)}
                                 >
-                                    Kembali
+                                    {t('fees.common.back')}
                                 </Button>
                                 <Button
                                     variant="destructive"
@@ -523,7 +551,9 @@ export default function Overpayment({
                                 >
                                     {cancel.processing
                                         ? 'Menyimpan…'
-                                        : 'Konfirmasi pembatalan'}
+                                        : t(
+                                              'fees.payments.void_dialog.confirm',
+                                          )}
                                 </Button>
                             </DialogFooter>
                         </form>

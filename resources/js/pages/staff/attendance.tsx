@@ -132,13 +132,19 @@ export default function StaffAttendanceIndex({
 
     return (
         <>
-            <Head title={`Presensi Pegawai — ${date}`} />
+            <Head title={t('staff.attendance.title', { date })} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Presensi Guru & Pegawai"
-                        description={`Jam kerja: ${staff_start_time.slice(0, 5)} - ${staff_end_time.slice(0, 5)} ${!is_school_day ? ' (Hari Libur / Non-Operasional)' : ''}`}
+                        title={t('staff.attendance.heading')}
+                        description={t('staff.attendance.description', {
+                            start: staff_start_time.slice(0, 5),
+                            end: staff_end_time.slice(0, 5),
+                            holiday_note: !is_school_day
+                                ? t('staff.attendance.holiday_note')
+                                : '',
+                        })}
                     />
 
                     <div className="flex items-center gap-2">
@@ -149,7 +155,7 @@ export default function StaffAttendanceIndex({
                                 })}
                             >
                                 <CalendarCheck className="mr-2 h-4 w-4" />{' '}
-                                Roster Shift
+                                {t('staff.attendance.shift_roster')}
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
@@ -158,8 +164,8 @@ export default function StaffAttendanceIndex({
                                     query: { month: date.slice(0, 7) },
                                 })}
                             >
-                                <CalendarRange className="mr-2 h-4 w-4" /> Rekap
-                                Bulanan
+                                <CalendarRange className="mr-2 h-4 w-4" />{' '}
+                                {t('staff.attendance.monthly_recap')}
                             </Link>
                         </Button>
                         <Input
@@ -177,7 +183,7 @@ export default function StaffAttendanceIndex({
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Diharapkan
+                            {t('staff.attendance.summary.expected')}
                         </div>
                         <div className="mt-1 text-2xl font-bold">
                             {summary.expected}
@@ -185,7 +191,7 @@ export default function StaffAttendanceIndex({
                     </div>
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Hadir
+                            {t('staff.attendance.summary.arrived')}
                         </div>
                         <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                             {summary.arrived}
@@ -193,7 +199,7 @@ export default function StaffAttendanceIndex({
                     </div>
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Terlambat
+                            {t('staff.attendance.summary.late')}
                         </div>
                         <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
                             {summary.late}
@@ -201,7 +207,7 @@ export default function StaffAttendanceIndex({
                     </div>
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Belum Hadir
+                            {t('staff.attendance.summary.not_yet_arrived')}
                         </div>
                         <div className="text-muted-foreground mt-1 text-2xl font-bold">
                             {summary.not_yet_arrived}
@@ -209,7 +215,7 @@ export default function StaffAttendanceIndex({
                     </div>
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Izin / Sakit / Cuti
+                            {t('staff.attendance.summary.on_leave')}
                         </div>
                         <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
                             {summary.on_leave}
@@ -217,7 +223,7 @@ export default function StaffAttendanceIndex({
                     </div>
                     <div className="bg-card text-card-foreground rounded-lg border p-3 shadow-xs">
                         <div className="text-muted-foreground text-xs font-medium">
-                            Alpa
+                            {t('staff.attendance.summary.absent')}
                         </div>
                         <div className="mt-1 text-2xl font-bold text-rose-600 dark:text-rose-400">
                             {summary.absent}
@@ -232,7 +238,9 @@ export default function StaffAttendanceIndex({
                         size="sm"
                         onClick={() => changeFilter('all')}
                     >
-                        Semua ({summary.expected})
+                        {t('staff.attendance.filters.all', {
+                            count: summary.expected,
+                        })}
                     </Button>
                     <Button
                         variant={
@@ -241,28 +249,36 @@ export default function StaffAttendanceIndex({
                         size="sm"
                         onClick={() => changeFilter('not_yet_arrived')}
                     >
-                        Belum Hadir ({summary.not_yet_arrived})
+                        {t('staff.attendance.filters.not_yet_arrived', {
+                            count: summary.not_yet_arrived,
+                        })}
                     </Button>
                     <Button
                         variant={filter === 'late' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => changeFilter('late')}
                     >
-                        Terlambat ({summary.late})
+                        {t('staff.attendance.filters.late', {
+                            count: summary.late,
+                        })}
                     </Button>
                     <Button
                         variant={filter === 'absent' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => changeFilter('absent')}
                     >
-                        Alpa ({summary.absent})
+                        {t('staff.attendance.filters.absent', {
+                            count: summary.absent,
+                        })}
                     </Button>
                     <Button
                         variant={filter === 'on_leave' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => changeFilter('on_leave')}
                     >
-                        Izin / Cuti ({summary.on_leave})
+                        {t('staff.attendance.filters.on_leave', {
+                            count: summary.on_leave,
+                        })}
                     </Button>
                     {summary.no_checkout > 0 && (
                         <Button
@@ -274,7 +290,9 @@ export default function StaffAttendanceIndex({
                             size="sm"
                             onClick={() => changeFilter('no_checkout')}
                         >
-                            Tidak Absen Pulang ({summary.no_checkout})
+                            {t('staff.attendance.filters.no_checkout', {
+                                count: summary.no_checkout,
+                            })}
                         </Button>
                     )}
                 </div>
@@ -285,23 +303,23 @@ export default function StaffAttendanceIndex({
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Pegawai
+                                    {t('staff.attendance.table.employee')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('staff.attendance.table.status')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Jam Masuk
+                                    {t('staff.attendance.table.check_in')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Jam Pulang
+                                    {t('staff.attendance.table.check_out')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Keterangan
+                                    {t('staff.attendance.table.notes')}
                                 </th>
                                 {can_override && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('staff.attendance.table.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -323,12 +341,16 @@ export default function StaffAttendanceIndex({
                                                         variant="secondary"
                                                         className="h-4 px-1 text-[10px]"
                                                     >
-                                                        Guru
+                                                        {t(
+                                                            'staff.attendance.table.teacher',
+                                                        )}
                                                     </Badge>
                                                 )}
                                                 {!row.is_expected && (
                                                     <span className="text-amber-600 italic dark:text-amber-400">
-                                                        (Luar Jadwal)
+                                                        {t(
+                                                            'staff.attendance.table.off_schedule',
+                                                        )}
                                                     </span>
                                                 )}
                                             </div>
@@ -341,7 +363,9 @@ export default function StaffAttendanceIndex({
                                             )}
                                             {row.first_period && (
                                                 <div className="text-muted-foreground mt-1 text-xs">
-                                                    Jam pertama:{' '}
+                                                    {t(
+                                                        'staff.attendance.table.first_period',
+                                                    )}{' '}
                                                     {row.first_period.title} (
                                                     {
                                                         row.first_period
@@ -373,7 +397,9 @@ export default function StaffAttendanceIndex({
                                                     variant="destructive"
                                                     className="text-[10px]"
                                                 >
-                                                    Tidak Absen Pulang
+                                                    {t(
+                                                        'staff.attendance.table.no_checkout',
+                                                    )}
                                                 </Badge>
                                             )}
                                         </div>
@@ -385,7 +411,13 @@ export default function StaffAttendanceIndex({
                                             </span>
                                             {row.late_minutes > 0 && (
                                                 <span className="text-xs text-amber-600 dark:text-amber-400">
-                                                    +{row.late_minutes} m
+                                                    +
+                                                    {t(
+                                                        'staff.attendance.table.minutes',
+                                                        {
+                                                            count: row.late_minutes,
+                                                        },
+                                                    )}
                                                 </span>
                                             )}
                                         </div>
@@ -397,8 +429,15 @@ export default function StaffAttendanceIndex({
                                             </span>
                                             {row.early_leave_minutes > 0 && (
                                                 <span className="text-xs text-rose-600 dark:text-rose-400">
-                                                    Cepat{' '}
-                                                    {row.early_leave_minutes} m
+                                                    {t(
+                                                        'staff.attendance.table.early',
+                                                    )}{' '}
+                                                    {t(
+                                                        'staff.attendance.table.minutes',
+                                                        {
+                                                            count: row.early_leave_minutes,
+                                                        },
+                                                    )}
                                                 </span>
                                             )}
                                         </div>
@@ -407,13 +446,22 @@ export default function StaffAttendanceIndex({
                                         <div className="flex flex-col gap-0.5">
                                             {row.scan_method && (
                                                 <span>
-                                                    Metode: {row.scan_method}
+                                                    {t(
+                                                        'staff.attendance.table.method',
+                                                        {
+                                                            method: row.scan_method,
+                                                        },
+                                                    )}
                                                 </span>
                                             )}
                                             {row.overridden_by && (
                                                 <span className="text-amber-600 dark:text-amber-400">
-                                                    Override oleh @
-                                                    {row.overridden_by}
+                                                    {t(
+                                                        'staff.attendance.table.override_by',
+                                                        {
+                                                            user: row.overridden_by,
+                                                        },
+                                                    )}
                                                 </span>
                                             )}
                                             {row.notes && (
@@ -435,21 +483,21 @@ export default function StaffAttendanceIndex({
                                                 }
                                             >
                                                 <Pencil className="mr-1 h-4 w-4" />
-                                                Edit
+                                                {t(
+                                                    'staff.attendance.table.edit',
+                                                )}
                                             </Button>
                                         </td>
                                     )}
                                 </tr>
                             ))}
-
                             {rows.length === 0 && (
                                 <tr className="border-t">
                                     <td
                                         colSpan={can_override ? 6 : 5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Tidak ada data presensi untuk filter
-                                        ini.
+                                        {t('staff.attendance.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -466,10 +514,14 @@ export default function StaffAttendanceIndex({
                 >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Ubah Presensi Pegawai</DialogTitle>
+                            <DialogTitle>
+                                {t('staff.attendance.dialog.title')}
+                            </DialogTitle>
                             <DialogDescription>
-                                Override manual presensi untuk{' '}
-                                {editingRow?.name} tanggal {date}.
+                                {t('staff.attendance.dialog.description', {
+                                    name: editingRow?.name ?? '',
+                                    date,
+                                })}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -500,7 +552,9 @@ export default function StaffAttendanceIndex({
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="status">
-                                                Status Presensi
+                                                {t(
+                                                    'staff.attendance.dialog.status',
+                                                )}
                                             </Label>
                                             <select
                                                 id="status"
@@ -531,7 +585,9 @@ export default function StaffAttendanceIndex({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-2">
                                                 <Label htmlFor="checked_in_at">
-                                                    Jam Masuk (HH:mm)
+                                                    {t(
+                                                        'staff.attendance.dialog.check_in',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="checked_in_at"
@@ -551,7 +607,9 @@ export default function StaffAttendanceIndex({
 
                                             <div className="grid gap-2">
                                                 <Label htmlFor="checked_out_at">
-                                                    Jam Pulang (HH:mm)
+                                                    {t(
+                                                        'staff.attendance.dialog.check_out',
+                                                    )}
                                                 </Label>
                                                 <Input
                                                     id="checked_out_at"
@@ -572,7 +630,9 @@ export default function StaffAttendanceIndex({
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="notes">
-                                                Catatan Override (Opsional)
+                                                {t(
+                                                    'staff.attendance.dialog.notes',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="notes"
@@ -580,7 +640,9 @@ export default function StaffAttendanceIndex({
                                                 defaultValue={
                                                     editingRow.notes ?? ''
                                                 }
-                                                placeholder="e.g. Lupa bawa kartu RFID / Dinas Luar"
+                                                placeholder={t(
+                                                    'staff.attendance.dialog.notes_placeholder',
+                                                )}
                                             />
                                             <InputError
                                                 message={errors.notes}
@@ -593,7 +655,7 @@ export default function StaffAttendanceIndex({
                                                     variant="secondary"
                                                     type="button"
                                                 >
-                                                    Batal
+                                                    {t('common.cancel')}
                                                 </Button>
                                             </DialogClose>
                                             <Button
@@ -601,7 +663,9 @@ export default function StaffAttendanceIndex({
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Simpan Presensi
+                                                {t(
+                                                    'staff.attendance.dialog.save',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>

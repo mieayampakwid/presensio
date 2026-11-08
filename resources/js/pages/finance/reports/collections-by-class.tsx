@@ -23,14 +23,14 @@ type Props = {
 };
 
 export default function CollectionsByClassReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Penerimaan per Kelas' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.collections_by_class.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
@@ -47,13 +47,15 @@ export default function CollectionsByClassReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Penerimaan per Kelas" />
+            <Head title={t('finance.reports.collections_by_class.title')} />
 
             <div className="mx-auto max-w-4xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Penerimaan per Kelas"
-                        description="Pembayaran terverifikasi pada periode dibandingkan dengan piutang terbuka per kelas pada tanggal akhir."
+                        title={t('finance.reports.collections_by_class.title')}
+                        description={t(
+                            'finance.reports.collections_by_class.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -61,14 +63,17 @@ export default function CollectionsByClassReportPage({ report }: Props) {
                             href={`/finance/reports/collections-by-class?format=csv&from=${from}&to=${to}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
 
                 <div className="bg-card flex flex-wrap items-end gap-3 rounded-lg border p-4">
                     <div className="space-y-1">
-                        <Label htmlFor="from">Dari</Label>
+                        <Label htmlFor="from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="from"
                             type="date"
@@ -77,7 +82,7 @@ export default function CollectionsByClassReportPage({ report }: Props) {
                         />
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="to">Sampai</Label>
+                        <Label htmlFor="to">{t('fees.common.to_date')}</Label>
                         <Input
                             id="to"
                             type="date"
@@ -85,7 +90,9 @@ export default function CollectionsByClassReportPage({ report }: Props) {
                             onChange={(e) => setTo(e.target.value)}
                         />
                     </div>
-                    <Button onClick={applyFilter}>Tampilkan</Button>
+                    <Button onClick={applyFilter}>
+                        {t('finance.common.filter')}
+                    </Button>
                 </div>
 
                 <div className="bg-card overflow-hidden rounded-lg border">
@@ -94,16 +101,16 @@ export default function CollectionsByClassReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Kelas
+                                        {t('fees.common.class')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Siswa Membayar
+                                        {'Siswa Membayar'}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Terkumpul (Rp)
+                                        {'Terkumpul (Rp)'}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Piutang (Rp)
+                                        {'Piutang (Rp)'}
                                     </th>
                                 </tr>
                             </thead>
@@ -134,13 +141,17 @@ export default function CollectionsByClassReportPage({ report }: Props) {
                                             colSpan={4}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Tidak ada data pada periode ini.
+                                            {t(
+                                                'finance.reports.collections_by_class.empty',
+                                            )}
                                         </td>
                                     </tr>
                                 )}
 
                                 <tr className="border-t-2 font-bold">
-                                    <td className="px-4 py-3">Total</td>
+                                    <td className="px-4 py-3">
+                                        {t('finance.common.total')}
+                                    </td>
                                     <td className="px-4 py-3 text-right">
                                         {report.totals.paying_students}
                                     </td>

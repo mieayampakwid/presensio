@@ -81,7 +81,7 @@ export default function PaymentsIndex({
         ],
     });
 
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
 
     const formatRupiah = (value: string) =>
         new Intl.NumberFormat(locale, {
@@ -100,17 +100,19 @@ export default function PaymentsIndex({
 
     return (
         <>
-            <Head title="Pembayaran" />
+            <Head title={t('fees.payments.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Pembayaran"
-                    description="Daftar pembayaran beserta kuitansinya."
+                    title={t('fees.payments.title')}
+                    description={t('fees.payments.description')}
                 />
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="date_from">Dari Tanggal</Label>
+                        <Label htmlFor="date_from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="date_from"
                             name="date_from"
@@ -120,7 +122,9 @@ export default function PaymentsIndex({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="date_to">Sampai Tanggal</Label>
+                        <Label htmlFor="date_to">
+                            {t('fees.common.to_date')}
+                        </Label>
                         <Input
                             id="date_to"
                             name="date_to"
@@ -130,7 +134,9 @@ export default function PaymentsIndex({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="method">Metode</Label>
+                        <Label htmlFor="method">
+                            {t('fees.payments.table.method')}
+                        </Label>
                         <select
                             id="method"
                             name="method"
@@ -138,7 +144,9 @@ export default function PaymentsIndex({
                             onChange={submitFilters}
                             className={selectClass}
                         >
-                            <option value="">Semua</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
                             {methods.map((method) => (
                                 <option key={method.value} value={method.value}>
                                     {method.label}
@@ -147,7 +155,9 @@ export default function PaymentsIndex({
                         </select>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
+                        <Label htmlFor="status">
+                            {t('fees.common.status')}
+                        </Label>
                         <select
                             id="status"
                             name="status"
@@ -155,7 +165,9 @@ export default function PaymentsIndex({
                             onChange={submitFilters}
                             className={selectClass}
                         >
-                            <option value="">Semua</option>
+                            <option value="">
+                                {t('fees.common.all_statuses')}
+                            </option>
                             {statuses.map((status) => (
                                 <option key={status.value} value={status.value}>
                                     {status.label}
@@ -170,23 +182,25 @@ export default function PaymentsIndex({
                         <thead className="bg-muted/50 text-left">
                             <tr>
                                 <th className="px-4 py-3 font-medium">
-                                    No. Kuitansi
+                                    {t('fees.payments.table.receipt_no')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Tanggal
-                                </th>
-                                <th className="px-4 py-3 font-medium">Siswa</th>
-                                <th className="px-4 py-3 text-right font-medium">
-                                    Jumlah
+                                    {t('fees.common.date')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Metode
-                                </th>
-                                <th className="px-4 py-3 font-medium">
-                                    Status
+                                    {t('fees.common.student')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Aksi
+                                    {t('fees.payments.table.amount')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.payments.table.method')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.common.status')}
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    {t('fees.common.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -235,7 +249,9 @@ export default function PaymentsIndex({
                                                         target="_blank"
                                                         rel="noreferrer"
                                                     >
-                                                        Kuitansi
+                                                        {t(
+                                                            'fees.common.receipt',
+                                                        )}
                                                     </a>
                                                 </Button>
                                             )}
@@ -247,7 +263,9 @@ export default function PaymentsIndex({
                                                         setVoiding(payment)
                                                     }
                                                 >
-                                                    Batalkan
+                                                    {t(
+                                                        'fees.payments.table.void',
+                                                    )}
                                                 </Button>
                                             )}
                                         </div>
@@ -261,7 +279,7 @@ export default function PaymentsIndex({
                                         colSpan={7}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada pembayaran.
+                                        {t('fees.payments.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -271,8 +289,10 @@ export default function PaymentsIndex({
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Halaman {payments.current_page} dari{' '}
-                        {payments.last_page}
+                        {t('common.page_of', {
+                            current: payments.current_page,
+                            last: payments.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -284,7 +304,7 @@ export default function PaymentsIndex({
                         >
                             <Link href={payments.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Sebelumnya
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -294,7 +314,7 @@ export default function PaymentsIndex({
                             disabled={!payments.next_page_url}
                         >
                             <Link href={payments.next_page_url ?? '#'}>
-                                Berikutnya
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -309,11 +329,13 @@ export default function PaymentsIndex({
                 <DialogContent>
                     {voiding && (
                         <>
-                            <DialogTitle>Batalkan Pembayaran</DialogTitle>
+                            <DialogTitle>
+                                {t('fees.payments.void_dialog.title')}
+                            </DialogTitle>
                             <DialogDescription>
                                 {voiding.receipt_number} -{' '}
-                                {voiding.students.join(', ')}. Jurnal pembayaran
-                                dibalik dan tagihan kembali belum lunas.
+                                {voiding.students.join(', ')}.{' '}
+                                {t('fees.payments.void_dialog.warning')}
                             </DialogDescription>
                             <Form
                                 key={voiding.id}
@@ -327,7 +349,9 @@ export default function PaymentsIndex({
                                     <>
                                         <div className="grid gap-2">
                                             <Label htmlFor="reason">
-                                                Alasan
+                                                {t(
+                                                    'fees.payments.void_dialog.reason',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="reason"
@@ -345,7 +369,7 @@ export default function PaymentsIndex({
                                                 variant="outline"
                                                 onClick={() => setVoiding(null)}
                                             >
-                                                Batal
+                                                {t('common.cancel')}
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -353,7 +377,9 @@ export default function PaymentsIndex({
                                                 disabled={processing}
                                             >
                                                 {processing && <Spinner />}
-                                                Batalkan Pembayaran
+                                                {t(
+                                                    'fees.payments.void_dialog.confirm',
+                                                )}
                                             </Button>
                                         </DialogFooter>
                                     </>

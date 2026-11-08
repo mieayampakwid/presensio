@@ -81,29 +81,28 @@ export default function MyLeave({ requests }: Props) {
 
     return (
         <>
-            <Head title="My Leave" />
+            <Head title={t('staff.leave.my.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Heading
-                        title="My Leave"
-                        description="Request sick leave, izin, cuti, or official duty. The principal or an administrator reviews every submission."
+                        title={t('staff.leave.my.title')}
+                        description={t('staff.leave.my.description')}
                     />
                     <Button onClick={() => setIsCreateOpen(true)}>
                         <Plus className="mr-1.5 h-4 w-4" />
-                        New request
+                        {t('staff.leave.my.new_request')}
                     </Button>
                 </div>
 
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>New leave request</DialogTitle>
+                            <DialogTitle>
+                                {t('staff.leave.my.dialog.title')}
+                            </DialogTitle>
                             <DialogDescription>
-                                One date range per submission. Attach proof such
-                                as a doctor's note or assignment letter (JPG,
-                                PNG, or PDF, max 5 MB). Ranges may not overlap a
-                                pending or approved request.
+                                {t('staff.leave.my.dialog.help')}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -115,7 +114,11 @@ export default function MyLeave({ requests }: Props) {
                             {({ processing, errors }) => (
                                 <div className="space-y-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="type">Category</Label>
+                                        <Label htmlFor="type">
+                                            {t(
+                                                'staff.leave.my.dialog.category',
+                                            )}
+                                        </Label>
                                         <select
                                             id="type"
                                             name="type"
@@ -124,16 +127,20 @@ export default function MyLeave({ requests }: Props) {
                                             className={SELECT_CLASS}
                                         >
                                             <option value="sick">
-                                                Sick (Sakit)
+                                                {t('staff.leave.types.sick')}
                                             </option>
                                             <option value="leave">
-                                                Leave (Izin)
+                                                {t('staff.leave.types.leave')}
                                             </option>
                                             <option value="annual_leave">
-                                                Annual Leave (Cuti)
+                                                {t(
+                                                    'staff.leave.types.annual_leave',
+                                                )}
                                             </option>
                                             <option value="official_duty">
-                                                Official Duty (Dinas Luar)
+                                                {t(
+                                                    'staff.leave.types.official_duty',
+                                                )}
                                             </option>
                                         </select>
                                         <InputError message={errors.type} />
@@ -142,7 +149,9 @@ export default function MyLeave({ requests }: Props) {
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div className="grid gap-2">
                                             <Label htmlFor="start_date">
-                                                First day
+                                                {t(
+                                                    'staff.leave.my.dialog.first_day',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="start_date"
@@ -157,7 +166,9 @@ export default function MyLeave({ requests }: Props) {
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="end_date">
-                                                Last day
+                                                {t(
+                                                    'staff.leave.my.dialog.last_day',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="end_date"
@@ -172,14 +183,18 @@ export default function MyLeave({ requests }: Props) {
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="reason">Reason</Label>
+                                        <Label htmlFor="reason">
+                                            {t('staff.leave.my.dialog.reason')}
+                                        </Label>
                                         <textarea
                                             id="reason"
                                             name="reason"
                                             rows={3}
                                             required
                                             maxLength={2000}
-                                            placeholder="Tell the school why you will be absent…"
+                                            placeholder={t(
+                                                'staff.leave.my.dialog.reason_placeholder',
+                                            )}
                                             className={TEXTAREA_CLASS}
                                         />
                                         <InputError message={errors.reason} />
@@ -187,7 +202,7 @@ export default function MyLeave({ requests }: Props) {
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="attachment">
-                                            Proof (optional)
+                                            {t('staff.leave.my.dialog.proof')}
                                         </Label>
                                         <Input
                                             id="attachment"
@@ -207,14 +222,14 @@ export default function MyLeave({ requests }: Props) {
                                                 setIsCreateOpen(false)
                                             }
                                         >
-                                            Cancel
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             type="submit"
                                             disabled={processing}
                                         >
                                             {processing && <Spinner />}
-                                            Submit request
+                                            {t('staff.leave.my.dialog.submit')}
                                         </Button>
                                     </DialogFooter>
                                 </div>
@@ -228,25 +243,25 @@ export default function MyLeave({ requests }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Dates
+                                    {t('staff.leave.my.table.dates')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Category
+                                    {t('staff.leave.my.table.category')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Reason
+                                    {t('staff.leave.my.table.reason')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Proof
+                                    {t('staff.leave.my.table.proof')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('staff.leave.my.table.status')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Review note
+                                    {t('staff.leave.my.table.review_note')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Submitted
+                                    {t('staff.leave.my.table.submitted')}
                                 </th>
                                 <th className="px-4 py-3" />
                             </tr>
@@ -278,7 +293,9 @@ export default function MyLeave({ requests }: Props) {
                                                 }
                                                 className="text-primary underline-offset-4 hover:underline"
                                             >
-                                                Download
+                                                {t(
+                                                    'staff.leave.my.table.download',
+                                                )}
                                             </a>
                                         ) : (
                                             <span className="text-muted-foreground">
@@ -307,7 +324,7 @@ export default function MyLeave({ requests }: Props) {
                                                 }
                                             >
                                                 <XCircle className="h-4 w-4" />
-                                                Cancel
+                                                {t('common.cancel')}
                                             </Button>
                                         )}
                                     </td>
@@ -320,7 +337,7 @@ export default function MyLeave({ requests }: Props) {
                                         colSpan={8}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No leave requests submitted yet.
+                                        {t('staff.leave.my.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -330,7 +347,10 @@ export default function MyLeave({ requests }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Page {requests.current_page} of {requests.last_page}
+                        {t('common.page_of', {
+                            current: requests.current_page,
+                            last: requests.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -342,7 +362,7 @@ export default function MyLeave({ requests }: Props) {
                         >
                             <Link href={requests.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -352,7 +372,7 @@ export default function MyLeave({ requests }: Props) {
                             disabled={!requests.next_page_url}
                         >
                             <Link href={requests.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -366,13 +386,17 @@ export default function MyLeave({ requests }: Props) {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Cancel leave request</DialogTitle>
+                        <DialogTitle>
+                            {t('staff.leave.my.cancel_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Withdraw the request for{' '}
-                            {cancelling?.start_date === cancelling?.end_date
-                                ? cancelling?.start_date
-                                : `${cancelling?.start_date} – ${cancelling?.end_date}`}
-                            ? Only pending requests can be cancelled.
+                            {t('staff.leave.my.cancel_dialog.description', {
+                                dates:
+                                    cancelling?.start_date ===
+                                    cancelling?.end_date
+                                        ? (cancelling?.start_date ?? '')
+                                        : `${cancelling?.start_date} – ${cancelling?.end_date}`,
+                            })}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2">
@@ -380,7 +404,7 @@ export default function MyLeave({ requests }: Props) {
                             variant="secondary"
                             onClick={() => setCancelling(null)}
                         >
-                            Keep request
+                            {t('staff.leave.my.cancel_dialog.keep')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -391,7 +415,7 @@ export default function MyLeave({ requests }: Props) {
                                 }
                             }}
                         >
-                            Cancel request
+                            {t('staff.leave.my.cancel_dialog.confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

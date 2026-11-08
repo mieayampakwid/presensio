@@ -90,7 +90,9 @@ export default function ChildReportCards({
 
                 {students.length > 1 && (
                     <div className="flex items-center gap-3">
-                        <Label htmlFor="child">Pilih Anak</Label>
+                        <Label htmlFor="child">
+                            {t('grading.parent.report_cards.select_child')}
+                        </Label>
                         <Select
                             value={String(child.id)}
                             onValueChange={switchChild}
@@ -114,12 +116,14 @@ export default function ChildReportCards({
 
                 {semesters.length === 0 ? (
                     <Card className="text-muted-foreground p-6 text-sm">
-                        Belum ada rapor yang diterbitkan untuk anak ini.
+                        {t('grading.parent.report_cards.empty')}
                     </Card>
                 ) : (
                     <>
                         <div className="flex flex-wrap items-center gap-3">
-                            <Label htmlFor="semester">Semester</Label>
+                            <Label htmlFor="semester">
+                                {t('grading.gradebook.semester')}
+                            </Label>
                             <Select
                                 value={String(semesterId ?? '')}
                                 onValueChange={switchSemester}
@@ -136,8 +140,13 @@ export default function ChildReportCards({
                                             key={semester.id}
                                             value={String(semester.id)}
                                         >
-                                            {semester.name} · Versi{' '}
-                                            {semester.version}
+                                            {semester.name}{' '}
+                                            {t(
+                                                'grading.parent.report_cards.version',
+                                                {
+                                                    version: semester.version,
+                                                },
+                                            )}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -152,7 +161,9 @@ export default function ChildReportCards({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        Unduh PDF
+                                        {t(
+                                            'grading.parent.report_cards.download',
+                                        )}
                                     </a>
                                 </Button>
                             )}

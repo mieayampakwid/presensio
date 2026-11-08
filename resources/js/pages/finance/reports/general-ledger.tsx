@@ -67,14 +67,14 @@ export default function GeneralLedgerReportPage({
     report,
     account_options,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Buku Besar' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.general_ledger.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const [accountId, setAccountId] = useState<string>(
         report.account_id ? String(report.account_id) : 'all',
@@ -96,13 +96,15 @@ export default function GeneralLedgerReportPage({
 
     return (
         <>
-            <Head title="Buku Besar (General Ledger)" />
+            <Head title={t('finance.reports.general_ledger.title')} />
 
             <div className="mx-auto max-w-6xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Buku Besar (General Ledger)"
-                        description="Mutasi per akun perkiraan dengan saldo awal dan saldo berjalan."
+                        title={t('finance.reports.general_ledger.title')}
+                        description={t(
+                            'finance.reports.general_ledger.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -110,7 +112,8 @@ export default function GeneralLedgerReportPage({
                             href={`/finance/reports/general-ledger?format=csv&account_id=${accountId === 'all' ? '' : accountId}&from=${from}&to=${to}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
@@ -118,13 +121,23 @@ export default function GeneralLedgerReportPage({
                 {/* Filter */}
                 <div className="bg-card grid grid-cols-1 items-end gap-4 rounded-lg border p-4 sm:grid-cols-4">
                     <div className="space-y-1">
-                        <Label htmlFor="account_select">Pilih Akun</Label>
+                        <Label htmlFor="account_select">
+                            {t('finance.reports.general_ledger.select_account')}
+                        </Label>
                         <Select value={accountId} onValueChange={setAccountId}>
                             <SelectTrigger id="account_select">
-                                <SelectValue placeholder="Semua Akun" />
+                                <SelectValue
+                                    placeholder={t(
+                                        'finance.reports.general_ledger.select_account',
+                                    )}
+                                />
                             </SelectTrigger>
                             <SelectContent className="max-h-60">
-                                <SelectItem value="all">Semua Akun</SelectItem>
+                                <SelectItem value="all">
+                                    {t(
+                                        'finance.reports.general_ledger.select_account',
+                                    )}
+                                </SelectItem>
                                 {account_options.map((acc) => (
                                     <SelectItem
                                         key={acc.id}
@@ -138,7 +151,9 @@ export default function GeneralLedgerReportPage({
                     </div>
 
                     <div className="space-y-1">
-                        <Label htmlFor="from">Dari Tanggal</Label>
+                        <Label htmlFor="from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="from"
                             type="date"
@@ -148,7 +163,7 @@ export default function GeneralLedgerReportPage({
                     </div>
 
                     <div className="space-y-1">
-                        <Label htmlFor="to">Sampai Tanggal</Label>
+                        <Label htmlFor="to">{t('fees.common.to_date')}</Label>
                         <Input
                             id="to"
                             type="date"
@@ -157,13 +172,15 @@ export default function GeneralLedgerReportPage({
                         />
                     </div>
 
-                    <Button onClick={applyFilter}>Tampilkan</Button>
+                    <Button onClick={applyFilter}>
+                        {t('finance.common.filter')}
+                    </Button>
                 </div>
 
                 {/* Ledgers */}
                 {report.accounts.length === 0 ? (
                     <div className="text-muted-foreground bg-card rounded-lg border p-8 text-center">
-                        Tidak ada data buku besar untuk akun/periode ini.
+                        {t('finance.reports.general_ledger.empty')}
                     </div>
                 ) : (
                     report.accounts.map((acc) => (
@@ -185,7 +202,9 @@ export default function GeneralLedgerReportPage({
                                         </Badge>
                                         {acc.is_contra && (
                                             <Badge variant="secondary">
-                                                Contra
+                                                {t(
+                                                    'finance.accounts.table.contra',
+                                                )}
                                             </Badge>
                                         )}
                                     </div>
@@ -193,21 +212,19 @@ export default function GeneralLedgerReportPage({
 
                                 <div className="space-x-4 font-mono text-xs">
                                     <span>
-                                        Saldo Awal:{' '}
+                                        {t(
+                                            'finance.reports.general_ledger.initial_balance',
+                                        )}{' '}
                                         <strong>
-                                            Rp{' '}
-                                            {Number(
-                                                acc.opening_balance,
-                                            ).toLocaleString(locale)}
+                                            {`Rp ${Number(acc.opening_balance).toLocaleString(locale)}`}
                                         </strong>
                                     </span>
                                     <span>
-                                        Saldo Akhir:{' '}
+                                        {t(
+                                            'finance.reports.general_ledger.final_balance',
+                                        )}{' '}
                                         <strong>
-                                            Rp{' '}
-                                            {Number(
-                                                acc.closing_balance,
-                                            ).toLocaleString(locale)}
+                                            {`Rp ${Number(acc.closing_balance).toLocaleString(locale)}`}
                                         </strong>
                                     </span>
                                 </div>
@@ -218,25 +235,29 @@ export default function GeneralLedgerReportPage({
                                     <thead className="bg-muted/30 text-left">
                                         <tr>
                                             <th className="px-3 py-2 font-medium">
-                                                Tanggal
+                                                {t('finance.common.date')}
                                             </th>
                                             <th className="px-3 py-2 font-medium">
-                                                No. Jurnal
+                                                {t(
+                                                    'finance.journals.table.number',
+                                                )}
                                             </th>
                                             <th className="px-3 py-2 font-medium">
-                                                Keterangan
+                                                {t(
+                                                    'finance.common.description',
+                                                )}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Debit (Rp)
+                                                {t('finance.common.debit')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Kredit (Rp)
+                                                {t('finance.common.credit')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Saldo Berjalan (Rp)
+                                                {'Saldo Berjalan (Rp)'}
                                             </th>
                                             <th className="px-3 py-2 font-medium">
-                                                Siswa
+                                                {t('finance.common.student')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -248,7 +269,7 @@ export default function GeneralLedgerReportPage({
                                             </td>
                                             <td className="px-3 py-1.5">-</td>
                                             <td className="px-3 py-1.5 font-medium">
-                                                SALDO AWAL
+                                                {'SALDO AWAL'}
                                             </td>
                                             <td className="px-3 py-1.5 text-right">
                                                 -
@@ -288,7 +309,7 @@ export default function GeneralLedgerReportPage({
                                                                 line.overpayment_id,
                                                             )}
                                                         >
-                                                            Kelebihan #
+                                                            {'Kelebihan #'}
                                                             {
                                                                 line.overpayment_id
                                                             }
@@ -333,7 +354,7 @@ export default function GeneralLedgerReportPage({
                                                 colSpan={3}
                                                 className="px-3 py-2 text-right"
                                             >
-                                                TOTAL MUTASI & SALDO AKHIR:
+                                                {'TOTAL MUTASI & SALDO AKHIR:'}
                                             </td>
                                             <td className="px-3 py-2 text-right text-blue-700">
                                                 {Number(

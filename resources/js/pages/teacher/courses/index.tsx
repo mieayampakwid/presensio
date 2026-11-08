@@ -1,4 +1,5 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     BookOpen,
     ChevronRight,
@@ -37,7 +38,8 @@ type Props = {
 };
 
 export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
-    const title = isAdmin ? 'Courses' : 'My Courses';
+    const { t } = useTranslation();
+    const title = isAdmin ? 'Courses' : t('grading.courses.title');
     setLayoutProps({
         breadcrumbs: [
             {
@@ -66,7 +68,7 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
                     <div className="rounded-lg border border-dashed p-8 text-center">
                         <BookOpen className="text-muted-foreground mx-auto h-12 w-12" />
                         <h3 className="mt-4 text-base font-semibold">
-                            Belum Ada Mata Pelajaran
+                            {t('grading.courses.empty')}
                         </h3>
                         <p className="text-muted-foreground mt-1 text-sm">
                             {isAdmin
@@ -103,7 +105,7 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
                                         <div className="flex items-center gap-1.5">
                                             <UserRound className="h-4 w-4" />
                                             <span>
-                                                Guru:{' '}
+                                                {t('grading.courses.teacher')}{' '}
                                                 <strong className="text-foreground">
                                                     {course.teacher_name ?? '-'}
                                                 </strong>
@@ -112,7 +114,7 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
                                         <div className="flex items-center gap-1.5">
                                             <GraduationCap className="h-4 w-4" />
                                             <span>
-                                                KKTP:{' '}
+                                                {t('grading.courses.kktp')}{' '}
                                                 <strong className="text-foreground">
                                                     {course.passing_threshold}
                                                 </strong>
@@ -121,8 +123,10 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
                                         <div className="flex items-center gap-1.5">
                                             <Users className="h-4 w-4" />
                                             <span>
-                                                {course.students_count} Siswa
-                                                Terdaftar
+                                                {course.students_count}{' '}
+                                                {t(
+                                                    'grading.courses.enrolled_students',
+                                                )}
                                             </span>
                                         </div>
                                     </div>
@@ -138,12 +142,18 @@ export default function CoursesIndex({ courses, activeYear, isAdmin }: Props) {
                                             href={`/courses/${course.id}/gradebook`}
                                         >
                                             <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-                                            <span>Buku Nilai</span>
+                                            <span>
+                                                {t('grading.courses.gradebook')}
+                                            </span>
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={`/courses/${course.id}`}>
-                                            <span>Buka Kelas</span>
+                                            <span>
+                                                {t(
+                                                    'grading.courses.open_class',
+                                                )}
+                                            </span>
                                             <ChevronRight className="ml-1 h-3.5 w-3.5" />
                                         </Link>
                                     </Button>

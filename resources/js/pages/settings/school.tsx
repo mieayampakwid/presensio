@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 
 type SchoolProfileData = {
     school_name: string;
@@ -46,10 +47,12 @@ export default function SchoolProfile({
     cashAccounts,
     guardianDepositAccounts,
 }: Props) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
             {
-                title: 'Profil Sekolah',
+                title: t('settings.nav.school_profile'),
                 href: SchoolProfileController.edit().url,
             },
         ],
@@ -57,13 +60,13 @@ export default function SchoolProfile({
 
     return (
         <>
-            <Head title="School Profile Settings" />
+            <Head title={t('settings.school.page_title')} />
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="School Profile"
-                    description="Official school identity used on report cards, documents, and notifications."
+                    title={t('settings.school.title')}
+                    description={t('settings.school.description')}
                 />
 
                 <Form
@@ -75,7 +78,9 @@ export default function SchoolProfile({
                         <div className="space-y-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="guardian_deposit_account_id">
-                                    Akun Titipan Wali (Kelebihan Pembayaran)
+                                    {t(
+                                        'settings.school.guardian_deposit_account',
+                                    )}
                                 </Label>
                                 <select
                                     id="guardian_deposit_account_id"
@@ -86,7 +91,9 @@ export default function SchoolProfile({
                                         ''
                                     }
                                 >
-                                    <option value="">Belum diatur</option>
+                                    <option value="">
+                                        {t('settings.school.unconfigured')}
+                                    </option>
                                     {guardianDepositAccounts.map((account) => (
                                         <option
                                             key={account.id}
@@ -97,9 +104,7 @@ export default function SchoolProfile({
                                     ))}
                                 </select>
                                 <p className="text-muted-foreground text-sm">
-                                    Akun kewajiban khusus titipan wali.
-                                    Perubahan hanya berlaku untuk penerimaan
-                                    baru.
+                                    {t('settings.school.guardian_deposit_hint')}
                                 </p>
                                 <InputError
                                     message={errors.guardian_deposit_account_id}
@@ -107,33 +112,41 @@ export default function SchoolProfile({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="school_name">
-                                    Official School Name
+                                    {t('settings.school.name')}
                                 </Label>
                                 <Input
                                     id="school_name"
                                     name="school_name"
                                     defaultValue={profile.school_name}
                                     required
-                                    placeholder="e.g. SMP Negeri 1 Surabaya"
+                                    placeholder={t(
+                                        'settings.school.name_placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.school_name} />
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="npsn">NPSN</Label>
+                                    <Label htmlFor="npsn">
+                                        {t('settings.school.npsn')}
+                                    </Label>
                                     <Input
                                         id="npsn"
                                         name="npsn"
                                         defaultValue={profile.npsn ?? ''}
-                                        placeholder="Nomor Pokok Sekolah Nasional"
+                                        placeholder={t(
+                                            'settings.school.npsn_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.npsn} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="default_curriculum">
-                                        Default Curriculum
+                                        {t(
+                                            'settings.school.default_curriculum',
+                                        )}
                                     </Label>
                                     <select
                                         id="default_curriculum"
@@ -145,7 +158,9 @@ export default function SchoolProfile({
                                         className="border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                     >
                                         <option value="merdeka">
-                                            Kurikulum Merdeka
+                                            {t(
+                                                'settings.school.curriculum_merdeka',
+                                            )}
                                         </option>
                                     </select>
                                     <InputError
@@ -155,7 +170,7 @@ export default function SchoolProfile({
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="default_passing_threshold">
-                                        Default Passing Threshold (KKTP)
+                                        {t('settings.school.passing_threshold')}
                                     </Label>
                                     <Input
                                         id="default_passing_threshold"
@@ -179,7 +194,7 @@ export default function SchoolProfile({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="school_address">
-                                    School Address
+                                    {t('settings.school.address')}
                                 </Label>
                                 <textarea
                                     id="school_address"
@@ -187,28 +202,34 @@ export default function SchoolProfile({
                                     defaultValue={profile.school_address ?? ''}
                                     rows={3}
                                     className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                    placeholder="Address line, city, postal code"
+                                    placeholder={t(
+                                        'settings.school.address_placeholder',
+                                    )}
                                 />
                                 <InputError message={errors.school_address} />
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="school_phone">Phone</Label>
+                                    <Label htmlFor="school_phone">
+                                        {t('settings.school.phone')}
+                                    </Label>
                                     <Input
                                         id="school_phone"
                                         name="school_phone"
                                         defaultValue={
                                             profile.school_phone ?? ''
                                         }
-                                        placeholder="e.g. 031-1234567"
+                                        placeholder={t(
+                                            'settings.school.phone_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.school_phone} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="school_email">
-                                        Official Email
+                                        {t('settings.school.email')}
                                     </Label>
                                     <Input
                                         id="school_email"
@@ -217,7 +238,9 @@ export default function SchoolProfile({
                                         defaultValue={
                                             profile.school_email ?? ''
                                         }
-                                        placeholder="e.g. info@sekolah.sch.id"
+                                        placeholder={t(
+                                            'settings.school.email_placeholder',
+                                        )}
                                     />
                                     <InputError message={errors.school_email} />
                                 </div>
@@ -225,21 +248,22 @@ export default function SchoolProfile({
 
                             <div className="space-y-2 rounded-lg border p-4">
                                 <h3 className="text-sm font-semibold">
-                                    School Logo
+                                    {t('settings.school.logo_title')}
                                 </h3>
                                 <p className="text-muted-foreground text-xs">
-                                    PNG, JPG, or JPEG format (max 1 MB). Private
-                                    storage streamed via authorized endpoint.
+                                    {t('settings.school.logo_hint')}
                                 </p>
                                 {profile.has_logo && (
                                     <div className="flex items-center gap-4 py-2">
                                         <img
                                             src="/settings/school/logo"
-                                            alt="School logo preview"
+                                            alt={t(
+                                                'settings.school.logo_preview_alt',
+                                            )}
                                             className="h-16 w-16 rounded border bg-white object-contain p-1"
                                         />
                                         <span className="text-muted-foreground text-xs">
-                                            Current logo
+                                            {t('settings.school.current_logo')}
                                         </span>
                                     </div>
                                 )}
@@ -254,12 +278,14 @@ export default function SchoolProfile({
 
                             <div className="space-y-4 rounded-lg border p-4">
                                 <h3 className="text-sm font-semibold">
-                                    Principal (Kepala Sekolah)
+                                    {t('settings.school.principal_section')}
                                 </h3>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="grid gap-2">
                                         <Label htmlFor="principal_name">
-                                            Principal Name & Titles
+                                            {t(
+                                                'settings.school.principal_name',
+                                            )}
                                         </Label>
                                         <Input
                                             id="principal_name"
@@ -267,7 +293,9 @@ export default function SchoolProfile({
                                             defaultValue={
                                                 profile.principal_name ?? ''
                                             }
-                                            placeholder="e.g. Dr. H. Sulaiman, M.Pd."
+                                            placeholder={t(
+                                                'settings.school.principal_name_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={errors.principal_name}
@@ -276,7 +304,7 @@ export default function SchoolProfile({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="principal_nip">
-                                            NIP
+                                            {t('settings.school.principal_nip')}
                                         </Label>
                                         <Input
                                             id="principal_nip"
@@ -284,7 +312,9 @@ export default function SchoolProfile({
                                             defaultValue={
                                                 profile.principal_nip ?? ''
                                             }
-                                            placeholder="e.g. 197001011995011001"
+                                            placeholder={t(
+                                                'settings.school.principal_nip_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={errors.principal_nip}
@@ -295,13 +325,13 @@ export default function SchoolProfile({
 
                             <div className="space-y-4 rounded-lg border p-4">
                                 <h3 className="text-sm font-semibold">
-                                    School Bank Account (Transfer Instructions)
+                                    {t('settings.school.bank_section')}
                                 </h3>
                                 <div className="grid gap-4">
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
                                             <Label htmlFor="bank_name">
-                                                Bank Name
+                                                {t('settings.school.bank_name')}
                                             </Label>
                                             <Input
                                                 id="bank_name"
@@ -309,7 +339,9 @@ export default function SchoolProfile({
                                                 defaultValue={
                                                     profile.bank_name ?? ''
                                                 }
-                                                placeholder="e.g. Bank Mandiri"
+                                                placeholder={t(
+                                                    'settings.school.bank_name_placeholder',
+                                                )}
                                             />
                                             <InputError
                                                 message={errors.bank_name}
@@ -318,7 +350,9 @@ export default function SchoolProfile({
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="bank_account_number">
-                                                Account Number
+                                                {t(
+                                                    'settings.school.account_number',
+                                                )}
                                             </Label>
                                             <Input
                                                 id="bank_account_number"
@@ -327,7 +361,9 @@ export default function SchoolProfile({
                                                     profile.bank_account_number ??
                                                     ''
                                                 }
-                                                placeholder="e.g. 1420012345678"
+                                                placeholder={t(
+                                                    'settings.school.account_number_placeholder',
+                                                )}
                                             />
                                             <InputError
                                                 message={
@@ -339,7 +375,9 @@ export default function SchoolProfile({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="bank_account_holder">
-                                            Account Holder Name
+                                            {t(
+                                                'settings.school.account_holder',
+                                            )}
                                         </Label>
                                         <Input
                                             id="bank_account_holder"
@@ -348,7 +386,9 @@ export default function SchoolProfile({
                                                 profile.bank_account_holder ??
                                                 ''
                                             }
-                                            placeholder="e.g. SMP Negeri 1 Surabaya"
+                                            placeholder={t(
+                                                'settings.school.account_holder_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={errors.bank_account_holder}
@@ -357,7 +397,9 @@ export default function SchoolProfile({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="default_transfer_account_id">
-                                            Rekening tujuan transfer
+                                            {t(
+                                                'settings.school.transfer_account',
+                                            )}
                                         </Label>
                                         <select
                                             id="default_transfer_account_id"
@@ -369,7 +411,9 @@ export default function SchoolProfile({
                                             className={SELECT_CLASS}
                                         >
                                             <option value="">
-                                                Belum dipilih
+                                                {t(
+                                                    'settings.school.unselected',
+                                                )}
                                             </option>
                                             {cashAccounts.map((account) => (
                                                 <option
@@ -390,7 +434,9 @@ export default function SchoolProfile({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="cashier_default_cash_account_id">
-                                            Akun kas default kasir
+                                            {t(
+                                                'settings.school.cashier_default_account',
+                                            )}
                                         </Label>
                                         <select
                                             id="cashier_default_cash_account_id"
@@ -402,7 +448,9 @@ export default function SchoolProfile({
                                             className={SELECT_CLASS}
                                         >
                                             <option value="">
-                                                Otomatis (akun kas pertama)
+                                                {t(
+                                                    'settings.school.cashier_auto_account',
+                                                )}
                                             </option>
                                             {cashAccounts.map((account) => (
                                                 <option
@@ -415,7 +463,9 @@ export default function SchoolProfile({
                                             ))}
                                         </select>
                                         <p className="text-muted-foreground text-sm">
-                                            Akun kas yang otomatis dipilih saat kasir membuka sesi pembayaran tunai baru.
+                                            {t(
+                                                'settings.school.cashier_account_hint',
+                                            )}
                                         </p>
                                         <InputError
                                             message={
@@ -428,7 +478,7 @@ export default function SchoolProfile({
 
                             <Button type="submit" disabled={processing}>
                                 {processing && <Spinner />}
-                                Save School Profile
+                                {t('settings.school.save')}
                             </Button>
                         </div>
                     )}

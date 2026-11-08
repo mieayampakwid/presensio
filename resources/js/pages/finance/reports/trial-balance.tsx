@@ -32,14 +32,14 @@ type Props = {
 };
 
 export default function TrialBalanceReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Neraca Saldo' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.trial_balance.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const [asOf, setAsOf] = useState(report.as_of ?? '');
 
@@ -53,13 +53,15 @@ export default function TrialBalanceReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Neraca Saldo (Trial Balance)" />
+            <Head title={t('finance.reports.trial_balance.title')} />
 
             <div className="mx-auto max-w-5xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Neraca Saldo (Trial Balance)"
-                        description="Daftar saldo debit dan kredit seluruh akun postable untuk pembuktian keseimbangan buku besar."
+                        title={t('finance.reports.trial_balance.title')}
+                        description={t(
+                            'finance.reports.trial_balance.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -67,7 +69,8 @@ export default function TrialBalanceReportPage({ report }: Props) {
                             href={`/finance/reports/trial-balance?format=csv&as_of=${asOf}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
@@ -76,7 +79,11 @@ export default function TrialBalanceReportPage({ report }: Props) {
                 <div className="bg-card flex flex-col justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
                     <div className="flex items-end gap-3">
                         <div className="space-y-1">
-                            <Label htmlFor="as_of">Posisi Per Tanggal</Label>
+                            <Label htmlFor="as_of">
+                                {t('finance.reports.trial_balance.as_of', {
+                                    defaultValue: 'Posisi Per Tanggal',
+                                })}
+                            </Label>
                             <Input
                                 id="as_of"
                                 type="date"
@@ -84,22 +91,22 @@ export default function TrialBalanceReportPage({ report }: Props) {
                                 onChange={(e) => setAsOf(e.target.value)}
                             />
                         </div>
-                        <Button onClick={applyFilter}>Tampilkan</Button>
+                        <Button onClick={applyFilter}>
+                            {t('finance.common.filter')}
+                        </Button>
                     </div>
 
                     <div>
                         {report.is_balanced ? (
                             <div className="flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/40">
                                 <CheckCircle2 className="mr-1.5 h-4 w-4" />{' '}
-                                Neraca Saldo Seimbang (Balanced)
+                                {t('finance.reports.trial_balance.balanced')}
                             </div>
                         ) : (
                             <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold">
                                 <AlertCircle className="mr-1.5 h-4 w-4" />
-                                Selisih: Rp{' '}
-                                {Number(report.difference).toLocaleString(
-                                    locale,
-                                )}
+                                {t('finance.common.difference')}:{' '}
+                                {`Rp ${Number(report.difference).toLocaleString(locale)}`}
                             </div>
                         )}
                     </div>
@@ -112,22 +119,27 @@ export default function TrialBalanceReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Kode Akun
+                                        {t('finance.accounts.table.code')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Nama Akun
+                                        {t('finance.accounts.table.name')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Klasifikasi
+                                        {t(
+                                            'finance.accounts.table.classification',
+                                        )}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Saldo Normal
+                                        {t(
+                                            'finance.accounts.fields.normal_balance',
+                                            { defaultValue: 'Saldo Normal' },
+                                        )}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Saldo Debit (Rp)
+                                        {t('finance.common.debit')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Saldo Kredit (Rp)
+                                        {t('finance.common.credit')}
                                     </th>
                                 </tr>
                             </thead>
@@ -177,19 +189,13 @@ export default function TrialBalanceReportPage({ report }: Props) {
                                         colSpan={4}
                                         className="px-4 py-3 text-right"
                                     >
-                                        TOTAL KESEIMBANGAN:
+                                        {t('finance.common.total')}:
                                     </td>
                                     <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400">
-                                        Rp{' '}
-                                        {Number(
-                                            report.total_debit,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.total_debit).toLocaleString(locale)}`}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
-                                        Rp{' '}
-                                        {Number(
-                                            report.total_credit,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.total_credit).toLocaleString(locale)}`}
                                     </td>
                                 </tr>
                             </tfoot>

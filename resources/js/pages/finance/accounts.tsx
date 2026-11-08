@@ -1,4 +1,5 @@
 import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     AlertCircle,
     Check,
@@ -204,14 +205,16 @@ export default function AccountsIndex({
     restrictions,
     canManage,
 }: Props) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
             {
-                title: 'Keuangan',
+                title: t('finance.common.finance'),
                 href: '/finance/accounts',
             },
             {
-                title: 'Bagan Akun',
+                title: t('finance.common.accounts'),
             },
         ],
     });
@@ -403,19 +406,19 @@ export default function AccountsIndex({
 
     return (
         <>
-            <Head title="Bagan Akun" />
+            <Head title={t('finance.accounts.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Bagan Akun (Chart of Accounts)"
-                        description="Kelola akun buku besar, saldo normal, dan hierarki pelaporan keuangan."
+                        title={t('finance.accounts.title')}
+                        description={t('finance.accounts.description')}
                     />
 
                     {canManage && (
                         <Button onClick={openCreateModal}>
                             <Plus className="mr-2 h-4 w-4" />
-                            Tambah Akun
+                            {t('finance.accounts.add')}
                         </Button>
                     )}
                 </div>
@@ -426,7 +429,7 @@ export default function AccountsIndex({
                         size="sm"
                         onClick={() => setSelectedType('all')}
                     >
-                        Semua ({accounts.length})
+                        {t('fees.common.all_statuses')} ({accounts.length})
                     </Button>
                     {types.map((type) => {
                         const count = accounts.filter(
@@ -453,25 +456,33 @@ export default function AccountsIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Kode</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Nama Akun
+                                    {t('finance.accounts.table.code')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Klasifikasi
+                                    {t('finance.accounts.table.name')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Saldo Normal
+                                    {t('finance.accounts.table.classification')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Karakteristik
+                                    {t(
+                                        'finance.accounts.fields.normal_balance',
+                                        { defaultValue: 'Saldo Normal' },
+                                    )}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Status
+                                    {t(
+                                        'finance.accounts.table.characteristics',
+                                        { defaultValue: 'Karakteristik' },
+                                    )}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('finance.common.status')}
                                 </th>
                                 {canManage && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('finance.common.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -483,7 +494,7 @@ export default function AccountsIndex({
                                         colSpan={canManage ? 7 : 6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada akun dalam kategori ini.
+                                        {t('finance.accounts.table.empty')}
                                     </td>
                                 </tr>
                             ) : (
@@ -538,7 +549,11 @@ export default function AccountsIndex({
                                             </span>
                                             {account.is_contra && (
                                                 <span className="text-destructive ml-1 text-xs font-medium">
-                                                    (Contra)
+                                                    (
+                                                    {t(
+                                                        'finance.accounts.table.contra',
+                                                    )}
+                                                    )
                                                 </span>
                                             )}
                                         </td>
@@ -549,7 +564,9 @@ export default function AccountsIndex({
                                                         variant="secondary"
                                                         className="text-xs"
                                                     >
-                                                        Kas/Bank
+                                                        {t(
+                                                            'finance.accounts.table.cash_bank',
+                                                        )}
                                                     </Badge>
                                                 )}
                                                 {account.is_postable ? (
@@ -557,14 +574,18 @@ export default function AccountsIndex({
                                                         variant="outline"
                                                         className="border-green-300 text-xs text-green-700"
                                                     >
-                                                        Postable
+                                                        {t(
+                                                            'finance.accounts.table.postable',
+                                                        )}
                                                     </Badge>
                                                 ) : (
                                                     <Badge
                                                         variant="outline"
                                                         className="text-muted-foreground text-xs"
                                                     >
-                                                        Grup
+                                                        {t(
+                                                            'finance.accounts.table.header',
+                                                        )}
                                                     </Badge>
                                                 )}
                                                 {account.has_posted_lines && (
@@ -572,7 +593,7 @@ export default function AccountsIndex({
                                                         variant="default"
                                                         className="bg-slate-700 text-xs"
                                                     >
-                                                        Ada Transaksi
+                                                        {'Ada Transaksi'}
                                                     </Badge>
                                                 )}
                                             </div>
@@ -581,11 +602,15 @@ export default function AccountsIndex({
                                             {account.is_active ? (
                                                 <span className="inline-flex items-center text-xs font-medium text-emerald-600">
                                                     <Check className="mr-1 h-3.5 w-3.5" />{' '}
-                                                    Aktif
+                                                    {t(
+                                                        'finance.accounts.table.active',
+                                                    )}
                                                 </span>
                                             ) : (
                                                 <span className="text-muted-foreground text-xs">
-                                                    Nonaktif
+                                                    {t(
+                                                        'finance.accounts.table.inactive',
+                                                    )}
                                                 </span>
                                             )}
                                         </td>
@@ -650,10 +675,11 @@ export default function AccountsIndex({
                     className="flex flex-col sm:max-w-xl"
                 >
                     <SheetHeader className="border-b px-6 py-4">
-                        <SheetTitle>Tambah Akun Baru</SheetTitle>
+                        <SheetTitle>
+                            {t('finance.accounts.add_title')}
+                        </SheetTitle>
                         <SheetDescription>
-                            Isi parameter akun untuk ditambahkan ke bagan akun
-                            (Chart of Accounts).
+                            {t('finance.accounts.add_description')}
                         </SheetDescription>
                     </SheetHeader>
 
@@ -665,7 +691,7 @@ export default function AccountsIndex({
                             {/* 1. Klasifikasi */}
                             <div className="space-y-2">
                                 <Label htmlFor="create-type">
-                                    Klasifikasi{' '}
+                                    {t('finance.accounts.table.classification')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
@@ -700,7 +726,7 @@ export default function AccountsIndex({
                             {form.data.type === 'net_assets' && (
                                 <div className="space-y-2">
                                     <Label htmlFor="create-restriction">
-                                        Pembatasan (ISAK 35)
+                                        {'Pembatasan (ISAK 35)'}
                                     </Label>
                                     <Select
                                         value={form.data.restriction}
@@ -734,10 +760,10 @@ export default function AccountsIndex({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="create-parent">
-                                        Akun Induk
+                                        {t('finance.accounts.fields.parent')}
                                     </Label>
                                     <span className="text-muted-foreground text-[11px]">
-                                        Opsional
+                                        {'Opsional'}
                                     </span>
                                 </div>
                                 <Select
@@ -753,7 +779,9 @@ export default function AccountsIndex({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">
-                                            Tanpa induk (Tingkat Utama)
+                                            {t(
+                                                'finance.accounts.fields.no_parent',
+                                            )}
                                         </SelectItem>
                                         {createParentCandidates.map(
                                             (parent) => (
@@ -784,7 +812,7 @@ export default function AccountsIndex({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="create-code">
-                                        Kode Akun{' '}
+                                        {t('finance.accounts.table.code')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -796,7 +824,7 @@ export default function AccountsIndex({
                                             className="text-primary inline-flex items-center gap-1 text-[11px] hover:underline"
                                         >
                                             <RotateCcw className="h-3 w-3" />
-                                            Reset saran kode
+                                            {'Reset saran kode'}
                                         </button>
                                     )}
                                 </div>
@@ -825,7 +853,7 @@ export default function AccountsIndex({
                             {/* 4. Nama Akun (*) */}
                             <div className="space-y-2">
                                 <Label htmlFor="create-name">
-                                    Nama Akun{' '}
+                                    {t('finance.accounts.table.name')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
@@ -847,7 +875,7 @@ export default function AccountsIndex({
                             {/* Karakteristik Akun: 5, 6, 7 */}
                             <div className="space-y-2.5 pt-2">
                                 <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                                    Karakteristik & Perilaku Akun
+                                    {'Karakteristik & Perilaku Akun'}
                                 </Label>
 
                                 <div className="space-y-2">
@@ -870,7 +898,9 @@ export default function AccountsIndex({
                                                     htmlFor="create-contra"
                                                     className="cursor-pointer text-sm font-medium"
                                                 >
-                                                    Akun Contra
+                                                    {t(
+                                                        'finance.accounts.fields.is_contra',
+                                                    )}
                                                 </Label>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -887,40 +917,34 @@ export default function AccountsIndex({
                                                         className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                     >
                                                         <p className="text-foreground font-semibold">
-                                                            Akun Contra
+                                                            {t(
+                                                                'finance.accounts.fields.is_contra',
+                                                            )}
                                                         </p>
                                                         <p className="text-muted-foreground">
-                                                            Akun yang mengurangi
-                                                            saldo kelompok akun
-                                                            utamanya dan
-                                                            memiliki saldo
-                                                            normal berlawanan
-                                                            (misal: Aset
-                                                            normalnya di Debit,
-                                                            tetapi akun contra
-                                                            Aset bersaldo normal
-                                                            Kredit).
+                                                            {
+                                                                'Akun yang mengurangi saldo kelompok akun utamanya dan memiliki saldo normal berlawanan (misal: Aset normalnya di Debit, tetapi akun contra Aset bersaldo normal Kredit).'
+                                                            }
                                                         </p>
                                                         <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                             <span className="text-foreground font-medium">
-                                                                Contoh:
+                                                                {'Contoh:'}
                                                             </span>
                                                             <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                 <li>
-                                                                    Akumulasi
-                                                                    Penyusutan
-                                                                    Gedung
+                                                                    {
+                                                                        'Akumulasi Penyusutan Gedung'
+                                                                    }
                                                                 </li>
                                                                 <li>
-                                                                    Cadangan
-                                                                    Kerugian
-                                                                    Piutang SPP
+                                                                    {
+                                                                        'Cadangan Kerugian Piutang SPP'
+                                                                    }
                                                                 </li>
                                                                 <li>
-                                                                    Potongan
-                                                                    &amp;
-                                                                    Beasiswa
-                                                                    Siswa
+                                                                    {
+                                                                        'Potongan & Beasiswa Siswa'
+                                                                    }
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -928,8 +952,9 @@ export default function AccountsIndex({
                                                 </Tooltip>
                                             </div>
                                             <p className="text-muted-foreground text-xs">
-                                                Mengurangi saldo kelompok akun
-                                                utama (saldo normal berlawanan).
+                                                {
+                                                    'Mengurangi saldo kelompok akun utama (saldo normal berlawanan).'
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -954,7 +979,9 @@ export default function AccountsIndex({
                                                         htmlFor="create-cash"
                                                         className="cursor-pointer text-sm font-medium"
                                                     >
-                                                        Kas / Bank
+                                                        {t(
+                                                            'finance.accounts.table.cash_bank',
+                                                        )}
                                                     </Label>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -971,50 +998,39 @@ export default function AccountsIndex({
                                                             className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                         >
                                                             <p className="text-foreground font-semibold">
-                                                                Kas / Bank
+                                                                {t(
+                                                                    'finance.accounts.table.cash_bank',
+                                                                )}
                                                             </p>
                                                             <p className="text-muted-foreground">
-                                                                Menandai akun
-                                                                likuid berupa
-                                                                uang tunai fisik
-                                                                atau rekening
-                                                                bank aktif
-                                                                yayasan/sekolah.
-                                                                Menjadi acuan
-                                                                transaksi pada
-                                                                Buku Kas (Cash
-                                                                Book) &amp;
-                                                                Laporan Arus
-                                                                Kas.
+                                                                {
+                                                                    'Menandai akun likuid berupa uang tunai fisik atau rekening bank aktif yayasan/sekolah. Menjadi acuan transaksi pada Buku Kas (Cash Book) & Laporan Arus Kas.'
+                                                                }
                                                             </p>
                                                             <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                                 <span className="text-foreground font-medium">
-                                                                    Contoh:
+                                                                    {'Contoh:'}
                                                                 </span>
                                                                 <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                     <li>
-                                                                        Kas
-                                                                        Operasional
-                                                                        Tata
-                                                                        Usaha
+                                                                        {
+                                                                            'Kas Operasional Tata Usaha'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Kas
-                                                                        Kecil
-                                                                        (Petty
-                                                                        Cash)
-                                                                        Bendahara
+                                                                        {
+                                                                            'Kas Kecil (Petty Cash) Bendahara'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Bank BSI
-                                                                        Giro
-                                                                        Operasional
+                                                                        {
+                                                                            'Bank BSI Giro Operasional'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Bank
-                                                                        Mandiri
-                                                                        Penampung
-                                                                        SPP
+                                                                        {
+                                                                            'Bank Mandiri Penampung SPP'
+                                                                        }
                                                                     </li>
                                                                 </ul>
                                                             </div>
@@ -1022,9 +1038,9 @@ export default function AccountsIndex({
                                                     </Tooltip>
                                                 </div>
                                                 <p className="text-muted-foreground text-xs">
-                                                    Akun kas tunai fisik atau
-                                                    rekening bank aktif untuk
-                                                    Buku Kas &amp; Arus Kas.
+                                                    {
+                                                        'Akun kas tunai fisik atau rekening bank aktif untuk Buku Kas & Arus Kas.'
+                                                    }
                                                 </p>
                                             </div>
                                         </div>
@@ -1049,8 +1065,9 @@ export default function AccountsIndex({
                                                     htmlFor="create-postable"
                                                     className="cursor-pointer text-sm font-medium"
                                                 >
-                                                    Postable (Dapat Menerima
-                                                    Jurnal)
+                                                    {t(
+                                                        'finance.accounts.fields.is_postable',
+                                                    )}
                                                 </Label>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -1067,47 +1084,39 @@ export default function AccountsIndex({
                                                         className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                     >
                                                         <p className="text-foreground font-semibold">
-                                                            Postable (Akun
-                                                            Posting)
+                                                            {
+                                                                'Postable (Akun Posting)'
+                                                            }
                                                         </p>
                                                         <p className="text-muted-foreground">
-                                                            Menentukan apakah
-                                                            akun dapat dipilih
-                                                            langsung saat
-                                                            mencatat transaksi
-                                                            jurnal umum. Jika
-                                                            tidak dicentang
-                                                            (Non-Postable), akun
-                                                            hanya berfungsi
-                                                            sebagai penampung
-                                                            hierarki/kategori
-                                                            (Header).
+                                                            {
+                                                                'Menentukan apakah akun dapat dipilih langsung saat mencatat transaksi jurnal umum. Jika tidak dicentang (Non-Postable), akun hanya berfungsi sebagai penampung hierarki/kategori (Header).'
+                                                            }
                                                         </p>
                                                         <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                             <span className="text-foreground font-medium">
-                                                                Contoh:
+                                                                {'Contoh:'}
                                                             </span>
                                                             <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                 <li>
                                                                     <strong>
-                                                                        Postable:
+                                                                        {
+                                                                            'Postable:'
+                                                                        }
                                                                     </strong>{' '}
-                                                                    Kas Tunai,
-                                                                    Beban ATK
-                                                                    &amp;
-                                                                    Fotokopi
-                                                                    (dapat
-                                                                    dijurnal)
+                                                                    {
+                                                                        'Kas Tunai, Beban ATK & Fotokopi (dapat dijurnal)'
+                                                                    }
                                                                 </li>
                                                                 <li>
                                                                     <strong>
-                                                                        Non-Postable:
+                                                                        {
+                                                                            'Non-Postable:'
+                                                                        }
                                                                     </strong>{' '}
-                                                                    ASET LANCAR,
-                                                                    BEBAN
-                                                                    OPERASIONAL
-                                                                    (hanya judul
-                                                                    hierarki)
+                                                                    {
+                                                                        'ASET LANCAR, BEBAN OPERASIONAL (hanya judul hierarki)'
+                                                                    }
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -1115,8 +1124,9 @@ export default function AccountsIndex({
                                                 </Tooltip>
                                             </div>
                                             <p className="text-muted-foreground text-xs">
-                                                Dapat dipilih langsung pada
-                                                transaksi jurnal harian.
+                                                {
+                                                    'Dapat dipilih langsung pada transaksi jurnal harian.'
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -1130,10 +1140,10 @@ export default function AccountsIndex({
                                 variant="outline"
                                 onClick={() => setIsCreateOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button type="submit" disabled={form.processing}>
-                                Simpan Akun
+                                {t('finance.common.save')}
                             </Button>
                         </SheetFooter>
                     </form>
@@ -1150,7 +1160,9 @@ export default function AccountsIndex({
                     className="flex flex-col sm:max-w-xl"
                 >
                     <SheetHeader className="border-b px-6 py-4">
-                        <SheetTitle>Edit Akun</SheetTitle>
+                        <SheetTitle>
+                            {t('finance.accounts.edit_title')}
+                        </SheetTitle>
                         <SheetDescription>
                             {isEditingLocked
                                 ? 'Akun ini telah memiliki transaksi jurnal. Struktur akun terkunci; hanya nama dan status aktif yang dapat diubah.'
@@ -1167,16 +1179,16 @@ export default function AccountsIndex({
                                 <div className="flex items-center gap-2 rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
                                     <AlertCircle className="h-4 w-4 shrink-0" />
                                     <span>
-                                        Struktur akun terkunci karena telah
-                                        memiliki jurnal posted. Hanya nama dan
-                                        status aktif yang dapat diubah.
+                                        {
+                                            'Struktur akun terkunci karena telah memiliki jurnal posted. Hanya nama dan status aktif yang dapat diubah.'
+                                        }
                                     </span>
                                 </div>
                             )}
                             {/* 1. Klasifikasi */}
                             <div className="space-y-2">
                                 <Label htmlFor="edit-type">
-                                    Klasifikasi{' '}
+                                    {t('finance.accounts.table.classification')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
@@ -1214,7 +1226,7 @@ export default function AccountsIndex({
                             {form.data.type === 'net_assets' && (
                                 <div className="space-y-2">
                                     <Label htmlFor="edit-restriction">
-                                        Pembatasan (ISAK 35)
+                                        {'Pembatasan (ISAK 35)'}
                                     </Label>
                                     <Select
                                         value={form.data.restriction}
@@ -1249,10 +1261,10 @@ export default function AccountsIndex({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="edit-parent">
-                                        Akun Induk
+                                        {t('finance.accounts.fields.parent')}
                                     </Label>
                                     <span className="text-muted-foreground text-[11px]">
-                                        Opsional
+                                        {'Opsional'}
                                     </span>
                                 </div>
                                 <Select
@@ -1269,7 +1281,9 @@ export default function AccountsIndex({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">
-                                            Tanpa induk (Tingkat Utama)
+                                            {t(
+                                                'finance.accounts.fields.no_parent',
+                                            )}
                                         </SelectItem>
                                         {editParentCandidates.map((parent) => (
                                             <SelectItem
@@ -1296,7 +1310,7 @@ export default function AccountsIndex({
                             {/* 3. Kode Akun */}
                             <div className="space-y-2">
                                 <Label htmlFor="edit-code">
-                                    Kode Akun{' '}
+                                    {t('finance.accounts.table.code')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
@@ -1319,7 +1333,7 @@ export default function AccountsIndex({
                             {/* 4. Nama Akun (*) */}
                             <div className="space-y-2">
                                 <Label htmlFor="edit-name">
-                                    Nama Akun{' '}
+                                    {t('finance.accounts.table.name')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
@@ -1341,7 +1355,7 @@ export default function AccountsIndex({
                             {/* Karakteristik Akun: 5, 6, 7 & Status Aktif */}
                             <div className="space-y-2.5 pt-2">
                                 <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                                    Atribut & Perilaku Akun
+                                    {'Atribut & Perilaku Akun'}
                                 </Label>
 
                                 <div className="space-y-2">
@@ -1365,7 +1379,9 @@ export default function AccountsIndex({
                                                     htmlFor="edit-contra"
                                                     className="cursor-pointer text-sm font-medium"
                                                 >
-                                                    Akun Contra
+                                                    {t(
+                                                        'finance.accounts.fields.is_contra',
+                                                    )}
                                                 </Label>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -1382,40 +1398,34 @@ export default function AccountsIndex({
                                                         className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                     >
                                                         <p className="text-foreground font-semibold">
-                                                            Akun Contra
+                                                            {t(
+                                                                'finance.accounts.fields.is_contra',
+                                                            )}
                                                         </p>
                                                         <p className="text-muted-foreground">
-                                                            Akun yang mengurangi
-                                                            saldo kelompok akun
-                                                            utamanya dan
-                                                            memiliki saldo
-                                                            normal berlawanan
-                                                            (misal: Aset
-                                                            normalnya di Debit,
-                                                            tetapi akun contra
-                                                            Aset bersaldo normal
-                                                            Kredit).
+                                                            {
+                                                                'Akun yang mengurangi saldo kelompok akun utamanya dan memiliki saldo normal berlawanan (misal: Aset normalnya di Debit, tetapi akun contra Aset bersaldo normal Kredit).'
+                                                            }
                                                         </p>
                                                         <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                             <span className="text-foreground font-medium">
-                                                                Contoh:
+                                                                {'Contoh:'}
                                                             </span>
                                                             <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                 <li>
-                                                                    Akumulasi
-                                                                    Penyusutan
-                                                                    Gedung
+                                                                    {
+                                                                        'Akumulasi Penyusutan Gedung'
+                                                                    }
                                                                 </li>
                                                                 <li>
-                                                                    Cadangan
-                                                                    Kerugian
-                                                                    Piutang SPP
+                                                                    {
+                                                                        'Cadangan Kerugian Piutang SPP'
+                                                                    }
                                                                 </li>
                                                                 <li>
-                                                                    Potongan
-                                                                    &amp;
-                                                                    Beasiswa
-                                                                    Siswa
+                                                                    {
+                                                                        'Potongan & Beasiswa Siswa'
+                                                                    }
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -1423,8 +1433,9 @@ export default function AccountsIndex({
                                                 </Tooltip>
                                             </div>
                                             <p className="text-muted-foreground text-xs">
-                                                Mengurangi saldo kelompok akun
-                                                utama (saldo normal berlawanan).
+                                                {
+                                                    'Mengurangi saldo kelompok akun utama (saldo normal berlawanan).'
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -1450,7 +1461,9 @@ export default function AccountsIndex({
                                                         htmlFor="edit-cash"
                                                         className="cursor-pointer text-sm font-medium"
                                                     >
-                                                        Kas / Bank
+                                                        {t(
+                                                            'finance.accounts.table.cash_bank',
+                                                        )}
                                                     </Label>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -1467,50 +1480,39 @@ export default function AccountsIndex({
                                                             className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                         >
                                                             <p className="text-foreground font-semibold">
-                                                                Kas / Bank
+                                                                {t(
+                                                                    'finance.accounts.table.cash_bank',
+                                                                )}
                                                             </p>
                                                             <p className="text-muted-foreground">
-                                                                Menandai akun
-                                                                likuid berupa
-                                                                uang tunai fisik
-                                                                atau rekening
-                                                                bank aktif
-                                                                yayasan/sekolah.
-                                                                Menjadi acuan
-                                                                transaksi pada
-                                                                Buku Kas (Cash
-                                                                Book) &amp;
-                                                                Laporan Arus
-                                                                Kas.
+                                                                {
+                                                                    'Menandai akun likuid berupa uang tunai fisik atau rekening bank aktif yayasan/sekolah. Menjadi acuan transaksi pada Buku Kas (Cash Book) & Laporan Arus Kas.'
+                                                                }
                                                             </p>
                                                             <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                                 <span className="text-foreground font-medium">
-                                                                    Contoh:
+                                                                    {'Contoh:'}
                                                                 </span>
                                                                 <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                     <li>
-                                                                        Kas
-                                                                        Operasional
-                                                                        Tata
-                                                                        Usaha
+                                                                        {
+                                                                            'Kas Operasional Tata Usaha'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Kas
-                                                                        Kecil
-                                                                        (Petty
-                                                                        Cash)
-                                                                        Bendahara
+                                                                        {
+                                                                            'Kas Kecil (Petty Cash) Bendahara'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Bank BSI
-                                                                        Giro
-                                                                        Operasional
+                                                                        {
+                                                                            'Bank BSI Giro Operasional'
+                                                                        }
                                                                     </li>
                                                                     <li>
-                                                                        Bank
-                                                                        Mandiri
-                                                                        Penampung
-                                                                        SPP
+                                                                        {
+                                                                            'Bank Mandiri Penampung SPP'
+                                                                        }
                                                                     </li>
                                                                 </ul>
                                                             </div>
@@ -1518,9 +1520,9 @@ export default function AccountsIndex({
                                                     </Tooltip>
                                                 </div>
                                                 <p className="text-muted-foreground text-xs">
-                                                    Akun kas tunai fisik atau
-                                                    rekening bank aktif untuk
-                                                    Buku Kas &amp; Arus Kas.
+                                                    {
+                                                        'Akun kas tunai fisik atau rekening bank aktif untuk Buku Kas & Arus Kas.'
+                                                    }
                                                 </p>
                                             </div>
                                         </div>
@@ -1550,8 +1552,9 @@ export default function AccountsIndex({
                                                     htmlFor="edit-postable"
                                                     className="cursor-pointer text-sm font-medium"
                                                 >
-                                                    Postable (Dapat Menerima
-                                                    Jurnal)
+                                                    {t(
+                                                        'finance.accounts.fields.is_postable',
+                                                    )}
                                                 </Label>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -1568,47 +1571,39 @@ export default function AccountsIndex({
                                                         className="max-w-xs space-y-1.5 p-3 text-xs leading-relaxed"
                                                     >
                                                         <p className="text-foreground font-semibold">
-                                                            Postable (Akun
-                                                            Posting)
+                                                            {
+                                                                'Postable (Akun Posting)'
+                                                            }
                                                         </p>
                                                         <p className="text-muted-foreground">
-                                                            Menentukan apakah
-                                                            akun dapat dipilih
-                                                            langsung saat
-                                                            mencatat transaksi
-                                                            jurnal umum. Jika
-                                                            tidak dicentang
-                                                            (Non-Postable), akun
-                                                            hanya berfungsi
-                                                            sebagai penampung
-                                                            hierarki/kategori
-                                                            (Header).
+                                                            {
+                                                                'Menentukan apakah akun dapat dipilih langsung saat mencatat transaksi jurnal umum. Jika tidak dicentang (Non-Postable), akun hanya berfungsi sebagai penampung hierarki/kategori (Header).'
+                                                            }
                                                         </p>
                                                         <div className="border-border space-y-1 border-t pt-1.5 text-[11px]">
                                                             <span className="text-foreground font-medium">
-                                                                Contoh:
+                                                                {'Contoh:'}
                                                             </span>
                                                             <ul className="text-muted-foreground list-inside list-disc space-y-0.5">
                                                                 <li>
                                                                     <strong>
-                                                                        Postable:
+                                                                        {
+                                                                            'Postable:'
+                                                                        }
                                                                     </strong>{' '}
-                                                                    Kas Tunai,
-                                                                    Beban ATK
-                                                                    &amp;
-                                                                    Fotokopi
-                                                                    (dapat
-                                                                    dijurnal)
+                                                                    {
+                                                                        'Kas Tunai, Beban ATK & Fotokopi (dapat dijurnal)'
+                                                                    }
                                                                 </li>
                                                                 <li>
                                                                     <strong>
-                                                                        Non-Postable:
+                                                                        {
+                                                                            'Non-Postable:'
+                                                                        }
                                                                     </strong>{' '}
-                                                                    ASET LANCAR,
-                                                                    BEBAN
-                                                                    OPERASIONAL
-                                                                    (hanya judul
-                                                                    hierarki)
+                                                                    {
+                                                                        'ASET LANCAR, BEBAN OPERASIONAL (hanya judul hierarki)'
+                                                                    }
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -1642,13 +1637,14 @@ export default function AccountsIndex({
                                                 htmlFor="edit-active"
                                                 className="cursor-pointer text-sm font-medium"
                                             >
-                                                Akun Aktif
+                                                {t(
+                                                    'finance.accounts.fields.is_active',
+                                                )}
                                             </Label>
                                             <p className="text-muted-foreground text-xs">
-                                                Akun aktif dapat dipilih pada
-                                                transaksi dan laporan.
-                                                Nonaktifkan jika akun tidak lagi
-                                                digunakan.
+                                                {
+                                                    'Akun aktif dapat dipilih pada transaksi dan laporan. Nonaktifkan jika akun tidak lagi digunakan.'
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -1662,10 +1658,10 @@ export default function AccountsIndex({
                                 variant="outline"
                                 onClick={() => setEditingAccount(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button type="submit" disabled={form.processing}>
-                                Simpan Perubahan
+                                {t('common.save_changes')}
                             </Button>
                         </SheetFooter>
                     </form>
@@ -1679,14 +1675,14 @@ export default function AccountsIndex({
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Konfirmasi Hapus Akun</DialogTitle>
+                        <DialogTitle>
+                            {t('finance.accounts.delete_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Apakah Anda yakin ingin menghapus akun{' '}
-                            <strong>
-                                {deletingAccount?.code} -{' '}
-                                {deletingAccount?.name}
-                            </strong>
-                            ? Tindakan ini tidak dapat dibatalkan.
+                            {t('finance.accounts.delete_dialog.message', {
+                                code: deletingAccount?.code ?? '',
+                                name: deletingAccount?.name ?? '',
+                            })}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -1696,14 +1692,14 @@ export default function AccountsIndex({
                             variant="outline"
                             onClick={() => setDeletingAccount(null)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             type="button"
                             variant="destructive"
                             onClick={handleDeleteSubmit}
                         >
-                            Hapus Akun
+                            {t('common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

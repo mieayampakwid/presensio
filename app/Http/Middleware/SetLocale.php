@@ -23,10 +23,8 @@ class SetLocale
 
         $locale = ($saved !== null ? Locale::tryFrom($saved) : null)
             ?? (is_string($cookie) ? Locale::tryFrom($cookie) : null);
-
-        if ($locale !== null) {
-            App::setLocale($locale->value);
-        }
+        $default = (string) config('app.default_locale', config('app.fallback_locale', 'en'));
+        App::setLocale($locale !== null ? $locale->value : $default);
 
         return $next($request);
     }

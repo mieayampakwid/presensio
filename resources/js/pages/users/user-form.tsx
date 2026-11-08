@@ -274,7 +274,9 @@ export default function UserForm({
                     <div className="flex gap-3">
                         {cancelUrl && (
                             <Button variant="outline" asChild>
-                                <Link href={cancelUrl}>Cancel</Link>
+                                <Link href={cancelUrl}>
+                                    {t('common.cancel')}
+                                </Link>
                             </Button>
                         )}
                         <Button type="submit" disabled={processing}>

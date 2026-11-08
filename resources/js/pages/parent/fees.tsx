@@ -106,7 +106,7 @@ export default function ParentFees({
     canUpload,
     transferAccountConfigured,
 }: Props) {
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
 
     const formatRupiah = (value: string) =>
         new Intl.NumberFormat(locale, {
@@ -238,11 +238,11 @@ export default function ParentFees({
 
     return (
         <>
-            <Head title="Biaya Sekolah" />
+            <Head title={t('fees.parent.title')} />
 
             <div className="max-w-5xl space-y-6 p-4">
                 <Heading
-                    title="Biaya Sekolah"
+                    title={t('fees.parent.title')}
                     description={
                         canUpload
                             ? 'Tagihan, status pembayaran, dan unggah bukti transfer.'
@@ -251,27 +251,30 @@ export default function ParentFees({
                 />
 
                 <div className="rounded-lg border p-4 text-sm">
-                    <p className="font-medium">Rekening Sekolah</p>
+                    <p className="font-medium">
+                        {t('fees.parent.school_account')}
+                    </p>
                     {schoolBank.bank_account_number ? (
                         <p className="text-muted-foreground mt-1">
                             {schoolBank.bank_name} -{' '}
                             <span className="text-foreground font-semibold tabular-nums">
                                 {schoolBank.bank_account_number}
                             </span>{' '}
-                            a.n. {schoolBank.bank_account_holder}
+                            {'a.n. '}
+                            {schoolBank.bank_account_holder}
                         </p>
                     ) : (
                         <p className="text-muted-foreground mt-1">
-                            Rekening sekolah belum diatur.
+                            {t('settings.warnings.default_transfer_account')}
                         </p>
                     )}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
                     {[
-                        ['Belum Dibayar', portal.summary.unpaid],
-                        ['Menunggu Verifikasi', portal.summary.pending],
-                        ['Lunas', portal.summary.paid],
+                        [t('fees.parent.unpaid'), portal.summary.unpaid],
+                        [t('fees.parent.pending'), portal.summary.pending],
+                        [t('fees.parent.paid'), portal.summary.paid],
                     ].map(([label, value]) => (
                         <div key={label} className="rounded-lg border p-4">
                             <p className="text-muted-foreground text-sm">
@@ -286,14 +289,16 @@ export default function ParentFees({
 
                 {students.length === 0 && (
                     <p className="text-muted-foreground text-sm">
-                        Belum ada anak yang terhubung dengan akun ini.
+                        {t('fees.parent.no_bills')}
                     </p>
                 )}
 
                 {students.length > 0 && (
                     <div className="space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <h2 className="text-lg font-medium">Tagihan</h2>
+                            <h2 className="text-lg font-medium">
+                                {t('fees.common.bills')}
+                            </h2>
                             <div className="flex items-center gap-2">
                                 {students.length > 1 && (
                                     <select
@@ -304,7 +309,9 @@ export default function ParentFees({
                                         }
                                         className={selectClass}
                                     >
-                                        <option value="">Semua anak</option>
+                                        <option value="">
+                                            {t('fees.common.all_students')}
+                                        </option>
                                         {students.map((student) => (
                                             <option
                                                 key={student.id}
@@ -324,7 +331,7 @@ export default function ParentFees({
                                         }
                                         onClick={() => setOpen(true)}
                                     >
-                                        Unggah Bukti Transfer
+                                        {t('fees.parent.upload_proof')}
                                     </Button>
                                 )}
                             </div>
@@ -332,8 +339,9 @@ export default function ParentFees({
 
                         {canUpload && !transferAccountConfigured && (
                             <p className="text-muted-foreground text-sm">
-                                Unggah bukti transfer belum tersedia: rekening
-                                tujuan transfer belum diatur oleh sekolah.
+                                {t(
+                                    'settings.warnings.default_transfer_account',
+                                )}
                             </p>
                         )}
 
@@ -363,21 +371,27 @@ export default function ParentFees({
                                                 />
                                             </th>
                                         )}
-                                        <th className="px-4 py-3">Siswa</th>
-                                        <th className="px-4 py-3">Tagihan</th>
                                         <th className="px-4 py-3">
-                                            Jatuh Tempo
+                                            {t('fees.common.student')}
+                                        </th>
+                                        <th className="px-4 py-3">
+                                            {t('fees.common.bills')}
+                                        </th>
+                                        <th className="px-4 py-3">
+                                            {t('fees.common.due_date')}
                                         </th>
                                         <th className="px-4 py-3 text-right">
-                                            Tagihan
+                                            {t('fees.bills.table.amount')}
                                         </th>
                                         <th className="px-4 py-3 text-right">
-                                            Dibayar
+                                            {t('fees.bills.table.paid')}
                                         </th>
                                         <th className="px-4 py-3 text-right">
-                                            Sisa
+                                            {t('fees.bills.table.remaining')}
                                         </th>
-                                        <th className="px-4 py-3">Status</th>
+                                        <th className="px-4 py-3">
+                                            {t('fees.common.status')}
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -447,7 +461,9 @@ export default function ParentFees({
                                                     </Badge>
                                                     {bill.has_pending && (
                                                         <Badge variant="outline">
-                                                            Menunggu verifikasi
+                                                            {t(
+                                                                'fees.parent.pending',
+                                                            )}
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -461,7 +477,7 @@ export default function ParentFees({
                                                 colSpan={canUpload ? 8 : 7}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
-                                                Belum ada tagihan.
+                                                {t('fees.parent.no_bills')}
                                             </td>
                                         </tr>
                                     )}
@@ -482,25 +498,28 @@ export default function ParentFees({
                                 id="pending-transfers-title"
                                 className="text-lg font-medium"
                             >
-                                Transfer Menunggu Verifikasi
+                                {t('fees.parent.pending_transfers')}
                             </h2>
                             <p className="text-muted-foreground text-sm">
-                                Periksa atau batalkan pengajuan transfer yang
-                                belum diverifikasi sekolah.
+                                {t('fees.parent.pending_transfers')}
                             </p>
                         </div>
                         <div className="overflow-x-auto rounded-lg border">
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
-                                        <th className="px-4 py-3">Tanggal</th>
-                                        <th className="px-4 py-3">Bank Asal</th>
+                                        <th className="px-4 py-3">
+                                            {t('fees.common.date')}
+                                        </th>
+                                        <th className="px-4 py-3">
+                                            {t('fees.parent.origin_bank')}
+                                        </th>
                                         <th className="px-4 py-3 text-right">
-                                            Jumlah
+                                            {t('fees.payments.table.amount')}
                                         </th>
                                         <th className="px-4 py-3">
                                             <span className="sr-only">
-                                                Tindakan
+                                                {t('fees.common.actions')}
                                             </span>
                                         </th>
                                     </tr>
@@ -534,7 +553,9 @@ export default function ParentFees({
                                                             )
                                                         }
                                                     >
-                                                        Batalkan
+                                                        {t(
+                                                            'fees.common.cancel',
+                                                        )}
                                                     </Button>
                                                 )}
                                             </td>
@@ -546,8 +567,7 @@ export default function ParentFees({
                                                 colSpan={4}
                                                 className="text-muted-foreground px-4 py-8 text-center"
                                             >
-                                                Tidak ada transfer menunggu
-                                                verifikasi.
+                                                {t('fees.parent.no_transfers')}
                                             </td>
                                         </tr>
                                     )}
@@ -563,8 +583,10 @@ export default function ParentFees({
                                     className="text-muted-foreground text-sm"
                                     aria-live="polite"
                                 >
-                                    Halaman {pendingTransfers.current_page} dari{' '}
-                                    {pendingTransfers.last_page}
+                                    {t('common.page_of', {
+                                        current: pendingTransfers.current_page,
+                                        last: pendingTransfers.last_page,
+                                    })}
                                 </p>
                                 <div className="flex gap-2">
                                     <Button
@@ -581,7 +603,7 @@ export default function ParentFees({
                                             )
                                         }
                                     >
-                                        Sebelumnya
+                                        {t('common.previous')}
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -598,7 +620,7 @@ export default function ParentFees({
                                             )
                                         }
                                     >
-                                        Berikutnya
+                                        {t('common.next')}
                                     </Button>
                                 </div>
                             </nav>
@@ -607,18 +629,25 @@ export default function ParentFees({
                 )}
 
                 <div className="space-y-3">
-                    <h2 className="text-lg font-medium">Riwayat Pembayaran</h2>
+                    <h2 className="text-lg font-medium">
+                        {t('fees.parent.payment_history')}
+                    </h2>
                     <div className="overflow-x-auto rounded-lg border">
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-left">
                                 <tr>
-                                    <th className="px-4 py-3">Tanggal</th>
-                                    <th className="px-4 py-3">Bank Asal</th>
-                                    <th className="px-4 py-3 text-right">
-                                        Jumlah
+                                    <th className="px-4 py-3">
+                                        {t('fees.common.date')}
                                     </th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th className="px-4 py-3" />
+                                    <th className="px-4 py-3">
+                                        {t('fees.parent.origin_bank')}
+                                    </th>
+                                    <th className="px-4 py-3 text-right">
+                                        {t('fees.payments.table.amount')}
+                                    </th>
+                                    <th className="px-4 py-3">
+                                        {t('fees.common.status')}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -660,7 +689,7 @@ export default function ParentFees({
                                                         setCancelling(payment)
                                                     }
                                                 >
-                                                    Batalkan
+                                                    {t('fees.common.cancel')}
                                                 </Button>
                                             )}
                                             {payment.can_view_receipt && (
@@ -672,7 +701,9 @@ export default function ParentFees({
                                                     rel="noreferrer"
                                                     className="font-medium underline"
                                                 >
-                                                    Cetak Kuitansi
+                                                    {t(
+                                                        'fees.common.print_receipt',
+                                                    )}
                                                 </a>
                                             )}
                                         </td>
@@ -685,7 +716,7 @@ export default function ParentFees({
                                             colSpan={5}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Belum ada pembayaran.
+                                            {t('fees.parent.no_payments')}
                                         </td>
                                     </tr>
                                 )}
@@ -704,7 +735,9 @@ export default function ParentFees({
                 }}
             >
                 <DialogContent>
-                    <DialogTitle>Batalkan transfer?</DialogTitle>
+                    <DialogTitle>
+                        {t('fees.parent.cancel_transfer_confirm')}
+                    </DialogTitle>
                     <DialogDescription>
                         {cancelling &&
                             `Transfer ${formatRupiah(cancelling.amount)} tanggal ${cancelling.payment_date} akan ditandai sebagai dibatalkan oleh wali. Bukti tetap disimpan.`}
@@ -715,15 +748,15 @@ export default function ParentFees({
                             disabled={cancelForm.processing}
                             onClick={() => setCancelling(null)}
                         >
-                            Kembali
+                            {t('fees.common.back')}
                         </Button>
                         <Button
                             variant="destructive"
                             disabled={cancelForm.processing}
                             onClick={cancelTransfer}
                         >
-                            {cancelForm.processing && <Spinner />} Batalkan
-                            transfer
+                            {cancelForm.processing && <Spinner />}{' '}
+                            {t('fees.parent.cancel_transfer')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -732,10 +765,11 @@ export default function ParentFees({
             {canUpload && (
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogContent className="max-h-[90dvh] grid-rows-[auto_auto_minmax(0,1fr)_auto]">
-                        <DialogTitle>Unggah Bukti Transfer</DialogTitle>
+                        <DialogTitle>
+                            {t('fees.parent.upload_proof')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Pembayaran akan diverifikasi oleh sekolah sebelum
-                            tagihan dinyatakan lunas.
+                            {t('fees.parent.transfer_warning')}
                         </DialogDescription>
 
                         <div className="space-y-4 overflow-y-auto pr-1">
@@ -749,7 +783,9 @@ export default function ParentFees({
                                             {bill.title} - {bill.student_name}
                                             <span className="text-muted-foreground">
                                                 {' '}
-                                                · dapat diklaim{' '}
+                                                · {t(
+                                                    'fees.parent.claimable',
+                                                )}{' '}
                                                 {formatRupiah(bill.claimable)}
                                             </span>
                                         </span>
@@ -776,7 +812,9 @@ export default function ParentFees({
                                     }
                                 />
                                 <div className="flex justify-between rounded-lg border p-3 text-sm">
-                                    <span>Total transfer</span>
+                                    <span>
+                                        {t('fees.parent.total_transfer')}
+                                    </span>
                                     <span className="font-semibold tabular-nums">
                                         {formatRupiah(String(totalCents / 100))}
                                     </span>
@@ -785,7 +823,7 @@ export default function ParentFees({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="payment_date">
-                                    Tanggal Transfer
+                                    {t('fees.parent.transfer_date')}
                                 </Label>
                                 <Input
                                     id="payment_date"
@@ -804,7 +842,9 @@ export default function ParentFees({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="origin_bank">Bank Asal</Label>
+                                <Label htmlFor="origin_bank">
+                                    {t('fees.parent.origin_bank')}
+                                </Label>
                                 <Input
                                     id="origin_bank"
                                     maxLength={100}
@@ -821,7 +861,7 @@ export default function ParentFees({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="proof">
-                                    Bukti Transfer (JPG, PNG, PDF, maks. 5 MB)
+                                    {t('fees.parent.proof_file')}
                                 </Label>
                                 <Input
                                     id="proof"
@@ -838,7 +878,9 @@ export default function ParentFees({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="notes">Catatan</Label>
+                                <Label htmlFor="notes">
+                                    {t('fees.common.notes')}
+                                </Label>
                                 <Input
                                     id="notes"
                                     maxLength={255}
@@ -862,7 +904,7 @@ export default function ParentFees({
                                 variant="outline"
                                 onClick={() => setOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="button"
@@ -874,7 +916,7 @@ export default function ParentFees({
                                 onClick={submit}
                             >
                                 {form.processing && <Spinner />}
-                                Kirim
+                                {t('fees.parent.submit')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

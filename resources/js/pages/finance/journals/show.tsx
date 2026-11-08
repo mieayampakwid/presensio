@@ -93,7 +93,7 @@ export default function JournalShow({
         ],
     });
 
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
 
     const [isReverseOpen, setIsReverseOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -144,8 +144,8 @@ export default function JournalShow({
                             className="mb-2"
                         >
                             <Link href="/finance/journals">
-                                <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
-                                ke Daftar Jurnal
+                                <ArrowLeft className="mr-1 h-4 w-4" />{' '}
+                                {t('finance.journals.show.back')}
                             </Link>
                         </Button>
                         <Heading
@@ -163,7 +163,7 @@ export default function JournalShow({
                             className="text-sm underline"
                             href={OverpaymentController.show(overpayment_id)}
                         >
-                            Kelebihan pembayaran #{overpayment_id}
+                            {t('fees.overpayments.title')} #{overpayment_id}
                         </Link>
                     )}
                     {canManage &&
@@ -180,7 +180,9 @@ export default function JournalShow({
                                                 href={`/finance/journals/${journal.id}/edit`}
                                             >
                                                 <Pencil className="mr-1 h-4 w-4" />{' '}
-                                                Edit Draf
+                                                {t(
+                                                    'finance.journals.show.edit_draft',
+                                                )}
                                             </Link>
                                         </Button>
 
@@ -193,7 +195,7 @@ export default function JournalShow({
                                             }
                                         >
                                             <Trash2 className="mr-1 h-4 w-4" />{' '}
-                                            Hapus
+                                            {t('common.delete')}
                                         </Button>
 
                                         <Button
@@ -201,7 +203,7 @@ export default function JournalShow({
                                             onClick={handlePostDraft}
                                         >
                                             <Send className="mr-1 h-4 w-4" />{' '}
-                                            Posting ke Buku Besar
+                                            {t('finance.journals.form.post')}
                                         </Button>
                                     </>
                                 ) : (
@@ -211,7 +213,7 @@ export default function JournalShow({
                                         onClick={() => setIsReverseOpen(true)}
                                     >
                                         <RotateCcw className="mr-1 h-4 w-4" />{' '}
-                                        Buat Jurnal Pembalik
+                                        {t('finance.journals.show.reverse')}
                                     </Button>
                                 )}
                             </div>
@@ -222,7 +224,7 @@ export default function JournalShow({
                 <div className="bg-card grid grid-cols-2 gap-4 rounded-lg border p-4 text-sm sm:grid-cols-4">
                     <div>
                         <span className="text-muted-foreground block text-xs">
-                            Tanggal Transaksi
+                            {t('finance.journals.form.date')}
                         </span>
                         <span className="font-semibold">
                             {journal.entry_date}
@@ -231,20 +233,24 @@ export default function JournalShow({
 
                     <div>
                         <span className="text-muted-foreground block text-xs">
-                            Status
+                            {t('finance.common.status')}
                         </span>
                         {journal.status === 'posted' ? (
                             <Badge variant="default" className="bg-emerald-600">
-                                Diposting
+                                {t('finance.journals.table.posted')}
                             </Badge>
                         ) : (
-                            <Badge variant="secondary">Draf</Badge>
+                            <Badge variant="secondary">
+                                {t('finance.journals.table.draft')}
+                            </Badge>
                         )}
                     </div>
 
                     <div>
                         <span className="text-muted-foreground block text-xs">
-                            Sumber Transaksi
+                            {t('finance.journals.table.source', {
+                                defaultValue: 'Sumber Transaksi',
+                            })}
                         </span>
                         <span className="font-medium">
                             {journal.source_type_label}
@@ -253,7 +259,9 @@ export default function JournalShow({
 
                     <div>
                         <span className="text-muted-foreground block text-xs">
-                            Dibuat Oleh
+                            {t('finance.periods.table.closed_by', {
+                                defaultValue: 'Dibuat Oleh',
+                            })}
                         </span>
                         <span className="font-medium">
                             {journal.author ?? 'Sistem'}
@@ -263,7 +271,9 @@ export default function JournalShow({
                     {journal.reverses_entry && (
                         <div className="col-span-2 rounded border border-amber-200 bg-amber-50 p-3 text-xs sm:col-span-4 dark:bg-amber-950/30">
                             <span className="font-semibold text-amber-800 dark:text-amber-300">
-                                Membalikkan Jurnal:{' '}
+                                {t('finance.journals.show.reverses', {
+                                    defaultValue: 'Membalikkan Jurnal:',
+                                })}{' '}
                             </span>
                             <Link
                                 href={`/finance/journals/${journal.reverses_entry.id}`}
@@ -278,7 +288,9 @@ export default function JournalShow({
                     {journal.reversal_entries.length > 0 && (
                         <div className="col-span-2 rounded border border-rose-200 bg-rose-50 p-3 text-xs sm:col-span-4 dark:bg-rose-950/30">
                             <span className="font-semibold text-rose-800 dark:text-rose-300">
-                                Dibalikkan Oleh Jurnal:{' '}
+                                {t('finance.journals.show.reversed_by', {
+                                    defaultValue: 'Dibalikkan Oleh Jurnal:',
+                                })}{' '}
                             </span>
                             {journal.reversal_entries.map((rev) => (
                                 <Link
@@ -300,7 +312,10 @@ export default function JournalShow({
                                     download
                                 >
                                     <Download className="mr-1.5 h-4 w-4" />{' '}
-                                    Unduh Lampiran Nota/Kuitansi
+                                    {t('finance.common.download', {
+                                        defaultValue:
+                                            'Unduh Lampiran Nota/Kuitansi',
+                                    })}
                                 </a>
                             </Button>
                         </div>
@@ -311,7 +326,7 @@ export default function JournalShow({
                 <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="bg-muted/30 border-b p-4">
                         <span className="text-sm font-semibold">
-                            Ayat Jurnal (Debit & Kredit)
+                            {t('finance.journals.form.lines_title')}
                         </span>
                     </div>
 
@@ -320,22 +335,22 @@ export default function JournalShow({
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Kode
+                                        {t('finance.accounts.table.code')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Nama Akun
+                                        {t('finance.accounts.table.name')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Debit (Rp)
+                                        {t('finance.common.debit')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Kredit (Rp)
+                                        {t('finance.common.credit')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Siswa
+                                        {t('finance.common.student')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Catatan / Memo
+                                        {t('finance.common.description')}
                                     </th>
                                 </tr>
                             </thead>
@@ -392,12 +407,12 @@ export default function JournalShow({
                             {journal.is_balanced ? (
                                 <span className="inline-flex items-center text-xs font-medium text-emerald-600">
                                     <CheckCircle2 className="mr-1 h-4 w-4" />{' '}
-                                    Seimbang (Balanced)
+                                    {t('finance.common.balanced')}
                                 </span>
                             ) : (
                                 <span className="text-destructive inline-flex items-center text-xs font-medium">
                                     <AlertCircle className="mr-1 h-4 w-4" />{' '}
-                                    Tidak Seimbang
+                                    {t('finance.common.unbalanced')}
                                 </span>
                             )}
                         </div>
@@ -405,24 +420,22 @@ export default function JournalShow({
                         <div className="flex items-center gap-6">
                             <div>
                                 <span className="text-muted-foreground mr-2">
-                                    Total Debit:
+                                    {t(
+                                        'finance.reports.trial_balance.total_debit',
+                                    )}
                                 </span>
                                 <span className="font-bold">
-                                    Rp{' '}
-                                    {Number(journal.total_debit).toLocaleString(
-                                        locale,
-                                    )}
+                                    {`Rp ${Number(journal.total_debit).toLocaleString(locale)}`}
                                 </span>
                             </div>
                             <div>
                                 <span className="text-muted-foreground mr-2">
-                                    Total Kredit:
+                                    {t(
+                                        'finance.reports.trial_balance.total_credit',
+                                    )}
                                 </span>
                                 <span className="font-bold">
-                                    Rp{' '}
-                                    {Number(
-                                        journal.total_credit,
-                                    ).toLocaleString(locale)}
+                                    {`Rp ${Number(journal.total_credit).toLocaleString(locale)}`}
                                 </span>
                             </div>
                         </div>
@@ -435,19 +448,22 @@ export default function JournalShow({
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            Buat Jurnal Pembalik (Reversal)
+                            {t('finance.journals.show.reverse_dialog.title')}
                         </DialogTitle>
                         <DialogDescription>
-                            Sistem akan membuat ayat jurnal baru yang membalik
-                            debit dan kredit dari jurnal{' '}
-                            <strong>{journal.number}</strong> secara otomatis.
+                            {t(
+                                'finance.journals.show.reverse_dialog.description',
+                                {
+                                    number: journal.number ?? '',
+                                },
+                            )}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleReverseSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="reverse-date">
-                                Tanggal Pembalikan
+                                {t('finance.journals.show.reverse_dialog.date')}
                             </Label>
                             <Input
                                 id="reverse-date"
@@ -462,11 +478,15 @@ export default function JournalShow({
 
                         <div className="space-y-2">
                             <Label htmlFor="reverse-reason">
-                                Alasan Pembalikan
+                                {t(
+                                    'finance.journals.show.reverse_dialog.reason',
+                                )}
                             </Label>
                             <Input
                                 id="reverse-reason"
-                                placeholder="Contoh: Koreksi salah catat nominal / pembatalan nota"
+                                placeholder={t(
+                                    'finance.journals.show.reverse_dialog.reason_placeholder',
+                                )}
                                 value={reverseForm.data.reason}
                                 onChange={(e) =>
                                     reverseForm.setData(
@@ -489,13 +509,15 @@ export default function JournalShow({
                                 variant="outline"
                                 onClick={() => setIsReverseOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={reverseForm.processing}
                             >
-                                Konfirmasi Balikkan Jurnal
+                                {t(
+                                    'finance.journals.show.reverse_dialog.confirm',
+                                )}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -506,9 +528,11 @@ export default function JournalShow({
             <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Hapus Draf Jurnal</DialogTitle>
+                        <DialogTitle>
+                            {t('finance.journals.show.delete_draft')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Apakah Anda yakin ingin menghapus draf jurnal ini?
+                            {t('finance.journals.show.delete_confirm')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -518,14 +542,14 @@ export default function JournalShow({
                             variant="outline"
                             onClick={() => setIsDeleteOpen(false)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             type="button"
                             variant="destructive"
                             onClick={handleDeleteDraft}
                         >
-                            Hapus Draf
+                            {t('finance.journals.show.delete_draft')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

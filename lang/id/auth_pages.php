@@ -54,5 +54,6 @@ return [
         'toggle_code' => 'masuk menggunakan kode autentikasi',
         'toggle_recovery' => 'masuk menggunakan kode pemulihan',
         'continue' => 'Lanjutkan',
+        'or_you_can' => 'atau Anda dapat',
     ],
 ];

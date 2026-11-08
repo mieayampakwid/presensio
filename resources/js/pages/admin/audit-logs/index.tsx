@@ -44,11 +44,14 @@ type Props = {
 };
 
 export default function AuditLogsIndex({ logs, filters }: Props) {
-    setLayoutProps({
-        breadcrumbs: [{ title: 'Admin' }, { title: 'Audit Logs' }],
-    });
+    const { t, locale } = useTranslation();
 
-    const { locale } = useTranslation();
+    setLayoutProps({
+        breadcrumbs: [
+            { title: t('audit_logs.breadcrumbs.admin') },
+            { title: t('audit_logs.breadcrumbs.audit_logs') },
+        ],
+    });
 
     const [filterForm, setFilterForm] = useState<Filters>({
         auditable_type: filters.auditable_type ?? '',
@@ -90,12 +93,12 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
 
     return (
         <>
-            <Head title="Audit Logs" />
+            <Head title={t('audit_logs.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Audit Logs"
-                    description="Append-only record of academic, administrative, and financial mutations."
+                    title={t('audit_logs.title')}
+                    description={t('audit_logs.description')}
                 />
 
                 <form
@@ -104,10 +107,12 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                 >
                     <div>
                         <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                            Entity Type
+                            {t('audit_logs.filters.entity_type')}
                         </label>
                         <Input
-                            placeholder="e.g. User"
+                            placeholder={t(
+                                'audit_logs.filters.entity_type_placeholder',
+                            )}
                             value={filterForm.auditable_type}
                             onChange={(e) =>
                                 setFilterForm({
@@ -120,11 +125,13 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     </div>
                     <div>
                         <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                            Entity ID
+                            {t('audit_logs.filters.entity_id')}
                         </label>
                         <Input
                             type="number"
-                            placeholder="e.g. 1"
+                            placeholder={t(
+                                'audit_logs.filters.entity_id_placeholder',
+                            )}
                             value={filterForm.auditable_id}
                             onChange={(e) =>
                                 setFilterForm({
@@ -137,11 +144,13 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     </div>
                     <div>
                         <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                            User ID
+                            {t('audit_logs.filters.user_id')}
                         </label>
                         <Input
                             type="number"
-                            placeholder="e.g. 1"
+                            placeholder={t(
+                                'audit_logs.filters.user_id_placeholder',
+                            )}
                             value={filterForm.user_id}
                             onChange={(e) =>
                                 setFilterForm({
@@ -154,7 +163,7 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     </div>
                     <div>
                         <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                            From Date
+                            {t('audit_logs.filters.from_date')}
                         </label>
                         <Input
                             type="date"
@@ -170,7 +179,7 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                     </div>
                     <div>
                         <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                            To Date
+                            {t('audit_logs.filters.to_date')}
                         </label>
                         <Input
                             type="date"
@@ -191,11 +200,11 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                             size="sm"
                             onClick={handleReset}
                         >
-                            Reset
+                            {t('audit_logs.filters.reset')}
                         </Button>
                         <Button type="submit" size="sm" className="gap-1.5">
                             <Filter className="size-3.5" />
-                            Filter
+                            {t('audit_logs.filters.filter')}
                         </Button>
                     </div>
                 </form>
@@ -205,22 +214,22 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Timestamp
+                                    {t('audit_logs.table.timestamp')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Actor
+                                    {t('audit_logs.table.actor')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Action
+                                    {t('audit_logs.table.action')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Target
+                                    {t('audit_logs.table.target')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Changes
+                                    {t('audit_logs.table.changes')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Reason / IP
+                                    {t('audit_logs.table.reason_ip')}
                                 </th>
                             </tr>
                         </thead>
@@ -240,7 +249,7 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                                             log.user.username
                                         ) : (
                                             <span className="text-muted-foreground italic">
-                                                System
+                                                {t('audit_logs.table.system')}
                                             </span>
                                         )}
                                     </td>
@@ -301,7 +310,7 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
                                         colSpan={6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No audit log entries found.
+                                        {t('audit_logs.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -311,33 +320,38 @@ export default function AuditLogsIndex({ logs, filters }: Props) {
 
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                     <span>
-                        Page {logs.current_page} of {logs.last_page} (
-                        {logs.total} entries)
+                        {t('audit_logs.pagination.summary', {
+                            current: logs.current_page,
+                            last: logs.last_page,
+                            total: logs.total,
+                        })}
                     </span>
                     <div className="flex gap-2">
                         {logs.prev_page_url ? (
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={logs.prev_page_url} preserveState>
                                     <ChevronLeft className="mr-1 size-4" />{' '}
-                                    Previous
+                                    {t('common.previous')}
                                 </Link>
                             </Button>
                         ) : (
                             <Button variant="outline" size="sm" disabled>
-                                <ChevronLeft className="mr-1 size-4" /> Previous
+                                <ChevronLeft className="mr-1 size-4" />{' '}
+                                {t('common.previous')}
                             </Button>
                         )}
 
                         {logs.next_page_url ? (
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={logs.next_page_url} preserveState>
-                                    Next{' '}
+                                    {t('common.next')}{' '}
                                     <ChevronRight className="ml-1 size-4" />
                                 </Link>
                             </Button>
                         ) : (
                             <Button variant="outline" size="sm" disabled>
-                                <ChevronRight className="ml-1 size-4" /> Next
+                                <ChevronRight className="ml-1 size-4" />{' '}
+                                {t('common.next')}
                             </Button>
                         )}
                     </div>

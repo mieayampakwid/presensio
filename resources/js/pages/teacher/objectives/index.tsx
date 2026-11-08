@@ -1,5 +1,6 @@
 import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { Copy, Plus, Target, Trash2, Edit2, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -67,10 +68,12 @@ export default function ObjectivesIndex({
     canManage,
     hasPreviousYear,
 }: Props) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
             {
-                title: 'Tujuan Pembelajaran',
+                title: t('grading.objectives.title'),
                 href: '/objectives',
             },
         ],
@@ -181,14 +184,14 @@ export default function ObjectivesIndex({
 
     return (
         <>
-            <Head title="Tujuan Pembelajaran" />
+            <Head title={t('grading.objectives.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <Heading
-                            title="Tujuan Pembelajaran (TP)"
-                            description="Kelola tujuan pembelajaran Kurikulum Merdeka per mata pelajaran dan tingkat kelas"
+                            title={t('grading.objectives.title')}
+                            description={t('grading.objectives.description')}
                         />
                     </div>
                     {canManage && (
@@ -199,7 +202,9 @@ export default function ObjectivesIndex({
                                     onClick={handleCopyPreviousYear}
                                 >
                                     <Copy className="mr-2 h-4 w-4" />
-                                    Salin dari Tahun Lalu
+                                    {t(
+                                        'grading.objectives.copy_from_last_year',
+                                    )}
                                 </Button>
                             )}
                             <Button
@@ -211,7 +216,7 @@ export default function ObjectivesIndex({
                                 }
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                Tambah TP
+                                {t('grading.objectives.add_tp')}
                             </Button>
                         </div>
                     )}
@@ -227,7 +232,7 @@ export default function ObjectivesIndex({
                             className="ml-auto"
                             onClick={() => setErrorMessage(null)}
                         >
-                            Tutup
+                            {t('grading.objectives.close')}
                         </Button>
                     </div>
                 )}
@@ -235,7 +240,7 @@ export default function ObjectivesIndex({
                 {/* Filters */}
                 <div className="grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-3">
                     <div className="space-y-1.5">
-                        <Label>Tahun Ajaran</Label>
+                        <Label>{t('grading.objectives.academic_year')}</Label>
                         <Select
                             value={selectedYearId ? String(selectedYearId) : ''}
                             onValueChange={(val) =>
@@ -256,7 +261,7 @@ export default function ObjectivesIndex({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label>Mata Pelajaran</Label>
+                        <Label>{t('grading.objectives.subject')}</Label>
                         <Select
                             value={
                                 selectedSubjectId
@@ -281,7 +286,7 @@ export default function ObjectivesIndex({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label>Tingkat Kelas</Label>
+                        <Label>{t('grading.objectives.grade_level')}</Label>
                         <Select
                             value={
                                 selectedGradeLevel
@@ -298,7 +303,7 @@ export default function ObjectivesIndex({
                             <SelectContent>
                                 {gradeLevels.map((lvl) => (
                                     <SelectItem key={lvl} value={String(lvl)}>
-                                        Kelas {lvl}
+                                        {t('grading.objectives.class')} {lvl}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -311,14 +316,13 @@ export default function ObjectivesIndex({
                 !selectedSubjectId ||
                 !selectedGradeLevel ? (
                     <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
-                        Pilih tahun ajaran, mata pelajaran, dan tingkat kelas
-                        untuk melihat tujuan pembelajaran.
+                        {t('grading.objectives.prompt_select')}
                     </div>
                 ) : objectives.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center">
                         <Target className="text-muted-foreground/60 mx-auto h-12 w-12" />
                         <h3 className="mt-4 text-base font-semibold">
-                            Belum Ada Tujuan Pembelajaran
+                            {t('grading.objectives.empty')}
                         </h3>
                         <p className="text-muted-foreground mt-1 text-sm">
                             {canManage
@@ -332,17 +336,19 @@ export default function ObjectivesIndex({
                             <thead className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Urutan
+                                        {t('grading.objectives.order')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Kode
+                                        {t('grading.objectives.code')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Deskripsi Tujuan Pembelajaran
+                                        {t(
+                                            'grading.objectives.description_label',
+                                        )}
                                     </th>
                                     {canManage && (
                                         <th className="px-4 py-3 text-right font-medium">
-                                            Aksi
+                                            {t('grading.objectives.actions')}
                                         </th>
                                     )}
                                 </tr>
@@ -410,16 +416,19 @@ export default function ObjectivesIndex({
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Tambah Tujuan Pembelajaran</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.objectives.add_tp_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Tujuan pembelajaran digunakan dalam asesmen lingkup
-                            materi dan deskripsi capaian rapor.
+                            {t('grading.objectives.description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleCreateSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="create-code">Kode TP</Label>
+                            <Label htmlFor="create-code">
+                                {t('grading.objectives.code_label')}
+                            </Label>
                             <Input
                                 id="create-code"
                                 value={createForm.data.code}
@@ -438,7 +447,7 @@ export default function ObjectivesIndex({
 
                         <div className="space-y-1.5">
                             <Label htmlFor="create-description">
-                                Deskripsi
+                                {t('grading.objectives.description_label')}
                             </Label>
                             <textarea
                                 id="create-description"
@@ -465,7 +474,9 @@ export default function ObjectivesIndex({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="create-sort">Urutan</Label>
+                            <Label htmlFor="create-sort">
+                                {t('grading.objectives.order')}
+                            </Label>
                             <Input
                                 id="create-sort"
                                 type="number"
@@ -485,13 +496,13 @@ export default function ObjectivesIndex({
                                 variant="outline"
                                 onClick={() => setIsCreateOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={createForm.processing}
                             >
-                                Simpan
+                                {t('grading.objectives.save')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -505,15 +516,19 @@ export default function ObjectivesIndex({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Ubah Tujuan Pembelajaran</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.objectives.edit_tp_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Perbarui kode atau deskripsi tujuan pembelajaran.
+                            {t('grading.objectives.edit_tp_description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleEditSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="edit-code">Kode TP</Label>
+                            <Label htmlFor="edit-code">
+                                {t('grading.objectives.code_label')}
+                            </Label>
                             <Input
                                 id="edit-code"
                                 value={editForm.data.code}
@@ -530,7 +545,9 @@ export default function ObjectivesIndex({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="edit-description">Deskripsi</Label>
+                            <Label htmlFor="edit-description">
+                                {t('grading.objectives.description_label')}
+                            </Label>
                             <textarea
                                 id="edit-description"
                                 className="border-input placeholder:text-muted-foreground dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -555,7 +572,9 @@ export default function ObjectivesIndex({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="edit-sort">Urutan</Label>
+                            <Label htmlFor="edit-sort">
+                                {t('grading.objectives.order')}
+                            </Label>
                             <Input
                                 id="edit-sort"
                                 type="number"
@@ -575,13 +594,13 @@ export default function ObjectivesIndex({
                                 variant="outline"
                                 onClick={() => setEditingObjective(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={editForm.processing}
                             >
-                                Perbarui
+                                {t('grading.objectives.update')}
                             </Button>
                         </DialogFooter>
                     </form>

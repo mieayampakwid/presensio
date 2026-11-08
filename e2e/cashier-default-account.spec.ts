@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 
 test.describe('Spec 23 - Cashier Default Cash Account', () => {
-    test('admin configures cashier default cash account, cashier pre-selects it, and falls back to first cash account when null', async ({ page }) => {
+    test('admin configures cashier default cash account, cashier pre-selects it, and falls back to first cash account when null', async ({
+        page,
+    }) => {
         // 1. Login as admin
         await page.goto('http://localhost/login');
         await page.fill('input[name="username"]', 'admin');
@@ -13,13 +15,19 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         // 2. Visit school settings with default (null) setting
         await page.goto('http://localhost/settings/school');
         await expect(page.getByText('Akun kas default kasir')).toBeVisible();
-        await expect(page.locator('#cashier_default_cash_account_id')).toHaveValue('');
+        await expect(
+            page.locator('#cashier_default_cash_account_id'),
+        ).toHaveValue('');
 
         // Verify settings sidebar is NOT duplicated (only one settings navigation exists)
         await expect(page.locator('nav[aria-label="Settings"]')).toHaveCount(1);
 
         // Verify notification banner for unconfigured cashier account is visible to admin
-        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).toBeVisible();
+        await expect(
+            page.getByText(
+                /Default cashier cash account has not been configured|Akun kas default kasir belum diatur/,
+            ),
+        ).toBeVisible();
 
         // 3. Visit Cashier with a student selected (setting=null -> pre-selects first active cash account: 1-1100 Kas Tunai, ID=1)
         await page.goto('http://localhost/fees/cashier?students[]=1');
@@ -31,12 +39,19 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         await page.getByRole('button', { name: 'Save School Profile' }).click();
 
         // Verify setting updated in database
-        const dbCheck1 = execSync('./vendor/bin/sail artisan tinker --execute \'echo App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id;\'').toString().trim();
+        const dbCheck1 = execSync(
+            "./vendor/bin/sail artisan tinker --execute 'echo App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id;'",
+        )
+            .toString()
+            .trim();
         expect(dbCheck1).toBe('2');
 
-
         // Verify notification banner disappears once configured
-        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).not.toBeVisible();
+        await expect(
+            page.getByText(
+                /Default cashier cash account has not been configured|Akun kas default kasir belum diatur/,
+            ),
+        ).not.toBeVisible();
         // 5. Visit Cashier (setting=2 -> pre-selects account ID 2)
         await page.goto('http://localhost/fees/cashier?students[]=1');
         await expect(page.locator('#deposit_account_id')).toHaveValue('2');
@@ -47,12 +62,19 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         await page.getByRole('button', { name: 'Save School Profile' }).click();
 
         // Verify setting reset in database
-        const dbCheck2 = execSync('./vendor/bin/sail artisan tinker --execute \'echo var_export(App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id, true);\'').toString().trim();
+        const dbCheck2 = execSync(
+            "./vendor/bin/sail artisan tinker --execute 'echo var_export(App\\Models\\SchoolSetting::first()->cashier_default_cash_account_id, true);'",
+        )
+            .toString()
+            .trim();
         expect(dbCheck2).toBe('NULL');
 
-
         // Verify notification banner reappears after reset to null
-        await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).toBeVisible();
+        await expect(
+            page.getByText(
+                /Default cashier cash account has not been configured|Akun kas default kasir belum diatur/,
+            ),
+        ).toBeVisible();
         // 7. Visit Cashier (setting=null -> falls back to first active cash account, ID=1)
         await page.goto('http://localhost/fees/cashier?students[]=1');
         await expect(page.locator('#deposit_account_id')).toHaveValue('1');

@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     ArrowLeft,
     Award,
@@ -103,6 +104,7 @@ export default function GradebookShow({
     students,
     canWrite,
 }: Props) {
+    const { t } = useTranslation();
     setLayoutProps({
         breadcrumbs: [
             {
@@ -277,7 +279,9 @@ export default function GradebookShow({
     return (
         <>
             <Head
-                title={`Buku Nilai - ${course.subject_name} (${course.class_name})`}
+                title={t('grading.gradebook.title', {
+                    course: `${course.subject_name} (${course.class_name})`,
+                })}
             />
 
             <div className="space-y-6 p-4">
@@ -290,30 +294,35 @@ export default function GradebookShow({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Kembali
+                                {t('grading.gradebook.back')}
                             </Link>
                             <span>•</span>
                             <Link
                                 href={`/courses/${course.id}/assessments?semester=${semester.id}`}
                                 className="hover:underline"
                             >
-                                Kelola Asesmen
+                                {t('grading.gradebook.manage_assessments')}
                             </Link>
                             <span>•</span>
                             <Link
                                 href={`/courses/${course.id}/results?semester=${semester.id}`}
                                 className="hover:underline"
                             >
-                                Capaian Rapor
+                                {t('grading.gradebook.report_achievements')}
                             </Link>
                             <span>•</span>
                             <span>{course.class_name}</span>
                             <span>•</span>
-                            <span>KKTP: {course.passing_threshold}</span>
+                            <span>
+                                {t('grading.courses.kktp')}{' '}
+                                {course.passing_threshold}
+                            </span>
                             <span>•</span>
                             <span>
-                                Bobot: Lingkup {weights.scope}% / Akhir{' '}
-                                {weights.final}%
+                                {t('grading.gradebook.weight_summary', {
+                                    topic: weights.scope,
+                                    end: weights.final,
+                                })}
                             </span>
                         </div>
                         <Heading
@@ -328,7 +337,9 @@ export default function GradebookShow({
                                 href={`/courses/${course.id}/results?semester=${semester.id}`}
                             >
                                 <Award className="mr-1.5 h-4 w-4" />
-                                <span>Capaian Rapor</span>
+                                <span>
+                                    {t('grading.gradebook.report_achievements')}
+                                </span>
                             </Link>
                         </Button>
                         {canWrite && !is_finalized && (
@@ -339,7 +350,7 @@ export default function GradebookShow({
                                     onClick={() => setIsWeightsOpen(true)}
                                 >
                                     <Sliders className="mr-2 h-4 w-4" />
-                                    Atur Bobot
+                                    {t('grading.gradebook.set_weights')}
                                 </Button>
                                 <Button
                                     size="sm"
@@ -358,7 +369,7 @@ export default function GradebookShow({
                                 variant="secondary"
                                 className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"
                             >
-                                Sudah Difinalisasi (Terkunci)
+                                {t('grading.gradebook.finalized_badge')}
                             </Badge>
                         )}
                     </div>
@@ -374,7 +385,7 @@ export default function GradebookShow({
                             className="ml-auto"
                             onClick={() => setSaveMessage(null)}
                         >
-                            Tutup
+                            {t('grading.objectives.close')}
                         </Button>
                     </div>
                 )}
@@ -385,11 +396,17 @@ export default function GradebookShow({
                         <Calendar className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-sm font-medium">
-                                Semester {semester.name}
+                                {t('grading.gradebook.semester')}{' '}
+                                {semester.name}
                             </p>
                             <p className="text-muted-foreground text-xs">
-                                {students.length} Siswa • {assessments.length}{' '}
-                                Asesmen
+                                {t(
+                                    'grading.gradebook.students_assessments_count',
+                                    {
+                                        students: students.length,
+                                        assessments: assessments.length,
+                                    },
+                                )}
                             </p>
                         </div>
                     </div>
@@ -421,13 +438,12 @@ export default function GradebookShow({
                 {/* Spreadsheet Gradebook Grid */}
                 {orderedAssessments.length === 0 ? (
                     <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
-                        Belum ada asesmen untuk semester ini. Tambahkan asesmen
-                        terlebih dahulu di menu{' '}
+                        {t('grading.gradebook.table.empty')}{' '}
                         <Link
                             href={`/courses/${course.id}/assessments?semester=${semester.id}`}
                             className="text-primary font-semibold underline"
                         >
-                            Kelola Asesmen
+                            {t('grading.gradebook.manage_assessments')}
                         </Link>
                         .
                     </div>
@@ -441,7 +457,9 @@ export default function GradebookShow({
                                         className="bg-muted/90 sticky left-0 z-20 border-r px-3 py-2 font-semibold"
                                         colSpan={2}
                                     >
-                                        Data Siswa
+                                        {t(
+                                            'grading.gradebook.table.student_data',
+                                        )}
                                     </th>
 
                                     {groupedAssessments.summativeScope.length >
@@ -453,8 +471,10 @@ export default function GradebookShow({
                                                     .summativeScope.length * 2
                                             }
                                         >
-                                            Sumatif Lingkup Materi (
-                                            {weights.scope}%)
+                                            {t(
+                                                'grading.gradebook.table.summative_topic',
+                                                { count: weights.scope },
+                                            )}
                                         </th>
                                     )}
 
@@ -467,8 +487,10 @@ export default function GradebookShow({
                                                     .summativeFinal.length * 2
                                             }
                                         >
-                                            Sumatif Akhir Semester (
-                                            {weights.final}%)
+                                            {t(
+                                                'grading.gradebook.table.summative_end',
+                                                { count: weights.final },
+                                            )}
                                         </th>
                                     )}
 
@@ -481,7 +503,9 @@ export default function GradebookShow({
                                                     .length
                                             }
                                         >
-                                            Formatif (Umpan Balik)
+                                            {t(
+                                                'grading.gradebook.table.formative',
+                                            )}
                                         </th>
                                     )}
 
@@ -489,17 +513,17 @@ export default function GradebookShow({
                                         className="px-3 py-2 text-center font-semibold"
                                         colSpan={3}
                                     >
-                                        Ringkasan Nilai
+                                        {t('grading.gradebook.table.summary')}
                                     </th>
                                 </tr>
 
                                 {/* Second header: Individual assessments */}
                                 <tr className="text-muted-foreground border-b">
                                     <th className="bg-muted/90 sticky left-0 z-20 w-12 border-r px-3 py-2 font-medium">
-                                        NIS
+                                        {t('grading.gradebook.table.nis')}
                                     </th>
                                     <th className="bg-muted/90 sticky left-12 z-20 min-w-[160px] border-r px-3 py-2 font-medium">
-                                        Nama Lengkap
+                                        {t('grading.gradebook.table.full_name')}
                                     </th>
 
                                     {orderedAssessments.map((a) => {
@@ -517,11 +541,16 @@ export default function GradebookShow({
                                                     </span>
                                                     <div className="flex items-center justify-between text-[10px]">
                                                         <span>
-                                                            Maks: {a.max_score}
+                                                            {t(
+                                                                'grading.gradebook.table.max',
+                                                            )}{' '}
+                                                            {a.max_score}
                                                         </span>
                                                         {a.released_at ? (
                                                             <span className="font-medium text-emerald-600">
-                                                                Dirilis
+                                                                {t(
+                                                                    'grading.gradebook.table.released',
+                                                                )}
                                                             </span>
                                                         ) : (
                                                             canWrite && (
@@ -534,7 +563,9 @@ export default function GradebookShow({
                                                                     }
                                                                     className="text-primary font-medium hover:underline"
                                                                 >
-                                                                    Rilis
+                                                                    {t(
+                                                                        'grading.gradebook.table.release',
+                                                                    )}
                                                                 </button>
                                                             )
                                                         )}
@@ -551,7 +582,10 @@ export default function GradebookShow({
                                                         {a.name}
                                                     </span>
                                                     <span className="text-[10px]">
-                                                        Maks: {a.max_score}
+                                                        {t(
+                                                            'grading.gradebook.table.max',
+                                                        )}{' '}
+                                                        {a.max_score}
                                                     </span>
                                                 </div>
                                             </th>
@@ -559,13 +593,17 @@ export default function GradebookShow({
                                     })}
 
                                     <th className="min-w-[70px] border-r px-2 py-2 text-center font-medium">
-                                        Nilai Rapor
+                                        {t(
+                                            'grading.gradebook.table.report_grade',
+                                        )}
                                     </th>
                                     <th className="min-w-[80px] border-r px-2 py-2 text-center font-medium">
-                                        Status
+                                        {t('grading.gradebook.table.status')}
                                     </th>
                                     <th className="min-w-[80px] px-2 py-2 text-center font-medium">
-                                        Kelengkapan
+                                        {t(
+                                            'grading.gradebook.table.completeness',
+                                        )}
                                     </th>
                                 </tr>
                             </thead>
@@ -785,7 +823,9 @@ export default function GradebookShow({
                                                         className="border-emerald-500 text-emerald-600"
                                                     >
                                                         <Check className="mr-1 h-3 w-3" />{' '}
-                                                        Lengkap
+                                                        {t(
+                                                            'grading.gradebook.table.complete',
+                                                        )}
                                                     </Badge>
                                                 ) : (
                                                     <Badge
@@ -793,7 +833,9 @@ export default function GradebookShow({
                                                         className="border-amber-400 text-amber-600"
                                                     >
                                                         <Clock className="mr-1 h-3 w-3" />{' '}
-                                                        Belum
+                                                        {t(
+                                                            'grading.gradebook.table.incomplete',
+                                                        )}
                                                     </Badge>
                                                 )}
                                             </td>
@@ -810,17 +852,20 @@ export default function GradebookShow({
             <Dialog open={isWeightsOpen} onOpenChange={setIsWeightsOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Atur Bobot Penilaian Semester</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.gradebook.weights_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Tentukan proporsi nilai sumatif lingkup materi dan
-                            sumatif akhir semester.
+                            {t('grading.gradebook.weights_dialog.description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSaveWeights} className="space-y-4">
                         <div className="space-y-1.5">
                             <Label htmlFor="weight-scope">
-                                Bobot Sumatif Lingkup Materi (%)
+                                {t(
+                                    'grading.gradebook.weights_dialog.topic_weight',
+                                )}
                             </Label>
                             <Input
                                 id="weight-scope"
@@ -835,7 +880,9 @@ export default function GradebookShow({
 
                         <div className="space-y-1.5">
                             <Label htmlFor="weight-final">
-                                Bobot Sumatif Akhir Semester (%)
+                                {t(
+                                    'grading.gradebook.weights_dialog.end_weight',
+                                )}
                             </Label>
                             <Input
                                 id="weight-final"
@@ -854,9 +901,11 @@ export default function GradebookShow({
                                 variant="outline"
                                 onClick={() => setIsWeightsOpen(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
-                            <Button type="submit">Simpan Bobot</Button>
+                            <Button type="submit">
+                                {t('grading.gradebook.weights_dialog.save')}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

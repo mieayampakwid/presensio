@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { create as createClass } from '@/routes/classes/announcements';
 import type { Announcement, ClassContext, PageData } from './types';
+import { useTranslation } from '@/hooks/use-translation';
 type Props = {
     announcements: PageData<Announcement>;
     filters: { q: string; from: string; to: string };
@@ -28,6 +29,7 @@ export default function Announcements({
     canManage,
     canCreate,
 }: Props) {
+    const { t } = useTranslation();
     const { errors } = usePage().props;
     const [query, setQuery] = useState(filters);
     const search = (event: FormEvent) => {
@@ -35,13 +37,13 @@ export default function Announcements({
         router.get(Reader.index.url(), query, { preserveState: true });
     };
     const title = classContext
-        ? `Pengumuman kelas ${classContext.name}`
+        ? t('announcements.class_feed_title', { name: classContext.name })
         : mode === 'manage'
-          ? 'Kelola pengumuman'
-          : 'Pengumuman';
+          ? t('announcements.manage_title')
+          : t('announcements.title');
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Pengumuman', href: '/announcements' },
+            { title: t('announcements.title'), href: '/announcements' },
             ...(classContext || mode === 'manage' ? [{ title }] : []),
         ],
     });
@@ -53,20 +55,20 @@ export default function Announcements({
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         title={title}
-                        description="Informasi resmi sekolah, tersimpan dan mudah ditemukan."
+                        description={t('announcements.description')}
                     />
                     <div className="flex flex-wrap gap-2">
                         {mode !== 'feed' && (
                             <Button variant="outline" asChild>
                                 <Link href={Reader.index()}>
-                                    Semua pengumuman
+                                    {t('announcements.all')}
                                 </Link>
                             </Button>
                         )}
                         {canManage && mode === 'feed' && (
                             <Button variant="outline" asChild>
                                 <Link href={AnnouncementController.manage()}>
-                                    Kelola pengumuman
+                                    {t('announcements.manage')}
                                 </Link>
                             </Button>
                         )}
@@ -80,7 +82,7 @@ export default function Announcements({
                                     }
                                 >
                                     <Plus className="size-4" />
-                                    Buat pengumuman
+                                    {t('announcements.create')}
                                 </Link>
                             </Button>
                         )}
@@ -93,7 +95,7 @@ export default function Announcements({
                     >
                         <div className="min-w-48 flex-1 space-y-2">
                             <Label htmlFor="announcement-search">
-                                Cari judul atau isi
+                                {t('announcements.search_placeholder')}
                             </Label>
                             <Input
                                 id="announcement-search"
@@ -105,7 +107,7 @@ export default function Announcements({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="announcement-from">
-                                Dari tanggal
+                                {t('announcements.from_date')}
                             </Label>
                             <Input
                                 id="announcement-from"
@@ -118,7 +120,7 @@ export default function Announcements({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="announcement-to">
-                                Sampai tanggal
+                                {t('announcements.to_date')}
                             </Label>
                             <Input
                                 id="announcement-to"
@@ -129,16 +131,19 @@ export default function Announcements({
                                 }
                             />
                         </div>
-                        <Button variant="outline">Tampilkan</Button>
+                        <Button variant="outline">
+                            {t('announcements.filter_show')}
+                        </Button>
                     </form>
                 )}
                 <InputError message={errors.q ?? errors.from ?? errors.to} />
                 {announcements.data.length === 0 ? (
                     <div className="rounded-lg border px-6 py-14 text-center">
-                        <h2 className="font-semibold">Belum ada pengumuman</h2>
+                        <h2 className="font-semibold">
+                            {t('announcements.empty_title')}
+                        </h2>
                         <p className="text-muted-foreground mt-2 text-sm">
-                            Pengumuman yang sesuai dengan akun Anda akan muncul
-                            di sini.
+                            {t('announcements.empty_description')}
                         </p>
                     </div>
                 ) : (
@@ -152,12 +157,14 @@ export default function Announcements({
                                     {item.is_pinned && (
                                         <Badge variant="secondary">
                                             <Pin className="mr-1 size-3" />
-                                            Disematkan
+                                            {t('announcements.pinned')}
                                         </Badge>
                                     )}
                                     {mode !== 'feed' && (
                                         <Badge variant="outline">
-                                            {item.status}
+                                            {t(
+                                                `announcements.status.${item.status}`,
+                                            )}
                                         </Badge>
                                     )}
                                     {item.requires_acknowledgement && (
@@ -169,8 +176,12 @@ export default function Announcements({
                                             }
                                         >
                                             {item.acknowledged_at
-                                                ? 'Sudah dikonfirmasi'
-                                                : 'Perlu konfirmasi'}
+                                                ? t(
+                                                      'announcements.acknowledged',
+                                                  )
+                                                : t(
+                                                      'announcements.needs_acknowledgement',
+                                                  )}
                                         </Badge>
                                     )}
                                 </div>
@@ -190,14 +201,15 @@ export default function Announcements({
                                         className="block text-sm underline underline-offset-4"
                                         href={Reader.attachment.url(item.id)}
                                     >
-                                        Lampiran: {item.attachment_name}
+                                        {t('announcements.attachment')}{' '}
+                                        {item.attachment_name}
                                     </a>
                                 )}
                                 <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-3 text-sm">
                                     <span>
                                         {item.author} ·{' '}
                                         {item.published_at ??
-                                            'Belum diterbitkan'}
+                                            t('announcements.not_published')}
                                     </span>
                                     <div className="flex gap-4">
                                         {item.can_manage && (
@@ -207,14 +219,14 @@ export default function Announcements({
                                                     item.id,
                                                 )}
                                             >
-                                                Edit
+                                                {t('common.edit')}
                                             </Link>
                                         )}
                                         <Link
                                             className="text-foreground underline underline-offset-4"
                                             href={Reader.show(item.id)}
                                         >
-                                            Baca pengumuman
+                                            {t('announcements.read_more')}
                                         </Link>
                                     </div>
                                 </div>
@@ -224,22 +236,24 @@ export default function Announcements({
                 )}
                 <div className="flex items-center justify-between gap-3 text-sm">
                     <span className="text-muted-foreground">
-                        Halaman {announcements.current_page} dari{' '}
-                        {announcements.last_page} · {announcements.total}{' '}
-                        pengumuman
+                        {t('announcements.pagination', {
+                            current: announcements.current_page,
+                            last: announcements.last_page,
+                            total: announcements.total,
+                        })}
                     </span>
                     <div className="flex gap-2">
                         {announcements.prev_page_url && (
                             <Button variant="outline" asChild>
                                 <Link href={announcements.prev_page_url}>
-                                    Sebelumnya
+                                    {t('common.previous')}
                                 </Link>
                             </Button>
                         )}
                         {announcements.next_page_url && (
                             <Button variant="outline" asChild>
                                 <Link href={announcements.next_page_url}>
-                                    Berikutnya
+                                    {t('common.next')}
                                 </Link>
                             </Button>
                         )}

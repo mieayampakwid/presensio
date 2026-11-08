@@ -1,4 +1,5 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     Award,
     ChevronLeft,
@@ -35,10 +36,12 @@ type Props = {
 };
 
 export default function CourseShow({ course, students, canWrite }: Props) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
             {
-                title: 'My Courses',
+                title: t('grading.courses.title'),
                 href: '/courses',
             },
             {
@@ -56,7 +59,7 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                     <Button variant="ghost" size="sm" asChild>
                         <Link href="/courses">
                             <ChevronLeft className="h-4 w-4" />
-                            My Courses
+                            {t('grading.courses.title')}
                         </Link>
                     </Button>
                 </div>
@@ -87,19 +90,23 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                         <Button variant="outline" size="sm" asChild>
                             <Link href={`/courses/${course.id}/assessments`}>
                                 <ClipboardList className="mr-1.5 h-4 w-4" />
-                                <span>Kelola Asesmen</span>
+                                <span>
+                                    {t('grading.courses.manage_assessments')}
+                                </span>
                             </Link>
                         </Button>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={`/courses/${course.id}/results`}>
                                 <Award className="mr-1.5 h-4 w-4" />
-                                <span>Capaian Rapor</span>
+                                <span>
+                                    {t('grading.courses.report_achievements')}
+                                </span>
                             </Link>
                         </Button>
                         <Button size="sm" asChild>
                             <Link href={`/courses/${course.id}/gradebook`}>
                                 <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-                                <span>Buku Nilai (Gradebook)</span>
+                                <span>{t('grading.courses.gradebook')}</span>
                             </Link>
                         </Button>
                     </div>
@@ -110,7 +117,9 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                         <div className="flex items-center gap-2">
                             <Users className="text-muted-foreground h-5 w-5" />
                             <h3 className="text-base font-semibold">
-                                Daftar Siswa ({students.length})
+                                {t('grading.courses.students_list', {
+                                    count: students.length,
+                                })}
                             </h3>
                         </div>
                     </div>
@@ -120,16 +129,16 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="w-12 px-4 py-3 text-center font-medium">
-                                        No
+                                        {t('grading.courses.no')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        NISN / No. Induk
+                                        {t('grading.courses.nisn_nipd')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Nama Siswa
+                                        {t('grading.courses.student_name')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Jenis Kelamin
+                                        {t('grading.courses.gender')}
                                     </th>
                                 </tr>
                             </thead>
@@ -157,8 +166,9 @@ export default function CourseShow({ course, students, canWrite }: Props) {
                                             colSpan={4}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Tidak ada siswa yang terdaftar aktif
-                                            di kelas ini hari ini.
+                                            {t(
+                                                'grading.courses.empty_students',
+                                            )}
                                         </td>
                                     </tr>
                                 )}

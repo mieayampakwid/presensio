@@ -15,14 +15,14 @@ export default function Welcome() {
                                 href={dashboard()}
                                 className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                             >
-                                Dashboard
+                                {'Dashboard'}
                             </Link>
                         ) : (
                             <Link
                                 href={login()}
                                 className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                             >
-                                Log in
+                                {'Log in'}
                             </Link>
                         )}
                     </nav>
@@ -31,12 +31,12 @@ export default function Welcome() {
                     <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
                         <div className="flex-1 rounded-br-lg rounded-bl-lg bg-white p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
                             <h1 className="mb-1 font-medium">
-                                Let's get started
+                                {"Let's get started"}
                             </h1>
                             <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-                                Laravel has an incredibly rich ecosystem.
+                                {'Laravel has an incredibly rich ecosystem.'}
                                 <br />
-                                We suggest starting with the following.
+                                {'We suggest starting with the following.'}
                             </p>
                             <ul className="mb-4 flex flex-col lg:mb-6">
                                 <li className="relative flex items-center gap-4 py-2 before:absolute before:top-1/2 before:bottom-0 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]">
@@ -46,13 +46,13 @@ export default function Welcome() {
                                         </span>
                                     </span>
                                     <span>
-                                        Read the
+                                        {'Read the '}
                                         <a
                                             href="https://laravel.com/docs"
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                                         >
-                                            <span>Documentation</span>
+                                            <span>{'Documentation'}</span>
                                             <svg
                                                 width={10}
                                                 height={11}
@@ -77,13 +77,13 @@ export default function Welcome() {
                                         </span>
                                     </span>
                                     <span>
-                                        Watch video tutorials at
+                                        {'Watch video tutorials at '}
                                         <a
                                             href="https://laracasts.com"
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                                         >
-                                            <span>Laracasts</span>
+                                            <span>{'Laracasts'}</span>
                                             <svg
                                                 width={10}
                                                 height={11}
@@ -109,7 +109,7 @@ export default function Welcome() {
                                         target="_blank"
                                         className="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
                                     >
-                                        Deploy now
+                                        {'Deploy now'}
                                     </a>
                                 </li>
                             </ul>

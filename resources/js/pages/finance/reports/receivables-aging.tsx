@@ -62,14 +62,14 @@ const selectClass =
     'border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm';
 
 export default function ReceivablesAgingReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Umur Piutang' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.receivables_aging.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const rupiah = (value: string) => Number(value).toLocaleString(locale);
 
@@ -104,13 +104,15 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Umur Piutang" />
+            <Head title={t('finance.reports.receivables_aging.title')} />
 
             <div className="mx-auto max-w-6xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Umur Piutang"
-                        description="Sisa tagihan terbuka menurut lama keterlambatan, dikelompokkan per kelas pada tanggal posisi."
+                        title={t('finance.reports.receivables_aging.title')}
+                        description={t(
+                            'finance.reports.receivables_aging.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -118,14 +120,19 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                             href={`/finance/reports/receivables-aging?${csvQuery.toString()}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
 
                 <div className="bg-card flex flex-wrap items-end gap-3 rounded-lg border p-4">
                     <div className="space-y-1">
-                        <Label htmlFor="as_of">Posisi Per Tanggal</Label>
+                        <Label htmlFor="as_of">
+                            {t('finance.reports.trial_balance.as_of', {
+                                defaultValue: 'Posisi Per Tanggal',
+                            })}
+                        </Label>
                         <Input
                             id="as_of"
                             type="date"
@@ -134,14 +141,20 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                         />
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="class_id">Kelas</Label>
+                        <Label htmlFor="class_id">
+                            {t('fees.common.class')}
+                        </Label>
                         <select
                             id="class_id"
                             className={selectClass}
                             value={classId}
                             onChange={(e) => setClassId(e.target.value)}
                         >
-                            <option value="">Semua kelas</option>
+                            <option value="">
+                                {t('fees.common.all_classes', {
+                                    defaultValue: 'Semua kelas',
+                                })}
+                            </option>
                             {report.class_options.map((option) => (
                                 <option key={option.id} value={option.id}>
                                     {option.name}
@@ -149,7 +162,9 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                             ))}
                         </select>
                     </div>
-                    <Button onClick={applyFilter}>Tampilkan</Button>
+                    <Button onClick={applyFilter}>
+                        {t('finance.common.filter')}
+                    </Button>
                 </div>
 
                 <div className="bg-card overflow-hidden rounded-lg border">
@@ -158,14 +173,15 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Kelas / Siswa
+                                        {t('fees.common.class')} /{' '}
+                                        {t('fees.common.student')}
                                     </th>
                                     {columns.map(({ key, label }) => (
                                         <th
                                             key={key}
                                             className="px-4 py-3 text-right font-medium"
                                         >
-                                            {label} (Rp)
+                                            {`${label} (Rp)`}
                                         </th>
                                     ))}
                                 </tr>
@@ -210,13 +226,17 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                                             colSpan={7}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Tidak ada piutang terbuka.
+                                            {t(
+                                                'finance.reports.receivables_aging.empty',
+                                            )}
                                         </td>
                                     </tr>
                                 )}
 
                                 <tr className="border-t-2 font-bold">
-                                    <td className="px-4 py-3">Total</td>
+                                    <td className="px-4 py-3">
+                                        {t('finance.common.total')}
+                                    </td>
                                     {cells(report.totals, true)}
                                 </tr>
                             </tbody>
@@ -226,10 +246,18 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
 
                 <div className="bg-card overflow-hidden rounded-lg border">
                     <div className="border-b px-4 py-3 text-sm font-medium">
-                        Perlu ditinjau ({report.needs_review.length})
+                        {t('finance.reports.receivables_aging.needs_review', {
+                            defaultValue: 'Perlu ditinjau',
+                        })}{' '}
+                        ({report.needs_review.length})
                         <p className="text-muted-foreground text-xs font-normal">
-                            Siswa tanpa kelas aktif yang masih memiliki tagihan
-                            dibayar sebagian (keadaan saat ini).
+                            {t(
+                                'finance.reports.receivables_aging.needs_review_hint',
+                                {
+                                    defaultValue:
+                                        'Siswa tanpa kelas aktif yang masih memiliki tagihan dibayar sebagian (keadaan saat ini).',
+                                },
+                            )}
                         </p>
                     </div>
                     <div className="overflow-x-auto">
@@ -237,19 +265,19 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Siswa
+                                        {t('fees.common.student')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Tagihan
+                                        {t('fees.bills.table.bill')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Jatuh Tempo
+                                        {t('fees.common.due_date')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Dibayar (Rp)
+                                        {t('fees.bills.table.paid')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Sisa (Rp)
+                                        {t('fees.bills.table.remaining')}
                                     </th>
                                 </tr>
                             </thead>
@@ -288,7 +316,9 @@ export default function ReceivablesAgingReportPage({ report }: Props) {
                                             colSpan={5}
                                             className="text-muted-foreground px-4 py-6 text-center"
                                         >
-                                            Tidak ada yang perlu ditinjau.
+                                            {t(
+                                                'finance.reports.receivables_reconciliation.empty',
+                                            )}
                                         </td>
                                     </tr>
                                 )}

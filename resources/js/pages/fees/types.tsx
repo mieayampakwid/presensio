@@ -67,14 +67,14 @@ export default function FeeTypesIndex({
     discountAccounts,
     canManage,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Jenis Biaya' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.types.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const formatRupiah = (value: string) =>
         new Intl.NumberFormat(locale, {
@@ -104,7 +104,7 @@ export default function FeeTypesIndex({
                 className={selectClass}
             >
                 <option value="" disabled>
-                    Pilih akun...
+                    {t('finance.journals.form.select_account')}
                 </option>
                 {options.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -130,7 +130,9 @@ export default function FeeTypesIndex({
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="code">Kode</Label>
+                                <Label htmlFor="code">
+                                    {t('fees.types.fields.code')}
+                                </Label>
                                 <Input
                                     id="code"
                                     name="code"
@@ -144,7 +146,9 @@ export default function FeeTypesIndex({
                                 <InputError message={errors.code} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Nama</Label>
+                                <Label htmlFor="name">
+                                    {t('fees.types.fields.name')}
+                                </Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -160,7 +164,9 @@ export default function FeeTypesIndex({
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="type">Jenis</Label>
+                                <Label htmlFor="type">
+                                    {t('fees.types.fields.type')}
+                                </Label>
                                 <select
                                     id="type"
                                     name="type"
@@ -183,7 +189,7 @@ export default function FeeTypesIndex({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="default_amount">
-                                    Nominal Default (Rp)
+                                    {t('fees.types.fields.default_amount')}
                                 </Label>
                                 <Input
                                     id="default_amount"
@@ -200,7 +206,7 @@ export default function FeeTypesIndex({
 
                         <div className="grid gap-2">
                             <Label htmlFor="academic_year_id">
-                                Tahun Ajaran (opsional)
+                                {t('fees.types.fields.academic_year')}
                             </Label>
                             <select
                                 id="academic_year_id"
@@ -208,7 +214,9 @@ export default function FeeTypesIndex({
                                 defaultValue={feeType?.academic_year_id ?? ''}
                                 className={selectClass}
                             >
-                                <option value="">Semua tahun ajaran</option>
+                                <option value="">
+                                    {t('fees.common.all_academic_years')}
+                                </option>
                                 {academicYears.map((year) => (
                                     <option key={year.id} value={year.id}>
                                         {year.name}
@@ -220,21 +228,21 @@ export default function FeeTypesIndex({
 
                         {accountSelect(
                             'receivable_account_id',
-                            'Akun Piutang',
+                            t('fees.types.fields.receivable_account'),
                             receivableAccounts,
                             feeType?.receivable_account_id,
                             errors.receivable_account_id,
                         )}
                         {accountSelect(
                             'revenue_account_id',
-                            'Akun Pendapatan',
+                            t('fees.types.fields.revenue_account'),
                             revenueAccounts,
                             feeType?.revenue_account_id,
                             errors.revenue_account_id,
                         )}
                         {accountSelect(
                             'discount_account_id',
-                            'Akun Diskon (kontra pendapatan)',
+                            t('fees.types.fields.discount_account'),
                             discountAccounts,
                             feeType?.discount_account_id,
                             errors.discount_account_id,
@@ -242,7 +250,7 @@ export default function FeeTypesIndex({
 
                         <div className="grid gap-2">
                             <Label htmlFor="description">
-                                Deskripsi (opsional)
+                                {t('fees.types.fields.description')}
                             </Label>
                             <textarea
                                 id="description"
@@ -268,7 +276,7 @@ export default function FeeTypesIndex({
                                 htmlFor="is_active"
                                 className="cursor-pointer"
                             >
-                                Aktif
+                                {t('fees.types.fields.is_active')}
                             </Label>
                         </div>
                     </div>
@@ -276,7 +284,7 @@ export default function FeeTypesIndex({
                     <SheetFooter className="px-0">
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            Simpan
+                            {t('fees.common.save')}
                         </Button>
                     </SheetFooter>
                 </>
@@ -286,17 +294,17 @@ export default function FeeTypesIndex({
 
     return (
         <>
-            <Head title="Jenis Biaya" />
+            <Head title={t('fees.types.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Jenis Biaya"
-                        description="Katalog biaya sekolah beserta pemetaan akun piutang, pendapatan, dan diskon."
+                        title={t('fees.types.title')}
+                        description={t('fees.types.description')}
                     />
                     {canManage && (
                         <Button onClick={() => setIsCreateOpen(true)}>
-                            Tambah Jenis Biaya
+                            {t('fees.types.create')}
                         </Button>
                     )}
                 </div>
@@ -305,18 +313,24 @@ export default function FeeTypesIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Kode</th>
-                                <th className="px-4 py-3 font-medium">Nama</th>
-                                <th className="px-4 py-3 font-medium">Jenis</th>
-                                <th className="px-4 py-3 text-right font-medium">
-                                    Nominal Default
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.types.table.code')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Status
+                                    {t('fees.types.table.name')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.types.table.type')}
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    {t('fees.types.table.default_amount')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.types.table.status')}
                                 </th>
                                 {canManage && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('fees.types.table.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -345,8 +359,8 @@ export default function FeeTypesIndex({
                                     </td>
                                     <td className="px-4 py-3">
                                         {feeType.is_active
-                                            ? 'Aktif'
-                                            : 'Nonaktif'}
+                                            ? t('fees.types.table.active')
+                                            : t('fees.types.table.inactive')}
                                     </td>
                                     {canManage && (
                                         <td className="px-4 py-3 text-right">
@@ -360,7 +374,7 @@ export default function FeeTypesIndex({
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Ubah
+                                                        {t('fees.common.edit')}
                                                     </span>
                                                 </Button>
                                                 {!feeType.is_in_use && (
@@ -374,7 +388,9 @@ export default function FeeTypesIndex({
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Hapus
+                                                            {t(
+                                                                'fees.common.delete',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 )}
@@ -390,7 +406,7 @@ export default function FeeTypesIndex({
                                         colSpan={canManage ? 6 : 5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada jenis biaya.
+                                        {t('fees.types.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -404,17 +420,20 @@ export default function FeeTypesIndex({
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Hapus Jenis Biaya</DialogTitle>
+                    <DialogTitle>
+                        {t('fees.types.delete_dialog.title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Hapus {deleting?.name} ({deleting?.code})? Tindakan ini
-                        tidak dapat dibatalkan.
+                        {t('fees.types.delete_dialog.message', {
+                            name: `${deleting?.name ?? ''} (${deleting?.code ?? ''})`,
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
                             onClick={() => setDeleting(null)}
                         >
-                            Batal
+                            {t('fees.common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -430,7 +449,7 @@ export default function FeeTypesIndex({
                                 }
                             }}
                         >
-                            Hapus
+                            {t('fees.common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -439,9 +458,9 @@ export default function FeeTypesIndex({
             <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <SheetContent side="right" className="sm:max-w-lg">
                     <SheetHeader>
-                        <SheetTitle>Tambah Jenis Biaya</SheetTitle>
+                        <SheetTitle>{t('fees.types.create_title')}</SheetTitle>
                         <SheetDescription>
-                            Tentukan nominal default dan pemetaan tiga akun.
+                            {t('fees.types.create_description')}
                         </SheetDescription>
                     </SheetHeader>
                     {renderForm(null, () => setIsCreateOpen(false))}
@@ -454,9 +473,9 @@ export default function FeeTypesIndex({
             >
                 <SheetContent side="right" className="sm:max-w-lg">
                     <SheetHeader>
-                        <SheetTitle>Ubah Jenis Biaya</SheetTitle>
+                        <SheetTitle>{t('fees.types.edit_title')}</SheetTitle>
                         <SheetDescription>
-                            Perubahan hanya berlaku untuk tagihan berikutnya.
+                            {t('fees.types.fields.hint_next_bills')}
                         </SheetDescription>
                     </SheetHeader>
                     {editing && renderForm(editing, () => setEditing(null))}

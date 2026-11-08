@@ -4,6 +4,7 @@ return [
     'previous' => 'Previous',
     'next' => 'Next',
     'page_of' => 'Page :current of :last',
+    'page_of_total' => 'Page :current of :last (:total total)',
     'edit' => 'Edit',
     'cancel' => 'Cancel',
     'show_password' => 'Show password',
@@ -19,4 +20,6 @@ return [
         'male' => 'Male',
         'female' => 'Female',
     ],
+    'yes' => 'Yes',
+    'no' => 'No',
 ];

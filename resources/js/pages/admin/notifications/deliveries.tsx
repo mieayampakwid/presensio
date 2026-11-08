@@ -4,6 +4,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type DeliveryItem = {
     id: number;
@@ -59,10 +60,14 @@ export default function NotificationDeliveries({
     channels,
     statuses,
 }: Props) {
-    setLayoutProps({
-        breadcrumbs: [{ title: 'Admin' }, { title: 'Log Pengiriman' }],
-    });
+    const { t } = useTranslation();
 
+    setLayoutProps({
+        breadcrumbs: [
+            { title: t('notifications.deliveries.breadcrumbs.admin') },
+            { title: t('notifications.deliveries.breadcrumbs.delivery_logs') },
+        ],
+    });
     const handleFilterChange = (key: string, value: string) => {
         router.get(
             '/notification-deliveries',
@@ -79,17 +84,19 @@ export default function NotificationDeliveries({
 
     return (
         <>
-            <Head title="Log Pengiriman Notifikasi" />
+            <Head title={t('notifications.deliveries.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Log Pengiriman Notifikasi"
-                    description="Riwayat pengiriman notifikasi eksternal (WhatsApp & Email), status pengiriman, dan pelacakan kesalahan."
+                    title={t('notifications.deliveries.title')}
+                    description={t('notifications.deliveries.description')}
                 />
 
                 <div className="bg-card border-border grid gap-4 rounded-lg border p-4 sm:grid-cols-2 md:grid-cols-4">
                     <div className="grid gap-1.5">
-                        <Label htmlFor="filter-type">Jenis</Label>
+                        <Label htmlFor="filter-type">
+                            {t('notifications.deliveries.filters.type')}
+                        </Label>
                         <select
                             id="filter-type"
                             className={SELECT_CLASS}
@@ -98,7 +105,11 @@ export default function NotificationDeliveries({
                                 handleFilterChange('type', e.target.value)
                             }
                         >
-                            <option value="">Semua Jenis</option>
+                            <option value="">
+                                {t(
+                                    'notifications.deliveries.filters.all_types',
+                                )}
+                            </option>
                             {types.map((t) => (
                                 <option key={t.value} value={t.value}>
                                     {t.label}
@@ -108,7 +119,9 @@ export default function NotificationDeliveries({
                     </div>
 
                     <div className="grid gap-1.5">
-                        <Label htmlFor="filter-channel">Saluran</Label>
+                        <Label htmlFor="filter-channel">
+                            {t('notifications.deliveries.filters.channel')}
+                        </Label>
                         <select
                             id="filter-channel"
                             className={SELECT_CLASS}
@@ -117,7 +130,11 @@ export default function NotificationDeliveries({
                                 handleFilterChange('channel', e.target.value)
                             }
                         >
-                            <option value="">Semua Saluran</option>
+                            <option value="">
+                                {t(
+                                    'notifications.deliveries.filters.all_channels',
+                                )}
+                            </option>
                             {channels.map((c) => (
                                 <option key={c} value={c}>
                                     {c.toUpperCase()}
@@ -127,7 +144,9 @@ export default function NotificationDeliveries({
                     </div>
 
                     <div className="grid gap-1.5">
-                        <Label htmlFor="filter-status">Status</Label>
+                        <Label htmlFor="filter-status">
+                            {t('notifications.deliveries.filters.status')}
+                        </Label>
                         <select
                             id="filter-status"
                             className={SELECT_CLASS}
@@ -136,7 +155,11 @@ export default function NotificationDeliveries({
                                 handleFilterChange('status', e.target.value)
                             }
                         >
-                            <option value="">Semua Status</option>
+                            <option value="">
+                                {t(
+                                    'notifications.deliveries.filters.all_statuses',
+                                )}
+                            </option>
                             {statuses.map((s) => (
                                 <option key={s} value={s}>
                                     {s}
@@ -146,7 +169,9 @@ export default function NotificationDeliveries({
                     </div>
 
                     <div className="grid gap-1.5">
-                        <Label htmlFor="filter-date">Tanggal</Label>
+                        <Label htmlFor="filter-date">
+                            {t('notifications.deliveries.filters.date')}
+                        </Label>
                         <Input
                             id="filter-date"
                             type="date"
@@ -162,13 +187,35 @@ export default function NotificationDeliveries({
                     <table className="w-full text-left text-sm">
                         <thead className="bg-muted text-muted-foreground border-b text-xs font-medium uppercase">
                             <tr>
-                                <th className="px-4 py-3">Waktu</th>
-                                <th className="px-4 py-3">Jenis</th>
-                                <th className="px-4 py-3">Saluran</th>
-                                <th className="px-4 py-3">Tujuan</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3">Percobaan</th>
-                                <th className="px-4 py-3">Detail / Error</th>
+                                <th className="px-4 py-3">
+                                    {t('notifications.deliveries.table.time')}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t('notifications.deliveries.table.type')}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t(
+                                        'notifications.deliveries.table.channel',
+                                    )}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t(
+                                        'notifications.deliveries.table.recipient',
+                                    )}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t('notifications.deliveries.table.status')}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t(
+                                        'notifications.deliveries.table.attempts',
+                                    )}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t(
+                                        'notifications.deliveries.table.details_error',
+                                    )}
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-border divide-y">
@@ -178,8 +225,9 @@ export default function NotificationDeliveries({
                                         colSpan={7}
                                         className="text-muted-foreground p-8 text-center text-sm"
                                     >
-                                        Tidak ada riwayat pengiriman notifikasi
-                                        yang cocok.
+                                        {t(
+                                            'notifications.deliveries.table.empty',
+                                        )}
                                     </td>
                                 </tr>
                             ) : (
@@ -224,7 +272,10 @@ export default function NotificationDeliveries({
                                             </span>
                                             {item.scheduled_for && (
                                                 <div className="text-muted-foreground mt-0.5 text-[10px]">
-                                                    Jadwal: {item.scheduled_for}
+                                                    {t(
+                                                        'notifications.deliveries.table.scheduled',
+                                                    )}{' '}
+                                                    {item.scheduled_for}
                                                 </div>
                                             )}
                                         </td>
@@ -246,7 +297,9 @@ export default function NotificationDeliveries({
                                                         item.provider_message_id
                                                     }
                                                 >
-                                                    ID:{' '}
+                                                    {t(
+                                                        'notifications.deliveries.table.id',
+                                                    )}{' '}
                                                     {item.provider_message_id}
                                                 </span>
                                             ) : (
@@ -263,34 +316,37 @@ export default function NotificationDeliveries({
                 {deliveries.last_page > 1 && (
                     <div className="flex items-center justify-between border-t pt-4">
                         <span className="text-muted-foreground text-xs">
-                            Halaman {deliveries.current_page} dari{' '}
-                            {deliveries.last_page} ({deliveries.total} total)
+                            {t('common.page_of_total', {
+                                current: deliveries.current_page,
+                                last: deliveries.last_page,
+                                total: deliveries.total,
+                            })}
                         </span>
                         <div className="flex items-center gap-2">
                             {deliveries.prev_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={deliveries.prev_page_url}>
                                         <ChevronLeft className="mr-1 size-4" />
-                                        Sebelumnya
+                                        {t('common.previous')}
                                     </Link>
                                 </Button>
                             ) : (
                                 <Button variant="outline" size="sm" disabled>
                                     <ChevronLeft className="mr-1 size-4" />
-                                    Sebelumnya
+                                    {t('common.previous')}
                                 </Button>
                             )}
 
                             {deliveries.next_page_url ? (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={deliveries.next_page_url}>
-                                        Berikutnya
+                                        {t('common.next')}
                                         <ChevronRight className="ml-1 size-4" />
                                     </Link>
                                 </Button>
                             ) : (
                                 <Button variant="outline" size="sm" disabled>
-                                    Berikutnya
+                                    {t('common.next')}
                                     <ChevronRight className="ml-1 size-4" />
                                 </Button>
                             )}

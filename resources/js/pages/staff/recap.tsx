@@ -1,4 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { setLayoutProps } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     CalendarClock,
     ChevronLeft,
@@ -110,6 +112,18 @@ function SummaryCard({
 }
 
 export default function StaffRecap({ month, rows, summary }: Props) {
+    const { t } = useTranslation();
+
+    setLayoutProps({
+        breadcrumbs: [
+            {
+                title: t('nav.items.staff_attendance'),
+                href: StaffAttendanceController.index().url,
+            },
+            { title: t('staff.recap.heading') },
+        ],
+    });
+
     const changeMonth = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.value) {
             navigateMonth(e.target.value);
@@ -118,12 +132,11 @@ export default function StaffRecap({ month, rows, summary }: Props) {
 
     return (
         <>
-            <Head title={`Rekap Presensi Pegawai — ${month}`} />
-
+            <Head title={t('staff.recap.title', { month })} />
             <div className="space-y-6 p-4">
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Rekap Presensi Pegawai"
+                        title={t('staff.recap.heading')}
                         description="Rekap bulanan kehadiran seluruh pegawai aktif beserta ekspor CSV."
                     />
 
@@ -134,7 +147,8 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                             })}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('staff.recap.export_csv')}
                         </a>
                     </Button>
                 </div>
@@ -143,8 +157,8 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                 <div className="flex flex-wrap items-center gap-2">
                     <Button asChild size="sm" variant="outline">
                         <Link href={StaffAttendanceController.index().url}>
-                            <CalendarClock className="mr-2 h-4 w-4" /> Presensi
-                            Harian
+                            <CalendarClock className="mr-2 h-4 w-4" />{' '}
+                            {t('staff.recap.daily_attendance')}
                         </Link>
                     </Button>
                     <Button asChild size="sm" variant="default">
@@ -153,7 +167,7 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                                 query: { month },
                             })}
                         >
-                            Rekap Bulanan
+                            {t('staff.attendance.monthly_recap')}
                         </Link>
                     </Button>
                 </div>
@@ -186,28 +200,31 @@ export default function StaffRecap({ month, rows, summary }: Props) {
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-                    <SummaryCard label="Pegawai" value={summary.employees} />
                     <SummaryCard
-                        label="Hari Kerja"
+                        label={t('staff.attendance.table.employee')}
+                        value={summary.employees}
+                    />
+                    <SummaryCard
+                        label={t('staff.recap.table.work_days')}
                         value={summary.expected_days}
                     />
                     <SummaryCard
-                        label="Hadir"
+                        label={t('staff.recap.table.present')}
                         value={summary.hadir}
                         tone="text-emerald-600 dark:text-emerald-400"
                     />
                     <SummaryCard
-                        label="Terlambat"
+                        label={t('staff.recap.table.late')}
                         value={`${summary.terlambat_count}× / ${summary.terlambat_minutes}m`}
                         tone="text-amber-600 dark:text-amber-400"
                     />
                     <SummaryCard
-                        label="Alpa"
+                        label={t('staff.recap.table.absent')}
                         value={summary.alpa}
                         tone="text-rose-600 dark:text-rose-400"
                     />
                     <SummaryCard
-                        label="Rata-rata Kehadiran"
+                        label={t('staff.recap.table.attendance_rate')}
                         value={`${summary.rate}%`}
                     />
                 </div>
@@ -218,43 +235,43 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                         <thead className="bg-muted/50">
                             <tr>
                                 <th className="px-3 py-2 text-left font-medium">
-                                    Nama
+                                    {t('staff.recap.table.name')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Hari Kerja
+                                    {t('staff.recap.table.work_days')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Hadir
+                                    {t('staff.recap.table.present')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Terlambat
+                                    {t('staff.recap.table.late')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Pulang Cepat
+                                    {t('staff.recap.table.early_leave')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Tidak Absen Pulang
+                                    {t('staff.recap.table.no_checkout')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Sakit
+                                    {t('staff.recap.table.sick')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Izin
+                                    {t('staff.recap.table.permission')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Cuti
+                                    {t('staff.recap.table.annual_leave')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Dinas Luar
+                                    {t('staff.recap.table.official_duty')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Alpa
+                                    {t('staff.recap.table.absent')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Extra
+                                    {t('staff.recap.table.extra')}
                                 </th>
                                 <th className="px-3 py-2 text-center font-medium">
-                                    Kehadiran
+                                    {t('staff.recap.table.attendance_rate')}
                                 </th>
                             </tr>
                         </thead>
@@ -266,7 +283,9 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                                             {row.name}
                                             {row.is_teacher ? (
                                                 <span className="text-muted-foreground ml-1 text-xs">
-                                                    (Guru)
+                                                    {t(
+                                                        'staff.recap.table.teacher',
+                                                    )}
                                                 </span>
                                             ) : null}
                                         </div>
@@ -287,14 +306,26 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                                         {row.terlambat_count}
                                         <span className="text-muted-foreground text-xs">
                                             {' '}
-                                            × · {row.terlambat_minutes}m
+                                            × ·{' '}
+                                            {t(
+                                                'staff.attendance.table.minutes',
+                                                {
+                                                    count: row.terlambat_minutes,
+                                                },
+                                            )}
                                         </span>
                                     </td>
                                     <td className="px-3 py-2 text-center">
                                         {row.pulang_cepat_count}
                                         <span className="text-muted-foreground text-xs">
                                             {' '}
-                                            × · {row.pulang_cepat_minutes}m
+                                            × ·{' '}
+                                            {t(
+                                                'staff.attendance.table.minutes',
+                                                {
+                                                    count: row.pulang_cepat_minutes,
+                                                },
+                                            )}
                                         </span>
                                     </td>
                                     <td className="px-3 py-2 text-center">
@@ -331,7 +362,7 @@ export default function StaffRecap({ month, rows, summary }: Props) {
                                         className="text-muted-foreground px-3 py-6 text-center"
                                         colSpan={13}
                                     >
-                                        Tidak ada pegawai aktif.
+                                        {t('staff.recap.table.empty')}
                                     </td>
                                 </tr>
                             )}

@@ -224,7 +224,7 @@ class SlotTest extends TestCase
             ]))
             ->assertStatus(409)
             ->assertJsonPath('conflicts.0.type', 'teacher')
-            ->assertJsonPath('conflicts.0.message', 'Peringatan: Guru bersangkutan telah dijadwalkan di Kelas 5A pada jam tersebut.');
+            ->assertJsonPath('conflicts.0.message', __('timetable.warnings.teacher', ['class' => '5A']));
 
         $this->assertSame(1, TimetableSlot::count());
 

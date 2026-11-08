@@ -1,5 +1,5 @@
 import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { ChevronLeft, Pencil, Trash2 } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import DiscountController from '@/actions/App/Http/Controllers/Fees/DiscountController';
 import Heading from '@/components/heading';
@@ -71,14 +71,14 @@ export default function DiscountsIndex({
     students,
     canManage,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Diskon & Beasiswa' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.discounts.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const formatRupiah = (value: string) =>
         new Intl.NumberFormat(locale, {
@@ -108,7 +108,9 @@ export default function DiscountsIndex({
                 <>
                     <div className="space-y-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="student_id">Siswa</Label>
+                            <Label htmlFor="student_id">
+                                {t('fees.discounts.fields.student')}
+                            </Label>
                             <select
                                 id="student_id"
                                 name="student_id"
@@ -117,7 +119,7 @@ export default function DiscountsIndex({
                                 className={selectClass}
                             >
                                 <option value="" disabled>
-                                    Pilih siswa...
+                                    {t('fees.discounts.fields.select_student')}
                                 </option>
                                 {students.map((student) => (
                                     <option key={student.id} value={student.id}>
@@ -133,7 +135,9 @@ export default function DiscountsIndex({
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="fee_type_id">Jenis Biaya</Label>
+                                <Label htmlFor="fee_type_id">
+                                    {t('fees.discounts.fields.fee_type')}
+                                </Label>
                                 <select
                                     id="fee_type_id"
                                     name="fee_type_id"
@@ -142,7 +146,9 @@ export default function DiscountsIndex({
                                     className={selectClass}
                                 >
                                     <option value="" disabled>
-                                        Pilih jenis biaya...
+                                        {t(
+                                            'fees.discounts.fields.select_fee_type',
+                                        )}
                                     </option>
                                     {feeTypes.map((feeType) => (
                                         <option
@@ -157,7 +163,7 @@ export default function DiscountsIndex({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="academic_year_id">
-                                    Tahun Ajaran
+                                    {t('fees.discounts.fields.academic_year')}
                                 </Label>
                                 <select
                                     id="academic_year_id"
@@ -169,7 +175,9 @@ export default function DiscountsIndex({
                                     className={selectClass}
                                 >
                                     <option value="" disabled>
-                                        Pilih tahun ajaran...
+                                        {t(
+                                            'fees.discounts.fields.select_academic_year',
+                                        )}
                                     </option>
                                     {academicYears.map((year) => (
                                         <option key={year.id} value={year.id}>
@@ -183,7 +191,9 @@ export default function DiscountsIndex({
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="percent">Persentase (%)</Label>
+                                <Label htmlFor="percent">
+                                    {t('fees.discounts.fields.percentage')}
+                                </Label>
                                 <Input
                                     id="percent"
                                     name="percent"
@@ -197,7 +207,7 @@ export default function DiscountsIndex({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="fixed_amount">
-                                    Nominal Tetap (Rp)
+                                    {t('fees.discounts.fields.fixed_amount')}
                                 </Label>
                                 <Input
                                     id="fixed_amount"
@@ -211,11 +221,13 @@ export default function DiscountsIndex({
                             </div>
                         </div>
                         <p className="text-muted-foreground text-xs">
-                            Isi salah satu: persentase atau nominal tetap.
+                            {t('fees.discounts.fields.hint_either')}
                         </p>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="reason">Alasan</Label>
+                            <Label htmlFor="reason">
+                                {t('fees.payments.void_dialog.reason')}
+                            </Label>
                             <Input
                                 id="reason"
                                 name="reason"
@@ -231,7 +243,7 @@ export default function DiscountsIndex({
                     <SheetFooter className="px-0">
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            Simpan
+                            {t('fees.common.save')}
                         </Button>
                     </SheetFooter>
                 </>
@@ -241,24 +253,26 @@ export default function DiscountsIndex({
 
     return (
         <>
-            <Head title="Diskon & Beasiswa" />
+            <Head title={t('fees.discounts.title')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Diskon & Beasiswa"
+                        title={t('fees.discounts.title')}
                         description="Potongan biaya per siswa. Perubahan hanya berlaku untuk tagihan yang dibuat setelahnya."
                     />
                     {canManage && (
                         <Button onClick={() => setIsCreateOpen(true)}>
-                            Tambah Diskon
+                            {t('fees.discounts.create')}
                         </Button>
                     )}
                 </div>
 
                 <form className="flex flex-wrap items-end gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="search">Cari</Label>
+                        <Label htmlFor="search">
+                            {t('fees.common.search')}
+                        </Label>
                         <Input
                             id="search"
                             name="search"
@@ -274,22 +288,24 @@ export default function DiscountsIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Siswa</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Jenis Biaya
+                                    {t('fees.discounts.table.student')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Tahun Ajaran
+                                    {t('fees.discounts.table.fee_type')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Potongan
+                                    {t('fees.discounts.table.academic_year')}
                                 </th>
                                 <th className="px-4 py-3 font-medium">
-                                    Alasan
+                                    {t('fees.discounts.table.discount')}
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    {t('fees.payments.void_dialog.reason')}
                                 </th>
                                 {canManage && (
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('fees.common.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -335,7 +351,7 @@ export default function DiscountsIndex({
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Ubah
+                                                        {t('fees.common.edit')}
                                                     </span>
                                                 </Button>
                                                 <Button
@@ -348,7 +364,9 @@ export default function DiscountsIndex({
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                     <span className="sr-only">
-                                                        Hapus
+                                                        {t(
+                                                            'fees.common.delete',
+                                                        )}
                                                     </span>
                                                 </Button>
                                             </div>
@@ -363,7 +381,7 @@ export default function DiscountsIndex({
                                         colSpan={canManage ? 6 : 5}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Belum ada diskon.
+                                        {t('fees.discounts.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -373,8 +391,10 @@ export default function DiscountsIndex({
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Halaman {discounts.current_page} dari{' '}
-                        {discounts.last_page}
+                        {t('common.page_of', {
+                            current: discounts.current_page,
+                            last: discounts.last_page,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -386,7 +406,7 @@ export default function DiscountsIndex({
                         >
                             <Link href={discounts.prev_page_url ?? '#'}>
                                 <ChevronLeft className="h-4 w-4" />
-                                Sebelumnya
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -396,8 +416,7 @@ export default function DiscountsIndex({
                             disabled={!discounts.next_page_url}
                         >
                             <Link href={discounts.next_page_url ?? '#'}>
-                                Berikutnya
-                                <ChevronRight className="h-4 w-4" />
+                                {t('common.next')}
                             </Link>
                         </Button>
                     </div>
@@ -409,18 +428,18 @@ export default function DiscountsIndex({
                 onOpenChange={(open) => !open && setDeleting(null)}
             >
                 <DialogContent>
-                    <DialogTitle>Hapus Diskon</DialogTitle>
+                    <DialogTitle>
+                        {t('fees.discounts.delete_dialog.title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Hapus diskon {deleting?.fee_type_name} untuk{' '}
-                        {deleting?.student_name}? Tagihan yang sudah dibuat
-                        tidak berubah.
+                        {t('fees.discounts.delete_dialog.message')}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
                             onClick={() => setDeleting(null)}
                         >
-                            Batal
+                            {t('fees.common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -436,7 +455,7 @@ export default function DiscountsIndex({
                                 }
                             }}
                         >
-                            Hapus
+                            {t('fees.common.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -445,10 +464,11 @@ export default function DiscountsIndex({
             <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <SheetContent side="right" className="sm:max-w-lg">
                     <SheetHeader>
-                        <SheetTitle>Tambah Diskon</SheetTitle>
+                        <SheetTitle>
+                            {t('fees.discounts.create_title')}
+                        </SheetTitle>
                         <SheetDescription>
-                            Satu diskon per siswa, jenis biaya, dan tahun
-                            ajaran.
+                            {t('fees.discounts.create_description')}
                         </SheetDescription>
                     </SheetHeader>
                     {renderForm(null, () => setIsCreateOpen(false))}
@@ -461,9 +481,11 @@ export default function DiscountsIndex({
             >
                 <SheetContent side="right" className="sm:max-w-lg">
                     <SheetHeader>
-                        <SheetTitle>Ubah Diskon</SheetTitle>
+                        <SheetTitle>
+                            {t('fees.discounts.edit_title')}
+                        </SheetTitle>
                         <SheetDescription>
-                            Perubahan hanya berlaku untuk tagihan berikutnya.
+                            {t('fees.types.fields.hint_next_bills')}
                         </SheetDescription>
                     </SheetHeader>
                     {editing && renderForm(editing, () => setEditing(null))}

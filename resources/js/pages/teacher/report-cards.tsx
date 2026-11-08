@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     ArrowLeft,
     ClipboardCheck,
@@ -132,6 +133,7 @@ export default function ReportCards({
     can,
     accessible_classes,
 }: Props) {
+    const { t } = useTranslation();
     setLayoutProps({
         breadcrumbs: [
             {
@@ -397,7 +399,7 @@ export default function ReportCards({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Kembali ke Kelas
+                                {t('grading.report_cards.back_to_class')}
                             </Link>
                         </div>
                         <Heading
@@ -460,7 +462,9 @@ export default function ReportCards({
                         </Select>
                         {can.edit && publication !== null && (
                             <Badge variant="default">
-                                Versi {publication.version} · diterbitkan{' '}
+                                {t('grading.report_cards.table.version')}{' '}
+                                {publication.version}{' '}
+                                {t('grading.report_cards.table.published')}{' '}
                                 {publication.published_at}
                             </Badge>
                         )}
@@ -474,7 +478,7 @@ export default function ReportCards({
                                 ) : (
                                     <ClipboardCheck className="h-4 w-4" />
                                 )}
-                                Terbitkan
+                                {t('grading.report_cards.table.publish')}
                             </Button>
                         )}
                         {can.edit && publication !== null && (
@@ -482,7 +486,7 @@ export default function ReportCards({
                                 variant="outline"
                                 onClick={() => setRetractOpen(true)}
                             >
-                                Tarik
+                                {t('grading.report_cards.table.revoke')}
                             </Button>
                         )}
                         {can.edit &&
@@ -504,7 +508,7 @@ export default function ReportCards({
                                         rel="noopener noreferrer"
                                     >
                                         <Download className="h-4 w-4" />
-                                        Unduh Cetak Semua
+                                        {t('grading.report_cards.download_all')}
                                     </a>
                                 </Button>
                             )}
@@ -521,7 +525,7 @@ export default function ReportCards({
                                     ) : (
                                         <Printer className="h-4 w-4" />
                                     )}
-                                    Cetak Semua
+                                    {t('grading.report_cards.print_all')}
                                 </Button>
                             )}
                     </div>
@@ -534,7 +538,7 @@ export default function ReportCards({
                 {publishErrors.length > 0 && (
                     <div className="border-destructive bg-destructive/10 text-destructive rounded-md border p-4 text-sm">
                         <p className="font-medium">
-                            Rapor belum dapat diterbitkan:
+                            {t('grading.report_cards.unmet_blockers')}
                         </p>
                         <ul className="list-disc pl-5">
                             {publishErrors.map((message) => (
@@ -546,8 +550,7 @@ export default function ReportCards({
                 {publishWarnings.length > 0 && (
                     <div className="rounded-md border p-4 text-sm">
                         <p className="font-medium">
-                            Diterbitkan dengan catatan (nilai catatan wali kelas
-                            belum lengkap):
+                            {t('grading.report_cards.warnings_incomplete')}
                         </p>
                         <ul className="text-muted-foreground list-disc pl-5">
                             {publishWarnings.map((warning) => (
@@ -562,10 +565,14 @@ export default function ReportCards({
                     <table className="w-full text-left text-sm">
                         <thead className="bg-muted text-muted-foreground font-medium">
                             <tr className="border-b">
-                                <th className="px-4 py-3">Mata Pelajaran</th>
-                                <th className="px-4 py-3">Guru</th>
+                                <th className="px-4 py-3">
+                                    {t('grading.objectives.subject')}
+                                </th>
+                                <th className="px-4 py-3">
+                                    {t('grading.courses.teacher')}
+                                </th>
                                 <th className="px-4 py-3 text-center">
-                                    Finalisasi
+                                    {t('grading.results.table.finalized')}
                                 </th>
                             </tr>
                         </thead>
@@ -602,14 +609,22 @@ export default function ReportCards({
                     <table className="w-full text-left text-sm">
                         <thead className="bg-muted text-muted-foreground font-medium">
                             <tr className="border-b">
-                                <th className="px-4 py-3">Nama Siswa</th>
-                                <th className="px-4 py-3 text-center">
-                                    Kelengkapan Nilai
+                                <th className="px-4 py-3">
+                                    {t(
+                                        'grading.report_cards.table.student_name',
+                                    )}
                                 </th>
                                 <th className="px-4 py-3 text-center">
-                                    Catatan
+                                    {t(
+                                        'grading.report_cards.table.grade_completeness',
+                                    )}
                                 </th>
-                                <th className="px-4 py-3 text-right">Aksi</th>
+                                <th className="px-4 py-3 text-center">
+                                    {t('grading.report_cards.table.notes')}
+                                </th>
+                                <th className="px-4 py-3 text-right">
+                                    {t('grading.report_cards.table.actions')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -654,7 +669,9 @@ export default function ReportCards({
                                                     }
                                                 >
                                                     <ClipboardCheck className="h-4 w-4" />
-                                                    Catatan
+                                                    {t(
+                                                        'grading.report_cards.table.notes',
+                                                    )}
                                                 </Button>
                                             )}
                                             <Button
@@ -665,7 +682,9 @@ export default function ReportCards({
                                                 }
                                             >
                                                 <FileText className="h-4 w-4" />
-                                                Pratinjau
+                                                {t(
+                                                    'grading.report_cards.table.preview',
+                                                )}
                                             </Button>
                                             {publication !== null && (
                                                 <Button
@@ -694,7 +713,9 @@ export default function ReportCards({
                                                         rel="noopener noreferrer"
                                                     >
                                                         <FileText className="h-4 w-4" />
-                                                        PDF
+                                                        {t(
+                                                            'grading.report_cards.table.pdf',
+                                                        )}
                                                     </a>
                                                 </Button>
                                             )}
@@ -709,7 +730,7 @@ export default function ReportCards({
                                         className="text-muted-foreground px-4 py-6 text-center"
                                     >
                                         <Users className="mx-auto mb-2 h-6 w-6" />
-                                        Belum ada siswa terdaftar.
+                                        {t('grading.report_cards.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -726,7 +747,9 @@ export default function ReportCards({
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>
-                            Catatan Wali Kelas — {entryStudent?.name}
+                            {t('grading.report_cards.notes_dialog.title', {
+                                name: entryStudent?.name ?? '',
+                            })}
                         </DialogTitle>
                         <DialogDescription>
                             {semester.number === 2
@@ -737,7 +760,9 @@ export default function ReportCards({
                     <form onSubmit={saveEntry} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="homeroom_notes">
-                                Catatan Wali Kelas (maks. 1000)
+                                {t(
+                                    'grading.report_cards.notes_dialog.homeroom_notes',
+                                )}
                             </Label>
                             <textarea
                                 id="homeroom_notes"
@@ -760,7 +785,9 @@ export default function ReportCards({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="extracurricular_notes">
-                                Ekstrakurikuler (maks. 500)
+                                {t(
+                                    'grading.report_cards.notes_dialog.extracurricular',
+                                )}
                             </Label>
                             <textarea
                                 id="extracurricular_notes"
@@ -784,7 +811,9 @@ export default function ReportCards({
                         {semester.number === 2 && (
                             <div className="space-y-2">
                                 <Label htmlFor="promotion_decision">
-                                    Keputusan
+                                    {t(
+                                        'grading.report_cards.notes_dialog.decision',
+                                    )}
                                 </Label>
                                 <Select
                                     value={entryForm.data.promotion_decision}
@@ -803,13 +832,19 @@ export default function ReportCards({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="promoted">
-                                            Naik Kelas
+                                            {t(
+                                                'grading.report_cards.table.promoted',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="retained">
-                                            Tinggal Kelas
+                                            {t(
+                                                'grading.report_cards.table.retained',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="graduated">
-                                            Lulus
+                                            {t(
+                                                'grading.report_cards.table.graduated',
+                                            )}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -826,7 +861,7 @@ export default function ReportCards({
                                 variant="outline"
                                 onClick={() => setEntryStudent(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
@@ -835,7 +870,7 @@ export default function ReportCards({
                                 {entryForm.processing && (
                                     <LoaderCircle className="h-4 w-4 animate-spin" />
                                 )}
-                                Simpan
+                                {t('grading.report_cards.notes_dialog.save')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -860,11 +895,14 @@ export default function ReportCards({
                 <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
-                            Pratinjau Rapor —{' '}
-                            {previewPayload?.student.name ?? '...'}
+                            {t('grading.report_cards.preview_dialog.title', {
+                                name: previewPayload?.student.name ?? '...',
+                            })}
                         </DialogTitle>
                         <DialogDescription>
-                            Cuplikan rapor yang akan diterbitkan.
+                            {t(
+                                'grading.report_cards.preview_dialog.description',
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     {previewStudentId !== null && publication !== null && (
@@ -886,14 +924,16 @@ export default function ReportCards({
                                     rel="noopener noreferrer"
                                 >
                                     <FileText className="h-4 w-4" />
-                                    Unduh PDF
+                                    {t(
+                                        'grading.report_cards.table.download_pdf',
+                                    )}
                                 </a>
                             </Button>
                         </div>
                     )}
                     {previewLoading && (
                         <p className="text-muted-foreground text-sm">
-                            Memuat pratinjau…
+                            {t('grading.report_cards.preview_dialog.loading')}
                         </p>
                     )}
                     {previewError && (
@@ -918,14 +958,19 @@ export default function ReportCards({
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Tarik Rapor</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.report_cards.revoke_dialog.confirm')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Versi terbit akan disembunyikan dari orang tua dan
-                            siswa. Alasan wajib diisi dan dicatat audit.
+                            {t(
+                                'grading.report_cards.revoke_dialog.description',
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
-                        <Label htmlFor="retract_reason">Alasan</Label>
+                        <Label htmlFor="retract_reason">
+                            {t('grading.report_cards.revoke_dialog.reason')}
+                        </Label>
                         <textarea
                             id="retract_reason"
                             value={retractReason}
@@ -946,7 +991,7 @@ export default function ReportCards({
                             variant="outline"
                             onClick={() => setRetractOpen(false)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             type="button"
@@ -956,7 +1001,7 @@ export default function ReportCards({
                             {retracting && (
                                 <LoaderCircle className="h-4 w-4 animate-spin" />
                             )}
-                            Tarik Rapor
+                            {t('grading.report_cards.revoke_dialog.confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -115,7 +115,9 @@ export default function TwoFactorChallenge() {
                             </Button>
 
                             <div className="text-muted-foreground text-center text-sm">
-                                <span>or you can </span>
+                                <span>
+                                    {t('auth_pages.two_factor.or_you_can')}{' '}
+                                </span>
                                 <button
                                     type="button"
                                     className="text-foreground cursor-pointer underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"

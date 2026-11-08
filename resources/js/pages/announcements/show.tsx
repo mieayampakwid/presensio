@@ -1,5 +1,6 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 import Controller from '@/actions/App/Http/Controllers/Announcements/AnnouncementController';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +21,11 @@ export default function Show({
     announcement: Announcement;
     bodyHtml: string;
 }) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Pengumuman', href: '/announcements' },
+            { title: t('announcements.title'), href: '/announcements' },
             { title: item.title },
         ],
     });
@@ -45,14 +48,18 @@ export default function Show({
                     className="text-muted-foreground text-sm underline underline-offset-4"
                     href={Reader.index()}
                 >
-                    Kembali ke pengumuman
+                    {t('announcements.show.back')}
                 </Link>
                 <article className="space-y-6 rounded-lg border p-5 md:p-8">
                     <header className="space-y-4">
                         <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline">{item.status}</Badge>
+                            <Badge variant="outline">
+                                {t(`announcements.status.${item.status}`)}
+                            </Badge>
                             {item.is_pinned && (
-                                <Badge variant="secondary">Disematkan</Badge>
+                                <Badge variant="secondary">
+                                    {t('announcements.pinned')}
+                                </Badge>
                             )}
                         </div>
                         <h1 className="text-2xl leading-snug font-semibold text-balance">
@@ -60,10 +67,12 @@ export default function Show({
                         </h1>
                         <p className="text-muted-foreground text-sm">
                             {item.author} ·{' '}
-                            {item.published_at ?? 'Belum diterbitkan'}
+                            {item.published_at ??
+                                t('announcements.not_published')}
                             {item.is_updated && (
                                 <span className="block">
-                                    Diperbarui {item.updated_at}
+                                    {t('announcements.show.updated')}{' '}
+                                    {item.updated_at}
                                 </span>
                             )}
                         </p>
@@ -78,30 +87,34 @@ export default function Show({
                                 className="text-sm underline underline-offset-4"
                                 href={Reader.attachment.url(item.id)}
                             >
-                                Unduh lampiran: {item.attachment_name}
+                                {t('announcements.show.download_attachment')}{' '}
+                                {item.attachment_name}
                             </a>
                         </div>
                     )}
                     {item.requires_acknowledgement && (
                         <div className="bg-muted space-y-3 rounded-lg p-4">
-                            <h2 className="font-medium">Konfirmasi membaca</h2>
+                            <h2 className="font-medium">
+                                {t('announcements.show.confirm_read')}
+                            </h2>
                             <p className="text-muted-foreground text-sm">
-                                Konfirmasi menyatakan Anda telah membaca
-                                pengumuman ini, bukan memberikan persetujuan
-                                kegiatan.
+                                {t('announcements.show.confirm_disclaimer')}
                             </p>
                             {item.acknowledged_at ? (
                                 <p className="text-sm font-medium">
-                                    Sudah dikonfirmasi
+                                    {t('announcements.show.confirmed')}
                                 </p>
                             ) : item.can_acknowledge ? (
                                 <Button disabled={busy} onClick={acknowledge}>
-                                    {busy ? 'Menyimpan…' : 'Saya sudah membaca'}
+                                    {busy
+                                        ? t('announcements.saving')
+                                        : t('announcements.i_have_read')}
                                 </Button>
                             ) : (
                                 <p className="text-sm">
-                                    Konfirmasi tersedia setelah pengumuman
-                                    terbit.
+                                    {t(
+                                        'announcements.show.confirmation_available_when_published',
+                                    )}
                                 </p>
                             )}
                         </div>
@@ -110,7 +123,7 @@ export default function Show({
                         {item.can_report && (
                             <Button asChild variant="outline">
                                 <Link href={Reader.recipients(item.id)}>
-                                    Status penerima
+                                    {t('announcements.show.recipient_status')}
                                 </Link>
                             </Button>
                         )}
@@ -118,14 +131,14 @@ export default function Show({
                             <>
                                 <Button asChild variant="outline">
                                     <Link href={Controller.edit(item.id)}>
-                                        Edit pengumuman
+                                        {t('announcements.show.edit')}
                                     </Link>
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     onClick={() => setDeleting(true)}
                                 >
-                                    Hapus pengumuman
+                                    {t('announcements.show.delete')}
                                 </Button>
                             </>
                         )}
@@ -135,10 +148,11 @@ export default function Show({
             <Dialog open={deleting} onOpenChange={setDeleting}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Hapus pengumuman?</DialogTitle>
+                        <DialogTitle>
+                            {t('announcements.show.delete_confirm_title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Pengumuman, lampiran, dan catatan konfirmasi akan
-                            dihapus. Tindakan ini tidak dapat dibatalkan.
+                            {t('announcements.show.delete_confirm_description')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -146,7 +160,7 @@ export default function Show({
                             variant="outline"
                             onClick={() => setDeleting(false)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -158,7 +172,7 @@ export default function Show({
                                 });
                             }}
                         >
-                            Ya, hapus
+                            {t('announcements.show.delete_confirm_yes')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

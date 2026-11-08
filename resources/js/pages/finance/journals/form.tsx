@@ -68,7 +68,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
         ],
     });
 
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
 
     const isEditing = journal !== null;
 
@@ -166,21 +166,29 @@ export default function JournalForm({ journal, accounts, students }: Props) {
 
     return (
         <>
-            <Head title={isEditing ? 'Edit Jurnal' : 'Entri Jurnal Baru'} />
+            <Head
+                title={
+                    isEditing
+                        ? t('finance.journals.form.title_edit')
+                        : t('finance.journals.form.title_create')
+                }
+            />
 
             <div className="mx-auto max-w-6xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
                         title={
                             isEditing
-                                ? 'Edit Draf Jurnal'
-                                : 'Entri Jurnal Manual'
+                                ? t('finance.journals.form.title_edit')
+                                : t('finance.journals.form.title_create')
                         }
                         description="Input ayat jurnal umum debit dan kredit untuk operasional atau saldo awal."
                     />
 
                     <Button variant="outline" asChild>
-                        <Link href="/finance/journals">Kembali ke Daftar</Link>
+                        <Link href="/finance/journals">
+                            {t('finance.journals.show.back')}
+                        </Link>
                     </Button>
                 </div>
 
@@ -189,16 +197,16 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                     <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
                     <div className="space-y-1 text-xs">
                         <span className="font-semibold">
-                            Petunjuk Saldo Awal (Opening Balance):
+                            {t('finance.journals.form.tip_title', {
+                                defaultValue:
+                                    'Petunjuk Saldo Awal (Opening Balance):',
+                            })}
                         </span>
                         <p>
-                            Untuk mencatat saldo awal buku besar sebelum tanggal
-                            go-live, gunakan tanggal H-1 (misal 30 Juni 2026).
-                            Masukkan aset/kas di sisi Debit, dan akun lawan di
-                            sisi Kredit menggunakan{' '}
-                            <strong>3-1000 Aset Neto Tanpa Pembatasan</strong>.
-                            Saldo piutang per-siswa akan diatur melalui modul
-                            tagihan siswa.
+                            {t('finance.journals.form.tip_body', {
+                                defaultValue:
+                                    'Untuk mencatat saldo awal buku besar sebelum tanggal go-live, gunakan tanggal H-1 (misal 30 Juni 2026). Masukkan aset/kas di sisi Debit, dan akun lawan di sisi Kredit menggunakan 3-1000 Aset Neto Tanpa Pembatasan. Saldo piutang per-siswa akan diatur melalui modul tagihan siswa.',
+                            })}
                         </p>
                     </div>
                 </div>
@@ -214,7 +222,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                     <div className="bg-card grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-3">
                         <div className="space-y-2">
                             <Label htmlFor="entry_date">
-                                Tanggal Transaksi
+                                {t('finance.journals.form.date')}
                             </Label>
                             <Input
                                 id="entry_date"
@@ -234,11 +242,13 @@ export default function JournalForm({ journal, accounts, students }: Props) {
 
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="description">
-                                Deskripsi / Keterangan Transaksi
+                                {t('finance.journals.form.memo')}
                             </Label>
                             <Input
                                 id="description"
-                                placeholder="Contoh: Pembayaran tagihan listrik dan air bulan Oktober"
+                                placeholder={t(
+                                    'finance.journals.form.memo_placeholder',
+                                )}
                                 value={form.data.description}
                                 onChange={(e) =>
                                     form.setData('description', e.target.value)
@@ -254,7 +264,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
 
                         <div className="space-y-2 md:col-span-3">
                             <Label htmlFor="attachment">
-                                Lampiran Nota / Kuitansi (Opsional)
+                                {t('finance.journals.form.attachment')}
                             </Label>
                             <Input
                                 id="attachment"
@@ -268,8 +278,9 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                 }
                             />
                             <p className="text-muted-foreground text-xs">
-                                Format: JPG, PNG, atau PDF (maks. 5 MB).
-                                Disimpan di private storage.
+                                {
+                                    'Format: JPG, PNG, atau PDF (maks. 5 MB). Disimpan di private storage.'
+                                }
                             </p>
                             {form.errors.attachment && (
                                 <p className="text-destructive text-xs">
@@ -284,10 +295,13 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                         <div className="bg-muted/30 flex items-center justify-between border-b p-4">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold">
-                                    Rincian Ayat Jurnal
+                                    {t('finance.journals.form.lines_title')}
                                 </span>
                                 <Badge variant="outline">
-                                    {form.data.lines.length} Baris
+                                    {form.data.lines.length}{' '}
+                                    {t('finance.journals.form.lines', {
+                                        defaultValue: 'Baris',
+                                    })}
                                 </Badge>
                             </div>
 
@@ -297,7 +311,8 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                 variant="outline"
                                 onClick={addLine}
                             >
-                                <Plus className="mr-1 h-4 w-4" /> Tambah Baris
+                                <Plus className="mr-1 h-4 w-4" />{' '}
+                                {t('finance.journals.form.add_line')}
                             </Button>
                         </div>
 
@@ -315,19 +330,20 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                             #
                                         </th>
                                         <th className="w-72 px-3 py-2 font-medium">
-                                            Akun Perkiraan
+                                            {t('finance.common.account')}
                                         </th>
                                         <th className="w-40 px-3 py-2 text-right font-medium">
-                                            Debit (Rp)
+                                            {t('finance.common.debit')}
                                         </th>
                                         <th className="w-40 px-3 py-2 text-right font-medium">
-                                            Kredit (Rp)
+                                            {t('finance.common.credit')}
                                         </th>
                                         <th className="w-48 px-3 py-2 font-medium">
-                                            Siswa (Subledger)
+                                            {t('finance.common.student')}{' '}
+                                            {'(Subledger)'}
                                         </th>
                                         <th className="px-3 py-2 font-medium">
-                                            Memo / Catatan
+                                            {t('finance.common.description')}
                                         </th>
                                         <th className="w-12 px-3 py-2 text-center font-medium"></th>
                                     </tr>
@@ -462,7 +478,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                                     </SelectTrigger>
                                                     <SelectContent className="max-h-60">
                                                         <SelectItem value="none">
-                                                            - Tidak ada -
+                                                            {'- Tidak ada -'}
                                                         </SelectItem>
                                                         {students.map((s) => (
                                                             <SelectItem
@@ -541,13 +557,13 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                                 {isBalanced ? (
                                     <div className="flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:bg-emerald-950/40">
                                         <CheckCircle2 className="mr-1.5 h-4 w-4" />{' '}
-                                        Jurnal Seimbang (Balanced)
+                                        {t('finance.common.balanced')}
                                     </div>
                                 ) : (
                                     <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center rounded-full border px-3 py-1.5 text-xs font-medium">
                                         <AlertCircle className="mr-1.5 h-4 w-4" />
-                                        Selisih: Rp{' '}
-                                        {diff.toLocaleString(locale)}
+                                        {t('finance.common.difference')}:{' '}
+                                        {`Rp ${diff.toLocaleString(locale)}`}
                                     </div>
                                 )}
                             </div>
@@ -555,18 +571,22 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                             <div className="flex items-center gap-6 font-mono text-sm">
                                 <div>
                                     <span className="text-muted-foreground mr-2">
-                                        Total Debit:
+                                        {t(
+                                            'finance.reports.trial_balance.total_debit',
+                                        )}
                                     </span>
                                     <span className="font-semibold">
-                                        Rp {totalDebit.toLocaleString(locale)}
+                                        {`Rp ${totalDebit.toLocaleString(locale)}`}
                                     </span>
                                 </div>
                                 <div>
                                     <span className="text-muted-foreground mr-2">
-                                        Total Kredit:
+                                        {t(
+                                            'finance.reports.trial_balance.total_credit',
+                                        )}
                                     </span>
                                     <span className="font-semibold">
-                                        Rp {totalCredit.toLocaleString(locale)}
+                                        {`Rp ${totalCredit.toLocaleString(locale)}`}
                                     </span>
                                 </div>
                             </div>
@@ -581,7 +601,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                             disabled={form.processing}
                             onClick={() => handleSubmit('draft')}
                         >
-                            Simpan sebagai Draf
+                            {t('finance.journals.form.save_draft')}
                         </Button>
 
                         <Button
@@ -589,7 +609,7 @@ export default function JournalForm({ journal, accounts, students }: Props) {
                             disabled={form.processing || !isBalanced}
                             onClick={() => handleSubmit('post')}
                         >
-                            Posting ke Buku Besar
+                            {t('finance.journals.form.post')}
                         </Button>
                     </div>
                 </form>

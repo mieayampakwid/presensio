@@ -1,5 +1,6 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft, Calendar, GraduationCap, Lock, Unlock } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -63,6 +64,7 @@ export default function ClassGrades({
     subjects,
     students,
 }: Props) {
+    const { t } = useTranslation();
     setLayoutProps({
         breadcrumbs: [
             {
@@ -96,13 +98,16 @@ export default function ClassGrades({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Kembali ke Kelas
+                                {t('grading.class_grades.back_to_class')}
                             </Link>
                             <span>•</span>
                             <span className="flex items-center gap-1">
                                 <GraduationCap className="h-4 w-4" />
-                                Kelas {school_class.name} (Tingkat{' '}
-                                {school_class.grade_level})
+                                {t('grading.class_grades.class')}{' '}
+                                {school_class.name}{' '}
+                                {t('grading.class_grades.grade_level', {
+                                    level: school_class.grade_level,
+                                })}
                             </span>
                         </div>
                         <Heading
@@ -137,10 +142,10 @@ export default function ClassGrades({
                         <thead className="bg-muted text-muted-foreground font-medium">
                             <tr className="border-b">
                                 <th className="bg-muted sticky left-0 z-20 w-12 px-4 py-3">
-                                    No
+                                    {t('grading.class_grades.no')}
                                 </th>
                                 <th className="bg-muted sticky left-12 z-20 min-w-[200px] px-4 py-3 shadow-[1px_0_0_0_var(--color-border)]">
-                                    Nama Siswa
+                                    {t('grading.class_grades.student_name')}
                                 </th>
                                 {subjects.map((sub) => (
                                     <th
@@ -151,7 +156,8 @@ export default function ClassGrades({
                                             {sub.code || sub.name}
                                         </div>
                                         <div className="text-muted-foreground text-[11px]">
-                                            KKTP: {sub.passing_threshold}
+                                            {t('grading.class_grades.kktp')}{' '}
+                                            {sub.passing_threshold}
                                         </div>
                                         <div className="mt-1 flex justify-center">
                                             {sub.is_finalized ? (
@@ -160,7 +166,9 @@ export default function ClassGrades({
                                                     className="bg-emerald-600 px-1.5 py-0 text-[10px] text-white"
                                                 >
                                                     <Lock className="mr-0.5 h-2.5 w-2.5" />
-                                                    Final
+                                                    {t(
+                                                        'grading.class_grades.final',
+                                                    )}
                                                 </Badge>
                                             ) : (
                                                 <Badge
@@ -168,7 +176,9 @@ export default function ClassGrades({
                                                     className="px-1.5 py-0 text-[10px]"
                                                 >
                                                     <Unlock className="mr-0.5 h-2.5 w-2.5" />
-                                                    Draf
+                                                    {t(
+                                                        'grading.class_grades.draft',
+                                                    )}
                                                 </Badge>
                                             )}
                                         </div>
@@ -183,8 +193,7 @@ export default function ClassGrades({
                                         colSpan={subjects.length + 2}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Tidak ada siswa aktif terdaftar di kelas
-                                        ini pada semester terpilih.
+                                        {t('grading.class_grades.empty')}
                                     </td>
                                 </tr>
                             ) : (

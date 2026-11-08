@@ -61,22 +61,24 @@ export default function ReportCards({
 
     return (
         <>
-            <Head title="Rapor Saya" />
+            <Head title={t('grading.student.report_cards.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Rapor Saya"
+                    title={t('grading.student.report_cards.title')}
                     description="Arsip rapor semester yang sudah diterbitkan"
                 />
 
                 {semesters.length === 0 ? (
                     <Card className="text-muted-foreground p-6 text-sm">
-                        Belum ada rapor yang diterbitkan.
+                        {t('grading.student.report_cards.empty')}
                     </Card>
                 ) : (
                     <>
                         <div className="flex flex-wrap items-center gap-3">
-                            <Label htmlFor="semester">Semester</Label>
+                            <Label htmlFor="semester">
+                                {t('grading.gradebook.semester')}
+                            </Label>
                             <Select
                                 value={String(semesterId ?? '')}
                                 onValueChange={switchSemester}
@@ -93,8 +95,13 @@ export default function ReportCards({
                                             key={semester.id}
                                             value={String(semester.id)}
                                         >
-                                            {semester.name} · Versi{' '}
-                                            {semester.version}
+                                            {semester.name}{' '}
+                                            {t(
+                                                'grading.student.report_cards.version',
+                                                {
+                                                    version: semester.version,
+                                                },
+                                            )}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -108,7 +115,9 @@ export default function ReportCards({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        Unduh PDF
+                                        {t(
+                                            'grading.student.report_cards.download',
+                                        )}
                                     </a>
                                 </Button>
                             )}

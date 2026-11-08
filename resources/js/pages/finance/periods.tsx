@@ -43,14 +43,14 @@ export default function PeriodsIndex({
     periods,
     closableYears,
 }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Periode Akuntansi' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.periods.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const [closingYear, setClosingYear] = useState<ClosableYear | null>(null);
     const [reopeningPeriod, setReopeningPeriod] = useState<PeriodRow | null>(
@@ -100,12 +100,12 @@ export default function PeriodsIndex({
 
     return (
         <>
-            <Head title="Periode Akuntansi" />
+            <Head title={t('finance.periods.title')} />
 
             <div className="mx-auto max-w-5xl space-y-6 p-4">
                 <Heading
-                    title="Periode Akuntansi & Tutup Buku"
-                    description="Kelola penguncian buku besar bulanan untuk mencegah posting transaksi ke periode yang telah berlalu."
+                    title={t('finance.periods.title')}
+                    description={t('finance.periods.description')}
                 />
 
                 {/* Preconditions Notice */}
@@ -113,15 +113,15 @@ export default function PeriodsIndex({
                     <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
                     <div className="space-y-1 text-xs">
                         <span className="font-semibold">
-                            Prasyarat Tutup Buku Bulanan:
+                            {t('finance.periods.preconditions_title', {
+                                defaultValue: 'Prasyarat Tutup Buku Bulanan:',
+                            })}
                         </span>
                         <p>
-                            Sebelum periode ditutup, sistem akan memverifikasi
-                            bahwa <strong>Neraca Saldo (Trial Balance)</strong>{' '}
-                            per akhir bulan tersebut seimbang (Total Debit =
-                            Total Kredit). Setelah ditutup, transaksi baru atau
-                            pembalikan tidak dapat dimasukkan ke tanggal periode
-                            ini.
+                            {t('finance.periods.preconditions_body', {
+                                defaultValue:
+                                    'Sebelum periode ditutup, sistem akan memverifikasi bahwa Neraca Saldo (Trial Balance) per akhir bulan tersebut seimbang (Total Debit = Total Kredit). Setelah ditutup, transaksi baru atau pembalikan tidak dapat dimasukkan ke tanggal periode ini.',
+                            })}
                         </p>
                     </div>
                 </div>
@@ -130,12 +130,10 @@ export default function PeriodsIndex({
                     <div className="bg-card space-y-3 rounded-lg border p-4">
                         <div>
                             <h2 className="font-semibold">
-                                Tutup Buku Tahunan
+                                {t('finance.periods.close_year')}
                             </h2>
                             <p className="text-muted-foreground text-xs">
-                                Bulan 1-11 tahun buku harus sudah ditutup. Saldo
-                                pendapatan dan beban dipindahkan ke akun aset
-                                neto, lalu seluruh 12 periode dikunci.
+                                {t('finance.periods.year_end_dialog.message')}
                             </p>
                         </div>
                         {closableYears.map((year) => (
@@ -159,8 +157,8 @@ export default function PeriodsIndex({
                                     disabled={!year.is_closable}
                                     onClick={() => setClosingYear(year)}
                                 >
-                                    <Lock className="mr-1 h-3.5 w-3.5" /> Tutup
-                                    Buku Tahunan
+                                    <Lock className="mr-1 h-3.5 w-3.5" />{' '}
+                                    {t('finance.periods.close_year')}
                                 </Button>
                             </div>
                         ))}
@@ -173,19 +171,19 @@ export default function PeriodsIndex({
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Periode
+                                        {t('finance.periods.table.period')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Status Buku
+                                        {t('finance.periods.table.status')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Waktu Ditutup
+                                        {t('finance.periods.table.closed')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Ditutup Oleh
+                                        {t('finance.periods.table.closed_by')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Aksi
+                                        {t('finance.common.actions')}
                                     </th>
                                 </tr>
                             </thead>
@@ -205,7 +203,9 @@ export default function PeriodsIndex({
                                                     className="bg-red-800"
                                                 >
                                                     <Lock className="mr-1 h-3 w-3" />{' '}
-                                                    Terkunci
+                                                    {t(
+                                                        'finance.periods.table.locked',
+                                                    )}
                                                 </Badge>
                                             ) : p.is_open ? (
                                                 <Badge
@@ -213,7 +213,9 @@ export default function PeriodsIndex({
                                                     className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30"
                                                 >
                                                     <Unlock className="mr-1 h-3 w-3" />{' '}
-                                                    Terbuka
+                                                    {t(
+                                                        'finance.periods.table.open',
+                                                    )}
                                                 </Badge>
                                             ) : (
                                                 <Badge
@@ -221,7 +223,9 @@ export default function PeriodsIndex({
                                                     className="bg-slate-700"
                                                 >
                                                     <Lock className="mr-1 h-3 w-3" />{' '}
-                                                    Ditutup
+                                                    {t(
+                                                        'finance.periods.table.closed',
+                                                    )}
                                                 </Badge>
                                             )}
                                         </td>
@@ -253,7 +257,9 @@ export default function PeriodsIndex({
                                                     }
                                                 >
                                                     <Lock className="mr-1 h-3.5 w-3.5" />{' '}
-                                                    Tutup Periode
+                                                    {t(
+                                                        'finance.periods.table.close',
+                                                    )}
                                                 </Button>
                                             ) : (
                                                 <Button
@@ -264,7 +270,9 @@ export default function PeriodsIndex({
                                                     }
                                                 >
                                                     <Unlock className="mr-1 h-3.5 w-3.5" />{' '}
-                                                    Buka Kembali
+                                                    {t(
+                                                        'finance.periods.table.reopen',
+                                                    )}
                                                 </Button>
                                             )}
                                         </td>
@@ -283,12 +291,13 @@ export default function PeriodsIndex({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Konfirmasi Tutup Periode</DialogTitle>
+                        <DialogTitle>
+                            {t('finance.periods.close_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Apakah Anda yakin ingin menutup periode akuntansi{' '}
-                            <strong>{closingPeriod?.period}</strong>? Setelah
-                            ditutup, tidak ada transaksi yang dapat diposting
-                            pada tanggal bulan ini.
+                            {t('finance.periods.close_dialog.message', {
+                                period: closingPeriod?.period ?? '',
+                            })}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -297,10 +306,10 @@ export default function PeriodsIndex({
                             variant="outline"
                             onClick={() => setClosingPeriod(null)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleCloseConfirm}>
-                            Ya, Tutup Periode
+                            {t('finance.periods.close_dialog.confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -313,12 +322,11 @@ export default function PeriodsIndex({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Konfirmasi Tutup Buku Tahunan</DialogTitle>
+                        <DialogTitle>
+                            {t('finance.periods.year_end_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Tahun buku <strong>{closingYear?.label}</strong>{' '}
-                            akan ditutup: jurnal penutup diposting dan seluruh
-                            12 periode dikunci. Periode terkunci tidak dapat
-                            dibuka kembali.
+                            {t('finance.periods.year_end_dialog.message')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -327,10 +335,10 @@ export default function PeriodsIndex({
                             variant="outline"
                             onClick={() => setClosingYear(null)}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleCloseYearConfirm}>
-                            Ya, Tutup Buku Tahunan
+                            {t('finance.periods.year_end_dialog.confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -343,23 +351,26 @@ export default function PeriodsIndex({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Buka Kembali Periode</DialogTitle>
+                        <DialogTitle>
+                            {t('finance.periods.reopen_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Membuka kembali periode{' '}
-                            <strong>{reopeningPeriod?.period}</strong>{' '}
-                            memerlukan alasan resmi untuk dicatat pada log
-                            audit.
+                            {t('finance.periods.reopen_dialog.message', {
+                                period: reopeningPeriod?.period ?? '',
+                            })}
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleReopenSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="reopen-reason">
-                                Alasan Pembukaan Kembali
+                                {t('finance.periods.reopen_dialog.reason')}
                             </Label>
                             <Input
                                 id="reopen-reason"
-                                placeholder="Contoh: Koreksi penyesuaian transaksi audit akhir tahun"
+                                placeholder={t(
+                                    'finance.periods.reopen_dialog.reason_placeholder',
+                                )}
                                 value={reopenForm.data.reason}
                                 onChange={(e) =>
                                     reopenForm.setData('reason', e.target.value)
@@ -379,13 +390,13 @@ export default function PeriodsIndex({
                                 variant="outline"
                                 onClick={() => setReopeningPeriod(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={reopenForm.processing}
                             >
-                                Konfirmasi Buka Periode
+                                {t('finance.periods.reopen_dialog.confirm')}
                             </Button>
                         </DialogFooter>
                     </form>

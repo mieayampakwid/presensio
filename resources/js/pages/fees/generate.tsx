@@ -1,4 +1,5 @@
 import { Head, router, setLayoutProps, useHttp } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import { useState } from 'react';
 import BillGenerationController from '@/actions/App/Http/Controllers/Fees/BillGenerationController';
 import Heading from '@/components/heading';
@@ -42,10 +43,12 @@ export default function GenerateBills({
     feeTypes,
     classes,
 }: Props) {
+    const { t } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Biaya Sekolah', href: '/fees/bills' },
-            { title: 'Generate Tagihan' },
+            { title: t('fees.common.fees'), href: '/fees/bills' },
+            { title: t('fees.generate.title') },
         ],
     });
 
@@ -91,11 +94,11 @@ export default function GenerateBills({
 
     return (
         <>
-            <Head title="Generate Tagihan" />
+            <Head title={t('fees.generate.title')} />
 
             <div className="max-w-2xl space-y-6 p-4">
                 <Heading
-                    title="Generate Tagihan"
+                    title={t('fees.generate.title')}
                     description={
                         academicYear
                             ? `Buat tagihan massal untuk siswa terdaftar tahun ajaran ${academicYear.name}.`
@@ -105,7 +108,9 @@ export default function GenerateBills({
 
                 <div className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="fee_type_id">Jenis Biaya</Label>
+                        <Label htmlFor="fee_type_id">
+                            {t('fees.generate.fee_type')}
+                        </Label>
                         <select
                             id="fee_type_id"
                             value={http.data.fee_type_id}
@@ -123,7 +128,7 @@ export default function GenerateBills({
                             className={selectClass}
                         >
                             <option value="" disabled>
-                                Pilih jenis biaya...
+                                {t('fees.generate.select_fee_type')}
                             </option>
                             {feeTypes.map((type) => (
                                 <option key={type.id} value={type.id}>
@@ -135,7 +140,9 @@ export default function GenerateBills({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="target">Sasaran</Label>
+                        <Label htmlFor="target">
+                            {t('fees.generate.target')}
+                        </Label>
                         <select
                             id="target"
                             value={http.data.target}
@@ -147,15 +154,23 @@ export default function GenerateBills({
                             }
                             className={selectClass}
                         >
-                            <option value="all">Semua siswa aktif</option>
-                            <option value="grade_level">Satu tingkat</option>
-                            <option value="class">Satu kelas</option>
+                            <option value="all">
+                                {t('fees.generate.target_all')}
+                            </option>
+                            <option value="grade_level">
+                                {t('fees.generate.target_grade')}
+                            </option>
+                            <option value="class">
+                                {t('fees.generate.target_class')}
+                            </option>
                         </select>
                     </div>
 
                     {http.data.target === 'class' && (
                         <div className="grid gap-2">
-                            <Label htmlFor="class_id">Kelas</Label>
+                            <Label htmlFor="class_id">
+                                {t('fees.common.class')}
+                            </Label>
                             <select
                                 id="class_id"
                                 value={http.data.class_id}
@@ -165,7 +180,7 @@ export default function GenerateBills({
                                 className={selectClass}
                             >
                                 <option value="" disabled>
-                                    Pilih kelas...
+                                    {t('fees.generate.select_class')}
                                 </option>
                                 {classes.map((schoolClass) => (
                                     <option
@@ -182,7 +197,9 @@ export default function GenerateBills({
 
                     {http.data.target === 'grade_level' && (
                         <div className="grid gap-2">
-                            <Label htmlFor="grade_level">Tingkat</Label>
+                            <Label htmlFor="grade_level">
+                                {t('fees.generate.target_grade')}
+                            </Label>
                             <select
                                 id="grade_level"
                                 value={http.data.grade_level}
@@ -192,11 +209,12 @@ export default function GenerateBills({
                                 className={selectClass}
                             >
                                 <option value="" disabled>
-                                    Pilih tingkat...
+                                    {t('fees.generate.select_grade')}
                                 </option>
                                 {gradeLevels.map((level) => (
                                     <option key={level} value={level}>
-                                        Tingkat {level}
+                                        {t('fees.generate.target_grade')}{' '}
+                                        {level}
                                     </option>
                                 ))}
                             </select>
@@ -205,7 +223,9 @@ export default function GenerateBills({
                     )}
 
                     <div className="grid gap-2">
-                        <Label htmlFor="amount">Nominal (Rp)</Label>
+                        <Label htmlFor="amount">
+                            {t('fees.common.nominal')}
+                        </Label>
                         <Input
                             id="amount"
                             type="number"
@@ -222,7 +242,9 @@ export default function GenerateBills({
                     {feeType?.is_recurring && (
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="grid gap-2">
-                                <Label htmlFor="from_month">Dari Bulan</Label>
+                                <Label htmlFor="from_month">
+                                    {t('fees.generate.from_month')}
+                                </Label>
                                 <Input
                                     id="from_month"
                                     type="month"
@@ -234,7 +256,9 @@ export default function GenerateBills({
                                 <InputError message={http.errors.from_month} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="to_month">Sampai Bulan</Label>
+                                <Label htmlFor="to_month">
+                                    {t('fees.generate.to_month')}
+                                </Label>
                                 <Input
                                     id="to_month"
                                     type="month"
@@ -247,7 +271,7 @@ export default function GenerateBills({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="due_day">
-                                    Tanggal Jatuh Tempo
+                                    {t('fees.generate.due_date')}
                                 </Label>
                                 <Input
                                     id="due_day"
@@ -266,7 +290,9 @@ export default function GenerateBills({
 
                     {feeType && !feeType.is_recurring && (
                         <div className="grid gap-2">
-                            <Label htmlFor="due_date">Jatuh Tempo</Label>
+                            <Label htmlFor="due_date">
+                                {t('fees.common.due_date')}
+                            </Label>
                             <Input
                                 id="due_date"
                                 type="date"
@@ -288,7 +314,7 @@ export default function GenerateBills({
                         onClick={preview}
                     >
                         {http.processing && <Spinner />}
-                        Pratinjau
+                        {t('fees.generate.preview')}
                     </Button>
                 </div>
 
@@ -297,7 +323,7 @@ export default function GenerateBills({
                         <dl className="grid grid-cols-3 gap-4 text-center">
                             <div>
                                 <dt className="text-muted-foreground text-sm">
-                                    Akan dibuat
+                                    {t('fees.generate.will_generate')}
                                 </dt>
                                 <dd className="text-2xl font-semibold tabular-nums">
                                     {summary.created}
@@ -305,7 +331,7 @@ export default function GenerateBills({
                             </div>
                             <div>
                                 <dt className="text-muted-foreground text-sm">
-                                    Dilewati
+                                    {t('fees.generate.will_skip')}
                                 </dt>
                                 <dd className="text-2xl font-semibold tabular-nums">
                                     {summary.skipped}
@@ -313,7 +339,7 @@ export default function GenerateBills({
                             </div>
                             <div>
                                 <dt className="text-muted-foreground text-sm">
-                                    Berdiskon
+                                    {t('fees.common.discounts')}
                                 </dt>
                                 <dd className="text-2xl font-semibold tabular-nums">
                                     {summary.discounted}
@@ -326,7 +352,7 @@ export default function GenerateBills({
                             onClick={commit}
                         >
                             {committing && <Spinner />}
-                            Buat Tagihan
+                            {t('fees.generate.submit')}
                         </Button>
                     </div>
                 )}

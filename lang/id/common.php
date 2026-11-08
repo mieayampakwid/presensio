@@ -4,6 +4,7 @@ return [
     'previous' => 'Sebelumnya',
     'next' => 'Berikutnya',
     'page_of' => 'Halaman :current dari :last',
+    'page_of_total' => 'Halaman :current dari :last (:total total)',
     'edit' => 'Ubah',
     'cancel' => 'Batal',
     'show_password' => 'Tampilkan kata sandi',
@@ -19,4 +20,6 @@ return [
         'male' => 'Laki-laki',
         'female' => 'Perempuan',
     ],
+    'yes' => 'Sudah',
+    'no' => 'Belum',
 ];

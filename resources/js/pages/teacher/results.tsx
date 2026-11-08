@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import {
     ArrowLeft,
     Calendar,
@@ -86,6 +87,7 @@ export default function CourseResults({
     students,
     canWrite,
 }: Props) {
+    const { t } = useTranslation();
     setLayoutProps({
         breadcrumbs: [
             {
@@ -152,7 +154,9 @@ export default function CourseResults({
     return (
         <>
             <Head
-                title={`Hasil & Capaian - ${course.name} (${course.class_name})`}
+                title={t('grading.results.title', {
+                    course: `${course.name} (${course.class_name})`,
+                })}
             />
 
             <div className="space-y-6 p-4">
@@ -165,26 +169,29 @@ export default function CourseResults({
                                 className="flex items-center gap-1 hover:underline"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                Kembali
+                                {t('grading.results.back')}
                             </Link>
                             <span>•</span>
                             <Link
                                 href={`/courses/${course.id}/gradebook?semester=${semester.id}`}
                                 className="hover:underline"
                             >
-                                Buku Nilai
+                                {t('grading.results.gradebook')}
                             </Link>
                             <span>•</span>
                             <Link
                                 href={`/courses/${course.id}/assessments?semester=${semester.id}`}
                                 className="hover:underline"
                             >
-                                Kelola Asesmen
+                                {t('grading.results.manage_assessments')}
                             </Link>
                             <span>•</span>
                             <span>{course.class_name}</span>
                             <span>•</span>
-                            <span>KKTP: {course.passing_threshold}</span>
+                            <span>
+                                {t('grading.results.kktp')}{' '}
+                                {course.passing_threshold}
+                            </span>
                         </div>
                         <div className="mt-1 flex items-center gap-3">
                             <Heading
@@ -197,10 +204,12 @@ export default function CourseResults({
                                     className="bg-emerald-600 text-white"
                                 >
                                     <Lock className="mr-1 h-3 w-3" />
-                                    Difinalisasi
+                                    {t('grading.results.table.finalized')}
                                 </Badge>
                             ) : (
-                                <Badge variant="outline">Terbuka (Draf)</Badge>
+                                <Badge variant="outline">
+                                    {t('grading.results.table.open_draft')}
+                                </Badge>
                             )}
                         </div>
                     </div>
@@ -234,7 +243,7 @@ export default function CourseResults({
                                 href={`/courses/${course.id}/gradebook?semester=${semester.id}`}
                             >
                                 <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-                                Buku Nilai
+                                {t('grading.results.gradebook')}
                             </Link>
                         </Button>
                     </div>
@@ -246,11 +255,12 @@ export default function CourseResults({
                         <Lock className="h-5 w-5 shrink-0" />
                         <div>
                             <div className="font-medium">
-                                Mata pelajaran ini telah difinalisasi
+                                {t('grading.results.finalized_notice_title')}
                             </div>
                             <div className="text-sm opacity-90">
-                                Nilai akhir dan deskripsi capaian telah
-                                dibekukan dan menjadi data acuan rapor.
+                                {t(
+                                    'grading.results.finalized_notice_description',
+                                )}
                             </div>
                         </div>
                     </div>
@@ -261,22 +271,26 @@ export default function CourseResults({
                     <table className="w-full text-left text-sm">
                         <thead className="bg-muted text-muted-foreground font-medium">
                             <tr className="border-b">
-                                <th className="w-12 px-4 py-3">No</th>
+                                <th className="w-12 px-4 py-3">
+                                    {t('grading.results.table.no')}
+                                </th>
                                 <th className="min-w-[180px] px-4 py-3">
-                                    Siswa
+                                    {t('grading.results.table.student')}
                                 </th>
                                 <th className="w-28 px-4 py-3 text-center">
-                                    Nilai Akhir
+                                    {t('grading.results.table.final_grade')}
                                 </th>
                                 <th className="w-28 px-4 py-3 text-center">
-                                    Status
+                                    {t('grading.results.table.status')}
                                 </th>
                                 <th className="px-4 py-3">
-                                    Deskripsi Capaian Kompetensi
+                                    {t(
+                                        'grading.results.table.competence_description',
+                                    )}
                                 </th>
                                 {canWrite && !is_finalized && (
                                     <th className="w-24 px-4 py-3 text-right">
-                                        Aksi
+                                        {t('grading.results.table.actions')}
                                     </th>
                                 )}
                             </tr>
@@ -288,8 +302,7 @@ export default function CourseResults({
                                         colSpan={6}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        Tidak ada siswa terdaftar dalam kelas
-                                        ini pada semester yang dipilih.
+                                        {t('grading.results.table.empty')}
                                     </td>
                                 </tr>
                             ) : (
@@ -326,7 +339,9 @@ export default function CourseResults({
                                                     </span>
                                                 ) : (
                                                     <span className="text-muted-foreground text-xs italic">
-                                                        Belum ada
+                                                        {t(
+                                                            'grading.results.table.none',
+                                                        )}
                                                     </span>
                                                 )}
                                             </td>
@@ -359,11 +374,9 @@ export default function CourseResults({
                                                     <p className="text-foreground leading-relaxed">
                                                         {student.description || (
                                                             <span className="text-muted-foreground italic">
-                                                                Belum ada
-                                                                deskripsi
-                                                                (memerlukan data
-                                                                asesmen sumatif
-                                                                lingkup materi).
+                                                                {t(
+                                                                    'grading.results.table.empty_description',
+                                                                )}
                                                             </span>
                                                         )}
                                                     </p>
@@ -373,7 +386,9 @@ export default function CourseResults({
                                                                 variant="secondary"
                                                                 className="text-[11px]"
                                                             >
-                                                                Disesuaikan Guru
+                                                                {t(
+                                                                    'grading.results.table.teacher_adjusted',
+                                                                )}
                                                             </Badge>
                                                         ) : (
                                                             <Badge
@@ -381,8 +396,9 @@ export default function CourseResults({
                                                                 className="text-muted-foreground text-[11px]"
                                                             >
                                                                 <Sparkles className="mr-1 h-3 w-3" />
-                                                                Otomatis
-                                                                (Sistem)
+                                                                {t(
+                                                                    'grading.results.table.auto_system',
+                                                                )}
                                                             </Badge>
                                                         )}
                                                     </div>
@@ -400,7 +416,9 @@ export default function CourseResults({
                                                         }
                                                     >
                                                         <Edit2 className="mr-1 h-3.5 w-3.5" />
-                                                        Edit
+                                                        {t(
+                                                            'grading.results.table.edit',
+                                                        )}
                                                     </Button>
                                                 </td>
                                             )}
@@ -420,10 +438,13 @@ export default function CourseResults({
             >
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Edit Deskripsi Capaian</DialogTitle>
+                        <DialogTitle>
+                            {t('grading.results.dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Sesuaikan catatan deskripsi capaian kompetensi untuk{' '}
-                            <strong>{selectedStudent?.name}</strong>.
+                            {t('grading.results.dialog.description', {
+                                name: selectedStudent?.name ?? '',
+                            })}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -443,10 +464,13 @@ export default function CourseResults({
                                     htmlFor="description-textarea"
                                     className="text-sm font-medium"
                                 >
-                                    Teks Deskripsi
+                                    {t(
+                                        'grading.results.dialog.description_text',
+                                    )}
                                 </label>
                                 <span className="text-muted-foreground text-xs">
-                                    {editedText.length}/2000 karakter
+                                    {editedText.length}
+                                    {t('grading.results.dialog.char_count')}
                                 </span>
                             </div>
                             <textarea
@@ -464,7 +488,7 @@ export default function CourseResults({
                         {selectedStudent?.draft_description && (
                             <div className="bg-muted/50 rounded-md border p-3 text-xs">
                                 <div className="text-muted-foreground mb-1 font-medium">
-                                    Draf Otomatis Sistem:
+                                    {t('grading.results.dialog.auto_draft')}
                                 </div>
                                 <p className="text-foreground italic">
                                     "{selectedStudent.draft_description}"
@@ -477,7 +501,7 @@ export default function CourseResults({
                                     className="mt-1 h-auto p-0 text-xs"
                                 >
                                     <RotateCcw className="mr-1 h-3 w-3" />
-                                    Gunakan teks draf ini
+                                    {t('grading.results.dialog.use_draft')}
                                 </Button>
                             </div>
                         )}
@@ -488,11 +512,11 @@ export default function CourseResults({
                                 variant="outline"
                                 onClick={() => setSelectedStudent(null)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>
                                 <Save className="mr-1.5 h-4 w-4" />
-                                Simpan Deskripsi
+                                {t('grading.results.dialog.save')}
                             </Button>
                         </DialogFooter>
                     </form>

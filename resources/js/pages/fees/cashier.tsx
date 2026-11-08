@@ -65,7 +65,7 @@ export default function Cashier({
         ],
     });
 
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
 
     const rupiah = (value: number) => `Rp ${value.toLocaleString(locale)}`;
 
@@ -160,21 +160,19 @@ export default function Cashier({
 
     return (
         <>
-            <Head title="Kasir" />
+            <Head title={t('fees.cashier.title')} />
 
             <div className="max-w-3xl space-y-6 p-4">
                 <Heading
-                    title="Kasir"
-                    description="Terima pembayaran tunai untuk satu atau beberapa bersaudara."
+                    title={t('fees.cashier.title')}
+                    description={t('fees.cashier.description')}
                 />
 
                 {flash?.payment && (
                     <div className="rounded-lg border border-green-600/40 p-4 text-sm">
-                        Pembayaran tercatat. Nomor kuitansi{' '}
-                        <span className="font-semibold">
-                            {flash.payment.receipt_number}
-                        </span>
-                        .{' '}
+                        {t('fees.cashier.payment_saved', {
+                            number: flash.payment.receipt_number,
+                        })}{' '}
                         <a
                             href={ReceiptController.show.url({
                                 payment: flash.payment.id,
@@ -183,7 +181,7 @@ export default function Cashier({
                             rel="noreferrer"
                             className="font-medium underline"
                         >
-                            Cetak Kuitansi
+                            {t('fees.common.print_receipt')}
                         </a>
                     </div>
                 )}
@@ -201,7 +199,7 @@ export default function Cashier({
                         onChange={(event) => setSearch(event.target.value)}
                     />
                     <Button type="submit" variant="outline">
-                        Cari
+                        {t('fees.common.search')}
                     </Button>
                 </form>
 
@@ -232,7 +230,7 @@ export default function Cashier({
                                         )
                                     }
                                 >
-                                    Pilih
+                                    {t('fees.common.choose')}
                                 </Button>
                             </li>
                         ))}
@@ -242,7 +240,7 @@ export default function Cashier({
                 {siblings.length > 0 && (
                     <div className="space-y-2">
                         <p className="text-muted-foreground text-sm">
-                            Saudara (wali sama), dapat dibayar bersamaan:
+                            {t('fees.cashier.sibling_bills')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {siblings.map((sibling) => (
@@ -300,7 +298,7 @@ export default function Cashier({
                         </div>
                         {student.bills.length === 0 && (
                             <p className="text-muted-foreground text-sm">
-                                Tidak ada tagihan terbuka.
+                                {t('fees.cashier.empty')}
                             </p>
                         )}
                         {student.bills.map((bill) => (
@@ -312,11 +310,13 @@ export default function Cashier({
                                     {bill.title}
                                     <span className="text-muted-foreground">
                                         {' '}
-                                        · jatuh tempo {bill.due_date}
+                                        · {t('fees.common.due_date')}{' '}
+                                        {bill.due_date}
                                     </span>
                                 </span>
                                 <span className="text-muted-foreground tabular-nums">
-                                    Sisa {rupiah(toCents(bill.remaining) / 100)}
+                                    {t('fees.bills.table.remaining')}{' '}
+                                    {rupiah(toCents(bill.remaining) / 100)}
                                 </span>
                                 <Input
                                     type="number"
@@ -349,7 +349,7 @@ export default function Cashier({
                     <div className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="amount_received">
-                                Jumlah Diterima (Rp)
+                                {t('fees.cashier.amount_paid')}
                             </Label>
                             <Input
                                 id="amount_received"
@@ -370,7 +370,7 @@ export default function Cashier({
 
                         <div className="grid gap-2">
                             <Label htmlFor="deposit_account_id">
-                                Akun Penerima
+                                {t('fees.cashier.account')}
                             </Label>
                             <select
                                 id="deposit_account_id"
@@ -395,7 +395,9 @@ export default function Cashier({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="notes">Catatan</Label>
+                            <Label htmlFor="notes">
+                                {t('fees.common.notes')}
+                            </Label>
                             <Input
                                 id="notes"
                                 value={form.data.notes}
@@ -412,14 +414,10 @@ export default function Cashier({
 
                         <div className="flex items-center justify-between rounded-lg border p-4 text-sm">
                             <span>
-                                Teralokasi{' '}
-                                <span className="font-semibold tabular-nums">
-                                    {rupiah(allocatedCents / 100)}
-                                </span>{' '}
-                                dari diterima{' '}
-                                <span className="font-semibold tabular-nums">
-                                    {rupiah(receivedCents / 100)}
-                                </span>
+                                {t('fees.common.allocated_of_received', {
+                                    allocated: rupiah(allocatedCents / 100),
+                                    received: rupiah(receivedCents / 100),
+                                })}
                             </span>
                             <Button
                                 type="button"
@@ -427,12 +425,14 @@ export default function Cashier({
                                 onClick={submit}
                             >
                                 {form.processing && <Spinner />}
-                                Simpan Pembayaran
+                                {t('fees.cashier.save_payment')}
                             </Button>
                         </div>
                         {receivedCents > 0 && !balanced && (
                             <p className="text-destructive text-sm">
-                                Total alokasi harus sama dengan jumlah diterima.
+                                {t(
+                                    'fees.verifications.verify_dialog.allocation_must_match',
+                                )}
                             </p>
                         )}
                     </div>

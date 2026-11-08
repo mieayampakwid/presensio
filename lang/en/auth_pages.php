@@ -54,5 +54,6 @@ return [
         'toggle_code' => 'login using an authentication code',
         'toggle_recovery' => 'login using a recovery code',
         'continue' => 'Continue',
+        'or_you_can' => 'or you can',
     ],
 ];

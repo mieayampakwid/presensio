@@ -41,14 +41,14 @@ type Props = {
 };
 
 export default function GeneralJournalReportPage({ report }: Props) {
+    const { t, locale } = useTranslation();
+
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Keuangan', href: '/finance/accounts' },
-            { title: 'Laporan Jurnal Umum' },
+            { title: t('finance.common.finance'), href: '/finance/accounts' },
+            { title: t('finance.reports.general_journal.title') },
         ],
     });
-
-    const { locale } = useTranslation();
 
     const [from, setFrom] = useState(report.from ?? '');
     const [to, setTo] = useState(report.to ?? '');
@@ -63,13 +63,15 @@ export default function GeneralJournalReportPage({ report }: Props) {
 
     return (
         <>
-            <Head title="Laporan Jurnal Umum" />
+            <Head title={t('finance.reports.general_journal.title')} />
 
             <div className="mx-auto max-w-6xl space-y-6 p-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <Heading
-                        title="Jurnal Umum (General Journal)"
-                        description="Daftar seluruh ayat jurnal posted secara kronologis dengan debit dan kredit."
+                        title={t('finance.reports.general_journal.title')}
+                        description={t(
+                            'finance.reports.general_journal.description',
+                        )}
                     />
 
                     <Button variant="outline" asChild>
@@ -77,7 +79,8 @@ export default function GeneralJournalReportPage({ report }: Props) {
                             href={`/finance/reports/general-journal?format=csv&from=${from}&to=${to}`}
                             download
                         >
-                            <Download className="mr-2 h-4 w-4" /> Ekspor CSV
+                            <Download className="mr-2 h-4 w-4" />{' '}
+                            {t('finance.common.export_csv')}
                         </a>
                     </Button>
                 </div>
@@ -85,7 +88,9 @@ export default function GeneralJournalReportPage({ report }: Props) {
                 {/* Filter */}
                 <div className="bg-card flex flex-wrap items-end gap-4 rounded-lg border p-4">
                     <div className="space-y-1">
-                        <Label htmlFor="from">Dari Tanggal</Label>
+                        <Label htmlFor="from">
+                            {t('fees.common.from_date')}
+                        </Label>
                         <Input
                             id="from"
                             type="date"
@@ -94,7 +99,7 @@ export default function GeneralJournalReportPage({ report }: Props) {
                         />
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="to">Sampai Tanggal</Label>
+                        <Label htmlFor="to">{t('fees.common.to_date')}</Label>
                         <Input
                             id="to"
                             type="date"
@@ -102,7 +107,9 @@ export default function GeneralJournalReportPage({ report }: Props) {
                             onChange={(e) => setTo(e.target.value)}
                         />
                     </div>
-                    <Button onClick={applyFilter}>Tampilkan</Button>
+                    <Button onClick={applyFilter}>
+                        {t('finance.common.filter')}
+                    </Button>
                 </div>
 
                 {/* Table */}
@@ -112,19 +119,20 @@ export default function GeneralJournalReportPage({ report }: Props) {
                             <thead className="bg-muted/50 text-left">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">
-                                        Tanggal
+                                        {t('finance.common.date')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        No. Jurnal & Deskripsi
+                                        {t('finance.journals.table.number')} &{' '}
+                                        {t('finance.common.description')}
                                     </th>
                                     <th className="px-4 py-3 font-medium">
-                                        Akun
+                                        {t('finance.common.account')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Debit (Rp)
+                                        {t('finance.common.debit')}
                                     </th>
                                     <th className="px-4 py-3 text-right font-medium">
-                                        Kredit (Rp)
+                                        {t('finance.common.credit')}
                                     </th>
                                 </tr>
                             </thead>
@@ -135,8 +143,9 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                             colSpan={5}
                                             className="text-muted-foreground px-4 py-8 text-center"
                                         >
-                                            Tidak ada transaksi pada periode
-                                            ini.
+                                            {t(
+                                                'finance.reports.general_journal.empty',
+                                            )}
                                         </td>
                                     </tr>
                                 ) : (
@@ -209,19 +218,13 @@ export default function GeneralJournalReportPage({ report }: Props) {
                                         colSpan={3}
                                         className="px-4 py-3 text-right"
                                     >
-                                        TOTAL:
+                                        {t('finance.common.total')}:
                                     </td>
                                     <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400">
-                                        Rp{' '}
-                                        {Number(
-                                            report.total_debit,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.total_debit).toLocaleString(locale)}`}
                                     </td>
                                     <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400">
-                                        Rp{' '}
-                                        {Number(
-                                            report.total_credit,
-                                        ).toLocaleString(locale)}
+                                        {`Rp ${Number(report.total_credit).toLocaleString(locale)}`}
                                     </td>
                                 </tr>
                             </tfoot>

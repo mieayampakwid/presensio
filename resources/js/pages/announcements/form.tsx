@@ -1,4 +1,5 @@
 import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 import { type FormEvent } from 'react';
 import Controller from '@/actions/App/Http/Controllers/Announcements/AnnouncementController';
 import Reader from '@/actions/App/Http/Controllers/Announcements/AnnouncementReaderController';
@@ -30,6 +31,7 @@ export default function AnnouncementForm({
     timezone,
     schoolNow,
 }: Props) {
+    const { t } = useTranslation();
     const live = announcement?.status === 'Terbit';
     const form = useForm({
         title: announcement?.title ?? '',
@@ -58,10 +60,12 @@ export default function AnnouncementForm({
             { forceFormData: true },
         );
     };
-    const title = announcement ? 'Edit pengumuman' : 'Buat pengumuman';
+    const title = announcement
+        ? t('announcements.form.title_edit')
+        : t('announcements.form.title_create');
     setLayoutProps({
         breadcrumbs: [
-            { title: 'Pengumuman', href: '/announcements' },
+            { title: t('announcements.title'), href: '/announcements' },
             { title },
         ],
     });
@@ -80,14 +84,16 @@ export default function AnnouncementForm({
             <div className="mx-auto w-full max-w-3xl space-y-6 p-4 md:p-6">
                 <Heading
                     title={title}
-                    description="Sampaikan informasi yang jelas kepada penerima yang tepat."
+                    description={t('announcements.form.description')}
                 />
                 <form
                     onSubmit={submit}
                     className="space-y-6 rounded-lg border p-5 md:p-6"
                 >
                     <div className="space-y-2">
-                        <Label htmlFor="title">Judul</Label>
+                        <Label htmlFor="title">
+                            {t('announcements.form.title')}
+                        </Label>
                         <Input
                             id="title"
                             required
@@ -100,7 +106,9 @@ export default function AnnouncementForm({
                         <InputError message={form.errors.title} />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="body">Isi pengumuman</Label>
+                        <Label htmlFor="body">
+                            {t('announcements.form.body')}
+                        </Label>
                         <textarea
                             className="border-input bg-background focus-visible:ring-ring flex min-h-60 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
                             id="body"
@@ -113,26 +121,25 @@ export default function AnnouncementForm({
                             }
                         />
                         <p className="text-muted-foreground text-xs">
-                            Mendukung Markdown: judul, daftar, penekanan, dan
-                            tautan. HTML dinonaktifkan.
+                            {t('announcements.form.markdown_hint')}
                         </p>
                         <InputError message={form.errors.body} />
                     </div>
                     {live && (
                         <p className="bg-muted rounded-md p-3 text-sm">
-                            Pengumuman sudah terbit. Target, waktu terbit, dan
-                            aturan konfirmasi tetap; perubahan isi tidak meminta
-                            konfirmasi ulang.
+                            {t('announcements.form.published_locked_hint')}
                         </p>
                     )}
                     <fieldset
                         disabled={live}
                         className="grid gap-4 sm:grid-cols-2"
                     >
-                        <legend className="mb-3 font-medium">Penerima</legend>
+                        <legend className="mb-3 font-medium">
+                            {t('announcements.form.target_section')}
+                        </legend>
                         <div className="space-y-2">
                             <Label htmlFor="audience_type">
-                                Target pengumuman
+                                {t('announcements.form.target_section')}
                             </Label>
                             <select
                                 id="audience_type"
@@ -144,23 +151,33 @@ export default function AnnouncementForm({
                                 {canManage && (
                                     <>
                                         <option value="all">
-                                            Semua pengguna
+                                            {t('announcements.form.target_all')}
                                         </option>
                                         <option value="role">
-                                            Peran tertentu
+                                            {t(
+                                                'announcements.form.target_specific_role',
+                                            )}
                                         </option>
                                         <option value="grade_level">
-                                            Tingkat kelas
+                                            {t(
+                                                'announcements.form.target_grade',
+                                            )}
                                         </option>
                                     </>
                                 )}
-                                <option value="class">Kelas tertentu</option>
+                                <option value="class">
+                                    {t(
+                                        'announcements.form.target_specific_class',
+                                    )}
+                                </option>
                             </select>
                             <InputError message={form.errors.audience_type} />
                         </div>
                         {form.data.audience_type === 'role' && (
                             <div className="space-y-2">
-                                <Label htmlFor="audience_role">Peran</Label>
+                                <Label htmlFor="audience_role">
+                                    {t('announcements.form.target_role')}
+                                </Label>
                                 <select
                                     id="audience_role"
                                     className={selectClass}
@@ -173,7 +190,9 @@ export default function AnnouncementForm({
                                         )
                                     }
                                 >
-                                    <option value="">Pilih peran</option>
+                                    <option value="">
+                                        {t('announcements.form.select_role')}
+                                    </option>
                                     {roles.map((role) => (
                                         <option key={role} value={role}>
                                             {role}
@@ -187,7 +206,9 @@ export default function AnnouncementForm({
                         )}
                         {form.data.audience_type === 'grade_level' && (
                             <div className="space-y-2">
-                                <Label htmlFor="grade">Tingkat kelas</Label>
+                                <Label htmlFor="grade">
+                                    {t('announcements.form.target_grade')}
+                                </Label>
                                 <Input
                                     id="grade"
                                     type="number"
@@ -209,7 +230,9 @@ export default function AnnouncementForm({
                         )}
                         {form.data.audience_type === 'class' && (
                             <div className="space-y-2">
-                                <Label htmlFor="class_id">Kelas</Label>
+                                <Label htmlFor="class_id">
+                                    {t('announcements.form.target_class')}
+                                </Label>
                                 <select
                                     id="class_id"
                                     className={selectClass}
@@ -220,7 +243,9 @@ export default function AnnouncementForm({
                                         form.setData('class_id', e.target.value)
                                     }
                                 >
-                                    <option value="">Pilih kelas</option>
+                                    <option value="">
+                                        {t('announcements.form.select_class')}
+                                    </option>
                                     {classes.map((c) => (
                                         <option key={c.id} value={c.id}>
                                             {c.name}
@@ -233,7 +258,7 @@ export default function AnnouncementForm({
                     </fieldset>
                     <div className="space-y-2">
                         <Label htmlFor="attachment">
-                            Lampiran PDF/JPG/PNG (maks. 5 MB)
+                            {t('announcements.form.attachment_hint')}
                         </Label>
                         <Input
                             id="attachment"
@@ -259,17 +284,20 @@ export default function AnnouncementForm({
                                         )
                                     }
                                 />
-                                Hapus lampiran: {announcement.attachment_name}
+                                {t('announcements.form.remove_attachment')}{' '}
+                                {announcement.attachment_name}
                             </label>
                         )}
                     </div>
                     <fieldset className="space-y-3">
                         <legend className="mb-3 font-medium">
-                            Penerbitan dan konfirmasi
+                            {t('announcements.form.publishing_section')}
                         </legend>
                         <div className="space-y-2">
                             <Label htmlFor="published_at">
-                                Waktu terbit ({timezone})
+                                {t('announcements.form.publish_time', {
+                                    timezone,
+                                })}
                             </Label>
                             <Input
                                 id="published_at"
@@ -282,8 +310,7 @@ export default function AnnouncementForm({
                                 }
                             />
                             <p className="text-muted-foreground text-xs">
-                                Kosongkan untuk menyimpan draf, atau pilih waktu
-                                mendatang untuk menjadwalkan.
+                                {t('announcements.form.publish_time_hint')}
                             </p>
                             <InputError message={form.errors.published_at} />
                         </div>
@@ -295,7 +322,7 @@ export default function AnnouncementForm({
                                     form.setData('published_at', schoolNow)
                                 }
                             >
-                                Terbitkan sekarang
+                                {t('announcements.form.publish_now')}
                             </Button>
                         )}
                         <label className="flex items-center gap-2 text-sm">
@@ -306,7 +333,7 @@ export default function AnnouncementForm({
                                     form.setData('is_pinned', e.target.checked)
                                 }
                             />
-                            Sematkan di atas
+                            {t('announcements.form.pin_to_top')}
                         </label>
                         <label className="flex items-center gap-2 text-sm">
                             <input
@@ -320,7 +347,7 @@ export default function AnnouncementForm({
                                     )
                                 }
                             />
-                            Minta konfirmasi membaca
+                            {t('announcements.form.request_acknowledgement')}
                         </label>
                         {canManage && (
                             <label className="flex items-center gap-2 text-sm">
@@ -335,14 +362,13 @@ export default function AnnouncementForm({
                                         )
                                     }
                                 />
-                                Kirim notifikasi penting sesuai pengaturan kanal
-                                sekolah
+                                {t('announcements.form.notify_urgent')}
                             </label>
                         )}
                     </fieldset>
                     {Object.keys(form.errors).length > 0 && (
                         <div role="alert" className="text-destructive text-sm">
-                            Periksa kolom formulir.{' '}
+                            {t('announcements.form.validation_warning')}{' '}
                             {Object.entries(form.errors)
                                 .filter(
                                     ([key]) =>
@@ -371,13 +397,13 @@ export default function AnnouncementForm({
                                         : Reader.index()
                                 }
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Link>
                         </Button>
                         <Button disabled={form.processing}>
                             {form.processing
                                 ? 'Menyimpan…'
-                                : 'Simpan pengumuman'}
+                                : t('common.save_changes')}
                         </Button>
                     </div>
                 </form>

@@ -108,12 +108,12 @@ export default function LeaveReview({ requests, filters }: Props) {
 
     return (
         <>
-            <Head title="Staff Leave" />
+            <Head title={t('staff.leave.review.title')} />
 
             <div className="space-y-6 p-4">
                 <Heading
-                    title="Staff Leave"
-                    description="Review employee leave requests. Approving writes the leave status onto every expected working day in the range; days the employee already attended are left untouched."
+                    title={t('staff.leave.review.title')}
+                    description={t('staff.leave.review.description')}
                 />
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -161,31 +161,31 @@ export default function LeaveReview({ requests, filters }: Props) {
                         <thead className="bg-muted/50 text-muted-foreground">
                             <tr>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Employee
+                                    {t('staff.leave.review.table.employee')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Category
+                                    {t('staff.leave.review.table.category')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Dates
+                                    {t('staff.leave.review.table.dates')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Reason
+                                    {t('staff.leave.review.table.reason')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Proof
+                                    {t('staff.leave.review.table.proof')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Status
+                                    {t('staff.leave.review.table.status')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Review
+                                    {t('staff.leave.my.table.review_note')}
                                 </th>
                                 <th className="px-4 py-3 text-left font-medium">
-                                    Submitted
+                                    {t('staff.leave.review.table.submitted')}
                                 </th>
                                 <th className="px-4 py-3 text-right font-medium">
-                                    Actions
+                                    {t('staff.leave.review.table.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -220,7 +220,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                                 className="text-primary inline-flex items-center gap-1 underline-offset-4 hover:underline"
                                             >
                                                 <Download className="size-3.5" />
-                                                Download
+                                                {t(
+                                                    'staff.leave.review.table.download',
+                                                )}
                                             </a>
                                         ) : (
                                             <span className="text-muted-foreground">
@@ -241,10 +243,13 @@ export default function LeaveReview({ requests, filters }: Props) {
                                                 {leaveRequest.review_note}
                                                 {leaveRequest.reviewer_name && (
                                                     <span className="block text-xs">
-                                                        by{' '}
-                                                        {
-                                                            leaveRequest.reviewer_name
-                                                        }
+                                                        {t(
+                                                            'staff.leave.review.table.by',
+                                                            {
+                                                                reviewer:
+                                                                    leaveRequest.reviewer_name,
+                                                            },
+                                                        )}
                                                     </span>
                                                 )}
                                             </span>
@@ -265,7 +270,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                                     }
                                                 >
                                                     <Check className="size-4" />
-                                                    Setujui
+                                                    {t(
+                                                        'staff.leave.review.table.approve',
+                                                    )}
                                                 </Button>
                                                 <Button
                                                     variant="destructive"
@@ -277,7 +284,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                                     }
                                                 >
                                                     <X className="size-4" />
-                                                    Tolak
+                                                    {t(
+                                                        'staff.leave.review.table.reject',
+                                                    )}
                                                 </Button>
                                             </div>
                                         )}
@@ -291,7 +300,7 @@ export default function LeaveReview({ requests, filters }: Props) {
                                         colSpan={9}
                                         className="text-muted-foreground px-4 py-8 text-center"
                                     >
-                                        No leave requests in this bucket.
+                                        {t('staff.leave.review.table.empty')}
                                     </td>
                                 </tr>
                             )}
@@ -301,9 +310,11 @@ export default function LeaveReview({ requests, filters }: Props) {
 
                 <div className="flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                        {requests.total} request
-                        {requests.total === 1 ? '' : 's'} — page{' '}
-                        {requests.current_page} of {requests.last_page}
+                        {t('common.page_of_total', {
+                            current: requests.current_page,
+                            last: requests.last_page,
+                            total: requests.total,
+                        })}
                     </p>
 
                     <div className="flex gap-2">
@@ -315,7 +326,7 @@ export default function LeaveReview({ requests, filters }: Props) {
                         >
                             <Link href={requests.prev_page_url ?? '#'}>
                                 <ChevronLeft className="size-4" />
-                                Previous
+                                {t('common.previous')}
                             </Link>
                         </Button>
                         <Button
@@ -325,7 +336,7 @@ export default function LeaveReview({ requests, filters }: Props) {
                             disabled={!requests.next_page_url}
                         >
                             <Link href={requests.next_page_url ?? '#'}>
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="size-4" />
                             </Link>
                         </Button>
@@ -339,13 +350,18 @@ export default function LeaveReview({ requests, filters }: Props) {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Reject leave request</DialogTitle>
+                        <DialogTitle>
+                            {t('staff.leave.review.reject_dialog.title')}
+                        </DialogTitle>
                         <DialogDescription>
-                            Reject {rejecting?.employee_name}&apos;s request for{' '}
-                            {rejecting?.start_date === rejecting?.end_date
-                                ? rejecting?.start_date
-                                : `${rejecting?.start_date} – ${rejecting?.end_date}`}
-                            ? A note explaining the decision is required.
+                            {t('staff.leave.review.reject_dialog.description', {
+                                name: rejecting?.employee_name ?? '',
+                                dates:
+                                    rejecting?.start_date ===
+                                    rejecting?.end_date
+                                        ? (rejecting?.start_date ?? '')
+                                        : `${rejecting?.start_date} – ${rejecting?.end_date}`,
+                            })}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -360,7 +376,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                 <>
                                     <div className="grid gap-2">
                                         <Label htmlFor="review_note">
-                                            Rejection note
+                                            {t(
+                                                'staff.leave.review.reject_dialog.note',
+                                            )}
                                         </Label>
                                         <textarea
                                             id="review_note"
@@ -368,7 +386,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                             rows={3}
                                             required
                                             maxLength={1000}
-                                            placeholder="Explain why the request is rejected…"
+                                            placeholder={t(
+                                                'staff.leave.review.reject_dialog.note_placeholder',
+                                            )}
                                             className={TEXTAREA_CLASS}
                                         />
                                         <InputError
@@ -382,7 +402,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                             variant="secondary"
                                             onClick={() => setRejecting(null)}
                                         >
-                                            Keep request
+                                            {t(
+                                                'staff.leave.review.reject_dialog.keep',
+                                            )}
                                         </Button>
                                         <Button
                                             type="submit"
@@ -390,7 +412,9 @@ export default function LeaveReview({ requests, filters }: Props) {
                                             disabled={processing}
                                         >
                                             {processing && <Spinner />}
-                                            Reject request
+                                            {t(
+                                                'staff.leave.review.reject_dialog.confirm',
+                                            )}
                                         </Button>
                                     </DialogFooter>
                                 </>

@@ -76,4 +76,19 @@ class LocaleTest extends TestCase
             ->get(route('login'))
             ->assertInertia(fn (Assert $page) => $page->where('translations.roles.orphan', 'English only'));
     }
+
+    public function test_null_preference_resets_locale_to_configured_default_preventing_worker_leakage(): void
+    {
+        // Simulate a previous request setting locale to Indonesian on this worker process
+        app()->setLocale('id');
+        $this->assertSame('id', app()->getLocale());
+
+        // A new request with no saved locale or cookie must reset to the configured default
+        $user = User::factory()->create(['locale' => null]);
+        $this->actingAs($user)
+            ->get(route('profile.edit'))
+            ->assertInertia(fn (Assert $page) => $page->where('locale', 'en'));
+
+        $this->assertSame('en', app()->getLocale());
+    }
 }

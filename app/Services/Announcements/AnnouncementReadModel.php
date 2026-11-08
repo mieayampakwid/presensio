@@ -27,7 +27,7 @@ class AnnouncementReadModel
             'author' => $item->author->username, 'published_at' => $item->published_at?->timezone($this->settings->timezone())->format('Y-m-d H:i:s'),
             'updated_at' => $item->updated_at->timezone($this->settings->timezone())->format('Y-m-d H:i:s'),
             'is_updated' => $item->updated_at->gt($item->created_at),
-            'status' => $item->published_at === null ? 'Draf' : ($item->isLive() ? 'Terbit' : 'Terjadwal'),
+            'status' => $item->published_at === null ? 'draft' : ($item->isLive() ? 'published' : 'scheduled'),
             'audience_type' => $item->audience_type->value, 'audience_role' => $item->audience_role, 'audience_grade_level' => $item->audience_grade_level, 'class_id' => $item->class_id,
             'is_pinned' => $item->is_pinned, 'requires_acknowledgement' => $item->requires_acknowledgement, 'notify_urgent' => $item->notify_urgent,
             'attachment_name' => $item->attachment_name, 'read_at' => $receipt?->read_at?->toIso8601String(), 'acknowledged_at' => $receipt?->acknowledged_at?->toIso8601String(),
