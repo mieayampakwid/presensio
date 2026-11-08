@@ -4,6 +4,7 @@ namespace Tests\Feature\Fees;
 
 use App\Enums\BillStatus;
 use App\Enums\PaymentStatus;
+use App\Http\Controllers\Fees\CashierController;
 use App\Models\AcademicYear;
 use App\Models\Account;
 use App\Models\Bill;
@@ -190,5 +191,102 @@ class CashierTest extends TestCase
 
         $this->assertSame(0, Payment::count());
         $this->actingAs(User::factory()->admin()->create())->get(route('fees.cashier.index'))->assertOk();
+    }
+
+    public function test_cashier_screen_preselects_configured_default_cash_account_ac_23_03(): void
+    {
+        $secondCash = Account::factory()->create([
+            'code' => '1-1109',
+            'name' => 'Kas Khusus',
+            'is_cash' => true,
+            'is_active' => true,
+            'is_postable' => true,
+        ]);
+
+        app(SchoolSettings::class)->row()->update([
+            'cashier_default_cash_account_id' => $secondCash->id,
+        ]);
+        app(SchoolSettings::class)->refresh();
+
+        $this->actingAs($this->finance)
+            ->get(route('fees.cashier.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('fees/cashier')
+                ->where('defaultAccountId', $secondCash->id));
+    }
+
+    public function test_cashier_screen_falls_back_to_first_active_cash_account_when_setting_is_null_or_invalid_ac_23_04(): void
+    {
+        // 1. Setting is null -> falls back to first active cash account by code (1-1100)
+        app(SchoolSettings::class)->row()->update([
+            'cashier_default_cash_account_id' => null,
+        ]);
+        app(SchoolSettings::class)->refresh();
+
+        $this->actingAs($this->finance)
+            ->get(route('fees.cashier.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('fees/cashier')
+                ->where('defaultAccountId', $this->accountId('1-1100')));
+
+        // 2. Setting points to an inactive cash account -> falls back to first active cash account by code (1-1100)
+        $inactiveCash = Account::factory()->create([
+            'code' => '1-1105',
+            'name' => 'Kas Nonaktif',
+            'is_cash' => true,
+            'is_active' => false,
+            'is_postable' => true,
+        ]);
+
+        app(SchoolSettings::class)->row()->update([
+            'cashier_default_cash_account_id' => $inactiveCash->id,
+        ]);
+        app(SchoolSettings::class)->refresh();
+
+        $this->actingAs($this->finance)
+            ->get(route('fees.cashier.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('fees/cashier')
+                ->where('defaultAccountId', $this->accountId('1-1100')));
+
+        // 3. Confirm CashierController contains no KAS_TUNAI_CODE constant
+        $reflection = new \ReflectionClass(CashierController::class);
+        $this->assertFalse($reflection->hasConstant('KAS_TUNAI_CODE'));
+    }
+
+    public function test_changing_cashier_default_account_does_not_alter_past_payments_ac_23_06(): void
+    {
+        $student = Student::factory()->create();
+        $bill = $this->septemberBill($student);
+        $originalCashId = $this->accountId('1-1100');
+
+        $payload = $this->payload('350000', [$bill->id => '350000'], [$student->id], [
+            'deposit_account_id' => $originalCashId,
+        ]);
+
+        $this->actingAs($this->finance)
+            ->post(route('fees.cashier.store'), $payload)
+            ->assertRedirect();
+
+        $payment = Payment::firstOrFail();
+        $this->assertSame($originalCashId, $payment->deposit_account_id);
+
+        // Change cashier setting to a different cash account
+        $newCash = Account::factory()->create([
+            'code' => '1-1109',
+            'name' => 'Kas Lain',
+            'is_cash' => true,
+            'is_active' => true,
+            'is_postable' => true,
+        ]);
+
+        app(SchoolSettings::class)->row()->update([
+            'cashier_default_cash_account_id' => $newCash->id,
+        ]);
+        app(SchoolSettings::class)->refresh();
+
+        // Existing payment remains unchanged
+        $payment->refresh();
+        $this->assertSame($originalCashId, $payment->deposit_account_id);
     }
 }

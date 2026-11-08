@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\Bill;
 use App\Models\Student;
 use App\Services\Finance\PaymentService;
+use App\Services\SchoolSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,13 +19,11 @@ class CashierController extends Controller
 {
     private const SEARCH_LIMIT = 10;
 
-    private const KAS_TUNAI_CODE = '1-1100';
-
     /**
      * Cashier screen: student search (`q`), selected students (`students[]`) with their open
      * bills, and siblings of the selection that can join the same transaction.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, SchoolSettings $settings): Response
     {
         $term = trim($request->string('q')->toString());
         $selectedIds = array_values(array_unique(array_map('intval', (array) $request->input('students', []))));
@@ -34,6 +33,9 @@ class CashierController extends Controller
             ->where('is_active', true)
             ->orderBy('code')
             ->get(['id', 'code', 'name']);
+
+        $defaultSettingId = $settings->cashierDefaultCashAccountId();
+        $defaultAccount = ($defaultSettingId !== null ? $cashAccounts->firstWhere('id', $defaultSettingId) : null) ?? $cashAccounts->first();
 
         return Inertia::render('fees/cashier', [
             'term' => $term,
@@ -66,7 +68,7 @@ class CashierController extends Controller
                 ->get()
                 ->map(fn (Student $student) => $this->summary($student)),
             'cashAccounts' => $cashAccounts,
-            'defaultAccountId' => ($cashAccounts->where('code', self::KAS_TUNAI_CODE)->first() ?? $cashAccounts->first())?->id,
+            'defaultAccountId' => $defaultAccount?->id,
         ]);
     }
 

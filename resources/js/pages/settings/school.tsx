@@ -24,6 +24,7 @@ type SchoolProfileData = {
     default_passing_threshold?: string;
     default_transfer_account_id: number | null;
     guardian_deposit_account_id: number | null;
+    cashier_default_cash_account_id: number | null;
 };
 
 type CashAccount = {
@@ -375,6 +376,42 @@ export default function SchoolProfile({
                                         <InputError
                                             message={
                                                 errors.default_transfer_account_id
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="cashier_default_cash_account_id">
+                                            Akun kas default kasir
+                                        </Label>
+                                        <select
+                                            id="cashier_default_cash_account_id"
+                                            name="cashier_default_cash_account_id"
+                                            defaultValue={
+                                                profile.cashier_default_cash_account_id ??
+                                                ''
+                                            }
+                                            className={SELECT_CLASS}
+                                        >
+                                            <option value="">
+                                                Otomatis (akun kas pertama)
+                                            </option>
+                                            {cashAccounts.map((account) => (
+                                                <option
+                                                    key={account.id}
+                                                    value={account.id}
+                                                >
+                                                    {account.code} -{' '}
+                                                    {account.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <p className="text-muted-foreground text-sm">
+                                            Akun kas yang otomatis dipilih saat kasir membuka sesi pembayaran tunai baru.
+                                        </p>
+                                        <InputError
+                                            message={
+                                                errors.cashier_default_cash_account_id
                                             }
                                         />
                                     </div>

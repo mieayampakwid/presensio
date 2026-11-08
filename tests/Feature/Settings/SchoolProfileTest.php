@@ -106,6 +106,66 @@ class SchoolProfileTest extends TestCase
         $this->assertNull(SchoolSetting::first()->default_transfer_account_id);
     }
 
+    public function test_cashier_default_cash_account_accepts_valid_cash_account_rejects_others_and_can_be_cleared(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $validCash = Account::factory()->create([
+            'type' => 'asset',
+            'is_cash' => true,
+            'is_active' => true,
+            'is_postable' => true,
+        ]);
+        $nonCash = Account::factory()->create([
+            'type' => 'asset',
+            'is_cash' => false,
+            'is_active' => true,
+            'is_postable' => true,
+        ]);
+        $inactiveCash = Account::factory()->create([
+            'type' => 'asset',
+            'is_cash' => true,
+            'is_active' => false,
+            'is_postable' => true,
+        ]);
+        $nonPostableCash = Account::factory()->create([
+            'type' => 'asset',
+            'is_cash' => true,
+            'is_active' => true,
+            'is_postable' => false,
+        ]);
+
+        $payload = [
+            'school_name' => 'School',
+            'default_curriculum' => 'merdeka',
+        ];
+
+        // 1. Valid cash account accepted and logged in audit log (AC 23-01, 23-02)
+        $this->actingAs($admin)
+            ->put(route('school-profile.update'), $payload + ['cashier_default_cash_account_id' => $validCash->id])
+            ->assertSessionHasNoErrors();
+        $this->assertSame($validCash->id, SchoolSetting::first()->cashier_default_cash_account_id);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $admin->id,
+            'action' => 'updated',
+            'auditable_type' => (new SchoolSetting)->getMorphClass(),
+        ]);
+
+        // 2. Invalid accounts fail validation (AC 23-02)
+        foreach ([$nonCash, $inactiveCash, $nonPostableCash] as $invalidAccount) {
+            $this->actingAs($admin)
+                ->put(route('school-profile.update'), $payload + ['cashier_default_cash_account_id' => $invalidAccount->id])
+                ->assertSessionHasErrors('cashier_default_cash_account_id');
+            $this->assertSame($validCash->id, SchoolSetting::first()->cashier_default_cash_account_id);
+        }
+
+        // 3. Can be cleared to null (AC 23-01)
+        $this->actingAs($admin)
+            ->put(route('school-profile.update'), $payload + ['cashier_default_cash_account_id' => null])
+            ->assertSessionHasNoErrors();
+        $this->assertNull(SchoolSetting::first()->cashier_default_cash_account_id);
+    }
+
     public function test_guardian_deposit_requires_dedicated_active_postable_non_cash_non_contra_liability(): void
     {
         $admin = User::factory()->admin()->create();

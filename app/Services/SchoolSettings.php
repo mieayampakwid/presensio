@@ -285,6 +285,16 @@ class SchoolSettings
         return $id !== null ? (int) $id : null;
     }
 
+    /**
+     * Cash account pre-selected on the cashier screen.
+     */
+    public function cashierDefaultCashAccountId(): ?int
+    {
+        $id = $this->row()->cashier_default_cash_account_id;
+
+        return $id !== null ? (int) $id : null;
+    }
+
     public function guardianDepositAccountId(): ?int
     {
         return $this->row()->guardian_deposit_account_id;
@@ -325,6 +335,7 @@ class SchoolSettings
             'default_scope_weight' => '50.00',
             'default_final_weight' => '50.00',
             'default_transfer_account_id' => null,
+            'cashier_default_cash_account_id' => null,
         ];
     }
 }

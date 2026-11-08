@@ -47,6 +47,14 @@ class UpdateSchoolProfileRequest extends FormRequest
                     ->where('is_active', true)
                     ->where('is_postable', true)),
             ],
+            'cashier_default_cash_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where(fn ($query) => $query
+                    ->where('is_cash', true)
+                    ->where('is_active', true)
+                    ->where('is_postable', true)),
+            ],
             'guardian_deposit_account_id' => [
                 'nullable', 'integer',
                 Rule::exists('accounts', 'id')->where(fn ($query) => $query

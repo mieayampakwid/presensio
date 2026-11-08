@@ -742,6 +742,8 @@ resources/js/pages/settings/notifications.tsx	✓ Aktif
 resources/js/pages/settings/school.tsx	Account Holder Name
 resources/js/pages/settings/school.tsx	Account Number
 resources/js/pages/settings/school.tsx	Akun Titipan Wali (Kelebihan Pembayaran)
+resources/js/pages/settings/school.tsx	Akun kas default kasir
+resources/js/pages/settings/school.tsx	Akun kas yang otomatis dipilih saat kasir membuka sesi pembayaran tunai baru.
 resources/js/pages/settings/school.tsx	Akun kewajiban khusus titipan wali. Perubahan hanya berlaku untuk penerimaan baru.
 resources/js/pages/settings/school.tsx	Bank Name
 resources/js/pages/settings/school.tsx	Belum diatur
@@ -754,6 +756,7 @@ resources/js/pages/settings/school.tsx	NIP
 resources/js/pages/settings/school.tsx	NPSN
 resources/js/pages/settings/school.tsx	Official Email
 resources/js/pages/settings/school.tsx	Official School Name
+resources/js/pages/settings/school.tsx	Otomatis (akun kas pertama)
 resources/js/pages/settings/school.tsx	PNG, JPG, or JPEG format (max 1 MB). Private storage streamed via authorized endpoint.
 resources/js/pages/settings/school.tsx	Phone
 resources/js/pages/settings/school.tsx	Principal (Kepala Sekolah)

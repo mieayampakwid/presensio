@@ -1,6 +1,6 @@
 # 23 — Cashier Default Cash Account
 
-Status: draft v1.0 (2026-11-01)
+Status: implemented 2026-11-08 (v1.0)
 
 ## Problem
 
