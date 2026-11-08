@@ -15,6 +15,9 @@ test.describe('Spec 23 - Cashier Default Cash Account', () => {
         await expect(page.getByText('Akun kas default kasir')).toBeVisible();
         await expect(page.locator('#cashier_default_cash_account_id')).toHaveValue('');
 
+        // Verify settings sidebar is NOT duplicated (only one settings navigation exists)
+        await expect(page.locator('nav[aria-label="Settings"]')).toHaveCount(1);
+
         // Verify notification banner for unconfigured cashier account is visible to admin
         await expect(page.getByText(/Default cashier cash account has not been configured|Akun kas default kasir belum diatur/)).toBeVisible();
 
