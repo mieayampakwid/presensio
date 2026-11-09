@@ -10,11 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
+        php-version: '8.5'
+        tools: composer:v2
+        coverage: none
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - name: Setup Application
+      run: |
+        cp .env.example .env
+        sed -i 's/DB_CONNECTION=pgsql/DB_CONNECTION=sqlite/' .env
+        sed -i 's/DB_DATABASE=laravel/DB_DATABASE=database\/database.sqlite/' .env
+        touch database/database.sqlite
+        composer install --no-interaction --prefer-dist --optimize-autoloader
+        php artisan key:generate --ansi
+        php artisan migrate:fresh --seed --force --ansi
+        npm ci
+        npm run build
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
