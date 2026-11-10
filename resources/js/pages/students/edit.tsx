@@ -1,8 +1,12 @@
 import { Head, setLayoutProps } from '@inertiajs/react';
+import { UserMinus } from 'lucide-react';
+import { useState } from 'react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
 import StudentForm from './student-form';
+import WithdrawalDialog from './withdrawal-dialog';
 
 type ClassOption = {
     id: number;
@@ -44,6 +48,7 @@ export default function EditStudent({
     current_guardians,
 }: Props) {
     const { t } = useTranslation();
+    const [withdrawing, setWithdrawing] = useState(false);
 
     setLayoutProps({
         breadcrumbs: [
@@ -66,10 +71,24 @@ export default function EditStudent({
             />
 
             <div className="space-y-6 p-4">
-                <Heading
-                    title={t('students.edit.title')}
-                    description={t('students.edit.description')}
-                />
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                    <Heading
+                        title={t('students.edit.title')}
+                        description={t('students.edit.description')}
+                    />
+
+                    {student.class_id && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setWithdrawing(true)}
+                        >
+                            <UserMinus className="mr-2 h-4 w-4" />
+                            {t('students.withdrawal.action')}
+                        </Button>
+                    )}
+                </div>
 
                 <StudentForm
                     action={StudentController.update.form({
@@ -96,6 +115,25 @@ export default function EditStudent({
                     currentGuardians={current_guardians}
                 />
             </div>
+
+            <WithdrawalDialog
+                student={
+                    withdrawing
+                        ? {
+                              id: student.id,
+                              full_name: student.full_name,
+                              student_number: student.student_number,
+                              school_class: student.class_id
+                                  ? (classes.find(
+                                        (c) => c.id === student.class_id,
+                                    ) ?? null)
+                                  : null,
+                          }
+                        : null
+                }
+                open={withdrawing}
+                onOpenChange={setWithdrawing}
+            />
         </>
     );
 }

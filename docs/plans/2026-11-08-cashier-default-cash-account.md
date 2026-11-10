@@ -423,18 +423,18 @@
 
 **Verification:** Full CI check passes (`composer ci:check`) and browser journey verifies configured default on cashier screen.
 
-- [ ] **Step 1: Run code formatters and static analysis**
+- [x] **Step 1: Run code formatters and static analysis**
   Run: `vendor/bin/pint --dirty --format agent`
   Run: `sail npm run check`
   Run: `sail npm run types:check`
   Run: `sail npm run test:i18n`
 
-- [ ] **Step 2: Run targeted tests and full CI check**
+- [x] **Step 2: Run targeted tests and full CI check**
   Run: `php artisan test --compact tests/Feature/Settings/SchoolProfileTest.php tests/Feature/Fees/CashierTest.php`
   Run: `composer ci:check`
   Expected: Clean pass across all checks.
 
-- [ ] **Step 3: Door-to-door browser verification**
+- [x] **Step 3: Door-to-door browser verification**
   1. Login as Admin (`/login`).
   2. Navigate to Settings -> School Profile (`/settings/school`).
   3. Verify "Akun kas default kasir" selector is present alongside "Rekening tujuan transfer".
@@ -443,12 +443,10 @@
   6. Return to Settings -> School Profile (`/settings/school`), select "Otomatis (akun kas pertama)", and save.
   7. Return to Cashier (`/fees/cashier`). Verify that the first active cash account by code is pre-selected.
 
-- [ ] **Step 4: Update status in spec and index**
+- [x] **Step 4: Update status in spec and index**
   1. In `docs/specs/23-cashier-default-account.md`:
-     Update `Status: draft v1.0 (2026-11-01)` to:
-     `Status: implemented 2026-11-08 (v1.0)`
+     Updated to `Status: implemented 2026-11-08 (v1.0)`
   2. In `docs/specs/README.md`:
-     Update row 23:
-     `| 23 | [Cashier Default Cash Account](23-cashier-default-account.md) | Implemented 2026-11-08 | Configurable cashier cash-account pre-selection (amends 14) |`
+     Updated row 23 to `Implemented 2026-11-08 (v1.0)`
   3. In `CLAUDE.md`:
-     Update status block to record Spec 23 completion.
+     Updated status block to record Spec 23 completion.

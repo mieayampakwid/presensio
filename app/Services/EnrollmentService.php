@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\WithdrawalReason;
 use App\Models\Bill;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
@@ -77,9 +78,13 @@ class EnrollmentService
      *
      * @return list<Bill>
      */
-    public function release(Student $student, ?string $endedOn = null): array
-    {
-        return DB::transaction(function () use ($student, $endedOn): array {
+    public function release(
+        Student $student,
+        ?string $endedOn = null,
+        ?WithdrawalReason $reason = null,
+        ?string $notes = null,
+    ): array {
+        return DB::transaction(function () use ($student, $endedOn, $reason, $notes): array {
             /** @var Enrollment|null $open */
             $open = $student->enrollments()->whereNull('ended_on')->lockForUpdate()->first();
 
@@ -89,6 +94,8 @@ class EnrollmentService
 
             $open->forceFill([
                 'ended_on' => max($endedOn ?? $this->settings->todayDate(), $open->started_on->toDateString()),
+                'ended_reason' => $reason,
+                'ended_notes' => $notes,
             ])->save();
 
             return $this->billService->cancelForWithdrawal($student, $open->ended_on);

@@ -3,6 +3,7 @@
 namespace App\Services\AcademicYears;
 
 use App\Enums\Curriculum;
+use App\Enums\WithdrawalReason;
 use App\Models\AcademicYear;
 use App\Models\ClassSubject;
 use App\Models\Enrollment;
@@ -78,6 +79,7 @@ class RollOverService
                     ]);
                 } else {
                     // Unmapped = alumni: a no-successor close, so future zero-payment bills are cancelled.
+                    $enrollment->forceFill(['ended_reason' => WithdrawalReason::Graduated])->save();
                     $needsReview += count($this->billService->cancelForWithdrawal($enrollment->student, Date::parse($endedOn)));
                 }
             }

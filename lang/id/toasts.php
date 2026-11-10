@@ -74,6 +74,8 @@ return [
         'imported' => ':count siswa berhasil diimpor.',
         'imported_with_errors' => ':count siswa berhasil diimpor. :errors baris mengalami kesalahan.',
         'import_session_expired' => 'Sesi impor sudah kedaluwarsa — unggah berkasnya lagi.',
+        'withdrawn' => 'Siswa :name berhasil dilepaskan.',
+        'withdraw_no_active_enrollment' => 'Siswa tidak memiliki pendaftaran kelas yang aktif.',
     ],
 
     'guardians' => [

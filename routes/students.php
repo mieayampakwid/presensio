@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Students\StudentController;
 use App\Http\Controllers\Students\StudentImportController;
+use App\Http\Controllers\Students\StudentWithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -22,4 +23,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('students/{student}', [StudentController::class, 'destroy'])
         ->missing(fn () => to_route('students.index'))
         ->name('students.destroy');
+    Route::get('students/{student}/withdrawal-preview', [StudentWithdrawalController::class, 'preview'])
+        ->missing(fn () => response()->json(['error' => 'Student not found'], 404))
+        ->name('students.withdrawal-preview');
+    Route::post('students/{student}/withdraw', [StudentWithdrawalController::class, 'store'])
+        ->missing(fn () => to_route('students.index'))
+        ->name('students.withdraw');
 });

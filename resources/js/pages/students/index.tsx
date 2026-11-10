@@ -1,5 +1,11 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Pencil,
+    Trash2,
+    UserMinus,
+} from 'lucide-react';
 import { useState } from 'react';
 import StudentController from '@/actions/App/Http/Controllers/Students/StudentController';
 import StudentImportController from '@/actions/App/Http/Controllers/Students/StudentImportController';
@@ -15,12 +21,15 @@ import {
     DialogFooter,
     DialogTitle,
 } from '@/components/ui/dialog';
+import WithdrawalDialog from './withdrawal-dialog';
 
 type StudentRow = {
     id: number;
     full_name: string;
     student_number: string | null;
     school_class: { id: number; name: string } | null;
+    is_enrolled: boolean;
+    has_rfid: boolean;
 };
 
 type Paginator = {
@@ -33,11 +42,12 @@ type Paginator = {
 
 type Props = {
     students: Paginator;
-    filters: { search: string };
+    filters: { search: string; status: string };
 };
 
 export default function StudentsIndex({ students, filters }: Props) {
     const [deleting, setDeleting] = useState<StudentRow | null>(null);
+    const [withdrawing, setWithdrawing] = useState<StudentRow | null>(null);
     const { t } = useTranslation();
 
     setLayoutProps({
@@ -48,6 +58,17 @@ export default function StudentsIndex({ students, filters }: Props) {
             },
         ],
     });
+
+    const updateFilters = (searchVal: string, statusVal: string) => {
+        router.get(
+            StudentController.index().url,
+            {
+                search: searchVal,
+                status: statusVal,
+            },
+            { preserveState: true, replace: true },
+        );
+    };
 
     const destroy = (student: StudentRow) => {
         router.delete(StudentController.destroy({ student: student.id }).url, {
@@ -80,13 +101,40 @@ export default function StudentsIndex({ students, filters }: Props) {
                     </div>
                 </div>
 
-                <form className="max-w-sm">
-                    <Input
-                        name="search"
-                        defaultValue={filters.search}
-                        placeholder={t('students.index.search_placeholder')}
-                    />
-                </form>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="w-full max-w-sm">
+                        <Input
+                            name="search"
+                            defaultValue={filters.search}
+                            placeholder={t('students.index.search_placeholder')}
+                            onChange={(e) =>
+                                updateFilters(
+                                    e.currentTarget.value,
+                                    filters.status ?? 'all',
+                                )
+                            }
+                        />
+                    </div>
+                    <div className="w-48">
+                        <select
+                            className="border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
+                            value={filters.status ?? 'all'}
+                            onChange={(e) =>
+                                updateFilters(filters.search, e.target.value)
+                            }
+                        >
+                            <option value="all">
+                                {t('students.status.all')}
+                            </option>
+                            <option value="active">
+                                {t('students.status.active')}
+                            </option>
+                            <option value="withdrawn">
+                                {t('students.status.withdrawn')}
+                            </option>
+                        </select>
+                    </div>
+                </div>
 
                 <div className="overflow-x-auto rounded-lg border">
                     <table className="w-full text-sm">
@@ -114,18 +162,45 @@ export default function StudentsIndex({ students, filters }: Props) {
                                         {student.student_number ?? '—'}
                                     </td>
                                     <td className="px-4 py-3">
-                                        {student.school_class ? (
+                                        {student.is_enrolled &&
+                                        student.school_class ? (
                                             <Badge variant="secondary">
                                                 {student.school_class.name}
                                             </Badge>
                                         ) : (
-                                            <span className="text-muted-foreground">
-                                                —
-                                            </span>
+                                            <Badge
+                                                variant="outline"
+                                                className="text-muted-foreground border-dashed"
+                                            >
+                                                {t(
+                                                    'students.status.badge_withdrawn',
+                                                )}
+                                            </Badge>
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">
+                                            {student.is_enrolled && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/30"
+                                                    onClick={() =>
+                                                        setWithdrawing(student)
+                                                    }
+                                                    title={t(
+                                                        'students.withdrawal.action',
+                                                    )}
+                                                >
+                                                    <UserMinus className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        {t(
+                                                            'students.withdrawal.action',
+                                                        )}
+                                                    </span>
+                                                </Button>
+                                            )}
+
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -243,6 +318,12 @@ export default function StudentsIndex({ students, filters }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <WithdrawalDialog
+                student={withdrawing}
+                open={withdrawing !== null}
+                onOpenChange={(open) => !open && setWithdrawing(null)}
+            />
         </>
     );
 }

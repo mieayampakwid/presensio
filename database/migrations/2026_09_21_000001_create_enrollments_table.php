@@ -23,6 +23,8 @@ return new class extends Migration
             $table->foreignId('class_id')->index()->constrained();
             $table->date('started_on');
             $table->date('ended_on')->nullable();
+            $table->string('ended_reason', 50)->nullable();
+            $table->text('ended_notes')->nullable();
             $table->index(['class_id', 'started_on']);
             $table->timestamps();
         });

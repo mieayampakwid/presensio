@@ -28,6 +28,7 @@ yarn-error.log
 /.vscode
 /.zed
 /.agents
+/skills/
 /.amp
 /.claude
 /.cursor

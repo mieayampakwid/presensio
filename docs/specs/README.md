@@ -55,12 +55,13 @@ Single-school information & attendance system. Each numbered spec is a decision 
 | 15 | [Academic Foundation](15-foundation.md) | Implemented 2026-10-02 | Roles, Semesters, Class Levels, School Profile, Audit |
 | 16 | [Employee Master & Staff Attendance](16-staff-attendance.md) | Implemented 2026-10-15 | Teacher & Tendik Attendance |
 | 17 | [Notification Center](17-notifications-center.md) | Implemented 2026-10-03 | In-App, WhatsApp & Email Notifications |
-| 18 | [Internationalization (id/en)](18-i18n.md) | Draft v1.0 (2026-10-02) — infrastructure + users pages implemented | UI language, per-user locale |
+| 18 | [Internationalization (id/en)](18-i18n.md) | Implemented 2026-11-09 (v1.0); complete rollout across all pages, 0 JSX text literals remaining | UI language, per-user locale |
 | 19 | [In-App QR Scanner](19-in-app-scanner.md) | Code implemented on feature branch 2026-10-27 (v1.1); automated/Chromium checks passed, physical-camera/browser acceptance pending | Webcam Scanner & Operator Role |
-| 20 | [Work Shifts](20-work-shifts.md) | Draft v1.1 (2026-10-26) — reviewed against shipped spec 16, ready for implementation planning | Shift Scheduling & Per-Shift Sweep |
+| 20 | [Work Shifts](20-work-shifts.md) | Implemented 2026-10-28 (v1.1); shift templates, default & roster assignment, per-shift sweep, 59 tests passed | Shift Scheduling & Per-Shift Sweep |
 | 21 | [Payment Return Workflow](21-payment-return.md) | Implemented 2026-10-23 (v1.2) | Guardian transfer cancel & claim limit (amends 14) |
 | 22 | [Overpayment Receipt & Refund](22-overpayment-refund.md) | Implemented 2026-10-23 (v1.3); accountant go-live review pending | Excess money held as liability, refund to guardian (amends 14) |
 | 23 | [Cashier Default Cash Account](23-cashier-default-account.md) | Implemented 2026-11-08 (v1.0) | Configurable cashier cash-account pre-selection (amends 14) |
+| 24 | [Individual Student Withdrawal](24-student-withdrawal.md) | Implemented 2026-11-09 (v1.0) | UI & lifecycle for releasing single student enrollments (amends 02/07/14) |
 
 > **Open audit:** [AUDIT-2026-10-01](AUDIT-2026-10-01.md) — drift in 03/04/05/07 resolved in the specs (code follow-ups listed there); 09–14 revised against spec 15.
 

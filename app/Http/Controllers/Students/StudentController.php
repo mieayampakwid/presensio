@@ -28,9 +28,11 @@ class StudentController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->toString();
+        $status = $request->string('status')->toString();
+        $activeYearId = AcademicYear::active()?->id;
 
         $students = Student::query()
-            ->with('currentEnrollment.schoolClass:id,name')
+            ->with(['currentEnrollment.schoolClass:id,name', 'rfidCard:id,student_id'])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('full_name', 'like', "%{$search}%")
@@ -41,15 +43,38 @@ class StudentController extends Controller
                         });
                 });
             })
+            ->when($status === 'active', function (Builder $query) use ($activeYearId) {
+                $query->whereHas('enrollments', function (Builder $q) use ($activeYearId) {
+                    $q->whereNull('ended_on')
+                        ->when($activeYearId !== null, fn ($eq) => $eq->whereHas('schoolClass', fn ($cq) => $cq->where('academic_year_id', $activeYearId)));
+                });
+            })
+            ->when($status === 'withdrawn', function (Builder $query) use ($activeYearId) {
+                $query->whereDoesntHave('enrollments', function (Builder $q) use ($activeYearId) {
+                    $q->whereNull('ended_on')
+                        ->when($activeYearId !== null, fn ($eq) => $eq->whereHas('schoolClass', fn ($cq) => $cq->where('academic_year_id', $activeYearId)));
+                });
+            })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('students/index', [
-            'students' => $students,
+            'students' => $students->through(fn (Student $s) => [
+                'id' => $s->id,
+                'full_name' => $s->full_name,
+                'student_number' => $s->student_number,
+                'school_class' => $s->currentEnrollment?->schoolClass ? [
+                    'id' => $s->currentEnrollment->schoolClass->id,
+                    'name' => $s->currentEnrollment->schoolClass->name,
+                ] : null,
+                'is_enrolled' => $s->currentEnrollment !== null,
+                'has_rfid' => $s->rfidCard !== null,
+            ]),
             'filters' => [
                 'search' => $search,
+                'status' => $status !== '' ? $status : 'all',
             ],
         ]);
     }

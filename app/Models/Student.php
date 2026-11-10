@@ -119,6 +119,16 @@ class Student extends Model
     }
 
     /**
+     * RFID card currently assigned to this student.
+     *
+     * @return HasOne<RfidCard, $this>
+     */
+    public function rfidCard(): HasOne
+    {
+        return $this->hasOne(RfidCard::class);
+    }
+
+    /**
      * RFID cards currently assigned to this student.
      *
      * @return HasMany<RfidCard, $this>

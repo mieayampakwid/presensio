@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Students;
 
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Excuse;
 use App\Models\Guardian;
@@ -10,6 +11,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -281,6 +283,50 @@ class StudentManagementTest extends TestCase
         $this->assertSame('Katolik', $student->religion);
         $this->assertSame('Jl. Sudirman No. 1', $student->address);
         $this->assertSame('guardian', $student->guardians()->first()->pivot->relationship_type);
+    }
+
+    public function test_admin_can_filter_students_by_active_and_withdrawn_status(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $year = AcademicYear::factory()->active()->create(['starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
+        $class = SchoolClass::factory()->create(['academic_year_id' => $year->id]);
+
+        $activeStudent = Student::factory()->enrolledIn($class, '2026-07-01')->create(['full_name' => 'Active Student']);
+        $withdrawnStudent = Student::factory()->create(['full_name' => 'Withdrawn Student']);
+
+        $this->actingAs($admin)
+            ->get(route('students.index', ['status' => 'active']))
+            ->assertOk()
+            ->assertSee('Active Student')
+            ->assertDontSee('Withdrawn Student');
+
+        $this->actingAs($admin)
+            ->get(route('students.index', ['status' => 'withdrawn']))
+            ->assertOk()
+            ->assertSee('Withdrawn Student')
+            ->assertDontSee('Active Student');
+    }
+
+    public function test_students_listing_includes_enrollment_status_and_rfid_flag(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $year = AcademicYear::factory()->active()->create(['starts_at' => '2026-07-01', 'ends_at' => '2027-06-30']);
+        $class = SchoolClass::factory()->create(['academic_year_id' => $year->id]);
+
+        $student = Student::factory()->enrolledIn($class, '2026-07-01')->create(['full_name' => 'Active Enrolled']);
+        RfidCard::factory()->create(['student_id' => $student->id]);
+
+        $this->actingAs($admin)
+            ->get(route('students.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('students/index')
+                ->has('students.data', 1)
+                ->where('students.data.0.full_name', 'Active Enrolled')
+                ->where('students.data.0.is_enrolled', true)
+                ->where('students.data.0.has_rfid', true)
+                ->where('filters.status', 'all')
+            );
     }
 
     public static function nonAdminRoles(): array

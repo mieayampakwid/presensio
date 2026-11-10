@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WithdrawalReason;
 use Database\Factories\EnrollmentFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,10 +22,12 @@ use Illuminate\Support\Carbon;
  * @property int $class_id
  * @property Carbon $started_on
  * @property Carbon|null $ended_on
+ * @property WithdrawalReason|null $ended_reason
+ * @property string|null $ended_notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['student_id', 'class_id', 'started_on', 'ended_on'])]
+#[Fillable(['student_id', 'class_id', 'started_on', 'ended_on', 'ended_reason', 'ended_notes'])]
 class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */
@@ -78,6 +81,7 @@ class Enrollment extends Model
         return [
             'started_on' => 'date:Y-m-d',
             'ended_on' => 'date:Y-m-d',
+            'ended_reason' => WithdrawalReason::class,
         ];
     }
 }

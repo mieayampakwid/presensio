@@ -5,6 +5,7 @@ namespace Tests\Feature\Fees;
 use App\Enums\BillStatus;
 use App\Enums\FeeKind;
 use App\Enums\JournalSource;
+use App\Enums\WithdrawalReason;
 use App\Models\AcademicYear;
 use App\Models\Account;
 use App\Models\Bill;
@@ -177,5 +178,20 @@ class WithdrawalCancellationTest extends TestCase
         $this->assertSame(BillStatus::Unpaid, $alumnusPast->fresh()->status);
         $this->assertSame(BillStatus::PartiallyPaid, $alumnusPartial->fresh()->status);
         $this->assertSame(1, $summary['needs_review']);
+    }
+
+    public function test_release_persists_ended_reason_and_notes(): void
+    {
+        app(EnrollmentService::class)->release(
+            $this->student,
+            '2026-11-15',
+            WithdrawalReason::TransferOut,
+            'Pindah ke SMP 1 Bandung',
+        );
+
+        $enrollment = $this->student->enrollments()->firstOrFail();
+        $this->assertSame('2026-11-15', $enrollment->ended_on->toDateString());
+        $this->assertSame(WithdrawalReason::TransferOut, $enrollment->ended_reason);
+        $this->assertSame('Pindah ke SMP 1 Bandung', $enrollment->ended_notes);
     }
 }

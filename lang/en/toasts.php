@@ -74,6 +74,8 @@ return [
         'imported' => 'Imported :count students.',
         'imported_with_errors' => 'Imported :count students. :errors rows had errors.',
         'import_session_expired' => 'This import session has expired — upload the file again.',
+        'withdrawn' => 'Student :name has been released.',
+        'withdraw_no_active_enrollment' => 'Student does not have an active enrollment.',
     ],
 
     'guardians' => [
