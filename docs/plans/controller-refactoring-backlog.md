@@ -102,8 +102,7 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 * **Hasil Refactoring:**
   * Ukuran controller menyusut drastis dari 245 baris menjadi 36 baris (-85%).
-  * Seluruh perakitan metrik multi-role (`announcementSummary`, `is_school_day`, `board`, `pending_excuses`, `pending_leave_requests`, `employee_leave_today`, `children`, `student`, `today_schedule`) beserta ketujuh helper query diekstrak ke `App\Services\Dashboard\DashboardBuilder`.
-  * Controller kini sangat ramping, murni menangani otorisasi, redirect role scanner operator, dan delegasi payload view.
+  * Seluruh perakitan metrik multi-role (`announcementSummary`, `is_school_day`, `board`, `pending_excuses`, `pending_leave_requests`, `employee_leave_today`, `children`, `student`, `today_schedule`) beserta ketujuh helper query diekstrak ke `App\Services\Dashboard\DashboardBuilder`.\n  * Controller kini sangat ramping, murni menangani otorisasi, redirect role scanner operator, dan delegasi payload view.
 * **Verifikasi:** 27 dashboard feature tests passing (362 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
@@ -121,29 +120,19 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 10. `App\Http\Controllers\Students\StudentController` (221 baris) & `App\Http\Controllers\Teachers\TeacherController` (198 baris)
+### 10. `App\Http\Controllers\Students\StudentController` & `App\Http\Controllers\Teachers\TeacherController` (Selesai Direfaktor ✅ — commit `93a9a34`, 2026-11-10)
 
-* **Kondisi Saat Ini:**
-  * **`StudentController`** masih memuat query paginasi filter pencarian/status (`active`/`withdrawn`) di `index()`, transaksi `DB::transaction` di `store()`, `update()`, `destroy()`, serta helper `assignClass()`, `formOptions()`, dan `deletionBlockers()`.
-  * **`TeacherController`** masih memuat query paginasi `index()`, transaksi pembuatan/pembaruan `Employee` + `Teacher` di `store()`, `update()`, `destroy()`, serta `deletionBlockers()`.
-* **Rencana Ekstraksi:**
-  1. **Domain Students (`StudentController` → Target ~95 baris):**
-     * Buat **`App\Services\Students\StudentViewService`**:
-       * `getPaginatedStudents(string $search, string $status): LengthAwarePaginator` (mempertahankan `whereLike` dan filter enrollment tahun aktif).
-       * `getFormOptions(): array` (daftar kelas tahun aktif & daftar wali murid).
-       * `getEditViewData(Student $student): array` (menggabungkan `formOptions()`, `student`, `current_guardian_ids`, dan `current_guardians`).
-     * Buat **`App\Services\Students\StudentService`**:
-       * Inject `EnrollmentService`.
-       * `createStudent(array $attributes, array $guardianPivotData, ?int $classId): Student` dalam `DB::transaction`.
-       * `updateStudent(Student $student, array $attributes, array $guardianPivotData, ?int $classId): Student` dalam `DB::transaction`.
-       * `deletionBlockers(Student $student): list<string>` dan `deleteStudent(Student $student): void` (melepas guardian pivot, mereset `RfidCard`, dan menghapus student).
-  2. **Domain Teachers (`TeacherController` → Target ~90 baris):**
-     * Buat **`App\Services\Teachers\TeacherViewService`**:
-       * `getPaginatedTeachers(string $search): LengthAwarePaginator` dan `formatForEdit(Teacher $teacher): array`.
-     * Buat **`App\Services\Teachers\TeacherService`**:
-       * `createTeacher(array $validated): Teacher`, `updateTeacher(Teacher $teacher, array $validated): Teacher`, `deletionBlockers(Teacher $teacher): list<string>`, dan `deleteTeacher(Teacher $teacher): void`.
-* **Verifikasi Test:**
-  * `vendor/bin/sail artisan test --compact tests/Feature/Students tests/Feature/Teachers`
+* **Hasil Refactoring:**
+  * `StudentController` menyusut dari 221 baris menjadi 96 baris (-57%).
+  * `TeacherController` menyusut dari 198 baris menjadi 96 baris (-52%).
+  * **Domain Students:**
+    * Seluruh pembentukan query paginasi index (`getPaginatedStudents`), opsi form (`getFormOptions`: kelas tahun aktif & wali murid), dan perakitan edit view payload diekstrak ke `App\Services\Students\StudentViewService`.
+    * Seluruh mutasi `createStudent`, `updateStudent`, assign kelas via `EnrollmentService`, deteksi `deletionBlockers`, serta penghapusan siswa & pembersihan kartu RFID diekstrak ke `App\Services\Students\StudentService`.
+  * **Domain Teachers:**
+    * Seluruh query paginasi index (`getPaginatedTeachers`) dan format data edit (`getEditViewData`) diekstrak ke `App\Services\Teachers\TeacherViewService`.
+    * Seluruh mutasi transaksi `createTeacher` (pembuatan profil `Employee` + `Teacher`), `updateTeacher`, deteksi `deletionBlockers` (wali kelas, penugasan mapel, akun user, presensi), serta penghapusan guru dan profil pegawai unlinked diekstrak ke `App\Services\Teachers\TeacherService`.
+  * Kedua controller kini murni bertugas mengoordinasikan HTTP request, otorisasi form request, pemanggilan service, flash toast, dan redirect respon.
+* **Verifikasi:** 37 student & teacher feature tests passing (140 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
@@ -160,8 +149,7 @@ Sesuai aturan di `.ai/rules/controllers.md`:
        * Pindahkan pengecekan `validateAndCheckConflicts(SchoolClass $schoolClass, array $attributes, ?TimetableSlot $slot): list<array<string, mixed>>` yang melempar `ValidationException` bila ada *hard error* dan mengembalikan daftar *soft conflicts*.
        * Pindahkan validasi tahun aktif & kepemilikan semester pada operasi `copySemesterSlots(SchoolClass $schoolClass, int $semesterId): array{copied: int, skipped: list<mixed>}`.
   2. **Domain Shift Roster (`ShiftRosterController` → Target ~80 baris):**
-     * Buat **`App\Services\Staff\ShiftRosterViewService`**:
-       * Pindahkan `getRosterGrid(string $weekInput, string $monthInput): array` beserta helper `resolveRange()` dan `datesBetween()` untuk merakit matriks `rows`, `shifts`, `view`, dan `today`.
+     * Buat **`App\Services\Staff\ShiftRosterViewService`**:\n       * Pindahkan `getRosterGrid(string $weekInput, string $monthInput): array` beserta helper `resolveRange()` dan `datesBetween()` untuk merakit matriks `rows`, `shifts`, `view`, dan `today`.
      * Buat **`App\Services\Staff\ShiftRosterService`**:
        * Pindahkan mutasi `bulkUpsert(array $employeeIds, list<string> $dates, ?int $shiftId): void`, `setCell(int $employeeId, string $date, ?int $shiftId): void`, dan `clearCell(int $employeeId, string $date): void`.
 * **Verifikasi Test:**
