@@ -2,19 +2,136 @@
 
 namespace App\Services\ReportCards;
 
+use App\Jobs\BuildClassReportCardPdf;
 use App\Models\CourseSemester;
+use App\Models\ReportCard;
 use App\Models\ReportCardEntry;
+use App\Models\ReportCardPublication;
 use App\Models\SchoolClass;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\User;
 use App\ReportCards\SnapshotBuilderResolver;
+use App\Services\Attendance\ClassAccess;
 use App\Services\SchoolSettings;
+use Illuminate\Support\Facades\Storage;
 
 class ReportCardWorkspaceService
 {
     public function __construct(
         private readonly SchoolSettings $settings,
+        private readonly ReportCardPublisher $publisher,
     ) {}
+
+    /**
+     * Find the first accessible class alphabetically for the user's report cards landing page.
+     */
+    public function firstAccessibleClass(User $user): ?SchoolClass
+    {
+        return SchoolClass::query()
+            ->whereIn('id', ClassAccess::academicClassIds($user))
+            ->orderBy('name')
+            ->first();
+    }
+
+    /**
+     * Resolve the requested semester or fall back to the first semester of the class's year.
+     */
+    public function resolveSemester(SchoolClass $schoolClass, ?int $requestedSemesterId): Semester
+    {
+        $schoolClass->loadMissing('academicYear.semesters');
+        $semesters = $schoolClass->academicYear->semesters;
+
+        /** @var Semester|null $semester */
+        $semester = $requestedSemesterId !== null
+            ? $semesters->firstWhere('id', $requestedSemesterId)
+            : $semesters->first();
+
+        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
+
+        return $semester;
+    }
+
+    /**
+     * Build the view payload for the homeroom report card workspace.
+     *
+     * @return array{
+     *     school_class: array{id: int, name: string, grade_level: int},
+     *     semester: array{id: int, name: string, number: int},
+     *     semesters: list<array{id: int, name: string, number: int}>,
+     *     accessible_classes: list<array{id: int, name: string}>,
+     *     checklist: array<int, array{subject: string, teacher: string|null, finalized: bool}>,
+     *     students: array<int, array<string, mixed>>,
+     *     publication: array<string, mixed>|null,
+     *     bundle_available: bool,
+     *     can: array{edit: bool}
+     * }
+     */
+    public function getWorkspaceViewData(User $user, SchoolClass $schoolClass, Semester $semester): array
+    {
+        return [
+            'school_class' => ['id' => $schoolClass->id, 'name' => $schoolClass->name, 'grade_level' => $schoolClass->grade_level],
+            'semester' => ['id' => $semester->id, 'name' => $semester->name, 'number' => $semester->number],
+            'semesters' => array_values($schoolClass->academicYear->semesters
+                ->map(fn (Semester $s): array => ['id' => $s->id, 'name' => $s->name, 'number' => $s->number])
+                ->all()),
+            'accessible_classes' => array_values(SchoolClass::query()
+                ->whereIn('id', ClassAccess::academicClassIds($user))
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (SchoolClass $c): array => ['id' => $c->id, 'name' => $c->name])
+                ->all()),
+            'checklist' => $this->checklist($schoolClass, $semester),
+            'students' => $this->students($schoolClass, $semester),
+            'publication' => $this->publisher->currentPublication($schoolClass, $semester),
+            'bundle_available' => $this->bundleAvailable($schoolClass, $semester),
+            'can' => [
+                'edit' => ClassAccess::canWrite($user, $schoolClass->id),
+            ],
+        ];
+    }
+
+    /**
+     * Whether a combined PDF bundle exists for the class's current publication.
+     */
+    public function bundleAvailable(SchoolClass $schoolClass, Semester $semester): bool
+    {
+        $publication = ReportCardPublication::query()
+            ->where('class_id', $schoolClass->id)
+            ->where('semester_id', $semester->id)
+            ->current()
+            ->first();
+
+        return $publication !== null
+            && Storage::disk('local')->exists(BuildClassReportCardPdf::path($publication));
+    }
+
+    /**
+     * Find the published report card record for a student in the current publication.
+     *
+     * @return array{publication: ReportCardPublication, card: ReportCard}
+     */
+    public function findPublishedCard(SchoolClass $schoolClass, Semester $semester, Student $student): array
+    {
+        /** @var ReportCardPublication|null $publication */
+        $publication = ReportCardPublication::query()
+            ->where('class_id', $schoolClass->id)
+            ->where('semester_id', $semester->id)
+            ->current()
+            ->first();
+
+        abort_if($publication === null, 403, __('toasts.report_cards.not_published'));
+
+        /** @var ReportCard $card */
+        $card = $publication->reportCards()
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+
+        return [
+            'publication' => $publication,
+            'card' => $card,
+        ];
+    }
 
     /**
      * Finalization checklist: one row per class subject with the course's

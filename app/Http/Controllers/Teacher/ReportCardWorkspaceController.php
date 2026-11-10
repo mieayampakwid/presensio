@@ -5,21 +5,16 @@ namespace App\Http\Controllers\Teacher;
 use App\Enums\Curriculum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\UpdateReportCardEntryRequest;
-use App\Jobs\BuildClassReportCardPdf;
-use App\Models\ReportCard;
-use App\Models\ReportCardPublication;
 use App\Models\SchoolClass;
 use App\Models\Semester;
 use App\Models\Student;
 use App\Services\Attendance\ClassAccess;
 use App\Services\ReportCards\ReportCardPdf;
-use App\Services\ReportCards\ReportCardPublisher;
 use App\Services\ReportCards\ReportCardWorkspaceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -27,7 +22,6 @@ class ReportCardWorkspaceController extends Controller
 {
     public function __construct(
         private readonly ReportCardWorkspaceService $workspace,
-        private readonly ReportCardPublisher $publisher,
         private readonly ReportCardPdf $pdf,
     ) {}
 
@@ -40,11 +34,7 @@ class ReportCardWorkspaceController extends Controller
         $user = $request->user();
         abort_unless($user !== null, 403);
 
-        $class = SchoolClass::query()
-            ->whereIn('id', ClassAccess::academicClassIds($user))
-            ->orderBy('name')
-            ->first();
-
+        $class = $this->workspace->firstAccessibleClass($user);
         abort_if($class === null, 404, __('toasts.report_cards.no_class'));
 
         return redirect()->route('classes.report-cards.show', ['school_class' => $class->id]);
@@ -61,28 +51,13 @@ class ReportCardWorkspaceController extends Controller
             403,
         );
 
-        $semester = $this->resolveSemester($request, $schoolClass);
+        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
+        $semester = $this->workspace->resolveSemester($schoolClass, $semesterId);
 
-        return Inertia::render('teacher/report-cards', [
-            'school_class' => ['id' => $schoolClass->id, 'name' => $schoolClass->name, 'grade_level' => $schoolClass->grade_level],
-            'semester' => ['id' => $semester->id, 'name' => $semester->name, 'number' => $semester->number],
-            'semesters' => $schoolClass->academicYear->semesters
-                ->map(fn (Semester $s) => ['id' => $s->id, 'name' => $s->name, 'number' => $s->number])
-                ->all(),
-            'accessible_classes' => SchoolClass::query()
-                ->whereIn('id', ClassAccess::academicClassIds($user))
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (SchoolClass $c) => ['id' => $c->id, 'name' => $c->name])
-                ->all(),
-            'checklist' => $this->workspace->checklist($schoolClass, $semester),
-            'students' => $this->workspace->students($schoolClass, $semester),
-            'publication' => $this->publisher->currentPublication($schoolClass, $semester),
-            'bundle_available' => $this->bundleAvailable($schoolClass, $semester),
-            'can' => [
-                'edit' => ClassAccess::canWrite($user, $schoolClass->id),
-            ],
-        ]);
+        return Inertia::render(
+            'teacher/report-cards',
+            $this->workspace->getWorkspaceViewData($user, $schoolClass, $semester),
+        );
     }
 
     /**
@@ -111,7 +86,8 @@ class ReportCardWorkspaceController extends Controller
             403,
         );
 
-        $semester = $this->resolveSemester($request, $schoolClass);
+        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
+        $semester = $this->workspace->resolveSemester($schoolClass, $semesterId);
 
         abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, __('toasts.report_cards.student_not_in_roster'));
 
@@ -133,24 +109,14 @@ class ReportCardWorkspaceController extends Controller
             403,
         );
 
-        $semester = $this->resolveSemester($request, $schoolClass);
+        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
+        $semester = $this->workspace->resolveSemester($schoolClass, $semesterId);
 
-        /** @var ReportCardPublication|null $publication */
-        $publication = ReportCardPublication::query()
-            ->where('class_id', $schoolClass->id)
-            ->where('semester_id', $semester->id)
-            ->current()
-            ->first();
-        abort_if($publication === null, 403, __('toasts.report_cards.not_published'));
-
-        /** @var ReportCard $card */
-        $card = $publication->reportCards()
-            ->where('student_id', $student->id)
-            ->firstOrFail();
+        $record = $this->workspace->findPublishedCard($schoolClass, $semester, $student);
 
         return $this->pdfResponse(
-            $this->pdf->pdf($card->payload, $card->curriculum->value),
-            sprintf('rapor-%s-%s-v%d.pdf', $schoolClass->name, str_replace(' ', '-', $student->full_name), $publication->version),
+            $this->pdf->pdf($record['card']->payload, $record['card']->curriculum->value),
+            sprintf('rapor-%s-%s-v%d.pdf', $schoolClass->name, str_replace(' ', '-', $student->full_name), $record['publication']->version),
             'attachment',
         );
     }
@@ -166,7 +132,9 @@ class ReportCardWorkspaceController extends Controller
             403,
         );
 
-        $semester = $this->resolveSemester($request, $schoolClass);
+        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
+        $semester = $this->workspace->resolveSemester($schoolClass, $semesterId);
+
         abort_unless($this->workspace->rosterContains($schoolClass, $semester, $student->id), 403, __('toasts.report_cards.student_not_in_roster'));
 
         $payload = $this->workspace->preview($schoolClass, $semester, $student);
@@ -181,44 +149,11 @@ class ReportCardWorkspaceController extends Controller
         );
     }
 
-    /**
-     * Whether a combined PDF exists for the class's current publication.
-     */
-    private function bundleAvailable(SchoolClass $schoolClass, Semester $semester): bool
-    {
-        $publication = ReportCardPublication::query()
-            ->where('class_id', $schoolClass->id)
-            ->where('semester_id', $semester->id)
-            ->current()
-            ->first();
-
-        return $publication !== null
-            && Storage::disk('local')->exists(BuildClassReportCardPdf::path($publication));
-    }
-
     private function pdfResponse(string $bytes, string $filename, string $disposition): Response
     {
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => $disposition.'; filename="'.$filename.'"',
         ]);
-    }
-
-    /**
-     * The semester must belong to the class's academic year — no cross-year
-     * fallback; defaults to the first semester of the class's year.
-     */
-    private function resolveSemester(Request $request, SchoolClass $schoolClass): Semester
-    {
-        $schoolClass->loadMissing('academicYear.semesters');
-        $semesters = $schoolClass->academicYear->semesters;
-
-        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
-
-        /** @var Semester|null $semester */
-        $semester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-        abort_if($semester === null, 404, __('toasts.report_cards.semester_not_found'));
-
-        return $semester;
     }
 }
