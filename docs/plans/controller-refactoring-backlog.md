@@ -72,13 +72,15 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 6. `App\Http\Controllers\Teacher\LearningObjectiveController` (Prioritas Ringan — 216 baris)
+### 6. `App\Http\Controllers\Teacher\LearningObjectiveController` (Selesai Direfaktor ✅ — commit `e4041b6`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `copyPreviousYear()` memproses iterasi penyalinan TP dari tahun sebelumnya, pengecekan duplikasi, dan persistensi database langsung di controller.
-* **Rencana Solusi:**
-  1. Ekstrak operasi salin TP ke `App\Services\Grading\CopyLearningObjectivesAction`.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Teacher/LearningObjectiveTest.php`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 216 baris menjadi 102 baris (-53%).
+  * Seluruh query pembentukan payload index (tahun ajaran, filter mapel/tingkat kelas admin vs guru, pengecekan ketersediaan tahun lalu) diekstrak ke `App\Services\Grading\LearningObjectiveViewService`.
+  * Seluruh operasi penyalinan TP dari tahun sebelumnya, pengecekan duplikasi kode, dan transaksi pembuatan record diekstrak ke `App\Services\Grading\CopyLearningObjectivesAction`.
+  * Otorisasi dan validasi penyalinan TP dipindahkan ke FormRequest `App\Http\Requests\Teacher\CopyLearningObjectivesRequest`.
+  * Controller kini ramping dan murni mengoordinasikan HTTP request, otorisasi, dan delegasi service.
+* **Verifikasi:** 10 learning objective tests & 82 teacher domain tests passing (456 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
