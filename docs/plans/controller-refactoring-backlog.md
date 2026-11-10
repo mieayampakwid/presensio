@@ -28,17 +28,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 2. `App\Http\Controllers\Classes\ClassSubjectController` (Prioritas Tinggi — 294 baris)
+### 2. `App\Http\Controllers\Classes\ClassSubjectController` (Selesai Direfaktor ✅ — commit `8aa8398`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `index()` (120 baris) memiliki percabangan besar Admin vs Non-Admin, join SQL manual 3 kolom, dan merender 2 view berbeda.
-  * Terdapat method *private* 35 baris (`canViewClassSubjects`) yang melakukan pengecekan relasi enrollment siswa dan wali murid.
-  * Mutasi `store()`, `update()`, dan `destroy()` membungkus `DB::transaction` dan `auditLogger` langsung di controller.
-* **Rencana Solusi:**
-  1. Pindahkan otorisasi akses baca ke Policy atau helper `ClassAccess::canViewClassSubjects()`.
-  2. Ekstrak query pembacaan daftar mata pelajaran kelas ke `App\Services\Classes\ClassSubjectViewService`.
-  3. Pisahkan view non-admin (hanya lihat mapel kelas) jika memungkinkan menjadi endpoint/controller terpisah (misalnya `ClassSubjectsViewController`), atau delegasikan seleksi view ke service.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Classes`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut drastis dari 295 baris menjadi 102 baris (-65%).
+  * Otorisasi akses baca non-admin dipindahkan ke `ClassAccess::canViewClassSubjects()` yang tersentralisasi.
+  * Pembentukan payload Inertia dan query join mapel kelas untuk tampilan admin maupun non-admin diekstrak ke `App\Services\Classes\ClassSubjectViewService`.
+  * Seluruh mutasi `assignSubject`, `updateSubject`, dan `removeSubject` beserta transaksi DB dan audit logging diekstrak ke `App\Services\Classes\ClassSubjectService`.
+* **Verifikasi:** 42 classes tests passing (218 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
