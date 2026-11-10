@@ -9,9 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
- * Class scoping (spec 01 §Data Scoping): admins, principals, and counselors work
- * anywhere; teachers see the classes they homeroom. A teacher without a linked
- * teacher profile sees nothing — an empty dashboard, not a 403. Today-surfaces
+ * Resolves accessible class IDs for a user based on role and academic year.
+ *
+ * Current operational surfaces (attendance scanning, manual overrides)
  * pass the active year; historical surfaces (reports, the exception dashboard)
  * omit it so past-year classes stay reachable.
  */
@@ -119,6 +119,44 @@ class ClassAccess
 
         if ($user->hasRole(UserRole::Teacher)) {
             return self::classIds($user)->contains($classId);
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if a user can view class subjects.
+     */
+    public static function canViewClassSubjects(User $user, SchoolClass $schoolClass, string $today): bool
+    {
+        if ($user->hasAnyRole(UserRole::Admin, UserRole::Principal)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Teacher)) {
+            $teacherId = $user->teacher?->id;
+            if ($teacherId !== null && $schoolClass->teacher_id === $teacherId) {
+                return true;
+            }
+        }
+
+        if ($user->hasRole(UserRole::Parent)) {
+            $guardian = $user->guardian;
+            if ($guardian !== null) {
+                $guardian->loadMissing('students.enrollments');
+                foreach ($guardian->students as $child) {
+                    if ($child->classOn($today)?->id === $schoolClass->id) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($user->hasRole(UserRole::Student)) {
+            $student = $user->student;
+            if ($student !== null && $student->classOn($today)?->id === $schoolClass->id) {
+                return true;
+            }
         }
 
         return false;
