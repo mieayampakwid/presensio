@@ -84,13 +84,15 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 7. `App\Http\Controllers\Teacher\AssessmentController` (Prioritas Ringan — 208 baris)
+### 7. `App\Http\Controllers\Teacher\AssessmentController` (Selesai Direfaktor ✅ — commit `343ed49`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `destroy()` memeriksa keberadaan nilai siswa, mencadangkan snapshot nilai lama, menghapus relasi pivot, dan mencatat audit log langsung di controller.
-* **Rencana Solusi:**
-  1. Ekstrak operasi hapus asesmen ber-nilai ke `App\Services\Grading\DeleteAssessmentAction`.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Teacher/AssessmentTest.php`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 208 baris menjadi 82 baris (-61%).
+  * Seluruh query perakitan payload asesmen kursus (eager loading, resolusi semester, query asesmen & hitungan nilai, query TP lingkup kelas) diekstrak ke `App\Services\Grading\AssessmentViewService`.
+  * Seluruh mutasi `create` dan `update` asesmen, sync TP, serta pencatatan audit log diekstrak ke `App\Services\Grading\AssessmentService`.
+  * Seluruh operasi `destroy`, validasi semester terbuka, pengecekan konfirmasi nilai terisi, pencadangan snapshot nilai ke audit log, dan penghapusan asesmen diekstrak ke `App\Services\Grading\DeleteAssessmentAction`.
+  * Controller kini ramping dan murni mengoordinasikan HTTP request, otorisasi, dan delegasi service.
+* **Verifikasi:** 9 assessment tests & 82 teacher domain tests passing (456 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
