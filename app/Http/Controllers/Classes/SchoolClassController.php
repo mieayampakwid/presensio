@@ -45,9 +45,9 @@ class SchoolClassController extends Controller
             })
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
+                    $query->whereLike('name', "%{$search}%")
                         ->orWhereHas('teacher.employee', function (Builder $query) use ($search) {
-                            $query->where('name', 'like', "%{$search}%");
+                            $query->whereLike('name', "%{$search}%");
                         });
                 });
             })

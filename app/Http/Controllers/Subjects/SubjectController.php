@@ -26,8 +26,8 @@ class SubjectController extends Controller
         $subjects = Subject::query()
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
+                    $query->whereLike('name', "%{$search}%")
+                        ->orWhereLike('code', "%{$search}%");
                 });
             })
             ->orderBy('group')

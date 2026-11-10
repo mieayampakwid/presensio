@@ -26,8 +26,8 @@ class GuardianController extends Controller
         $guardians = Guardian::query()
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone_number', 'like', "%{$search}%");
+                    $query->whereLike('name', "%{$search}%")
+                        ->orWhereLike('phone_number', "%{$search}%");
                 });
             })
             ->orderByDesc('created_at')

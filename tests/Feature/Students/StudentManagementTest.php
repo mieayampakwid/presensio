@@ -30,6 +30,25 @@ class StudentManagementTest extends TestCase
             ->assertSee('Ayu Lestari');
     }
 
+    public function test_admin_can_search_students_by_full_name_or_number(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Student::factory()->create(['full_name' => 'Ayu Lestari', 'student_number' => 'NIS-001']);
+        Student::factory()->create(['full_name' => 'Budi Santoso', 'student_number' => 'NIS-002']);
+
+        $this->actingAs($admin)
+            ->get(route('students.index', ['search' => 'ayu']))
+            ->assertOk()
+            ->assertSee('Ayu Lestari')
+            ->assertDontSee('Budi Santoso');
+
+        $this->actingAs($admin)
+            ->get(route('students.index', ['search' => '002']))
+            ->assertOk()
+            ->assertSee('Budi Santoso')
+            ->assertDontSee('Ayu Lestari');
+    }
+
     public function test_admin_can_search_students_by_guardian_name(): void
     {
         $admin = User::factory()->admin()->create();

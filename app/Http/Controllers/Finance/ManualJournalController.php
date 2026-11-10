@@ -42,8 +42,8 @@ class ManualJournalController extends Controller
             ->when($status !== '', fn ($q) => $q->where('status', $status))
             ->when($search !== '', function ($q) use ($search) {
                 $q->where(function ($sub) use ($search) {
-                    $sub->where('number', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
+                    $sub->whereLike('number', "%{$search}%")
+                        ->orWhereLike('description', "%{$search}%");
                 });
             })
             ->when($from !== '', fn ($q) => $q->where('entry_date', '>=', $from))

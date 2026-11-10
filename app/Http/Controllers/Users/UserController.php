@@ -30,8 +30,8 @@ class UserController extends Controller
             ->with('roleGrants')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
-                    $query->where('username', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                    $query->whereLike('username', "%{$search}%")
+                        ->orWhereLike('email', "%{$search}%");
                 });
             })
             ->orderByDesc('created_at')

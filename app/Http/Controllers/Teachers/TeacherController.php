@@ -28,9 +28,9 @@ class TeacherController extends Controller
             ->with('employee')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->whereHas('employee', function (Builder $query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('employee_number', 'like', "%{$search}%")
-                        ->orWhere('phone_number', 'like', "%{$search}%");
+                    $query->whereLike('name', "%{$search}%")
+                        ->orWhereLike('employee_number', "%{$search}%")
+                        ->orWhereLike('phone_number', "%{$search}%");
                 });
             })
             ->orderByDesc('created_at')

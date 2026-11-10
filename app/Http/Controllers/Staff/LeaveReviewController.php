@@ -46,7 +46,7 @@ class LeaveReviewController extends Controller
             ->where('status', $status)
             ->when($search !== '', fn ($query) => $query->whereHas(
                 'employee',
-                fn ($query) => $query->where('name', 'like', "%{$search}%"),
+                fn ($query) => $query->whereLike('name', "%{$search}%"),
             ))
             ->orderByDesc('created_at')
             ->orderByDesc('id')

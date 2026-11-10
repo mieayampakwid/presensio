@@ -28,12 +28,12 @@ class RfidCardController extends Controller
             ->with(['student:id,full_name', 'employee:id,name'])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $query) use ($search) {
-                    $query->where('rfid_number', 'like', "%{$search}%")
+                    $query->whereLike('rfid_number', "%{$search}%")
                         ->orWhereHas('student', function (Builder $query) use ($search) {
-                            $query->where('full_name', 'like', "%{$search}%");
+                            $query->whereLike('full_name', "%{$search}%");
                         })
                         ->orWhereHas('employee', function (Builder $query) use ($search) {
-                            $query->where('name', 'like', "%{$search}%");
+                            $query->whereLike('name', "%{$search}%");
                         });
                 });
             })
