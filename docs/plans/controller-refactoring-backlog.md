@@ -50,14 +50,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 4. `App\Http\Controllers\Employees\EmployeeController` (Prioritas Sedang — 287 baris)
+### 4. `App\Http\Controllers\Employees\EmployeeController` (Selesai Direfaktor ✅ — commit `9539479`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `store()` dan `update()` menjalankan transaksi multi-tabel untuk menyimpan data `Employee`, membuat/mengubah baris `Teacher`, menyinkronkan peran akun `User` (`UserRole::Teacher` vs `UserRole::Staff`), serta mencatat audit.
-* **Rencana Solusi:**
-  1. Ekstrak logika simpan dan sinkronisasi pegawai-guru ke `App\Services\Employees\SaveEmployeeAction`.
-  2. Ekstrak opsi form (`employmentTypeOptions`, `availableUsers`) ke helper/service form options.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Employees`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 308 baris menjadi 107 baris (-65%).
+  * Seluruh mutasi `createEmployee`, `updateEmployee`, sinkronisasi profil `Teacher` & peran `User` (`Teacher` vs `Staff`), deteksi `deletionBlockers`, serta penghapusan pegawai diekstrak ke `App\Services\Employees\EmployeeService`.
+  * Seluruh pembentukan payload index (`getPaginatedEmployees`), opsi form (`getFormOptions`: tipe pegawai, shift, hari operasional, user tersedia), dan format edit data diekstrak ke `App\Services\Employees\EmployeeViewService`.
+  * Controller kini ramping dan murni mengoordinasikan HTTP request & redirect.
+* **Verifikasi:** 19 employee tests & 14 teacher tests passing, PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
