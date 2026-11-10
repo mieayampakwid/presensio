@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\Teachers;
 
-use App\Enums\EmploymentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teachers\StoreTeacherRequest;
 use App\Http\Requests\Teachers\UpdateTeacherRequest;
-use App\Models\Employee;
 use App\Models\Teacher;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use App\Services\Teachers\TeacherService;
+use App\Services\Teachers\TeacherViewService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TeacherController extends Controller
 {
+    public function __construct(
+        private readonly TeacherViewService $viewService,
+        private readonly TeacherService $teacherService,
+    ) {}
+
     /**
      * Display a listing of the teachers.
      */
@@ -24,28 +27,8 @@ class TeacherController extends Controller
     {
         $search = $request->string('search')->toString();
 
-        $teachers = Teacher::query()
-            ->with('employee')
-            ->when($search !== '', function (Builder $query) use ($search) {
-                $query->whereHas('employee', function (Builder $query) use ($search) {
-                    $query->whereLike('name', "%{$search}%")
-                        ->orWhereLike('employee_number', "%{$search}%")
-                        ->orWhereLike('phone_number', "%{$search}%");
-                });
-            })
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->paginate(15)
-            ->through(fn (Teacher $teacher) => [
-                'id' => $teacher->id,
-                'name' => $teacher->employee->name,
-                'teacher_number' => $teacher->employee?->employee_number,
-                'phone_number' => $teacher->employee?->phone_number,
-            ])
-            ->withQueryString();
-
         return Inertia::render('teachers/index', [
-            'teachers' => $teachers,
+            'teachers' => $this->viewService->getPaginatedTeachers($search),
             'filters' => [
                 'search' => $search,
             ],
@@ -65,23 +48,7 @@ class TeacherController extends Controller
      */
     public function store(StoreTeacherRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request): void {
-            $number = $request->validated('teacher_number') ?? $request->validated('employee_number');
-            $type = $request->validated('employment_type') ? EmploymentType::from($request->validated('employment_type')) : EmploymentType::Permanent;
-            $employee = Employee::create([
-                'name' => $request->validated('name'),
-                'employee_number' => $number,
-                'phone_number' => $request->validated('phone_number'),
-                'employment_type' => $type,
-                'position' => $request->validated('position') ?? 'Guru',
-                'working_days' => $request->validated('working_days'),
-                'is_active' => $request->boolean('is_active', true),
-            ]);
-
-            Teacher::create([
-                'employee_id' => $employee->id,
-            ]);
-        });
+        $this->teacherService->createTeacher($request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.created')]);
 
@@ -93,16 +60,7 @@ class TeacherController extends Controller
      */
     public function edit(Teacher $teacher): Response
     {
-        $teacher->loadMissing('employee');
-
-        return Inertia::render('teachers/edit', [
-            'teacher' => [
-                'id' => $teacher->id,
-                'name' => $teacher->employee->name,
-                'teacher_number' => $teacher->employee?->employee_number,
-                'phone_number' => $teacher->employee?->phone_number,
-            ],
-        ]);
+        return Inertia::render('teachers/edit', $this->viewService->getEditViewData($teacher));
     }
 
     /**
@@ -110,28 +68,7 @@ class TeacherController extends Controller
      */
     public function update(UpdateTeacherRequest $request, Teacher $teacher): RedirectResponse
     {
-        DB::transaction(function () use ($request, $teacher): void {
-            $teacher->loadMissing('employee');
-            $number = $request->validated('teacher_number') ?? $request->validated('employee_number');
-            $updateData = [
-                'name' => $request->validated('name'),
-                'employee_number' => $number,
-                'phone_number' => $request->validated('phone_number'),
-            ];
-            if ($request->filled('employment_type')) {
-                $updateData['employment_type'] = EmploymentType::from($request->validated('employment_type'));
-            }
-            if ($request->has('position')) {
-                $updateData['position'] = $request->validated('position');
-            }
-            if ($request->has('working_days')) {
-                $updateData['working_days'] = $request->validated('working_days');
-            }
-            if ($request->has('is_active')) {
-                $updateData['is_active'] = $request->boolean('is_active');
-            }
-            $teacher->employee?->update($updateData);
-        });
+        $this->teacherService->updateTeacher($teacher, $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.updated')]);
 
@@ -143,7 +80,7 @@ class TeacherController extends Controller
      */
     public function destroy(Teacher $teacher): RedirectResponse
     {
-        $blockers = $this->deletionBlockers($teacher);
+        $blockers = $this->teacherService->deletionBlockers($teacher);
 
         if ($blockers !== []) {
             Inertia::flash('toast', ['type' => 'error', 'message' => $blockers[0]]);
@@ -151,48 +88,10 @@ class TeacherController extends Controller
             return back();
         }
 
-        DB::transaction(function () use ($teacher): void {
-            $teacher->loadMissing('employee');
-            $employee = $teacher->employee;
-
-            $teacher->delete();
-
-            if ($employee !== null && $employee->user_id === null) {
-                $employee->delete();
-            }
-        });
+        $this->teacherService->deleteTeacher($teacher);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.teachers.deleted')]);
 
         return to_route('teachers.index');
-    }
-
-    /**
-     * Reasons the teacher cannot be deleted, in display order.
-     *
-     * @return list<string>
-     */
-    private function deletionBlockers(Teacher $teacher): array
-    {
-        $blockers = [];
-
-        if ($teacher->classes()->exists()) {
-            $blockers[] = __('toasts.teachers.delete_blocked_homeroom');
-        }
-
-        if ($teacher->classSubjects()->exists()) {
-            $blockers[] = __('toasts.teachers.delete_blocked_assignments');
-        }
-
-        $teacher->loadMissing('employee');
-        if ($teacher->employee?->user_id !== null) {
-            $blockers[] = __('toasts.common.delete_blocked_user_link');
-        }
-
-        if ($teacher->employee?->attendances()->exists()) {
-            $blockers[] = __('toasts.teachers.delete_blocked_attendance');
-        }
-
-        return $blockers;
     }
 }
