@@ -61,15 +61,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 5. `App\Http\Controllers\Attendance\AttendanceController` (Prioritas Sedang — 206 baris)
+### 5. `App\Http\Controllers\Attendance\AttendanceController` (Selesai Direfaktor ✅ — commit `b08359e`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `index()` memuat query roster siswa per tanggal yang panjang dengan relasi nested `enrollments` dan `attendances`.
-  * Method `updateRecord()` dan `bulkStore()` menangani transaksi database dan pembentukan record kehadiran langsung di controller.
-* **Rencana Solusi:**
-  1. Ekstrak query roster presensi harian ke `App\Services\Attendance\AttendanceRosterBuilder`.
-  2. Ekstrak mutasi kehadiran ke `App\Services\Attendance\AttendanceRecorder`.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Attendance`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 206 baris menjadi 88 baris (-57%).
+  * Seluruh query roster siswa per tanggal, filter kelas, dan format waktu kehadiran diekstrak ke `App\Services\Attendance\AttendanceRosterBuilder`.
+  * Seluruh mutasi rekonsiliasi manual `updateRecord` dan pengisian celah presensi `bulkPresent` beserta savepoint nested transaction penanganan tabrakan konkurensi RFID scanner diekstrak ke `App\Services\Attendance\AttendanceRecorder`.
+  * Controller kini ramping dan murni mengoordinasikan otorisasi, validasi form request, pemanggilan service, dan flash toast.
+* **Verifikasi:** 70 attendance tests passing (502 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
