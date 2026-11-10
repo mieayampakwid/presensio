@@ -2,23 +2,16 @@
 
 namespace App\Http\Controllers\Attendance;
 
-use App\Enums\AttendanceStatus;
-use App\Enums\ScanMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Attendance\StoreBulkAttendanceRequest;
 use App\Http\Requests\Attendance\UpsertAttendanceRequest;
-use App\Models\Attendance;
-use App\Models\SchoolClass;
-use App\Models\Student;
+use App\Services\Attendance\AttendanceRecorder;
+use App\Services\Attendance\AttendanceRosterBuilder;
 use App\Services\Attendance\ClassAccess;
 use App\Services\SchoolSettings;
-use Carbon\CarbonInterface;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,49 +22,27 @@ use Inertia\Response;
  */
 class AttendanceController extends Controller
 {
-    public function __construct(private readonly SchoolSettings $settings) {}
+    public function __construct(
+        private readonly SchoolSettings $settings,
+        private readonly AttendanceRosterBuilder $rosterBuilder,
+        private readonly AttendanceRecorder $recorder,
+    ) {}
 
     public function index(Request $request): Response
     {
         $classIds = ClassAccess::classIds($request->user());
-
-        $classes = SchoolClass::query()
-            ->whereIn('id', $classIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        $requestedClassId = $request->integer('class_id');
-        $classId = $classIds->contains($requestedClassId)
-            ? $requestedClassId
-            : (int) $classes->first()?->id;
-
+        $requestedClassId = $request->has('class_id') ? $request->integer('class_id') : null;
         $date = $this->resolveDate($request);
 
-        $students = Student::query()
-            // Roster as of the dashboard's date (spec 07) — a student who
-            // moved classes mid-year appears under the right class per day.
-            ->whereHas('enrollments', fn (Builder $query) => $query
-                ->where('class_id', $classId)
-                ->where('started_on', '<=', $date)
-                ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $date)))
-            ->with(['attendances' => fn (Builder $query) => $query->whereDate('date', $date)])
-            ->orderBy('full_name')
-            ->get(['id', 'full_name', 'student_number']);
-
-        $rows = $students->map(fn (Student $student) => [
-            'student_id' => $student->id,
-            'full_name' => $student->full_name,
-            'student_number' => $student->student_number,
-            'attendance' => $this->attendanceRow($student->attendances->first()),
-        ]);
+        $data = $this->rosterBuilder->build($classIds, $requestedClassId, $date);
 
         return Inertia::render('attendance/index', [
-            'classes' => $classes,
+            'classes' => $data['classes'],
             'filters' => [
-                'class_id' => $classId,
-                'date' => $date,
+                'class_id' => $data['classId'],
+                'date' => $data['date'],
             ],
-            'rows' => $rows,
+            'rows' => $data['rows'],
         ]);
     }
 
@@ -82,27 +53,9 @@ class AttendanceController extends Controller
     public function updateRecord(UpsertAttendanceRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $userId = auth()->id() !== null ? (int) auth()->id() : null;
 
-        DB::transaction(function () use ($validated) {
-            Attendance::query()->updateOrCreate(
-                [
-                    'student_id' => $validated['student_id'],
-                    'date' => $validated['date'],
-                ],
-                [
-                    'status' => $validated['status'],
-                    'checked_in_at' => isset($validated['checked_in_at'])
-                        ? $this->instant($validated['date'], $validated['checked_in_at'])
-                        : null,
-                    'checked_out_at' => isset($validated['checked_out_at'])
-                        ? $this->instant($validated['date'], $validated['checked_out_at'])
-                        : null,
-                    'scan_method' => ScanMethod::ManualOverride,
-                    'override_by_user_id' => auth()->id(),
-                    'notes' => $validated['notes'] ?? null,
-                ],
-            );
-        });
+        $this->recorder->record($validated, $userId);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.attendance.record_saved')]);
 
@@ -119,39 +72,9 @@ class AttendanceController extends Controller
     public function bulkPresent(StoreBulkAttendanceRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $userId = auth()->id() !== null ? (int) auth()->id() : null;
 
-        $count = DB::transaction(function () use ($validated) {
-            $students = Student::query()
-                ->whereHas('enrollments', fn (Builder $query) => $query
-                    ->where('class_id', $validated['class_id'])
-                    ->where('started_on', '<=', $validated['date'])
-                    ->where(fn (Builder $query) => $query->whereNull('ended_on')->orWhere('ended_on', '>=', $validated['date'])))
-                ->whereDoesntHave('attendances', fn (Builder $query) => $query->whereDate('date', $validated['date']))
-                ->get(['id']);
-
-            foreach ($students as $student) {
-                // A student tapping a scanner between the gap query and this
-                // create loses the (student_id, date) unique insert — the
-                // scanner's record wins and this loop skips them (same
-                // create-once rule as the scan service). The savepoint keeps
-                // the outer transaction usable after the violation on
-                // PostgreSQL.
-                try {
-                    DB::transaction(fn () => Attendance::create([
-                        'student_id' => $student->id,
-                        'date' => $validated['date'],
-                        'status' => AttendanceStatus::Present,
-                        'scan_method' => ScanMethod::ManualOverride,
-                        'override_by_user_id' => auth()->id(),
-                        'notes' => 'Bulk marked present',
-                    ]));
-                } catch (UniqueConstraintViolationException) {
-                    continue;
-                }
-            }
-
-            return $students->count();
-        });
+        $count = $this->recorder->bulkPresent($validated, $userId);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('toasts.attendance.bulk_present', ['count' => $count])]);
 
@@ -170,37 +93,5 @@ class AttendanceController extends Controller
         }
 
         return $this->settings->todayDate();
-    }
-
-    /**
-     * Times are pre-formatted in the school timezone server-side.
-     *
-     * @return array{status: string, checked_in_at: string|null, checked_out_at: string|null, scan_method: string|null, notes: string|null}|null
-     */
-    private function attendanceRow(?Attendance $record): ?array
-    {
-        if ($record === null) {
-            return null;
-        }
-
-        $tz = $this->settings->timezone();
-
-        return [
-            'status' => $record->status->value,
-            'checked_in_at' => $record->checked_in_at?->tz($tz)->format('H:i'),
-            'checked_out_at' => $record->checked_out_at?->tz($tz)->format('H:i'),
-            'scan_method' => $record->scan_method?->value,
-            'notes' => $record->notes,
-        ];
-    }
-
-    /**
-     * Wall time on the record's date in the school timezone, normalized to
-     * UTC for persistence (Eloquent formats datetimes in the value's own
-     * timezone).
-     */
-    private function instant(string $date, string $time): CarbonInterface
-    {
-        return Date::parse("{$date} {$time}", $this->settings->timezone())->tz('UTC');
     }
 }
