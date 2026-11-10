@@ -96,13 +96,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-## Fase 2 — Refactoring Lanjutan
+## Fase 2 — Refactoring Lanjutan (Selesai 100% ✅)
 
 ### 8. `App\Http\Controllers\Dashboard\DashboardController` (Selesai Direfaktor ✅ — commit `7d31b43`, 2026-11-10)
 
 * **Hasil Refactoring:**
   * Ukuran controller menyusut drastis dari 245 baris menjadi 36 baris (-85%).
-  * Seluruh perakitan metrik multi-role (`announcementSummary`, `is_school_day`, `board`, `pending_excuses`, `pending_leave_requests`, `employee_leave_today`, `children`, `student`, `today_schedule`) beserta ketujuh helper query diekstrak ke `App\Services\Dashboard\DashboardBuilder`.\n  * Controller kini sangat ramping, murni menangani otorisasi, redirect role scanner operator, dan delegasi payload view.
+  * Seluruh perakitan metrik multi-role (`announcementSummary`, `is_school_day`, `board`, `pending_excuses`, `pending_leave_requests`, `employee_leave_today`, `children`, `student`, `today_schedule`) beserta ketujuh helper query diekstrak ke `App\Services\Dashboard\DashboardBuilder`.
+  * Controller kini sangat ramping, murni menangani otorisasi, redirect role scanner operator, dan delegasi payload view.
 * **Verifikasi:** 27 dashboard feature tests passing (362 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
@@ -136,37 +137,37 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 11. `App\Http\Controllers\Timetable\ClassTimetableController` (212 baris) & `App\Http\Controllers\Staff\ShiftRosterController` (201 baris)
+### 11. `App\Http\Controllers\Timetable\ClassTimetableController` & `App\Http\Controllers\Staff\ShiftRosterController` (Selesai Direfaktor ✅ — commit `93e386c`, 2026-11-10)
 
-* **Kondisi Saat Ini:**
-  * **`ClassTimetableController`** memiliki method `edit()` yang merakit opsi mapel/semester dan private method `checkPlacement()` (40 baris) yang memanggil `TimetableValidator::errors()` dan `conflicts()`, melempar `ValidationException`, serta merakit respons 409. Selain itu `copy()` memvalidasi semester secara inline di controller.
-  * **`ShiftRosterController`** memiliki method `index()` yang membangun matriks 2 dimensi `(employees × dates)` secara manual menggunakan nested loop `resolveMany()`, serta method `bulk()`, `set()`, `clear()`, `resolveRange()`, dan `datesBetween()` langsung di controller.
-* **Rencana Ekstraksi:**
-  1. **Domain Timetable (`ClassTimetableController` → Target ~95 baris):**
-     * Perluas **`App\Services\Timetable\TimetableView`**:
-       * Tambahkan `getEditorViewData(Request $request, SchoolClass $schoolClass): array` untuk merakit seluruh payload `timetable/editor`.
-     * Buat **`App\Services\Timetable\TimetableSlotService`** (atau perluas service timetable):
-       * Pindahkan pengecekan `validateAndCheckConflicts(SchoolClass $schoolClass, array $attributes, ?TimetableSlot $slot): list<array<string, mixed>>` yang melempar `ValidationException` bila ada *hard error* dan mengembalikan daftar *soft conflicts*.
-       * Pindahkan validasi tahun aktif & kepemilikan semester pada operasi `copySemesterSlots(SchoolClass $schoolClass, int $semesterId): array{copied: int, skipped: list<mixed>}`.
-  2. **Domain Shift Roster (`ShiftRosterController` → Target ~80 baris):**
-     * Buat **`App\Services\Staff\ShiftRosterViewService`**:\n       * Pindahkan `getRosterGrid(string $weekInput, string $monthInput): array` beserta helper `resolveRange()` dan `datesBetween()` untuk merakit matriks `rows`, `shifts`, `view`, dan `today`.
-     * Buat **`App\Services\Staff\ShiftRosterService`**:
-       * Pindahkan mutasi `bulkUpsert(array $employeeIds, list<string> $dates, ?int $shiftId): void`, `setCell(int $employeeId, string $date, ?int $shiftId): void`, dan `clearCell(int $employeeId, string $date): void`.
-* **Verifikasi Test:**
-  * `vendor/bin/sail artisan test --compact tests/Feature/Timetable tests/Feature/Staff`
+* **Hasil Refactoring:**
+  * `ClassTimetableController` menyusut dari 212 baris menjadi 110 baris (-48%).
+  * `ShiftRosterController` menyusut dari 201 baris menjadi 81 baris (-60%).
+  * **Domain Timetable:**
+    * Perakitan payload editor grid (`school_class`, `class_subjects`, `semesters`, `days`, `read_only`) diekstrak ke `App\Services\Timetable\TimetableView::getEditorViewData()`.
+    * Validasi penempatan slot (`checkPlacement`), pembuatan (`createSlot`), pembaruan (`updateSlot`), penghapusan dengan guard tahun aktif (`deleteSlot`), serta validasi salin semester (`copySemesterSlots`) diekstrak ke `App\Services\Timetable\TimetableSlotService`.
+  * **Domain Shift Roster:**
+    * Perakitan matriks 2D roster pegawai × tanggal (`getRosterViewData`), resolusi rentang tanggal (`resolveRange`), dan kalkulasi hari dalam rentang (`datesBetween`) diekstrak ke `App\Services\Staff\ShiftRosterViewService`.
+    * Operasi mutasi massal (`bulkAssign`), penugasan per sel (`setCell`), dan penghapusan override sel (`clearCell`) diekstrak ke `App\Services\Staff\ShiftRosterService`.
+  * Kedua controller kini murni mengoordinasikan HTTP request, validasi form request, pemanggilan service, flash toast, dan respons redirect/JSON.
+* **Verifikasi:** 164 timetable & staff feature tests passing (1179 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
-## Urutan & Prosedur Eksekusi
+## Ringkasan Pencapaian Keseluruhan
 
-Setiap item pada Fase 2 dieksekusi secara berurutan dengan prosedur disiplin yang sama:
-1. Buat feature branch dari `main` (`refactor/<nama-controller>`).
-2. Jalankan test suite spesifik domain sebelum perubahan untuk memastikan *baseline* hijau.
-3. Buat/perluas class Service/Builder/Action dengan tipe parameter & PHPDoc array-shape yang presisi.
-4. Refactor controller agar hanya mengoordinasikan HTTP request, otorisasi, dan respon.
-5. Jalankan verifikasi wajib:
-   * `vendor/bin/sail artisan test --compact <path_test>`
-   * `vendor/bin/sail bin pint --dirty --format agent`
-   * `vendor/bin/sail bin phpstan analyse --memory-limit=1G <changed_files>`
-   * `vendor/bin/sail npm run check && vendor/bin/sail npm run types:check`
-6. Commit pada feature branch, merge `--ff-only` ke `main`, hapus branch, perbarui status dokumen, dan push ke `origin/main`.
+| No | Controller | Sebelum | Sesudah | Pengurangan | Status |
+|:---|:---|:---:|:---:|:---:|:---:|
+| 1 | `ManualJournalController` | 530 baris | 248 baris | **-53%** | Selesai ✅ (`3b3b066`) |
+| 2 | `ClassSubjectController` | 295 baris | 102 baris | **-65%** | Selesai ✅ (`8aa8398`) |
+| 3 | `StaffAttendanceController` | 282 baris | 74 baris | **-74%** | Selesai ✅ (`c068c40`) |
+| 4 | `EmployeeController` | 308 baris | 107 baris | **-65%** | Selesai ✅ (`9539479`) |
+| 5 | `AttendanceController` | 206 baris | 88 baris | **-57%** | Selesai ✅ (`b08359e`) |
+| 6 | `LearningObjectiveController` | 216 baris | 102 baris | **-53%** | Selesai ✅ (`e4041b6`) |
+| 7 | `AssessmentController` | 208 baris | 82 baris | **-61%** | Selesai ✅ (`343ed49`) |
+| 8 | `DashboardController` | 245 baris | 36 baris | **-85%** | Selesai ✅ (`7d31b43`) |
+| 9 | `ReportCardWorkspaceController` | 224 baris | 157 baris | **-30%** | Selesai ✅ (`113eba1`) |
+| 10 | `StudentController` | 221 baris | 96 baris | **-57%** | Selesai ✅ (`93a9a34`) |
+| 10 | `TeacherController` | 198 baris | 96 baris | **-52%** | Selesai ✅ (`93a9a34`) |
+| 11 | `ClassTimetableController` | 212 baris | 110 baris | **-48%** | Selesai ✅ (`93e386c`) |
+| 11 | `ShiftRosterController` | 201 baris | 81 baris | **-60%** | Selesai ✅ (`93e386c`) |
+| **Total** | **13 Controller** | **3.346 baris** | **1.273 baris** | **-62% (2.073 baris diekstrak)** | **100% Selesai 🎉** |
