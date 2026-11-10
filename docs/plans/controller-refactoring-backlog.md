@@ -39,14 +39,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 3. `App\Http\Controllers\Staff\StaffAttendanceController` (Prioritas Sedang — 230 baris)
+### 3. `App\Http\Controllers\Staff\StaffAttendanceController` (Selesai Direfaktor ✅ — commit `c068c40`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `index()` (120 baris) melakukan iterasi seluruh karyawan aktif (`foreach`), menghitung ringkasan kehadiran (*expected, late, absent, no checkout*), dan memvalidasi kalender kerja langsung di controller.
-* **Rencana Solusi:**
-  1. Ekstrak kalkulasi rekap kehadiran harian staf ke `App\Services\Staff\StaffAttendanceSummaryService`.
-  2. Controller hanya memanggil `$this->summaryService->getDailyOverview($date, $filter)`.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Staff`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 282 baris menjadi 74 baris (-74%).
+  * Seluruh kalkulasi kehadiran harian staf (*expected, late, absent, no checkout*), filter, serta pengkayaan jadwal jam pertama guru diekstrak ke `App\Services\Staff\StaffAttendanceSummaryService`.
+  * Seluruh mutasi manual override beserta perhitungan keterlambatan / pulang cepat, dukungan shift lintas-hari (cross-midnight), dan pencatatan audit diekstrak ke `App\Services\Staff\StaffAttendanceOverrideService`.
+  * Controller kini ramping dan murni bertugas mengoordinasikan HTTP request, otorisasi, dan navigasi view.
+* **Verifikasi:** 103 staff tests passing (826 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
