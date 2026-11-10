@@ -108,21 +108,16 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-### 9. `App\Http\Controllers\Teacher\ReportCardWorkspaceController` (Prioritas Sedang — 224 baris)
+### 9. `App\Http\Controllers\Teacher\ReportCardWorkspaceController` (Selesai Direfaktor ✅ — commit `113eba1`, 2026-11-10)
 
-* **Kondisi Saat Ini:**
-  * Method `show()`, `pdf()`, `previewPdf()`, beserta helper `bundleAvailable()` dan `resolveSemester()` masih melakukan query `SchoolClass`, `ReportCardPublication`, pengecekan eksistensi file `Storage::disk('local')`, dan resolusi semester langsung di dalam controller.
-  * Padahal sudah ada `App\Services\ReportCards\ReportCardWorkspaceService` yang di-inject ke controller ini.
-* **Rencana Ekstraksi:**
-  1. Perluas **`App\Services\ReportCards\ReportCardWorkspaceService`**:
-     * Tambahkan `firstAccessibleClass(User $user): ?SchoolClass` untuk mencari kelas pertama secara alfabetis bagi `index()`.
-     * Tambahkan `resolveSemester(SchoolClass $schoolClass, ?int $requestedSemesterId): Semester` untuk meresolusi semester milik tahun ajaran kelas tersebut.
-     * Tambahkan `getWorkspaceViewData(User $user, SchoolClass $schoolClass, Semester $semester): array` yang merakit payload `show` (`school_class`, `semester`, `semesters`, `accessible_classes`, `checklist`, `students`, `publication`, `bundle_available`, `can`).
-     * Tambahkan `bundleAvailable(SchoolClass $schoolClass, Semester $semester): bool` dan `findPublishedCard(SchoolClass $schoolClass, Semester $semester, Student $student): array{publication: ReportCardPublication, card: ReportCard}`.
-  2. Sederhanakan **`ReportCardWorkspaceController`**:
-     * Controller hanya menangani otorisasi `ClassAccess`, memanggil `ReportCardWorkspaceService` & `ReportCardPdf`, dan membungkus response (`Inertia::render`, `response()->json()`, atau `pdfResponse()`).
-* **Verifikasi Test:**
-  * `vendor/bin/sail artisan test --compact tests/Feature/Teacher/ReportCard`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 224 baris menjadi 157 baris (-30%).
+  * Helper `firstAccessibleClass()` diekstrak ke `App\Services\ReportCards\ReportCardWorkspaceService`.
+  * Resolusi semester (`resolveSemester`) dan pencarian kartu rapor terpublikasi (`findPublishedCard`) didelegasikan ke `ReportCardWorkspaceService`.
+  * Perakitan payload view `show()` diekstrak ke `ReportCardWorkspaceService::getWorkspaceViewData()`.
+  * Pengecekan ketersediaan bundel PDF (`bundleAvailable`) dipindahkan ke `ReportCardWorkspaceService`.
+  * Controller kini ramping dan murni bertugas mengoordinasikan otorisasi `ClassAccess`, memanggil `ReportCardWorkspaceService` & `ReportCardPdf`, serta mengembalikan response HTTP/Inertia/PDF.
+* **Verifikasi:** 34 report card & workspace feature tests passing (209 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
