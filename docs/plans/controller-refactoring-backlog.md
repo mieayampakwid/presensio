@@ -1,6 +1,6 @@
 # Controller Refactoring Backlog
 
-Dokumen ini mencatat daftar controller yang teridentifikasi mengalami *fat controller* / *code smell* untuk direfaktor di waktu mendatang agar mematuhi aturan arsitektur di `.ai/rules/controllers.md` dan panduan Laravel Best Practices.
+Dokumen ini mencatat daftar controller yang teridentifikasi mengalami *fat controller* / *code smell* untuk direfaktor agar mematuhi aturan arsitektur di `.ai/rules/controllers.md` dan panduan Laravel Best Practices.
 
 ---
 
@@ -15,7 +15,7 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-## Daftar Backlog Refactoring
+## Fase 1 — Daftar Backlog Awal (Selesai 100% ✅)
 
 ### 1. `App\Http\Controllers\Finance\ManualJournalController` (Selesai Direfaktor ✅ — commit `3b3b066`, 2026-11-10)
 
@@ -96,8 +96,94 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ---
 
-## Petunjuk Eksekusi saat Mengerjakan Refactoring
+## Fase 2 — Refactoring Lanjutan
 
-1. **Jalankan test terkait terlebih dahulu:** Pastikan seluruh test yang mencakup controller tersebut lulus sebelum menyentuh kode.
-2. **Ekstrak secara bertahap:** Buat Service/Action class baru, pindahkan logika dari controller, lalu suntikkan (*dependency injection*) ke controller.
-3. **Pastikan zero regressions:** Jalankan `php artisan test --compact <path_to_test>`, lalu `vendor/bin/pint --dirty --format agent`, dan `vendor/bin/phpstan analyse`.
+### 8. `App\Http\Controllers\Dashboard\DashboardController` (Selesai Direfaktor ✅ — commit `7d31b43`, 2026-11-10)
+
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut drastis dari 245 baris menjadi 36 baris (-85%).
+  * Seluruh perakitan metrik multi-role (`announcementSummary`, `is_school_day`, `board`, `pending_excuses`, `pending_leave_requests`, `employee_leave_today`, `children`, `student`, `today_schedule`) beserta ketujuh helper query diekstrak ke `App\Services\Dashboard\DashboardBuilder`.
+  * Controller kini sangat ramping, murni menangani otorisasi, redirect role scanner operator, dan delegasi payload view.
+* **Verifikasi:** 27 dashboard feature tests passing (362 assertions), PHPStan clean, Pint clean, frontend checks clean.
+
+---
+
+### 9. `App\Http\Controllers\Teacher\ReportCardWorkspaceController` (Prioritas Sedang — 224 baris)
+
+* **Kondisi Saat Ini:**
+  * Method `show()`, `pdf()`, `previewPdf()`, beserta helper `bundleAvailable()` dan `resolveSemester()` masih melakukan query `SchoolClass`, `ReportCardPublication`, pengecekan eksistensi file `Storage::disk('local')`, dan resolusi semester langsung di dalam controller.
+  * Padahal sudah ada `App\Services\ReportCards\ReportCardWorkspaceService` yang di-inject ke controller ini.
+* **Rencana Ekstraksi:**
+  1. Perluas **`App\Services\ReportCards\ReportCardWorkspaceService`**:
+     * Tambahkan `firstAccessibleClass(User $user): ?SchoolClass` untuk mencari kelas pertama secara alfabetis bagi `index()`.
+     * Tambahkan `resolveSemester(SchoolClass $schoolClass, ?int $requestedSemesterId): Semester` untuk meresolusi semester milik tahun ajaran kelas tersebut.
+     * Tambahkan `getWorkspaceViewData(User $user, SchoolClass $schoolClass, Semester $semester): array` yang merakit payload `show` (`school_class`, `semester`, `semesters`, `accessible_classes`, `checklist`, `students`, `publication`, `bundle_available`, `can`).
+     * Tambahkan `bundleAvailable(SchoolClass $schoolClass, Semester $semester): bool` dan `findPublishedCard(SchoolClass $schoolClass, Semester $semester, Student $student): array{publication: ReportCardPublication, card: ReportCard}`.
+  2. Sederhanakan **`ReportCardWorkspaceController`**:
+     * Controller hanya menangani otorisasi `ClassAccess`, memanggil `ReportCardWorkspaceService` & `ReportCardPdf`, dan membungkus response (`Inertia::render`, `response()->json()`, atau `pdfResponse()`).
+* **Verifikasi Test:**
+  * `vendor/bin/sail artisan test --compact tests/Feature/Teacher/ReportCard`
+
+---
+
+### 10. `App\Http\Controllers\Students\StudentController` (221 baris) & `App\Http\Controllers\Teachers\TeacherController` (198 baris)
+
+* **Kondisi Saat Ini:**
+  * **`StudentController`** masih memuat query paginasi filter pencarian/status (`active`/`withdrawn`) di `index()`, transaksi `DB::transaction` di `store()`, `update()`, `destroy()`, serta helper `assignClass()`, `formOptions()`, dan `deletionBlockers()`.
+  * **`TeacherController`** masih memuat query paginasi `index()`, transaksi pembuatan/pembaruan `Employee` + `Teacher` di `store()`, `update()`, `destroy()`, serta `deletionBlockers()`.
+* **Rencana Ekstraksi:**
+  1. **Domain Students (`StudentController` → Target ~95 baris):**
+     * Buat **`App\Services\Students\StudentViewService`**:
+       * `getPaginatedStudents(string $search, string $status): LengthAwarePaginator` (mempertahankan `whereLike` dan filter enrollment tahun aktif).
+       * `getFormOptions(): array` (daftar kelas tahun aktif & daftar wali murid).
+       * `getEditViewData(Student $student): array` (menggabungkan `formOptions()`, `student`, `current_guardian_ids`, dan `current_guardians`).
+     * Buat **`App\Services\Students\StudentService`**:
+       * Inject `EnrollmentService`.
+       * `createStudent(array $attributes, array $guardianPivotData, ?int $classId): Student` dalam `DB::transaction`.
+       * `updateStudent(Student $student, array $attributes, array $guardianPivotData, ?int $classId): Student` dalam `DB::transaction`.
+       * `deletionBlockers(Student $student): list<string>` dan `deleteStudent(Student $student): void` (melepas guardian pivot, mereset `RfidCard`, dan menghapus student).
+  2. **Domain Teachers (`TeacherController` → Target ~90 baris):**
+     * Buat **`App\Services\Teachers\TeacherViewService`**:
+       * `getPaginatedTeachers(string $search): LengthAwarePaginator` dan `formatForEdit(Teacher $teacher): array`.
+     * Buat **`App\Services\Teachers\TeacherService`**:
+       * `createTeacher(array $validated): Teacher`, `updateTeacher(Teacher $teacher, array $validated): Teacher`, `deletionBlockers(Teacher $teacher): list<string>`, dan `deleteTeacher(Teacher $teacher): void`.
+* **Verifikasi Test:**
+  * `vendor/bin/sail artisan test --compact tests/Feature/Students tests/Feature/Teachers`
+
+---
+
+### 11. `App\Http\Controllers\Timetable\ClassTimetableController` (212 baris) & `App\Http\Controllers\Staff\ShiftRosterController` (201 baris)
+
+* **Kondisi Saat Ini:**
+  * **`ClassTimetableController`** memiliki method `edit()` yang merakit opsi mapel/semester dan private method `checkPlacement()` (40 baris) yang memanggil `TimetableValidator::errors()` dan `conflicts()`, melempar `ValidationException`, serta merakit respons 409. Selain itu `copy()` memvalidasi semester secara inline di controller.
+  * **`ShiftRosterController`** memiliki method `index()` yang membangun matriks 2 dimensi `(employees × dates)` secara manual menggunakan nested loop `resolveMany()`, serta method `bulk()`, `set()`, `clear()`, `resolveRange()`, dan `datesBetween()` langsung di controller.
+* **Rencana Ekstraksi:**
+  1. **Domain Timetable (`ClassTimetableController` → Target ~95 baris):**
+     * Perluas **`App\Services\Timetable\TimetableView`**:
+       * Tambahkan `getEditorViewData(Request $request, SchoolClass $schoolClass): array` untuk merakit seluruh payload `timetable/editor`.
+     * Buat **`App\Services\Timetable\TimetableSlotService`** (atau perluas service timetable):
+       * Pindahkan pengecekan `validateAndCheckConflicts(SchoolClass $schoolClass, array $attributes, ?TimetableSlot $slot): list<array<string, mixed>>` yang melempar `ValidationException` bila ada *hard error* dan mengembalikan daftar *soft conflicts*.
+       * Pindahkan validasi tahun aktif & kepemilikan semester pada operasi `copySemesterSlots(SchoolClass $schoolClass, int $semesterId): array{copied: int, skipped: list<mixed>}`.
+  2. **Domain Shift Roster (`ShiftRosterController` → Target ~80 baris):**
+     * Buat **`App\Services\Staff\ShiftRosterViewService`**:
+       * Pindahkan `getRosterGrid(string $weekInput, string $monthInput): array` beserta helper `resolveRange()` dan `datesBetween()` untuk merakit matriks `rows`, `shifts`, `view`, dan `today`.
+     * Buat **`App\Services\Staff\ShiftRosterService`**:
+       * Pindahkan mutasi `bulkUpsert(array $employeeIds, list<string> $dates, ?int $shiftId): void`, `setCell(int $employeeId, string $date, ?int $shiftId): void`, dan `clearCell(int $employeeId, string $date): void`.
+* **Verifikasi Test:**
+  * `vendor/bin/sail artisan test --compact tests/Feature/Timetable tests/Feature/Staff`
+
+---
+
+## Urutan & Prosedur Eksekusi
+
+Setiap item pada Fase 2 dieksekusi secara berurutan dengan prosedur disiplin yang sama:
+1. Buat feature branch dari `main` (`refactor/<nama-controller>`).
+2. Jalankan test suite spesifik domain sebelum perubahan untuk memastikan *baseline* hijau.
+3. Buat/perluas class Service/Builder/Action dengan tipe parameter & PHPDoc array-shape yang presisi.
+4. Refactor controller agar hanya mengoordinasikan HTTP request, otorisasi, dan respon.
+5. Jalankan verifikasi wajib:
+   * `vendor/bin/sail artisan test --compact <path_test>`
+   * `vendor/bin/sail bin pint --dirty --format agent`
+   * `vendor/bin/sail bin phpstan analyse --memory-limit=1G <changed_files>`
+   * `vendor/bin/sail npm run check && vendor/bin/sail npm run types:check`
+6. Commit pada feature branch, merge `--ff-only` ke `main`, hapus branch, perbarui status dokumen, dan push ke `origin/main`.
