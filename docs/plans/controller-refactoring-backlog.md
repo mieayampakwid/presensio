@@ -17,17 +17,14 @@ Sesuai aturan di `.ai/rules/controllers.md`:
 
 ## Daftar Backlog Refactoring
 
-### 1. `App\Http\Controllers\Finance\ManualJournalController` (Prioritas Tinggi — 508 baris)
+### 1. `App\Http\Controllers\Finance\ManualJournalController` (Selesai Direfaktor ✅ — commit `3b3b066`, 2026-11-10)
 
-* **Masalah Saat Ini:**
-  * Method `store()` mengelola cabang draf vs posting, upload file, iterasi baris debet/kredit, dan transaksi DB langsung di controller.
-  * Method `reverse()` mengelola pembuatan jurnal pembalik, validasi status, dan audit log langsung di controller.
-  * Method `index()`, `create()`, `show()`, dan `edit()` memuat puluhan baris transformasi array/DTO manual untuk Inertia.
-* **Rencana Solusi:**
-  1. Ekstrak mutasi simpan/posting ke `App\Services\Finance\ManualJournalService` atau `SaveManualJournalAction`.
-  2. Ekstrak logika pembalikan jurnal ke `App\Services\Finance\ReverseJournalAction`.
-  3. Ekstrak pembentukan view payload jurnal ke `App\Services\Finance\ManualJournalViewService`.
-* **Verifikasi:** `php artisan test --compact tests/Feature/Finance`
+* **Hasil Refactoring:**
+  * Ukuran controller menyusut dari 530 baris menjadi 248 baris (-53%).
+  * Seluruh mutasi draf, create-and-post, update, post, reverse, dan delete diekstrak ke `App\Services\Finance\ManualJournalService`.
+  * Seluruh pembentukan view data, opsi akun/siswa, dan serialisasi Inertia diekstrak ke `App\Services\Finance\ManualJournalViewService`.
+  * Controller kini ramping dan murni menangani HTTP coordination, validation, dan authorization.
+* **Verifikasi:** 64 finance tests passing (460 assertions), PHPStan clean, Pint clean, frontend checks clean.
 
 ---
 
