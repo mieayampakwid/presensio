@@ -7,21 +7,21 @@ use App\Http\Requests\Teacher\StoreAssessmentRequest;
 use App\Http\Requests\Teacher\UpdateAssessmentRequest;
 use App\Models\Assessment;
 use App\Models\ClassSubject;
-use App\Models\CourseSemester;
-use App\Models\LearningObjective;
-use App\Models\Semester;
 use App\Services\Attendance\ClassAccess;
-use App\Services\Audit\AuditLogger;
+use App\Services\Grading\AssessmentService;
+use App\Services\Grading\AssessmentViewService;
+use App\Services\Grading\DeleteAssessmentAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AssessmentController extends Controller
 {
     public function __construct(
-        private readonly AuditLogger $auditLogger,
+        private readonly AssessmentViewService $viewService,
+        private readonly AssessmentService $assessmentService,
+        private readonly DeleteAssessmentAction $deleteAction,
     ) {}
 
     /**
@@ -38,54 +38,10 @@ class AssessmentController extends Controller
             403
         );
 
-        $classSubject->load([
-            'schoolClass.academicYear.semesters',
-            'subject:id,code,name',
-            'teacher.employee:id,name',
-        ]);
+        $semesterId = $request->filled('semester') ? (int) $request->input('semester') : null;
+        $data = $this->viewService->getIndexData($classSubject, $user, $semesterId);
 
-        $semesters = $classSubject->schoolClass->academicYear->semesters;
-        $semesterId = $request->filled('semester')
-            ? (int) $request->input('semester')
-            : (int) ($semesters->first()->id ?? 0);
-
-        $currentSemester = $semesters->firstWhere('id', $semesterId) ?? $semesters->first();
-
-        $assessments = Assessment::query()
-            ->where('class_subject_id', $classSubject->id)
-            ->where('semester_id', $semesterId)
-            ->with(['learningObjectives:id,code,description'])
-            ->withCount('scores')
-            ->orderBy('sort_order')
-            ->orderBy('assessed_on')
-            ->get();
-
-        $objectives = LearningObjective::query()
-            ->where('academic_year_id', $classSubject->schoolClass->academic_year_id)
-            ->where('subject_id', $classSubject->subject_id)
-            ->where('grade_level', $classSubject->schoolClass->grade_level)
-            ->orderBy('sort_order')
-            ->orderBy('code')
-            ->get(['id', 'code', 'description']);
-
-        $canWrite = ClassAccess::canWriteCourse($user, $classSubject);
-
-        return Inertia::render('teacher/assessments/index', [
-            'course' => [
-                'id' => $classSubject->id,
-                'class_name' => $classSubject->schoolClass->name,
-                'grade_level' => $classSubject->schoolClass->grade_level,
-                'subject_name' => $classSubject->subject->name,
-                'subject_code' => $classSubject->subject->code,
-                'teacher_name' => $classSubject->teacher?->employee?->name,
-                'passing_threshold' => (string) $classSubject->passing_threshold,
-            ],
-            'currentSemester' => $currentSemester,
-            'semesters' => $semesters,
-            'assessments' => $assessments,
-            'objectives' => $objectives,
-            'canWrite' => $canWrite,
-        ]);
+        return Inertia::render('teacher/assessments/index', $data);
     }
 
     /**
@@ -93,36 +49,7 @@ class AssessmentController extends Controller
      */
     public function store(StoreAssessmentRequest $request, ClassSubject $classSubject): RedirectResponse
     {
-        $data = $request->validated();
-        $objectiveIds = $data['objective_ids'] ?? [];
-        unset($data['objective_ids']);
-        /** @var Semester $semester */
-        $semester = Semester::findOrFail($data['semester_id']);
-        $courseSemester = CourseSemester::forCourse($classSubject, $semester);
-        $courseSemester->assertOpen();
-
-        $data['class_subject_id'] = $classSubject->id;
-        DB::transaction(function () use ($data, $objectiveIds, &$assessment) {
-            /** @var Assessment $assessment */
-            $assessment = Assessment::create($data);
-
-            if (! empty($objectiveIds)) {
-                $assessment->learningObjectives()->sync($objectiveIds);
-            }
-
-            $this->auditLogger->record(
-                $assessment,
-                'created',
-                null,
-                [
-                    'name' => $assessment->name,
-                    'kind' => $assessment->kind->value,
-                    'assessed_on' => $assessment->assessed_on->toDateString(),
-                    'max_score' => $assessment->max_score,
-                    'objective_ids' => $objectiveIds,
-                ]
-            );
-        });
+        $this->assessmentService->create($classSubject, $request->validated());
 
         return back()->with('success', __('toasts.grading.assessment_created'));
     }
@@ -134,40 +61,7 @@ class AssessmentController extends Controller
     {
         abort_if($assessment->class_subject_id !== $classSubject->id, 404);
 
-        $courseSemester = CourseSemester::forCourse($classSubject, $assessment->semester);
-        $courseSemester->assertOpen();
-
-        $data = $request->validated();
-        $objectiveIds = $data['objective_ids'] ?? [];
-        unset($data['objective_ids']);
-
-        $oldValues = [
-            'name' => $assessment->name,
-            'kind' => $assessment->kind->value,
-            'assessed_on' => $assessment->assessed_on->toDateString(),
-            'max_score' => $assessment->max_score,
-            'sort_order' => $assessment->sort_order,
-            'objective_ids' => $assessment->learningObjectives()->pluck('id')->all(),
-        ];
-
-        DB::transaction(function () use ($assessment, $data, $objectiveIds, $oldValues) {
-            $assessment->update($data);
-            $assessment->learningObjectives()->sync($objectiveIds);
-
-            $this->auditLogger->record(
-                $assessment,
-                'updated',
-                $oldValues,
-                [
-                    'name' => $assessment->name,
-                    'kind' => $assessment->kind->value,
-                    'assessed_on' => $assessment->assessed_on->toDateString(),
-                    'max_score' => $assessment->max_score,
-                    'sort_order' => $assessment->sort_order,
-                    'objective_ids' => $objectiveIds,
-                ]
-            );
-        });
+        $this->assessmentService->update($classSubject, $assessment, $request->validated());
 
         return back()->with('success', __('toasts.grading.assessment_updated'));
     }
@@ -181,30 +75,7 @@ class AssessmentController extends Controller
         abort_unless($user !== null && ClassAccess::canWriteCourse($user, $classSubject), 403);
         abort_if($assessment->class_subject_id !== $classSubject->id, 404);
 
-        $courseSemester = CourseSemester::forCourse($classSubject, $assessment->semester);
-        $courseSemester->assertOpen();
-
-        if ($assessment->scores()->exists() && ! $request->boolean('confirm')) {
-            abort(422, __('toasts.grading.assessment_has_scores'));
-        }
-
-        DB::transaction(function () use ($assessment) {
-            $deletedScores = $assessment->scores()->get(['student_id', 'score', 'remedial_score', 'notes'])->toArray();
-
-            $this->auditLogger->record(
-                $assessment,
-                'deleted',
-                [
-                    'name' => $assessment->name,
-                    'kind' => $assessment->kind->value,
-                    'scores' => $deletedScores,
-                ],
-                null,
-                'Assessment deleted'
-            );
-
-            $assessment->delete();
-        });
+        $this->deleteAction->execute($classSubject, $assessment, $request->boolean('confirm'));
 
         return back()->with('success', __('toasts.grading.assessment_deleted'));
     }
