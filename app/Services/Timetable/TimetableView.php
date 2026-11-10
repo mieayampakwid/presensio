@@ -3,6 +3,7 @@
 namespace App\Services\Timetable;
 
 use App\Models\BellSchedule;
+use App\Models\ClassSubject;
 use App\Models\LessonPeriod;
 use App\Models\SchoolClass;
 use App\Models\Semester;
@@ -20,6 +21,50 @@ use Illuminate\Http\Request;
  */
 class TimetableView
 {
+    /**
+     * View data payload for the class timetable editor.
+     *
+     * @return array{
+     *     school_class: array{id: int, name: string},
+     *     class_subjects: list<array{id: int, subject_name: string, teacher_name: string|null}>,
+     *     semesters: list<array{id: int, name: string, number: int}>,
+     *     semester_id: int,
+     *     read_only: bool,
+     *     days: list<mixed>
+     * }
+     */
+    public function getEditorViewData(Request $request, SchoolClass $schoolClass): array
+    {
+        $schoolClass->loadMissing([
+            'academicYear.semesters',
+            'classSubjects.subject:id,name',
+            'classSubjects.teacher.employee:id,name',
+        ]);
+
+        $semester = $this->resolveSemester($request, $schoolClass);
+
+        return [
+            'school_class' => ['id' => $schoolClass->id, 'name' => $schoolClass->name],
+            'class_subjects' => array_values($schoolClass->classSubjects
+                ->map(fn (ClassSubject $assignment): array => [
+                    'id' => $assignment->id,
+                    'subject_name' => $assignment->subject->name,
+                    'teacher_name' => $assignment->teacher?->employee?->name,
+                ])
+                ->all()),
+            'semesters' => array_values($schoolClass->academicYear->semesters
+                ->map(fn (Semester $option): array => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                    'number' => $option->number,
+                ])
+                ->all()),
+            'semester_id' => $semester->id,
+            'read_only' => ! $schoolClass->academicYear->is_active,
+            'days' => $this->days($schoolClass, $semester),
+        ];
+    }
+
     /**
      * The semester being viewed: the `semester` query param when it belongs
      * to the class's academic year, else the current semester, else the
