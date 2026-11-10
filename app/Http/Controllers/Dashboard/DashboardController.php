@@ -2,22 +2,9 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Enums\ExcuseStatus;
-use App\Enums\LeaveRequestStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
-use App\Models\Attendance;
-use App\Models\Employee;
-use App\Models\EmployeeLeaveRequest;
-use App\Models\Excuse;
-use App\Models\Student;
-use App\Models\User;
-use App\Services\Announcements\AnnouncementReadModel;
-use App\Services\Attendance\ClassAccess;
-use App\Services\Reports\AttendanceReportService;
-use App\Services\SchoolSettings;
-use App\Services\Timetable\TodaySchedule;
+use App\Services\Dashboard\DashboardBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,215 +18,18 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     public function __construct(
-        private readonly AttendanceReportService $reports,
-        private readonly SchoolSettings $settings,
-        private readonly TodaySchedule $todaySchedule,
+        private readonly DashboardBuilder $builder,
     ) {}
 
     public function index(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null, 401);
+
         if ($user->hasRole(UserRole::ScannerOperator)) {
             return redirect()->route('scanner.index');
         }
 
-        $activeRole = $user->activeRole();
-        $isStaff = in_array($activeRole, [UserRole::Admin, UserRole::Principal, UserRole::Teacher, UserRole::Counselor], true);
-
-        $isReviewer = in_array($activeRole, [UserRole::Admin, UserRole::Principal], true);
-
-        return Inertia::render('dashboard', [
-            'announcementSummary' => app(AnnouncementReadModel::class)->summary($user),
-            'is_school_day' => $this->settings->isSchoolDay($this->settings->todayDate()),
-            'board' => $isStaff ? $this->boardSummary($user) : null,
-            'pending_excuses' => $isStaff ? $this->pendingCount($user) : null,
-            'pending_leave_requests' => $isReviewer ? $this->pendingLeaveCount() : null,
-            'employee_leave_today' => $user->employee !== null
-                ? $this->employeeLeaveToday($user->employee)
-                : null,
-            'children' => $activeRole === UserRole::Parent ? $this->children($user) : null,
-            'student' => $activeRole === UserRole::Student ? $this->studentToday($user) : null,
-            'today_schedule' => $activeRole === UserRole::Student ? $this->studentSchedule($user) : null,
-        ]);
-    }
-
-    private function pendingLeaveCount(): int
-    {
-        return EmployeeLeaveRequest::query()
-            ->where('status', LeaveRequestStatus::Pending->value)
-            ->count();
-    }
-
-    /**
-     * @return array{status: string, type: string, start_date: string, end_date: string}|null
-     */
-    private function employeeLeaveToday(Employee $employee): ?array
-    {
-        $today = $this->settings->todayDate();
-
-        $leave = EmployeeLeaveRequest::query()
-            ->where('employee_id', $employee->id)
-            ->where('status', LeaveRequestStatus::Approved->value)
-            ->whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>=', $today)
-            ->first();
-
-        if ($leave === null) {
-            return null;
-        }
-
-        return [
-            'status' => $leave->status->value,
-            'type' => $leave->type->value,
-            'start_date' => $leave->start_date->toDateString(),
-            'end_date' => $leave->end_date->toDateString(),
-        ];
-    }
-
-    /**
-     * Today's counts from the same source as the Presence Board, stripped
-     * to numbers — the board owns the name-level drill-down (spec 08).
-     *
-     * @return array{totals: array{enrolled: int, in_building: int, checked_out: int, not_checked_in: int}|null, classes: array<int, array{id: int, name: string, enrolled: int, in_building: int, checked_out: int, not_checked_in: int}>}
-     */
-    private function boardSummary(User $user): array
-    {
-        $board = $this->reports->board(
-            ClassAccess::classIds($user, AcademicYear::active()?->id),
-            $user,
-        );
-
-        return [
-            'totals' => $board['totals'],
-            'classes' => array_map(fn (array $class): array => [
-                'id' => $class['id'],
-                'name' => $class['name'],
-                'enrolled' => $class['enrolled'],
-                'in_building' => $class['in_building'],
-                'checked_out' => $class['checked_out'],
-                'not_checked_in' => $class['not_checked_in'],
-            ], $board['classes']),
-        ];
-    }
-
-    /**
-     * Same scoping as the review queue (spec 04): admins count everywhere,
-     * teachers count students currently in their homeroom classes.
-     */
-    private function pendingCount(User $user): int
-    {
-        return Excuse::query()
-            ->where('status', ExcuseStatus::Pending)
-            ->when(! $user->hasRole(UserRole::Admin), fn ($query) => $query->whereHas(
-                'student.enrollments',
-                fn ($query) => $query->whereNull('ended_on')->whereIn('class_id', ClassAccess::classIds($user, AcademicYear::active()?->id)),
-            ))
-            ->count();
-    }
-
-    /**
-     * Per linked child: today's status (null = no record yet — never
-     * "absent"), the child's latest excuse, and the child's today schedule.
-     *
-     * @return array<int, array{id: int, full_name: string, class_name: string|null, today_status: string|null, latest_excuse: array{type: string, status: string, start_date: string, end_date: string}|null, today_slots: list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>}>|null
-     */
-    private function children(User $user): ?array
-    {
-        $guardian = $user->guardian;
-
-        if ($guardian === null) {
-            return null;
-        }
-
-        $children = $guardian->students()
-            ->with('currentEnrollment.schoolClass:id,name')
-            ->orderBy('full_name')
-            ->get();
-
-        $records = Attendance::query()
-            ->whereIn('student_id', $children->modelKeys())
-            ->whereDate('date', $this->settings->todayDate())
-            ->get(['student_id', 'status'])
-            ->keyBy('student_id');
-
-        $latest = Excuse::query()
-            ->whereIn('student_id', $children->modelKeys())
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->get(['student_id', 'type', 'status', 'start_date', 'end_date'])
-            ->groupBy('student_id');
-
-        return $children
-            ->map(function (Student $child) use ($records, $latest): array {
-                $excuse = $latest->get($child->id)?->first();
-
-                return [
-                    'id' => $child->id,
-                    'full_name' => $child->full_name,
-                    'class_name' => $child->currentEnrollment?->schoolClass?->name,
-                    'today_status' => $records->get($child->id)?->status->value,
-                    'latest_excuse' => $excuse === null ? null : [
-                        'type' => $excuse->type->value,
-                        'status' => $excuse->status->value,
-                        'start_date' => $excuse->start_date->toDateString(),
-                        'end_date' => $excuse->end_date->toDateString(),
-                    ],
-                    'today_slots' => $this->todaySchedule->forStudent($child),
-                ];
-            })
-            ->all();
-    }
-
-    /**
-     * @return array{today: array{status: string, checked_in_at: string|null, checked_out_at: string|null, scan_method: string|null}|null}|null
-     */
-    private function studentToday(User $user): ?array
-    {
-        $student = $user->student;
-
-        if ($student === null) {
-            return null;
-        }
-
-        $record = $student->attendances()
-            ->whereDate('date', $this->settings->todayDate())
-            ->first(['status', 'checked_in_at', 'checked_out_at', 'scan_method']);
-
-        return ['today' => $this->todayRow($record)];
-    }
-
-    /**
-     * Today's slots for the student's classOn(today) class; null when the
-     * account has no student profile (the portal empty state covers it).
-     *
-     * @return list<array{id: int, class_name: string, title: string, teacher_name: string|null, room: string|null, start_time: string, end_time: string, status: string|null}>|null
-     */
-    private function studentSchedule(User $user): ?array
-    {
-        $student = $user->student;
-
-        return $student !== null ? $this->todaySchedule->forStudent($student) : null;
-    }
-
-    /**
-     * Mirrors the my-attendance today row: status, pre-formatted school-tz
-     * times, and method — no notes, no override attribution.
-     *
-     * @return array{status: string, checked_in_at: string|null, checked_out_at: string|null, scan_method: string|null}|null
-     */
-    private function todayRow(?Attendance $record): ?array
-    {
-        if ($record === null) {
-            return null;
-        }
-
-        $tz = $this->settings->timezone();
-
-        return [
-            'status' => $record->status->value,
-            'checked_in_at' => $record->checked_in_at?->tz($tz)->format('H:i'),
-            'checked_out_at' => $record->checked_out_at?->tz($tz)->format('H:i'),
-            'scan_method' => $record->scan_method?->value,
-        ];
+        return Inertia::render('dashboard', $this->builder->buildForUser($user));
     }
 }
